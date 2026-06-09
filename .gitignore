@@ -1,8 +1,38 @@
-node_modules/
+# OS and IDE files
 .idea/
+.vscode/
+*.swp
+*.iml
 .DS_Store
+Thumbs.db
+
+# General
+*.log
+.env
+.env.local
+.env.*.local
+
+# Node.js / Frontend
+node_modules/
 dist/
 build/
-.env
-*.log
+.npm
+.eslintcache
+# Ignore node_modules and dist in subfolders as well
+**/node_modules/
+**/dist/
+
+# Java / Spring Boot / Maven
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+# Ignore target in subfolders
+**/target/
+
+# Project specific
 importedCode/
+.claude/
