@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LandingPage from './pages/LandingPage';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import PersonalInfoPage from './pages/PersonalInfoPage';
 import SecurityPage from './pages/SecurityPage';
 import PricingPage from './pages/PricingPage';
@@ -48,7 +51,7 @@ function App() {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
-    }, 4000);
+    }, 100000);
   };
 
   const handleLogin = () => {
@@ -99,10 +102,22 @@ function App() {
         <style>{animationStyles}</style>
 
         <Routes>
-          {/* Public Route */}
-          <Route path="/" element={!isLoggedIn ? <LandingPage onLogin={handleLogin} /> : <Navigate to="/security" replace />} />
+          {/* Public Routes */}
+          <Route path="/" element={!isLoggedIn ? <LandingPage /> : <Navigate to="/home" replace />} />
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes */}
+          {/* Authenticated Home - Standalone Page (No Sidebar/Dashboard Header) */}
+          <Route path="/home" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <Home
+                onLogout={handleLogout}
+                onShowNotification={showToast}
+              />
+            </ProtectedRoute>
+          } />
+
+          {/* Protected Routes with Dashboard Layout */}
           <Route path="/*" element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
               <div className="flex bg-slate-50 min-h-screen text-slate-800 font-sans antialiased">
@@ -155,8 +170,8 @@ function App() {
                       <Route path="history" element={
                         <HistoryPage onShowNotification={showToast} />
                       } />
-                      {/* Redirect any unknown protected route to security */}
-                      <Route path="*" element={<Navigate to="/security" replace />} />
+                      {/* Redirect any unknown protected route to home */}
+                      <Route path="*" element={<Navigate to="/home" replace />} />
                     </Routes>
                   </main>
                 </div>
@@ -166,11 +181,13 @@ function App() {
         </Routes>
 
         {toast && (
-          <div id="app-toast-alert" className="fixed bottom-6 right-6 z-50 bg-[#0b3c8f] text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-blue-900/40 flex items-center space-x-3 max-w-sm animate-fade-in select-none">
-            <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">
+          <div id="app-toast-alert" className="fixed bottom-6 right-6 z-50 bg-[#0b3c8f] text-white px-4 py-3 rounded-2xl shadow-2xl border border-blue-900/40 flex items-center gap-3 w-fit animate-fade-in select-none">
+            <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs shrink-0">
               {toast.type === 'success' ? '✓' : 'ℹ'}
             </div>
-            <span className="text-xs font-semibold tracking-wide leading-relaxed">{toast.message}</span>
+            <span className="text-sm font-medium leading-normal whitespace-normal flex-1">
+              {toast.message}
+            </span>
           </div>
         )}
       </div>
