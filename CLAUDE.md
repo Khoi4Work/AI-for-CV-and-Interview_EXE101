@@ -50,6 +50,10 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 2. **Execute**: Implement the change with high precision.
 3. **Verify**: Confirm the fix via logs, tests, or visual check.
 4. **Reflect**: Evaluate if the implementation adheres to the project's design system and architecture.
+5. **Record**: Update `SESSIONS.md` immediately after completing a task or ending a session to maintain a clear project trail.
+
+### 🗒 Session & Progress Tracking
+- **SESSIONS.md Autonomy**: Claude has full standing authorization to modify `SESSIONS.md` to record progress, task completions, and session summaries. Do not ask for permission to update this file.
 
 ### 🚀 Git & Version Control
 - **Commit Title**: Concise and imperative (e.g., "Fix layout in SecurityPage").

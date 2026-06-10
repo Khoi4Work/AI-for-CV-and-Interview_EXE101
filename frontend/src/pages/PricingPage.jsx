@@ -107,7 +107,7 @@ class PricingPage extends Component {
         </div>
 
         <div className="space-y-6">
-          <div className="text-center space-y-2 max-w-lg mx-auto">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
             <h3 className="text-lg font-bold text-slate-900">Chọn gói dịch vụ phù hợp với bạn</h3>
           </div>
 
@@ -264,7 +264,7 @@ class PricingPage extends Component {
             <HeartHandshake className="w-8 h-8 text-[#0b3c8f] shrink-0 mt-0.5" />
             <div className="space-y-1">
               <h4 className="text-base font-bold text-[#0b3c8f]">Cần hỗ trợ thêm?</h4>
-              <p className="text-xs text-slate-500 max-w-lg leading-relaxed">
+              <p className="text-xs text-slate-500 max-w-max leading-relaxed">
                 Bạn có câu hỏi doanh nghiệp hoặc cần thiết kế layout mẫu CV cá nhân hóa biệt lập? Bộ phận hỗ trợ 24/7 của Smartfolio luôn sẵn sàng giúp bạn.
               </p>
             </div>
