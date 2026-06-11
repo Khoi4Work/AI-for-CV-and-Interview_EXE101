@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Header } from '../components/layout/PublicHeader';
 import { Footer } from '../components/layout/Footer';
+import GuestHeader from "../components/layout/GuestHeader.jsx";
 
 export default function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,14 +11,15 @@ export default function Login({ onLogin }) {
     e.preventDefault();
     if (onLogin) {
       onLogin();
-    } else {
       navigate('/home');
+    } else {
+      navigate('/login');
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-surface">
-      <Header />
+      <GuestHeader />
       <main className="flex-grow flex items-center justify-center py-xl px-sm relative overflow-hidden w-full">
         {/* Atmospheric Ambient Elements */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-10 overflow-hidden">
