@@ -1,48 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, Cpu, FileText, Zap, ChevronRight } from 'lucide-react';
-import FloatingCVCard from '../components/FloatingCVCard';
+import { Sparkles, ArrowRight, Cpu, FileText, Zap, ChevronRight, BarChart2, MessageSquare, ExternalLink } from 'lucide-react';
+import FloatingCVCard from '../../components/user/FloatingCVCard.jsx';
+import GuestHeader from '../../components/layout/GuestHeader.jsx';
 
 const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 font-sans flex flex-col antialiased">
-      {/* Landing Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-150 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-[#0b3c8f] flex items-center justify-center text-white font-bold text-lg select-none">
-            S
-          </div>
-          <span className="text-xl font-bold text-[#0b3c8f] tracking-tight">Smartfolio</span>
-        </div>
-
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
-          <a href="#home" className="text-[#0b3c8f] border-b-2 border-[#0b3c8f] pb-1">Home</a>
-          <a href="#interview" className="text-slate-500 hover:text-slate-800 transition-colors">Interview</a>
-          <a href="#templates" className="text-slate-500 hover:text-slate-800 transition-colors">Templates</a>
-        </nav>
-
-        {/* Auth Actions */}
-        <div className="flex items-center space-x-4">
-          <button
-            id="landing-register-btn"
-            onClick={() => navigate('/register')}
-            className="text-sm font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 transition-colors"
-          >
-            Đăng ký
-          </button>
-          <button
-            id="landing-login-btn"
-            onClick={() => navigate('/login')}
-            className="bg-[#0b3c8f] hover:bg-[#093278] text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.98]"
-          >
-            Đăng nhập
-          </button>
-        </div>
-      </header>
-
+      <GuestHeader />
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-1 w-full">
         <div className="lg:col-span-6 flex flex-col space-y-6">
@@ -99,7 +66,7 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
             <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
               <div className="w-12 h-12 rounded-lg ai-gradient-bg flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-on-primary">edit_note</span>
+                <FileText className="w-5 h-5 text-on-primary" />
               </div>
               <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Tạo CV Thông minh</h3>
               <p className="font-body-md text-body-md text-on-surface-variant">
@@ -109,7 +76,7 @@ const LandingPage = () => {
 
             <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
               <div className="w-12 h-12 rounded-lg bg-tertiary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-on-tertiary-container">psychology</span>
+                <Zap className="w-5 h-5 text-on-tertiary-container" />
               </div>
               <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phỏng vấn mô phỏng</h3>
               <p className="font-body-md text-body-md text-on-surface-variant">
@@ -119,7 +86,7 @@ const LandingPage = () => {
 
             <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
               <div className="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-on-secondary-container">analytics</span>
+                <BarChart2 className="w-5 h-5 text-on-secondary-container" />
               </div>
               <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phân tích CV theo JD</h3>
               <p className="font-body-md text-body-md text-on-surface-variant">
@@ -129,7 +96,7 @@ const LandingPage = () => {
 
             <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
               <div className="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-on-primary-container">feedback</span>
+                <MessageSquare className="w-5 h-5 text-on-primary-container" />
               </div>
               <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phản hồi & Phân tích</h3>
               <p className="font-body-md text-body-md text-on-surface-variant">
@@ -153,7 +120,7 @@ const LandingPage = () => {
               className="text-[#0b3c8f] hover:underline text-xs sm:text-sm font-semibold flex items-center space-x-1 whitespace-nowrap"
             >
               <span>Khám phá tất cả mẫu</span>
-              <span className="text-xs">[↗]</span>
+              <ExternalLink className="w-3 h-3" />
             </button>
           </div>
 

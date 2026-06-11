@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Smartphone, Shield, ShieldCheck, ShieldAlert, Cpu, Globe, AlertCircle, Laptop, LogOut, RefreshCw, KeyRound, CheckCircle2, AlertTriangle, Key } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useApp } from '../../contexts/AppContext.jsx';
 
-const SecurityPage = ({ is2faEnabled, on2faToggle, onShowNotification }) => {
+const SecurityPage = () => {
   const navigate = useNavigate();
+  const { is2faEnabled, handle2faToggle } = useAuth();
+  const { showToast } = useApp();
   const [state, setState] = useState({
     currentPassword: '',
     newPassword: '',
@@ -25,19 +29,19 @@ const SecurityPage = ({ is2faEnabled, on2faToggle, onShowNotification }) => {
     const { currentPassword, newPassword, confirmPassword } = state;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      onShowNotification('Vui lòng điền đầy đủ các thông tin mật khẩu!', 'info');
+      showToast('Vui lòng điền đầy đủ các thông tin mật khẩu!', 'info');
       return;
     }
     if (newPassword !== confirmPassword) {
-      onShowNotification('Mật khẩu xác nhận không khớp!', 'info');
+      showToast('Mật khẩu xác nhận không khớp!', 'info');
       return;
     }
     if (newPassword.length < 8) {
-      onShowNotification('Mật khẩu mới phải dài từ 8 ký tự trở lên!', 'info');
+      showToast('Mật khẩu mới phải dài từ 8 ký tự trở lên!', 'info');
       return;
     }
 
-    onShowNotification('Cập nhật mật khẩu thành công!', 'success');
+    showToast('Cập nhật mật khẩu thành công!', 'success');
 
     const newLog = {
       id: `log-${Date.now()}`,
@@ -61,7 +65,7 @@ const SecurityPage = ({ is2faEnabled, on2faToggle, onShowNotification }) => {
       ...prevState,
       devices: prevState.devices.filter((d) => d.id !== id),
     }));
-    onShowNotification(`Đã thu hồi phiên đăng nhập trên: ${deviceName}`, 'info');
+    showToast(`Đã thu hồi phiên đăng nhập trên: ${deviceName}`, 'info');
   };
 
   const handleLogoutAll = () => {
@@ -69,7 +73,7 @@ const SecurityPage = ({ is2faEnabled, on2faToggle, onShowNotification }) => {
       ...prevState,
       devices: prevState.devices.filter((d) => d.isCurrent),
     }));
-    onShowNotification('Đã đăng xuất khỏi tất cả các thiết bị phụ khác thành công!', 'success');
+    showToast('Đã đăng xuất khỏi tất cả các thiết bị phụ khác thành công!', 'success');
   };
 
   const getLogDetails = (action) => {
@@ -159,8 +163,8 @@ const SecurityPage = ({ is2faEnabled, on2faToggle, onShowNotification }) => {
           <div className="space-y-3 pt-1.5">
             <div
               onClick={() => {
-                on2faToggle(!is2faEnabled);
-                onShowNotification(!is2faEnabled ? 'Đã bật Authenticator 2FA!' : 'Đã tắt Authenticator 2FA!', 'success');
+                handle2faToggle(!is2faEnabled);
+                showToast(!is2faEnabled ? 'Đã bật Authenticator 2FA!' : 'Đã tắt Authenticator 2FA!', 'success');
               }}
               className={`bg-white p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                 is2faEnabled ? 'border-[#0b3c8f] shadow-md shadow-blue-500/5' : 'border-slate-200 hover:border-slate-350'
@@ -178,8 +182,8 @@ const SecurityPage = ({ is2faEnabled, on2faToggle, onShowNotification }) => {
 
             <div
               onClick={() => {
-                on2faToggle(!is2faEnabled);
-                onShowNotification(!is2faEnabled ? 'Đã cấu hình xác minh mã qua SMS!' : 'Đã tắt SMS OTP!', 'success');
+                handle2faToggle(!is2faEnabled);
+                showToast(!is2faEnabled ? 'Đã cấu hình xác minh mã qua SMS!' : 'Đã tắt SMS OTP!', 'success');
               }}
               className={`bg-white p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                 is2faEnabled ? 'border-[#0b3c8f]/80 shadow-sm' : 'border-slate-200 hover:border-slate-350'
@@ -277,7 +281,7 @@ const SecurityPage = ({ is2faEnabled, on2faToggle, onShowNotification }) => {
             ))}
 
             {state.devices.length === 0 && (
-              <p className="text-xs text-slate-400 py-3 text-center">Không còn thiết bị đăng nhập nào khác.</p>
+              <p className="text-center text-xs text-slate-400 py-4">Không có hoạt động nào gần đây.</p>
             )}
           </div>
 
