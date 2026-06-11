@@ -1,8 +1,10 @@
 import React from 'react';
-import {NavLink, useNavigate} from 'react-router-dom';
-import {User, Shield, CreditCard, Clock, FileText, Settings, LogOut} from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { User, Shield, CreditCard, Clock, FileText, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 
-const Sidebar = ({onLogout, is2faEnabled}) => {
+const Sidebar = () => {
+    const { handleLogout, is2faEnabled } = useAuth();
     const navigate = useNavigate();
     const menuItems = [
         {path: '/personal-info', label: 'Thông tin cá nhân', icon: User},
@@ -24,7 +26,7 @@ const Sidebar = ({onLogout, is2faEnabled}) => {
                         className="w-8 h-8 rounded-lg bg-[#0b3c8f] flex items-center justify-center text-white font-bold text-lg">
                         S
                     </div>
-                    <span className="text-xl font-extrabold text-[#0b3c8f] tracking-tight"
+                    <span className="text-xl font-extrabold text-[#0b3c8f] tracking-tight cursor-pointer"
                           onClick={handleBackHome}>Smartfolio</span>
                 </div>
 
@@ -75,8 +77,8 @@ const Sidebar = ({onLogout, is2faEnabled}) => {
                     <span>Cài đặt</span>
                 </NavLink>
                 <button
-                    onClick={onLogout}
-                    className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 text-sm font-medium transition-colors"
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
                 >
                     <LogOut className="w-4.5 h-4.5 text-rose-500"/>
                     <span>Đăng xuất</span>

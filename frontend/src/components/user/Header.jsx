@@ -1,10 +1,14 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Bell, HelpCircle } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import {useApp} from '../../contexts/AppContext.jsx';
 
-const Header = ({ profile, notificationsCount, onHelpClick }) => {
+const Header = ({ onHelpClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const { notificationsCount } = useApp();
 
   const getTabTitle = (path) => {
     switch (path) {
@@ -65,13 +69,13 @@ const Header = ({ profile, notificationsCount, onHelpClick }) => {
           className="flex items-center space-x-3.5 group text-left"
         >
           <div className="w-9 h-9 rounded-full bg-[#0b3c8f]/10 text-[#0b3c8f] hover:bg-[#0b3c8f]/15 border border-[#0b3c8f]/10 shadow-sm flex items-center justify-center font-bold text-xs tracking-tight transition-all">
-            {getInitials(profile.fullName)}
+            {getInitials(profile?.fullName)}
           </div>
           <div className="hidden md:block">
             <p className="text-xs font-bold text-slate-700 leading-none group-hover:text-slate-900 transition-colors">
-              {profile.fullName}
+              {profile?.fullName}
             </p>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5">{profile.membershipType}</p>
+            <p className="text-[10px] text-slate-400 font-medium mt-0.5">{profile?.membershipType}</p>
           </div>
         </button>
       </div>
