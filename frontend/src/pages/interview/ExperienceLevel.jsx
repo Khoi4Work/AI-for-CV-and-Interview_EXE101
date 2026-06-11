@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowLeft, ArrowRight, GraduationCap, Rocket, Medal, Crown } from 'lucide-react';
 
 export default function ExperienceLevel() {
+    const navigate = useNavigate();
     const [selected, setSelected] = useState(null);
 
     const levels = [
@@ -64,10 +66,14 @@ export default function ExperienceLevel() {
 
                     {/* Action Footer */}
                     <div className="flex items-center justify-between w-full">
-                        <button className="flex items-center text-gray-500 hover:text-gray-800 font-medium transition-colors">
+                        <button
+                            onClick={() => navigate('/interview/cv-status')}
+                            className="flex items-center text-gray-500 hover:text-gray-800 font-medium transition-colors">
                             <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
                         </button>
-                        <button className="bg-[#1a56db] text-white px-8 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center">
+                        <button
+                            onClick={() => navigate('/interview/career-goal')}
+                            className="bg-[#1a56db] text-white px-8 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center">
                             Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
                         </button>
                     </div>

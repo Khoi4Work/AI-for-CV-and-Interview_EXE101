@@ -1,7 +1,9 @@
 import React from 'react';
-import { Sparkles, Bell, ChevronDown, User, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, Bell, ChevronDown, User, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function InterviewSetup() {
+    const navigate = useNavigate();
     return (
         <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">
             {/* Top Nav (from image 6) */}
@@ -116,8 +118,15 @@ export default function InterviewSetup() {
                         </div>
 
                         {/* Submit */}
-                        <div className="pt-2">
-                            <button className="w-full flex items-center justify-center bg-[#0e3a9f] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-blue-800 transition-colors shadow-md">
+                        <div className="flex flex-col gap-3 pt-2">
+                            <button
+                                onClick={() => navigate('/interview/career-goal')}
+                                className="w-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 py-3.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm">
+                                <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
+                            </button>
+                            <button
+                                onClick={() => navigate('/home')}
+                                className="w-full flex items-center justify-center bg-[#0e3a9f] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-blue-800 transition-colors shadow-md">
                                 Continue <ArrowRight className="w-4 h-4 ml-2" />
                             </button>
                         </div>

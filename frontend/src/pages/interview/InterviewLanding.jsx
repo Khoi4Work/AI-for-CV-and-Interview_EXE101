@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Sparkles,
     PlayCircle,
@@ -18,6 +19,7 @@ import {useAuth} from "../../contexts/AuthContext.jsx";
 import {Footer} from "../../components/layout/Footer.jsx";
 
 export default function InterviewLanding() {
+    const navigate = useNavigate();
     // const {isLoggedIn} = useAuth();
     return (
         <div className="min-h-screen bg-white font-sans text-gray-900">
@@ -38,6 +40,7 @@ export default function InterviewLanding() {
                         </p>
                         <div className="flex flex-wrap items-center gap-4">
                             <button
+                                onClick={() => navigate('/interview/job-selection')}
                                 className="bg-[#1a56db] text-white px-6 py-3.5 rounded-xl font-medium hover:bg-blue-700 transition-all shadow-md flex items-center">
                                 <PlayCircle className="w-5 h-5 mr-2"/> Bắt đầu phỏng vấn ngay
                             </button>
@@ -238,6 +241,7 @@ export default function InterviewLanding() {
                         nay.
                     </p>
                     <button
+                        onClick={() => navigate('/interview/job-selection')}
                         className="bg-white text-[#0f3b97] px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all shadow-lg">
                         Bắt đầu phỏng vấn ngay - Miễn phí
                     </button>

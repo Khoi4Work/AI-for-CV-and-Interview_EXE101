@@ -40,7 +40,7 @@ export function Header({ onLogout }) {
 
       <nav className="hidden md:flex gap-md items-center">
         <Link className={`font-label-md text-label-md transition-colors ${isHome ? 'text-primary dark:text-primary-fixed border-b-2 border-primary dark:border-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`} to="/">Home</Link>
-        <Link className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors" to="#">Interview</Link>
+        <Link className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors" to="/interview">Interview</Link>
         <Link className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors" to="/template-list">Templates</Link>
       </nav>
 
