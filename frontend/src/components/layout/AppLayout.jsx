@@ -43,34 +43,17 @@ export default function AppLayout() {
                 <Route path="/" element={!isLoggedIn ? <LandingPage/> : <Navigate to="/home" replace/>}/>
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/register" element={<Register/>}/>
-
-                {/* Authenticated Home - Standalone Page */}
-                <Route path="/home" element={
+                <Route path={"/*"} element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <Home/>
+                        <Routes>
+                            <Route path={"home"} element={<Home/>}/>
+                            <Route path={"templates"} element={<TemplateList/>}/>
+                            <Route path={"template/:id"} element={<TemplateDetail/>}/>
+                            <Route path="optimizer" element={<CVOptimizer/>}/>
+                            <Route path={"/builder"} element={<CVBuilder/>}/>
+                        </Routes>
                     </ProtectedRoute>
                 }/>
-
-                <Route path="/template-list" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <TemplateList/>
-                    </ProtectedRoute>}
-                />
-                <Route path="/template/:id" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <TemplateDetail/>
-                    </ProtectedRoute>}
-                />
-                <Route path="/optimize" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <CVOptimizer/>
-                    </ProtectedRoute>}
-                />
-                <Route path="/builder" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <CVBuilder/>
-                    </ProtectedRoute>}
-                />
 
                 {/* Protected Routes with Dashboard Layout */}
                 <Route path="/*" element={
