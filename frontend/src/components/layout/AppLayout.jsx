@@ -12,12 +12,24 @@ import SecurityPage from '../../pages/user/SecurityPage.jsx';
 import PricingPage from '../../pages/user/PricingPage.jsx';
 import MyCVsPage from '../../pages/user/MyCVsPage.jsx';
 import HistoryPage from '../../pages/user/HistoryPage.jsx';
+import InterviewLanding from '../../pages/interview/InterviewLanding.jsx';
+import JobSelection from '../../pages/interview/JobSelection.jsx';
+import CVStatus from '../../pages/interview/CVStatus.jsx';
+import ExperienceLevel from '../../pages/interview/ExperienceLevel.jsx';
+import CareerGoal from '../../pages/interview/CareerGoal.jsx';
+import InterviewSetup from '../../pages/interview/InterviewSetup.jsx';
 import {useAuth} from '../../contexts/AuthContext';
 import {useApp} from '../../contexts/AppContext';
 import TemplateList from "../../pages/cv-template/TemplateList.jsx";
 import TemplateDetail from "../../pages/cv-template/TemplateDetail.jsx";
 import CVOptimizer from "../../pages/cv-template/CVOptimizer.jsx";
 import CVBuilder from "../../pages/cv-template/CVBuilder.jsx";
+import {AudioSetup} from "../../pages/interview/AudioSetup.jsx";
+import {InterviewRoom} from "../../pages/interview/InterviewRoom.jsx";
+import {VideoReview} from "../../pages/interview/VideoReview.jsx";
+import {VideoSetup} from "../../pages/interview/VideoSetup.jsx";
+import {CvAnalysis} from "../../pages/interview/CvAnalysis.jsx";
+import {InterviewResults} from "../../pages/interview/InterviewResult.jsx";
 
 const animationStyles = `
 @keyframes fadeIn {
@@ -43,34 +55,29 @@ export default function AppLayout() {
                 <Route path="/" element={!isLoggedIn ? <LandingPage/> : <Navigate to="/home" replace/>}/>
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/register" element={<Register/>}/>
-
-                {/* Authenticated Home - Standalone Page */}
-                <Route path="/home" element={
+                <Route path={"/*"} element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <Home/>
+                        <Routes>
+                            <Route path={"home"} element={<Home/>}/>
+                            <Route path={"templates"} element={<TemplateList/>}/>
+                            <Route path={"template/:id"} element={<TemplateDetail/>}/>
+                            <Route path="optimizer" element={<CVOptimizer/>}/>
+                            <Route path={"builder"} element={<CVBuilder/>}/>
+                            <Route path="audio-setup" element={<AudioSetup/>}/>
+                            <Route path="video-setup" element={<VideoSetup/>}/>
+                            <Route path="interview" element={<InterviewLanding/>}/>
+                            <Route path="interview/room" element={<InterviewRoom/>}/>
+                            <Route path="interview/review" element={<VideoReview/>}/>
+                            <Route path="interview/result" element={<InterviewResults/>}/>
+                            <Route path="interview/job-selection" element={<JobSelection/>}/>
+                            <Route path="interview/cv-status" element={<CVStatus/>}/>
+                            <Route path="interview/experience-level" element={<ExperienceLevel/>}/>
+                            <Route path="interview/career-goal" element={<CareerGoal/>}/>
+                            <Route path="interview/setup" element={<InterviewSetup/>}/>
+                            <Route path="analysis" element={<CvAnalysis/>}/>
+                        </Routes>
                     </ProtectedRoute>
                 }/>
-
-                <Route path="/template-list" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <TemplateList/>
-                    </ProtectedRoute>}
-                />
-                <Route path="/template/:id" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <TemplateDetail/>
-                    </ProtectedRoute>}
-                />
-                <Route path="/optimize" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <CVOptimizer/>
-                    </ProtectedRoute>}
-                />
-                <Route path="/builder" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <CVBuilder/>
-                    </ProtectedRoute>}
-                />
 
                 {/* Protected Routes with Dashboard Layout */}
                 <Route path="/*" element={

@@ -1,12 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import {useState, useEffect, useRef} from 'react';
+import {Link, useLocation, useNavigate} from 'react-router-dom';
 import { User, Shield, CreditCard, Clock, FileText, LogOut } from 'lucide-react';
+import {useAuth} from "../../contexts/AuthContext.jsx";
 
-export function Header({ onLogout }) {
+export function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const location = useLocation();
   const isHome = location.pathname === '/home' || location.pathname === '/';
+  const {handleLogout} = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -18,6 +21,10 @@ export function Header({ onLogout }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const logout=() => {
+    handleLogout();
+    navigate('/');
+  }
   const maxW = 'max-w-full';
   const bgClass = isHome ? 'bg-white/80 backdrop-blur-md' : 'bg-surface';
 
@@ -40,8 +47,8 @@ export function Header({ onLogout }) {
 
       <nav className="hidden md:flex gap-md items-center">
         <Link className={`font-label-md text-label-md transition-colors ${isHome ? 'text-primary dark:text-primary-fixed border-b-2 border-primary dark:border-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`} to="/">Home</Link>
-        <Link className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors" to="#">Interview</Link>
-        <Link className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors" to="/template-list">Templates</Link>
+        <Link className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors" to="/interview">Interview</Link>
+        <Link className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors" to="/templates">Templates</Link>
       </nav>
 
       <div className="flex items-center gap-md relative">
@@ -75,7 +82,7 @@ export function Header({ onLogout }) {
                 ))}
                 <div className="my-2 border-t border-outline-variant/50"></div>
                 <button
-                  onClick={onLogout}
+                  onClick={logout}
                   className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-all group"
                 >
                   <LogOut className="w-4 h-4 text-rose-500 group-hover:text-rose-700" />
