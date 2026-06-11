@@ -63,7 +63,7 @@ export function AudioSetup() {
                             Thử lại
                         </button>
                         <button
-                            onClick={() => navigate('video')}
+                            onClick={() => navigate('/')}
                             className="flex-1 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors">
                             Tiếp tục
                         </button>

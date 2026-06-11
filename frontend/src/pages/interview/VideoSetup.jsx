@@ -3,7 +3,7 @@ import { Camera, Mic, Info, Lightbulb, Shirt, Image as ImageIcon, CheckCircle2, 
 import { MainLayout } from '../../components/interview/MainLayout';
 import {useNavigation} from "react-router-dom";
 
-export function VideoSetupPage() {
+export function VideoSetup() {
     const { navigate } = useNavigation();
 
     return (
@@ -104,7 +104,7 @@ export function VideoSetupPage() {
 
                 <div className="flex flex-col items-center justify-center max-w-xl mx-auto">
                     <button
-                        onClick={() => navigate('interview')}
+                        onClick={() => navigate('/interview/room')}
                         className="w-full bg-[#3478ff] hover:bg-[#2a62d4] text-white py-3.5 rounded-lg font-medium shadow-sm transition-colors text-lg">
                         Bắt đầu phỏng vấn
                     </button>
