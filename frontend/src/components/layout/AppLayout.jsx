@@ -12,6 +12,12 @@ import SecurityPage from '../../pages/user/SecurityPage.jsx';
 import PricingPage from '../../pages/user/PricingPage.jsx';
 import MyCVsPage from '../../pages/user/MyCVsPage.jsx';
 import HistoryPage from '../../pages/user/HistoryPage.jsx';
+import InterviewLanding from '../../pages/interview/InterviewLanding.jsx';
+import JobSelection from '../../pages/interview/JobSelection.jsx';
+import CVStatus from '../../pages/interview/CVStatus.jsx';
+import ExperienceLevel from '../../pages/interview/ExperienceLevel.jsx';
+import CareerGoal from '../../pages/interview/CareerGoal.jsx';
+import InterviewSetup from '../../pages/interview/InterviewSetup.jsx';
 import {useAuth} from '../../contexts/AuthContext';
 import {useApp} from '../../contexts/AppContext';
 import TemplateList from "../../pages/cv-template/TemplateList.jsx";
@@ -51,6 +57,12 @@ export default function AppLayout() {
                             <Route path={"template/:id"} element={<TemplateDetail/>}/>
                             <Route path="optimizer" element={<CVOptimizer/>}/>
                             <Route path={"/builder"} element={<CVBuilder/>}/>
+                            <Route path="/interview" element={<InterviewLanding/>}/>
+                            <Route path="/interview/job-selection" element={<JobSelection/>}/>
+                            <Route path="/interview/cv-status" element={<CVStatus/>}/>
+                            <Route path="/interview/experience-level" element={<ExperienceLevel/>}/>
+                            <Route path="/interview/career-goal" element={<CareerGoal/>}/>
+                            <Route path="/interview/setup" element={<InterviewSetup/>}/>
                         </Routes>
                     </ProtectedRoute>
                 }/>
