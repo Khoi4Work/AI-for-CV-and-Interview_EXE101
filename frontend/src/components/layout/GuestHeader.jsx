@@ -16,8 +16,8 @@ const GuestHeader = () => {
       {/* Navigation Links */}
       <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
         <Link to="/" className="text-[#0b3c8f] border-b-2 border-[#0b3c8f] pb-1">Home</Link>
-        <a href="#interview" className="text-slate-500 hover:text-slate-800 transition-colors">Interview</a>
-        <a href="#templates" className="text-slate-500 hover:text-slate-800 transition-colors">Templates</a>
+        <a href="/interview" className="text-slate-500 hover:text-slate-800 transition-colors">Interview</a>
+        <a href="/templates" className="text-slate-500 hover:text-slate-800 transition-colors">Templates</a>
       </nav >
 
       {/* Auth Actions */}
