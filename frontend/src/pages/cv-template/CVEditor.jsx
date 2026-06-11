@@ -1,4 +1,5 @@
 import TopNagivationToolBar from "../../components/template/TopNagivationToolBar.jsx";
+import {User} from "lucide-react";
 
 export default function CVEditor() {
     return (
