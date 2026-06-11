@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowLeft, ArrowRight, GraduationCap, Rocket, Medal, Crown } from 'lucide-react';
+import {Header} from "../../components/layout/PublicHeader.jsx";
+import { Footer } from "../../components/layout/Footer.jsx";
 
 export default function ExperienceLevel() {
     const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function ExperienceLevel() {
 
     return (
         <div className="min-h-screen flex flex-col bg-white font-sans relative">
+            <Header />
             {/* Top Nav (simplified version based on Image 4 context) */}
 
 
@@ -82,7 +85,7 @@ export default function ExperienceLevel() {
             </main>
 
             {/* Simple Footer */}
-
+            <Footer />
         </div>
     );
 }

@@ -1,11 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Bell, ChevronDown, User, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Sparkles, ChevronDown, User, ArrowRight, ArrowLeft } from 'lucide-react';
+import {Header} from "../../components/layout/PublicHeader.jsx";
+import { Footer } from "../../components/layout/Footer.jsx";
 
 export default function InterviewSetup() {
     const navigate = useNavigate();
     return (
         <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">
+            <Header />
             {/* Top Nav (from image 6) */}
 
             <main className="flex-grow flex flex-col items-center pt-8 px-6 pb-20 relative">
@@ -160,7 +163,7 @@ export default function InterviewSetup() {
             </main>
 
             {/* Footer */}
-
+            <Footer />
         </div>
     );
 }

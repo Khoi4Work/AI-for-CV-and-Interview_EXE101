@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Code, Megaphone, SwatchBook, BarChart2, Target, MoreHorizontal, ArrowLeft, ArrowRight, Bell, Sparkles } from 'lucide-react';
+import {Header} from "../../components/layout/PublicHeader.jsx";
+import { Footer } from "../../components/layout/Footer.jsx";
 
 export default function JobSelection() {
     const navigate = useNavigate();
@@ -16,10 +18,10 @@ export default function JobSelection() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans relative pb-20">
-
+        <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans relative">
+            <Header />
             {/* Progress Bar Header */}
-            <div className="pt-8 px-6 max-w-3xl mx-auto w-full">
+            <div className="flex-1 pt-8 px-6 max-w-3xl mx-auto w-full">
                 <div className="flex flex-col items-center mb-10">
                     <p className="text-sm text-gray-500 font-medium mb-3">Bước 1 trên 5 • 25% hoàn tất</p>
                     <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
@@ -88,7 +90,7 @@ export default function JobSelection() {
             </div>
 
             {/* Floating Bottom Nav (from design) */}
-
+            <Footer />
         </div>
     );
 }

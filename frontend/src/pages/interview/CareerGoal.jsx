@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowLeft, Bell } from 'lucide-react';
+import {Header} from "../../components/layout/PublicHeader.jsx";
+import { Footer } from "../../components/layout/Footer.jsx";
 
 export default function CareerGoal() {
     const navigate = useNavigate();
@@ -13,6 +15,7 @@ export default function CareerGoal() {
 
     return (
         <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">
+            <Header />
             {/* Top Nav (from image 5) */}
 
             <main className="flex-grow flex flex-col items-center pt-10 px-6 pb-20">
@@ -76,7 +79,7 @@ export default function CareerGoal() {
             </main>
 
             {/* Footer */}
-
+            <Footer />
         </div>
     );
 }
