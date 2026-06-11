@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Link, Globe, Code, Sparkles, Shield, User, FileText, ChevronRight } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useApp } from '../../contexts/AppContext.jsx';
 
-const PersonalInfoPage = ({ profile, is2faEnabled, cvs, onProfileUpdate, on2faToggle, onShowNotification }) => {
+const PersonalInfoPage = () => {
   const navigate = useNavigate();
+  const { profile, handleProfileUpdate, handle2faToggle, is2faEnabled } = useAuth();
+  const { cvs, showToast } = useApp();
+
   const [formData, setFormData] = useState({ ...profile });
   const [local2fa, setLocal2fa] = useState(is2faEnabled);
 
@@ -24,15 +29,15 @@ const PersonalInfoPage = ({ profile, is2faEnabled, cvs, onProfileUpdate, on2faTo
   };
 
   const handleSave = () => {
-    onProfileUpdate(formData);
-    on2faToggle(local2fa);
-    onShowNotification('Đã lưu các thay đổi thông tin cá nhân thành công!', 'success');
+    handleProfileUpdate(formData);
+    handle2faToggle(local2fa);
+    showToast('Đã lưu các thay đổi thông tin cá nhân thành công!', 'success');
   };
 
   const handleReset = () => {
     setFormData({ ...profile });
     setLocal2fa(is2faEnabled);
-    onShowNotification('Đã khôi phục thông tin ban đầu.', 'info');
+    showToast('Đã khôi phục thông tin ban đầu.', 'info');
   };
 
   const getInitials = (name) => {
@@ -241,7 +246,7 @@ const PersonalInfoPage = ({ profile, is2faEnabled, cvs, onProfileUpdate, on2faTo
                   checked={local2fa}
                   onChange={(e) => {
                     setLocal2fa(e.target.checked);
-                    onShowNotification(
+                    showToast(
                       e.target.checked ? 'Đã kích hoạt 2FA tạm thời. Hãy nhấp Lưu thay đổi!' : 'Đã ấn tắt 2FA tạm thời. Hãy nhấp Lưu thay đổi!',
                       'info'
                     );
