@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, Cpu, FileText, Zap, ChevronRight } from 'lucide-react';
-import FloatingCVCard from '../components/FloatingCVCard';
-import GuestHeader from '../components/layout/GuestHeader';
+import { Sparkles, ArrowRight, Cpu, FileText, Zap, ChevronRight, BarChart2, MessageSquare, ExternalLink } from 'lucide-react';
+import FloatingCVCard from '../../components/user/FloatingCVCard.jsx';
+import GuestHeader from '../../components/layout/GuestHeader.jsx';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
             <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
               <div className="w-12 h-12 rounded-lg ai-gradient-bg flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-on-primary">edit_note</span>
+                <FileText className="w-5 h-5 text-on-primary" />
               </div>
               <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Tạo CV Thông minh</h3>
               <p className="font-body-md text-body-md text-on-surface-variant">
@@ -76,7 +76,7 @@ const LandingPage = () => {
 
             <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
               <div className="w-12 h-12 rounded-lg bg-tertiary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-on-tertiary-container">psychology</span>
+                <Zap className="w-5 h-5 text-on-tertiary-container" />
               </div>
               <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phỏng vấn mô phỏng</h3>
               <p className="font-body-md text-body-md text-on-surface-variant">
@@ -86,7 +86,7 @@ const LandingPage = () => {
 
             <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
               <div className="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-on-secondary-container">analytics</span>
+                <BarChart2 className="w-5 h-5 text-on-secondary-container" />
               </div>
               <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phân tích CV theo JD</h3>
               <p className="font-body-md text-body-md text-on-surface-variant">
@@ -96,7 +96,7 @@ const LandingPage = () => {
 
             <div className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
               <div className="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-on-primary-container">feedback</span>
+                <MessageSquare className="w-5 h-5 text-on-primary-container" />
               </div>
               <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phản hồi & Phân tích</h3>
               <p className="font-body-md text-body-md text-on-surface-variant">
@@ -120,7 +120,7 @@ const LandingPage = () => {
               className="text-[#0b3c8f] hover:underline text-xs sm:text-sm font-semibold flex items-center space-x-1 whitespace-nowrap"
             >
               <span>Khám phá tất cả mẫu</span>
-              <span className="text-xs">[↗]</span>
+              <ExternalLink className="w-3 h-3" />
             </button>
           </div>
 

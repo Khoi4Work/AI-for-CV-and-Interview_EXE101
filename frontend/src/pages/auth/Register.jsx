@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import GuestHeader  from '../components/layout/GuestHeader';
-import { Footer } from '../components/layout/Footer';
+import GuestHeader  from '../../components/layout/GuestHeader.jsx';
+import { Footer } from '../../components/layout/Footer.jsx';
 import { ChartPie, Bot, User, Mail, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export default function Register() {
