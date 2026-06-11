@@ -125,7 +125,7 @@ export default function InterviewSetup() {
                                 <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
                             </button>
                             <button
-                                onClick={() => navigate('/home')}
+                                onClick={() => navigate('/audio-setup')}
                                 className="w-full flex items-center justify-center bg-[#0e3a9f] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-blue-800 transition-colors shadow-md">
                                 Continue <ArrowRight className="w-4 h-4 ml-2" />
                             </button>

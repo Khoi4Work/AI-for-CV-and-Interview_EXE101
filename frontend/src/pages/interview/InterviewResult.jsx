@@ -1,11 +1,11 @@
 import React from 'react';
 import { Download, History, Sparkles, FileText } from 'lucide-react';
-import { useNavigation } from '../NavigationContext';
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import {Footer} from "../../components/layout/Footer.jsx";
+import {useNavigation} from "react-router-dom";
 
-export function InterviewResultsPage() {
-    const { currentPage, navigate } = useNavigation();
+export function InterviewResults() {
+    const { navigate } = useNavigation();
 
     return (
         <div className="min-h-screen flex flex-col bg-[#111827] text-gray-100 font-sans selection:bg-[#1e3a8a]">

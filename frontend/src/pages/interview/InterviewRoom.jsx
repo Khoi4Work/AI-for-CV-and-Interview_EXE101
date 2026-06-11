@@ -81,7 +81,7 @@ export function InterviewRoom() {
 
                 <div className="absolute left-1/2 -translate-x-1/2">
                     <button
-                        onClick={() => navigate('review')}
+                        onClick={() => navigate('/review')}
                         className="flex items-center justify-center gap-2 bg-[#111c3a] hover:bg-black text-white px-8 py-3 w-64 rounded-xl font-medium transition-colors shadow-sm">
                         <ArrowRight size={18} />
                         Hoàn thành câu hỏi

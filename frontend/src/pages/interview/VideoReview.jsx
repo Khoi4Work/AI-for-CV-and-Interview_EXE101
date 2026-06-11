@@ -3,7 +3,7 @@ import { Play, Download, Settings, Maximize } from 'lucide-react';
 import { MainLayout } from '../../components/interview/MainLayout';
 import {useNavigation} from "react-router-dom";
 
-export function VideoReviewPage() {
+export function VideoReview() {
     const { navigate } = useNavigation();
 
     return (
@@ -59,7 +59,7 @@ export function VideoReviewPage() {
                             Ghi hình lại
                         </button>
                         <button
-                            onClick={() => navigate('results')}
+                            onClick={() => navigate('/interview/results')}
                             className="px-6 py-2.5 bg-[#1a56db] hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm">
                             Gửi phản hồi
                         </button>
