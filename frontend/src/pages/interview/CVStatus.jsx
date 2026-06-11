@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowLeft, ArrowRight, Upload, Lock } from 'lucide-react';
+import {Header} from "../../components/layout/PublicHeader.jsx";
+import { Footer } from "../../components/layout/Footer.jsx";
 
 export default function CvStatus() {
     const navigate = useNavigate();
@@ -8,6 +10,7 @@ export default function CvStatus() {
 
     return (
         <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans relative">
+            <Header />
             {/* Weird Top Nav from Image 3 */}
 
 
@@ -106,7 +109,7 @@ export default function CvStatus() {
             </main>
 
             {/* Actual Footer (Like across all pages) */}
-
+            <Footer />
         </div>
     );
 }

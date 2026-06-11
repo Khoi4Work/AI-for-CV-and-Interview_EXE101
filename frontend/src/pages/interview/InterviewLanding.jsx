@@ -13,9 +13,7 @@ import {
     CheckCircle2,
     ArrowRight
 } from 'lucide-react';
-import GuestHeader from "../../components/layout/GuestHeader.jsx";
-import PublicHeader from "../../components/layout/GuestHeader.jsx";
-import {useAuth} from "../../contexts/AuthContext.jsx";
+import {Header} from "../../components/layout/PublicHeader.jsx";
 import {Footer} from "../../components/layout/Footer.jsx";
 
 export default function InterviewLanding() {
@@ -24,7 +22,7 @@ export default function InterviewLanding() {
     return (
         <div className="min-h-screen bg-white font-sans text-gray-900">
             {/* Header */}
-            {/*{isLoggedIn ? <PublicHeader /> : <GuestHeader />}*/}
+            <Header />
             <main>
                 {/* Hero Section */}
                 <section
@@ -249,7 +247,7 @@ export default function InterviewLanding() {
             </main>
 
             {/* Footer */}
-
+            <Footer />
         </div>
     );
 }
