@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowLeft, Bell } from 'lucide-react';
 
 export default function CareerGoal() {
+    const navigate = useNavigate();
     const suggestions = [
         '+ Học hỏi công nghệ mới',
         '+ Đóng góp giá trị',
@@ -55,10 +57,14 @@ export default function CareerGoal() {
 
                     {/* Action Buttons Stacked */}
                     <div className="flex flex-col gap-3 w-full">
-                        <button className="w-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 px-6 py-3.5 rounded-xl text-base font-medium hover:bg-gray-50 transition-colors shadow-sm">
+                        <button
+                            onClick={() => navigate('/interview/experience-level')}
+                            className="w-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 px-6 py-3.5 rounded-xl text-base font-medium hover:bg-gray-50 transition-colors shadow-sm">
                             <ArrowLeft className="w-5 h-5 mr-2" /> Quay lại
                         </button>
-                        <button className="w-full flex items-center justify-center bg-[#4f6bf5] text-white px-6 py-3.5 rounded-xl text-base font-medium hover:bg-blue-600 transition-colors shadow-md">
+                        <button
+                            onClick={() => navigate('/interview/setup')}
+                            className="w-full flex items-center justify-center bg-[#4f6bf5] text-white px-6 py-3.5 rounded-xl text-base font-medium hover:bg-blue-600 transition-colors shadow-md">
                             <Sparkles className="w-5 h-5 mr-2 fill-current" /> Bắt đầu ngay
                         </button>
                         <p className="text-center text-xs text-gray-500 mt-2">

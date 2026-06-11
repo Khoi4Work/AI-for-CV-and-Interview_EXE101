@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Code, Megaphone, SwatchBook, BarChart2, Target, MoreHorizontal, ArrowLeft, ArrowRight, Bell, Sparkles } from 'lucide-react';
 
 export default function JobSelection() {
+    const navigate = useNavigate();
     const [selected, setSelected] = useState('Software Engineer');
 
     const jobs = [
@@ -72,10 +74,14 @@ export default function JobSelection() {
 
                 {/* Action Buttons */}
                 <div className="flex justify-between items-center mt-12 pb-24">
-                    <button className="flex items-center text-gray-500 hover:text-gray-800 font-medium transition-colors">
+                    <button
+                        onClick={() => navigate('/interview')}
+                        className="flex items-center text-gray-500 hover:text-gray-800 font-medium transition-colors">
                         <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
                     </button>
-                    <button className="flex items-center bg-[#1a56db] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                    <button
+                        onClick={() => navigate('/interview/cv-status')}
+                        className="flex items-center bg-[#1a56db] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors">
                         Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
                     </button>
                 </div>

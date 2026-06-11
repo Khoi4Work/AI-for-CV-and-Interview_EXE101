@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowLeft, ArrowRight, Upload, Lock } from 'lucide-react';
 
 export default function CvStatus() {
+    const navigate = useNavigate();
     const [selected, setSelected] = useState(null);
 
     return (
@@ -71,15 +73,19 @@ export default function CvStatus() {
 
                     {/* Action Footer (In-page) */}
                     <div className="flex items-center justify-between w-full mt-4">
-                        <button className="flex items-center text-gray-500 hover:text-gray-800 font-medium transition-colors">
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
-                        </button>
-                        <div className="flex items-center text-gray-400 text-xs">
-                            <Lock className="w-3 h-3 mr-1" /> Dữ liệu của bạn được bảo mật
-                        </div>
-                        <button className="bg-[#1a56db] text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                            Tiếp tục
-                        </button>
+                    <button
+                        onClick={() => navigate('/interview/job-selection')}
+                        className="flex items-center text-gray-500 hover:text-gray-800 font-medium transition-colors">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
+                    </button>
+                    <div className="flex items-center text-gray-400 text-xs">
+                        <Lock className="w-3 h-3 mr-1" /> Dữ liệu của bạn được bảo mật
+                    </div>
+                    <button
+                        onClick={() => navigate('/interview/experience-level')}
+                        className="bg-[#1a56db] text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                        Tiếp tục
+                    </button>
                     </div>
 
                 </div>
