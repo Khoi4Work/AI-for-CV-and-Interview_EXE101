@@ -30,6 +30,7 @@ import {VideoReview} from "../../pages/interview/VideoReview.jsx";
 import {VideoSetup} from "../../pages/interview/VideoSetup.jsx";
 import {CvAnalysis} from "../../pages/interview/CvAnalysis.jsx";
 import {InterviewResults} from "../../pages/interview/InterviewResult.jsx";
+import CVEditor from "../../pages/cv-template/CVEditor.jsx";
 
 const animationStyles = `
 @keyframes fadeIn {
@@ -59,10 +60,14 @@ export default function AppLayout() {
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
                         <Routes>
                             <Route path={"home"} element={<Home/>}/>
+
                             <Route path={"templates"} element={<TemplateList/>}/>
                             <Route path={"template/:id"} element={<TemplateDetail/>}/>
                             <Route path="optimizer" element={<CVOptimizer/>}/>
                             <Route path={"builder"} element={<CVBuilder/>}/>
+                            <Route path="analysis" element={<CvAnalysis/>}/>
+                            <Route path={"editor"} element={<CVEditor/>}/>
+
                             <Route path="audio-setup" element={<AudioSetup/>}/>
                             <Route path="video-setup" element={<VideoSetup/>}/>
                             <Route path="interview" element={<InterviewLanding/>}/>
@@ -74,36 +79,35 @@ export default function AppLayout() {
                             <Route path="interview/experience-level" element={<ExperienceLevel/>}/>
                             <Route path="interview/career-goal" element={<CareerGoal/>}/>
                             <Route path="interview/setup" element={<InterviewSetup/>}/>
-                            <Route path="analysis" element={<CvAnalysis/>}/>
+
+                            {/* Protected Routes with Dashboard Layout */}
+                            <Route path="*" element={
+                                <ProtectedRoute isLoggedIn={isLoggedIn}>
+                                    <div className="flex bg-slate-50 min-h-screen text-slate-800 font-sans antialiased">
+                                        <Sidebar/>
+                                        <div className="flex-1 flex flex-col min-w-0">
+                                            <Header
+                                                profile={profile}
+                                                notificationsCount={notificationsCount}
+                                                onHelpClick={() => showToast('Trung tâm trợ giúp Smartfolio đang tải dữ liệu.', 'info')}
+                                            />
+                                            <main className="flex-1 p-8 overflow-y-auto max-w-5xl w-full mx-auto">
+                                                <Routes>
+                                                    <Route path="personal-info" element={<PersonalInfoPage/>}/>
+                                                    <Route path="security" element={<SecurityPage/>}/>
+                                                    <Route path="pricing" element={<PricingPage/>}/>
+                                                    <Route path="my-cvs" element={<MyCVsPage/>}/>
+                                                    <Route path="history" element={<HistoryPage/>}/>
+                                                </Routes>
+                                            </main>
+                                        </div>
+                                    </div>
+                                </ProtectedRoute>
+                            }/>
                         </Routes>
                     </ProtectedRoute>
                 }/>
 
-                {/* Protected Routes with Dashboard Layout */}
-                <Route path="/*" element={
-                    <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <div className="flex bg-slate-50 min-h-screen text-slate-800 font-sans antialiased">
-                            <Sidebar/>
-                            <div className="flex-1 flex flex-col min-w-0">
-                                <Header
-                                    profile={profile}
-                                    notificationsCount={notificationsCount}
-                                    onHelpClick={() => showToast('Trung tâm trợ giúp Smartfolio đang tải dữ liệu.', 'info')}
-                                />
-                                <main className="flex-1 p-8 overflow-y-auto max-w-5xl w-full mx-auto">
-                                    <Routes>
-                                        <Route path="personal-info" element={<PersonalInfoPage/>}/>
-                                        <Route path="security" element={<SecurityPage/>}/>
-                                        <Route path="pricing" element={<PricingPage/>}/>
-                                        <Route path="my-cvs" element={<MyCVsPage/>}/>
-                                        <Route path="history" element={<HistoryPage/>}/>
-                                        <Route path="*" element={<Navigate to="/home" replace/>}/>
-                                    </Routes>
-                                </main>
-                            </div>
-                        </div>
-                    </ProtectedRoute>
-                }/>
 
             </Routes>
 
