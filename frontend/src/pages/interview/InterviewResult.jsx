@@ -2,10 +2,10 @@ import React from 'react';
 import { Download, History, Sparkles, FileText } from 'lucide-react';
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import {Footer} from "../../components/layout/Footer.jsx";
-import {useNavigation} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 export function InterviewResults() {
-    const { navigate } = useNavigation();
+    const navigate = useNavigate() ;
 
     return (
         <div className="min-h-screen flex flex-col bg-[#111827] text-gray-100 font-sans selection:bg-[#1e3a8a]">
@@ -42,7 +42,7 @@ export function InterviewResults() {
 
                         <div className="flex gap-3">
                             <button
-                                onClick={() => navigate('cv')}
+                                onClick={() => navigate('/')}
                                 className="flex-1 flex justify-center items-center gap-2 bg-white text-gray-900 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-100 transition-colors">
                                 <Download size={16} /> Lưu kết quả
                             </button>

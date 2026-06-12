@@ -1,10 +1,10 @@
 import React from 'react';
 import { Camera, Mic, Info, Lightbulb, Shirt, Image as ImageIcon, CheckCircle2, ChevronDown } from 'lucide-react';
 import { MainLayout } from '../../components/interview/MainLayout';
-import {useNavigation} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 export function VideoSetup() {
-    const { navigate } = useNavigation();
+    const navigate  = useNavigate();
 
     return (
         <MainLayout>
@@ -102,7 +102,7 @@ export function VideoSetup() {
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center justify-center max-w-xl mx-auto">
+                <div className="flex flex-col items-center justify-center max-w-2xl mx-auto">
                     <button
                         onClick={() => navigate('/interview/room')}
                         className="w-full bg-[#3478ff] hover:bg-[#2a62d4] text-white py-3.5 rounded-lg font-medium shadow-sm transition-colors text-lg">
