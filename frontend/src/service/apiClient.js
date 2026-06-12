@@ -3,9 +3,9 @@ import axios from 'axios';
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_BE_URL || 'http://localhost:8080/api',
     timeout: 100000,
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    // headers: {
+    //     'Content-Type': 'application/json',
+    // },
 });
 
 // Request interceptor: thêm token vào header

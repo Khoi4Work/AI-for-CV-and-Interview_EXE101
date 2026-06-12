@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import {
     MessageSquare, X, Bug, Palette, Gauge, Lightbulb, HelpCircle,
     FileText, MessageCircle, ImagePlus, Check, Loader2, Send,
@@ -26,13 +26,13 @@ import {feedbackService} from "../../service/feedbackService.js";
 const STORAGE_KEY = "smartfolio.feedback.draft.v1";
 
 const TYPES = [
-    { key: "bug",         label: "Lỗi",            icon: Bug,         hint: "Báo lỗi kỹ thuật" },
-    { key: "ui",          label: "UI/UX",          icon: Palette,     hint: "Giao diện & trải nghiệm" },
-    { key: "performance", label: "Hiệu năng",      icon: Gauge,       hint: "Tốc độ, giật, lag" },
-    { key: "idea",        label: "Ý tưởng",        icon: Lightbulb,   hint: "Đề xuất tính năng" },
-    { key: "question",    label: "Câu hỏi",        icon: HelpCircle,  hint: "Thắc mắc chung" },
-    { key: "content",     label: "Nội dung",        icon: FileText,    hint: "CV, mẫu, tài liệu" },
-    { key: "other",       label: "Khác",           icon: MessageCircle, hint: "Không thuộc các mục trên" },
+    {key: "bug", label: "Lỗi", icon: Bug, hint: "Báo lỗi kỹ thuật"},
+    {key: "ui", label: "UI/UX", icon: Palette, hint: "Giao diện & trải nghiệm"},
+    {key: "performance", label: "Hiệu năng", icon: Gauge, hint: "Tốc độ, giật, lag"},
+    {key: "idea", label: "Ý tưởng", icon: Lightbulb, hint: "Đề xuất tính năng"},
+    {key: "question", label: "Câu hỏi", icon: HelpCircle, hint: "Thắc mắc chung"},
+    {key: "content", label: "Nội dung", icon: FileText, hint: "CV, mẫu, tài liệu"},
+    {key: "other", label: "Khác", icon: MessageCircle, hint: "Không thuộc các mục trên"},
 ];
 
 function loadDraft() {
@@ -61,7 +61,7 @@ function saveDraft(draft) {
     }
 }
 
-export default function FeedbackWidget({ onSubmit }) {
+export default function FeedbackWidget({onSubmit}) {
     const [open, setOpen] = useState(false);
     const [type, setType] = useState(() => loadDraft()?.type ?? "bug");
     const [nickname, setNickname] = useState(() => loadDraft()?.nickname ?? "");
@@ -78,13 +78,15 @@ export default function FeedbackWidget({ onSubmit }) {
 
     // Persist draft whenever form fields change.
     useEffect(() => {
-        saveDraft({ type, nickname, message });
+        saveDraft({type, nickname, message});
     }, [type, nickname, message]);
 
     // Close on ESC, lock body scroll while open
     useEffect(() => {
         if (!open) return;
-        const onKey = (e) => { if (e.key === "Escape") close(); };
+        const onKey = (e) => {
+            if (e.key === "Escape") close();
+        };
         document.addEventListener("keydown", onKey);
         const prev = document.body.style.overflow;
         document.body.style.overflow = "hidden";
@@ -98,7 +100,10 @@ export default function FeedbackWidget({ onSubmit }) {
 
     // Revoke object URL when the preview changes / unmounts
     useEffect(() => {
-        if (!file) { setPreview(null); return; }
+        if (!file) {
+            setPreview(null);
+            return;
+        }
         const url = URL.createObjectURL(file);
         setPreview(url);
         return () => URL.revokeObjectURL(url);
@@ -106,7 +111,10 @@ export default function FeedbackWidget({ onSubmit }) {
 
     // Clear draft + binary state after a successful send.
     const clearDraft = () => {
-        try { window.localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
+        try {
+            window.localStorage.removeItem(STORAGE_KEY);
+        } catch { /* noop */
+        }
         setType("bug");
         setNickname("");
         setMessage("");
@@ -178,22 +186,24 @@ export default function FeedbackWidget({ onSubmit }) {
         if (onSubmit) return onSubmit(payload, file);
 
         const fd = new FormData();
-        fd.append("type", payload.type);
-        fd.append("nickname", payload.nickname);
-        fd.append("message", payload.message);
+        fd.append("userName", payload.nickname);
+        fd.append("category", payload.type);
+        fd.append("content", payload.message);
         fd.append("pageUrl", payload.pageUrl);
-        if (file) fd.append("image", file);
+        if (file) fd.append("image", file); else fd.append("image", null);
 
-        const res = await feedbackService.feedback(fd,{
-            headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await feedbackService.feedback(fd);
 
         if (!res.ok) {
             let msg = `HTTP ${res.status}`;
-            try { const data = await res.json(); if (data?.message) msg = data.message; } catch { /* noop */ }
-            return { ok: false, message: msg };
+            try {
+                const data = await res.json();
+                if (data?.message) msg = data.message;
+            } catch { /* noop */
+            }
+            return {ok: false, message: msg};
         }
-        return { ok: true };
+        return {ok: true};
     }
 
     return (
@@ -219,7 +229,7 @@ export default function FeedbackWidget({ onSubmit }) {
                                bg-[color:var(--color-primary)] text-white
                                transition-transform duration-300 group-hover:rotate-12"
                 >
-                    <MessageSquare className="w-4 h-4" strokeWidth={2.25} />
+                    <MessageSquare className="w-4 h-4" strokeWidth={2.25}/>
                 </span>
                 <span className="text-sm font-semibold tracking-tight">Góp ý</span>
             </button>
@@ -230,7 +240,9 @@ export default function FeedbackWidget({ onSubmit }) {
                 <div
                     className="fw-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-[2px]
                                flex items-center justify-center p-4 sm:p-6"
-                    onClick={(e) => { if (e.target === e.currentTarget) close(); }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) close();
+                    }}
                     role="presentation"
                 >
                     <div
@@ -265,22 +277,24 @@ export default function FeedbackWidget({ onSubmit }) {
                                 aria-label="Đóng"
                                 className="fw-focus -m-2 p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-5 h-5"/>
                             </button>
                         </div>
 
                         {/* Body */}
                         {status === "success" ? (
                             <div className="px-6 pb-7 pt-2 flex flex-col items-center text-center">
-                                <div className="w-12 h-12 rounded-full bg-[color:var(--color-primary)] text-white grid place-items-center">
-                                    <Check className="w-6 h-6" strokeWidth={2.5} />
+                                <div
+                                    className="w-12 h-12 rounded-full bg-[color:var(--color-primary)] text-white grid place-items-center">
+                                    <Check className="w-6 h-6" strokeWidth={2.5}/>
                                 </div>
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit} className="px-6 pb-6 pt-2 overflow-y-auto">
                                 {/* Type chips — 2 rows on desktop, wrap on mobile */}
                                 <fieldset>
-                                    <legend className="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-500 mb-2">
+                                    <legend
+                                        className="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-500 mb-2">
                                         Loại góp ý
                                     </legend>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -298,8 +312,10 @@ export default function FeedbackWidget({ onSubmit }) {
 
                                 {/* Nickname */}
                                 <div className="mt-5">
-                                    <label htmlFor="fw-nick" className="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-500">
-                                        Biệt danh <span className="text-slate-400 normal-case font-normal tracking-normal">(tuỳ chọn)</span>
+                                    <label htmlFor="fw-nick"
+                                           className="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-500">
+                                        Biệt danh <span
+                                        className="text-slate-400 normal-case font-normal tracking-normal">(tuỳ chọn)</span>
                                     </label>
                                     <input
                                         ref={firstFieldRef}
@@ -317,7 +333,8 @@ export default function FeedbackWidget({ onSubmit }) {
 
                                 {/* Message */}
                                 <div className="mt-4">
-                                    <label htmlFor="fw-msg" className="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-500">
+                                    <label htmlFor="fw-msg"
+                                           className="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-500">
                                         Nội dung <span className="text-rose-500">*</span>
                                     </label>
                                     <textarea
@@ -339,8 +356,10 @@ export default function FeedbackWidget({ onSubmit }) {
 
                                 {/* Image attachment */}
                                 <div className="mt-4">
-                                    <label className="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-500">
-                                        Ảnh đính kèm <span className="text-slate-400 normal-case font-normal tracking-normal">(tuỳ chọn, tối đa 5MB)</span>
+                                    <label
+                                        className="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-500">
+                                        Ảnh đính kèm <span
+                                        className="text-slate-400 normal-case font-normal tracking-normal">(tuỳ chọn, tối đa 5MB)</span>
                                     </label>
                                     <div className="mt-1.5 flex items-center gap-3 flex-wrap">
                                         <button
@@ -352,22 +371,24 @@ export default function FeedbackWidget({ onSubmit }) {
                                                        hover:border-[color:var(--color-primary)] hover:text-[color:var(--color-primary)]
                                                        transition-colors"
                                         >
-                                            <ImagePlus className="w-4 h-4" />
+                                            <ImagePlus className="w-4 h-4"/>
                                             {file ? "Đổi ảnh" : "Chọn ảnh"}
                                         </button>
                                         {file && (
                                             <div className="flex items-center gap-2 min-w-0">
                                                 {preview && (
-                                                    <img src={preview} alt="" className="w-9 h-9 rounded-md object-cover border border-[color:var(--color-outline-variant)]" />
+                                                    <img src={preview} alt=""
+                                                         className="w-9 h-9 rounded-md object-cover border border-[color:var(--color-outline-variant)]"/>
                                                 )}
-                                                <span className="text-xs text-slate-500 truncate max-w-[160px]">{file.name}</span>
+                                                <span
+                                                    className="text-xs text-slate-500 truncate max-w-[160px]">{file.name}</span>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setFile(file)}
+                                                    onClick={() => setFile(null)}
                                                     className="text-slate-400 hover:text-rose-500 transition-colors"
                                                     aria-label="Gỡ ảnh"
                                                 >
-                                                    <X className="w-4 h-4" />
+                                                    <X className="w-4 h-4"/>
                                                 </button>
                                             </div>
                                         )}
@@ -412,12 +433,12 @@ export default function FeedbackWidget({ onSubmit }) {
                                     >
                                         {status === "submitting" ? (
                                             <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <Loader2 className="w-4 h-4 animate-spin"/>
                                                 Đang gửi…
                                             </>
                                         ) : (
                                             <>
-                                                <Send className="w-4 h-4" />
+                                                <Send className="w-4 h-4"/>
                                                 Gửi góp ý
                                             </>
                                         )}
@@ -433,7 +454,7 @@ export default function FeedbackWidget({ onSubmit }) {
 }
 
 /* ── Sub-component: type chip ─────────────────────────────────────── */
-function TypeChip({ active, onClick, icon: Icon, label }) {
+function TypeChip({active, onClick, icon: Icon, label}) {
     return (
         <button
             type="button"
@@ -447,7 +468,7 @@ function TypeChip({ active, onClick, icon: Icon, label }) {
                     : "bg-white text-slate-700 border-[color:var(--color-outline-variant)] hover:border-[color:var(--color-primary)] hover:text-[color:var(--color-primary)]",
             ].join(" ")}
         >
-            <Icon className="w-4 h-4" strokeWidth={2} />
+            <Icon className="w-4 h-4" strokeWidth={2}/>
             {label}
         </button>
     );
