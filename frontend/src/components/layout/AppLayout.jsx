@@ -31,6 +31,7 @@ import {VideoSetup} from "../../pages/interview/VideoSetup.jsx";
 import {CvAnalysis} from "../../pages/interview/CvAnalysis.jsx";
 import {InterviewResults} from "../../pages/interview/InterviewResult.jsx";
 import CVEditor from "../../pages/cv-template/CVEditor.jsx";
+import FeedbackWidget from "../feedback/FeedbackWidget.jsx";
 
 const animationStyles = `
 @keyframes fadeIn {
@@ -123,6 +124,9 @@ export default function AppLayout() {
           </span>
                 </div>
             )}
+
+            {/* Global feedback widget — available on every page */}
+            <FeedbackWidget />
         </div>
     );
 }
