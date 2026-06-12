@@ -1,9 +1,9 @@
 import React from 'react';
 import { Clock, Settings, MicOff, ArrowRight, Sparkles } from 'lucide-react';
-import {useNavigation} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 export function InterviewRoom() {
-    const { navigate } = useNavigation();
+    const navigate  = useNavigate();
 
     return (
         <div className="min-h-screen flex flex-col bg-surface-dim font-sans">
@@ -81,7 +81,7 @@ export function InterviewRoom() {
 
                 <div className="absolute left-1/2 -translate-x-1/2">
                     <button
-                        onClick={() => navigate('/review')}
+                        onClick={() => navigate('/interview/review')}
                         className="flex items-center justify-center gap-2 bg-[#111c3a] hover:bg-black text-white px-8 py-3 w-64 rounded-xl font-medium transition-colors shadow-sm">
                         <ArrowRight size={18} />
                         Hoàn thành câu hỏi

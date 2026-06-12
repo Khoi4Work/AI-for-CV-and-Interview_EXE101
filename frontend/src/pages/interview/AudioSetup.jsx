@@ -1,15 +1,15 @@
 import React from 'react';
 import { Play, Mic, AudioLines } from 'lucide-react';
 import { MainLayout } from '../../components/interview/MainLayout.jsx';
-import {useNavigation} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 export function AudioSetup() {
-    const { navigate } = useNavigation();
+    const navigate = useNavigate();
 
     return (
         <MainLayout>
             <div className="flex-1 flex items-center justify-center">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 w-full max-w-xl p-8">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 w-full p-8">
 
                     {/* Progress Indicator */}
                     <div className="flex items-center justify-center gap-2 mb-8">
@@ -63,7 +63,7 @@ export function AudioSetup() {
                             Thử lại
                         </button>
                         <button
-                            onClick={() => navigate('/')}
+                            onClick={() => navigate('/video-setup')}
                             className="flex-1 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors">
                             Tiếp tục
                         </button>
