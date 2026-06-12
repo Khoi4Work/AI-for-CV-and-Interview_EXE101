@@ -191,7 +191,7 @@ export default function FeedbackWidget({onSubmit}) {
         fd.append("category", payload.type);
         fd.append("content", payload.message);
         fd.append("pageUrl", payload.pageUrl);
-        if (file) fd.append("image", file); else fd.append("image", null);
+        if (file) fd.append("image", file);
 
         try {
             const res = await feedbackService.feedback(fd);

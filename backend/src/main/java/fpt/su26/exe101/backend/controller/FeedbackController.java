@@ -29,7 +29,7 @@ public class FeedbackController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Feedback> createFeedback(
             @ModelAttribute FeedbackRequest request,
-            MultipartFile imageFile) {
+            @RequestParam(value = "image", required = false) MultipartFile imageFile) {
         log.info("POST /api/feedbacks — incoming multipart: userName='{}', category='{}', hasImage={}",
                 request.getUserName(), request.getCategory(),
                 imageFile != null && !imageFile.isEmpty());
