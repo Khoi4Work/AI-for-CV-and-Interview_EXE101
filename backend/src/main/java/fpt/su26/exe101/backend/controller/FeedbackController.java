@@ -6,6 +6,7 @@ import fpt.su26.exe101.backend.service.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequestMapping("/api/feedbacks")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
+@Slf4j
 @Tag(name = "Feedback API", description = "API for managing user feedbacks and images")
 public class FeedbackController {
 
@@ -28,10 +30,16 @@ public class FeedbackController {
     public ResponseEntity<Feedback> createFeedback(
             @ModelAttribute FeedbackRequest request,
             MultipartFile imageFile) {
+        log.info("POST /api/feedbacks — incoming multipart: userName='{}', category='{}', hasImage={}",
+                request.getUserName(), request.getCategory(),
+                imageFile != null && !imageFile.isEmpty());
         try {
             Feedback feedback = feedbackService.createFeedback(request, imageFile);
+            log.info("POST /api/feedbacks — 200 OK, id={}", feedback.getId());
             return ResponseEntity.ok(feedback);
         } catch (IOException e) {
+            log.error("POST /api/feedbacks — 500 I/O error while creating feedback: {}",
+                    e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -39,6 +47,9 @@ public class FeedbackController {
     @Operation(summary = "Get all feedbacks", description = "Returns a list of all stored user feedbacks")
     @GetMapping
     public ResponseEntity<List<Feedback>> getAllFeedbacks() {
-        return ResponseEntity.ok(feedbackService.getAllFeedbacks());
+        log.info("GET /api/feedbacks");
+        List<Feedback> all = feedbackService.getAllFeedbacks();
+        log.info("GET /api/feedbacks — 200 OK, count={}", all.size());
+        return ResponseEntity.ok(all);
     }
 }
