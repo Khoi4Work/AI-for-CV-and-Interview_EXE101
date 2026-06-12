@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableWebSecurity
 public class DevSecurityConfig {
     private final CorsConfig corsConfig;
         @Bean

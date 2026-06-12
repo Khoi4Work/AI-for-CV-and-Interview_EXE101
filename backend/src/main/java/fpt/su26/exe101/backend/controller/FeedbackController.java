@@ -24,7 +24,7 @@ public class FeedbackController {
     private final FeedbackService feedbackService;
 
     @Operation(summary = "Upload feedback with image", description = "Uploads a user's feedback along with an optional image to Cloudinary and saves it to DB")
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Feedback> createFeedback(
             @ModelAttribute FeedbackRequest request,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
