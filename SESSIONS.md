@@ -47,8 +47,40 @@ This file tracks the progress of the project across different sessions to ensure
     - Optimized padding for better responsiveness.
 - [x] Updated `CLAUDE.md` for agent behavior and `SESSIONS.md` autonomy.
 
+## [2026-06-12] Session 4: Global Feedback Widget
+### 🎯 Goals
+- Add a floating Feedback button visible on every page, opening a popup form to capture user feedback in-context.
+- Keep the API integration decoupled so the backend can be wired up later without UI changes.
+- Form draft must persist across closes — only clear on a successful submit or full page reload.
+
+### ✅ Completed
+- [x] Created `frontend/src/components/feedback/FeedbackWidget.jsx`:
+    - Floating pill button anchored at `bottom-6 left-6`, present on every route.
+    - **Modal is flex-centered** in the viewport (overlay uses `flex items-center justify-center`) — stays centered regardless of scroll position, resize, or body-lock state.
+    - **7 feedback categories**: Lỗi (Bug), UI/UX, Hiệu năng (Performance), Ý tưởng (Idea), Câu hỏi (Question), Nội dung (Content), Khác (Other). Each chip has an icon + label; laid out as `grid-cols-2 sm:grid-cols-4`.
+    - Form fields: optional nickname, required message (max 1000, with counter), optional image (≤5MB) with preview.
+    - **Draft persistence** via `localStorage` key `smartfolio.feedback.draft.v1`:
+        - Saved on every change to `type`, `nickname`, or `message`.
+        - Restored on mount — re-opening the modal shows the last draft.
+        - Cleared **only** after a successful submit (or full page reload, since localStorage is per-tab).
+        - File attachments are kept in memory only (binary `File` cannot be serialized); user is informed in the modal subtitle.
+    - Accessibility: `role="dialog"`, `aria-modal`, ESC-to-close, click-outside-to-close, body-scroll lock, focus management, `aria-pressed` on chips.
+    - Submit states: idle → submitting → success / error, with auto-close (1.4s) on success.
+    - Single integration point: `onSubmit(payload, file)` prop. Default implementation posts `multipart/form-data` to `/api/feedback`.
+- [x] Mounted `<FeedbackWidget />` globally in `AppLayout.jsx` (sibling to the toast layer) so it persists across route changes.
+- [x] Extended `index.css` design tokens with `--color-cream` and `--color-cream-deep` for the modal surface, plus animation utilities (`fw-overlay`, `fw-modal`, `fw-fab`, `fw-ink`, `fw-focus`). Updated `fw-modal-in` keyframe to match the new flex-centered layout (removed `translate(-50%, -50%)`).
+
+### 📡 API Contract (for backend integration)
+`POST /api/feedback` — `multipart/form-data`
+- `type` — one of `bug | idea | question | other`
+- `nickname` — string, defaults to `Ẩn danh`
+- `message` — string, required, max 1000 chars
+- `pageUrl` — string, current page URL
+- `image` — file, optional, `image/*`, max 5MB
+
+Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {...}} />`.
+
 ### 🚩 Current State & Checkpoint
-- **Current Branch**: `main`
-- **Latest Change**: Restored full authentication flow from Landing Page.
-- **Status**: Public and Authenticated Home pages are integrated and flow is correct.
-- **Next Step**: Final UI audit of all dashboard pages to ensure no remaining "Squeezing" text.
+- **Current Branch**: `dev`
+- **Latest Change**: FeedbackWidget live on all routes; backend endpoint not yet wired.
+- **Next Step**: Implement `POST /api/feedback` on the Spring Boot backend and (optionally) store uploads.
