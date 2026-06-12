@@ -125,6 +125,7 @@ export default function FeedbackWidget({onSubmit}) {
 
     const close = () => {
         setOpen(false);
+        setStatus("idle");
         // NOTE: do NOT clear the draft here — only on successful submit
         // or full page reload (which happens when the user closes the tab).
     };
@@ -165,7 +166,7 @@ export default function FeedbackWidget({onSubmit}) {
             if (result?.ok) {
                 setStatus("success");
                 clearDraft();
-                setTimeout(close, 1400);
+                setTimeout(close, 3000);
             } else {
                 setStatus("error");
                 setErrorMsg(result?.message || "Lỗi");
