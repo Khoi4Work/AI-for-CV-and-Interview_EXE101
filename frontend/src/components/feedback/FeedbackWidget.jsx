@@ -168,11 +168,11 @@ export default function FeedbackWidget({onSubmit}) {
                 setTimeout(close, 1400);
             } else {
                 setStatus("error");
-                setErrorMsg(result?.message || "Gửi thất bại, vui lòng thử lại.");
+                setErrorMsg(result?.message || "Lỗi");
             }
         } catch (err) {
             setStatus("error");
-            setErrorMsg(err?.message || "Gửi thất bại, vui lòng thử lại.");
+            setErrorMsg(err?.message || "Lỗi");
         }
     };
 
@@ -192,18 +192,15 @@ export default function FeedbackWidget({onSubmit}) {
         fd.append("pageUrl", payload.pageUrl);
         if (file) fd.append("image", file); else fd.append("image", null);
 
-        const res = await feedbackService.feedback(fd);
-
-        if (!res.ok) {
-            let msg = `HTTP ${res.status}`;
-            try {
-                const data = await res.json();
-                if (data?.message) msg = data.message;
-            } catch { /* noop */
+        try {
+            const res = await feedbackService.feedback(fd);
+            if (res && (res.status >= 200 && res.status < 300)) {
+                return {ok: true};
             }
-            return {ok: false, message: msg};
+            return {ok: false, message: "Lỗi"};
+        } catch (err) {
+            return {ok: false, message: err.response?.data?.message || "Lỗi"};
         }
-        return {ok: true};
     }
 
     return (
@@ -263,7 +260,7 @@ export default function FeedbackWidget({onSubmit}) {
                                     Smartfolio
                                 </p>
                                 <h2 id="fw-title" className="mt-1 text-xl font-semibold text-slate-900 tracking-tight">
-                                    {status === "success" ? "Cảm ơn bạn!" : "Chia sẻ góp ý của bạn"}
+                                    {status === "success" ? "Hoàn tất" : "Chia sẻ góp ý của bạn"}
                                 </h2>
                                 <p className="mt-1 text-sm text-slate-500">
                                     {status === "success"

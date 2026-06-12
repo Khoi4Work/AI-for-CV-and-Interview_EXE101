@@ -24,7 +24,7 @@ apiClient.interceptors.response.use(
         if (error.response?.status === 401) {
             // Token hết hạn hoặc invalid -> clear và redirect login
             localStorage.removeItem('accessToken');
-            window.location.href = '/login';
+            window.location.href = '/lo gin';
         }
         console.error('API Error:', error.response?.data || error.message);
         return Promise.reject(error);
