@@ -3,6 +3,7 @@ import {
     MessageSquare, X, Bug, Palette, Gauge, Lightbulb, HelpCircle,
     FileText, MessageCircle, ImagePlus, Check, Loader2, Send,
 } from "lucide-react";
+import {feedbackService} from "../../service/feedbackService.js";
 
 /**
  * FeedbackWidget
@@ -183,10 +184,8 @@ export default function FeedbackWidget({ onSubmit }) {
         fd.append("pageUrl", payload.pageUrl);
         if (file) fd.append("image", file);
 
-        const res = await fetch("/api/feedback", {
-            method: "POST",
-            body: fd,
-            credentials: "include",
+        const res = await feedbackService.feedback(fd,{
+            headers: { "Content-Type": "multipart/form-data" },
         });
 
         if (!res.ok) {
@@ -364,7 +363,7 @@ export default function FeedbackWidget({ onSubmit }) {
                                                 <span className="text-xs text-slate-500 truncate max-w-[160px]">{file.name}</span>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setFile(null)}
+                                                    onClick={() => setFile(file)}
                                                     className="text-slate-400 hover:text-rose-500 transition-colors"
                                                     aria-label="Gỡ ảnh"
                                                 >
