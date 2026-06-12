@@ -27,7 +27,7 @@ public class FeedbackController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Feedback> createFeedback(
             @ModelAttribute FeedbackRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+            MultipartFile imageFile) {
         try {
             Feedback feedback = feedbackService.createFeedback(request, imageFile);
             return ResponseEntity.ok(feedback);

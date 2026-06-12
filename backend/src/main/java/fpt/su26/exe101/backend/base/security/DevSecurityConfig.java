@@ -18,7 +18,7 @@ public class DevSecurityConfig {
         @Bean
         public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
             http
-                    .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for API testing
+                    .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
                     .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for API testing
                     .authorizeHttpRequests(auth -> auth
                             // Allow access to Swagger UI and API Docs
