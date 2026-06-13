@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import {
     Sparkles,
     PlayCircle,
@@ -15,14 +15,16 @@ import {
 } from 'lucide-react';
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import {Footer} from "../../components/layout/Footer.jsx";
+import {useAuth} from "../../contexts/AuthContext.jsx";
+import GuestHeader from "../../components/layout/GuestHeader.jsx";
 
 export default function InterviewLanding() {
     const navigate = useNavigate();
-    // const {isLoggedIn} = useAuth();
+    const {isLoggedIn} = useAuth();
     return (
         <div className="min-h-screen bg-white font-sans text-gray-900">
             {/* Header */}
-            <Header />
+            {isLoggedIn ? <Header/> : <GuestHeader/>}
             <main>
                 {/* Hero Section */}
                 <section
@@ -247,7 +249,7 @@ export default function InterviewLanding() {
             </main>
 
             {/* Footer */}
-            <Footer />
+            <Footer/>
         </div>
     );
 }

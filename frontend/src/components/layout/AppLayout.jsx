@@ -57,12 +57,13 @@ export default function AppLayout() {
                 <Route path="/" element={!isLoggedIn ? <LandingPage/> : <Navigate to="/home" replace/>}/>
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/register" element={<Register/>}/>
+                <Route path="/interview" element={<InterviewLanding/>}/>
+                <Route path={"/templates"} element={<TemplateList/>}/>
                 <Route path={"/*"} element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
                         <Routes>
                             <Route path={"home"} element={<Home/>}/>
 
-                            <Route path={"templates"} element={<TemplateList/>}/>
                             <Route path={"template/:id"} element={<TemplateDetail/>}/>
                             <Route path="optimizer" element={<CVOptimizer/>}/>
                             <Route path={"builder"} element={<CVBuilder/>}/>
@@ -71,7 +72,6 @@ export default function AppLayout() {
 
                             <Route path="audio-setup" element={<AudioSetup/>}/>
                             <Route path="video-setup" element={<VideoSetup/>}/>
-                            <Route path="interview" element={<InterviewLanding/>}/>
                             <Route path="interview/room" element={<InterviewRoom/>}/>
                             <Route path="interview/review" element={<VideoReview/>}/>
                             <Route path="interview/result" element={<InterviewResults/>}/>

@@ -8,6 +8,8 @@ export function Header() {
     const dropdownRef = useRef(null);
     const location = useLocation();
     const isHome = location.pathname === '/home' || location.pathname === '/';
+    const isInterview = location.pathname === '/interview';
+    const isTemplates = location.pathname === '/templates';
     const {handleLogout} = useAuth();
     const navigate = useNavigate();
 
@@ -26,7 +28,7 @@ export function Header() {
         navigate('/');
     }
     const maxW = 'max-w-full';
-    const bgClass = isHome ? 'bg-white/80 backdrop-blur-md' : 'bg-surface';
+    const bgClass = isHome || isInterview || isTemplates ? 'bg-white/80 backdrop-blur-md' : 'bg-surface';
 
     const menuItems = [
         {path: '/personal-info', label: 'Thông tin cá nhân', icon: User},
@@ -49,13 +51,13 @@ export function Header() {
 
             <nav className="hidden md:flex gap-md items-center">
                 <Link
-                    className={`font-label-md text-label-md transition-colors ${isHome ? 'text-primary dark:text-primary-fixed border-b-2 border-primary dark:border-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
+                    className={`font-label-md text-label-md transition-colors ${isHome ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
                     to="/">Home</Link>
                 <Link
-                    className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors"
+                    className={`font-label-md text-label-md transition-colors ${isInterview ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
                     to="/interview">Interview</Link>
                 <Link
-                    className="font-label-md text-label-md text-secondary dark:text-outline hover:text-primary transition-colors"
+                    className={`font-label-md text-label-md transition-colors ${isTemplates ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
                     to="/templates">Templates</Link>
             </nav>
 

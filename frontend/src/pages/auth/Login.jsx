@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {Footer} from '../../components/layout/Footer.jsx';
 import GuestHeader from "../../components/layout/GuestHeader.jsx";
-import {Mail, Lock, Eye, EyeOff, ArrowRight, User} from 'lucide-react';
+import {Mail, Lock, Eye, EyeOff, ArrowRight} from 'lucide-react';
 import {useAuth} from "../../contexts/AuthContext.jsx";
 
 export default function Login() {
@@ -42,13 +42,12 @@ export default function Login() {
                     <div className="grid grid-cols-2 gap-sm mb-lg">
                         <button
                             className="flex items-center justify-center gap-xs border border-outline-variant rounded-lg py-sm font-label-md text-label-md text-on-surface-variant bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
-                            <img alt="Google" className="w-5 h-5"
-                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM5yTkcE6Hy-CM8aXFgvhREOfAy1n593dsBvyU_vG4slmlZRmTT9oQxg5Gn5qt2C6qAJpklxVIcrzJPGTAg-HrzKjoQ-GJdFtyMBOLxEHANCEYcXKfwx9nefPjG-xiID4DQ3ttnFtfqTE4SKBySCHL_IlLvL0BCdsYnDLarROfkQoU43nuAUIO_IMgy0zRm6ciU1HP7eJJ2FUQnfE6qw4r6dKEB4L-IoeRQHiKHSUMXsq1cGbw5XQrZnV1PtWqX8OAK8fR0iI5xxU"/>
+                            <img alt="Google Logo" className="w-5 h-5" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" />
                             Google
                         </button>
                         <button
                             className="flex items-center justify-center gap-xs border border-outline-variant rounded-lg py-sm font-label-md text-label-md text-on-surface-variant bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
-                            <User className="w-5 h-5 text-[#1877F2]"/>
+                            <svg className="w-5 h-5 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
                             Facebook
                         </button>
                     </div>
