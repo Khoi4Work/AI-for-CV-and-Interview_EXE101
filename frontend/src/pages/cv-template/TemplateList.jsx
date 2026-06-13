@@ -2,11 +2,15 @@ import {Search, ChevronDown, ChevronLeft, ChevronRight} from 'lucide-react';
 import TemplateCard from '../../components/template/TemplateCard';
 import Sidebar from "../../components/template/Sidebar.jsx";
 import {Header} from "../../components/layout/PublicHeader.jsx";
+import GuestHeader from "../../components/layout/GuestHeader.jsx";
+import React from "react";
+import {useAuth} from "../../contexts/AuthContext.jsx";
 
 export default function TemplateList() {
+    const {isLoggedIn} = useAuth();
     return (
         <>
-            <Header/>
+            {isLoggedIn ? <Header/> : <GuestHeader/>}
             <main className="flex-grow max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
 
                 <div className="flex flex-col lg:flex-row gap-8">
