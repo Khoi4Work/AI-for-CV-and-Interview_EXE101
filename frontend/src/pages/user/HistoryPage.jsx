@@ -212,7 +212,7 @@ const HistoryPage = () => {
   const olderLogs = filteredLogs.filter(log => log.dateLabel === 'TRƯỚC ĐÓ');
 
   return (
-    <div className="space-y-8 pb-16 animate-fade-in text-slate-800">
+    <div className="space-y-8 pb-16 text-slate-800">
       <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-[10px] font-bold text-slate-400 block mr-2 uppercase tracking-wide">Lọc theo:</span>
