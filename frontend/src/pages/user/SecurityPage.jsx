@@ -90,7 +90,7 @@ const SecurityPage = () => {
   };
 
   return (
-    <div className="space-y-8 pb-16 animate-fade-in text-slate-800">
+    <div className="space-y-8 pb-16 text-slate-800">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 space-y-6 shadow-sm">
           <div className="flex items-center space-x-3.5 pb-3 border-b border-slate-100">

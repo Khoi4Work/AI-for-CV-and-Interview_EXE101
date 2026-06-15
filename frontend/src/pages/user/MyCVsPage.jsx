@@ -54,7 +54,7 @@ const MyCVsPage = () => {
   });
 
   return (
-    <div className="space-y-8 pb-16 animate-fade-in text-slate-800">
+    <div className="space-y-8 pb-16 text-slate-800">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Danh sách của tôi</h2>

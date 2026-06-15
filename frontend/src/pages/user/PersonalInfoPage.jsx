@@ -51,7 +51,7 @@ const PersonalInfoPage = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl pb-16 animate-fade-in text-slate-800">
+    <div className="space-y-8 max-w-4xl pb-16 text-slate-800">
       {/* Page Title & Desc */}
       <div className="space-y-1">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">Cài đặt tài khoản</h2>

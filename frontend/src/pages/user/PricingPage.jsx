@@ -24,7 +24,7 @@ const PricingPage = () => {
   ];
 
   return (
-    <div className="space-y-10 pb-16 animate-fade-in text-slate-800">
+    <div className="space-y-10 pb-16 text-slate-800">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between shadow-sm min-h-[220px]">
           <div className="space-y-4">
