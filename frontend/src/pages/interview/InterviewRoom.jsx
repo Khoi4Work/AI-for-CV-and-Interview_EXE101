@@ -30,12 +30,9 @@ export function InterviewRoom() {
   const navigate = useNavigate();
   const {data, update, generateQuestions, generateFeedback, saveAnswer, addTranscript} = useInterviewSession();
 
-  // Đảm bảo có questions; nếu chưa thì sinh
+  // RoomGuard đã generate questions rồi. Ở đây chỉ cần setStep + start phase.
   useEffect(() => {
-    if (!data.questions || data.questions.length === 0) {
-      generateQuestions();
-    }
-    setStep(8);
+    update({step: 8});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

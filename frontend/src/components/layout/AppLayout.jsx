@@ -38,50 +38,44 @@ import ScrollToTop from "../transitions/ScrollToTop.jsx";
 import RouteProgressBar from "../transitions/RouteProgressBar.jsx";
 
 /**
- * Guard cho InterviewRoom: cần session.questions.
- * Nếu không có → redirect về step 1.
+ * Guard cho InterviewRoom: cần interviewConfig (đã setup xong) + questions.
+ * - Nếu thiếu interviewConfig → redirect về step 1.
+ * - Nếu có config nhưng chưa có questions → tự generate rồi cho vào.
  */
 function RoomGuard({children}) {
-    const [ok, setOk] = React.useState(null);
+    const {data, generateQuestions} = useInterviewSession();
+    const configOk = !!(data.interviewConfig?.type && data.interviewConfig?.duration);
+    const questionsOk = Array.isArray(data.questions) && data.questions.length > 0;
+
     React.useEffect(() => {
-        try {
-            const raw = sessionStorage.getItem('interview_session_v1');
-            if (!raw) {
-                setOk(false);
-                return;
-            }
-            const data = JSON.parse(raw);
-            setOk(Array.isArray(data.questions) && data.questions.length > 0);
-        } catch (e) {
-            setOk(false);
+        if (configOk && !questionsOk) {
+            generateQuestions();
         }
-    }, []);
-    if (ok === false) return <Navigate to="/interview/job-selection" replace/>;
-    if (ok === null) return null;
+    }, [configOk, questionsOk, generateQuestions]);
+
+    if (!configOk) return <Navigate to="/interview/job-selection" replace/>;
+    if (configOk && !questionsOk) return null; // đợi generate xong
     return children;
 }
 
 /**
  * Guard cho InterviewResult: cần session.feedback.
- * Nếu không có → redirect về step 1.
+ * - Nếu chưa có feedback → tự generate rồi cho vào.
+ * - Nếu thiếu questions (chưa từng vào room) → redirect về step 1.
  */
 function ResultGuard({children}) {
-    const [ok, setOk] = React.useState(null);
+    const {data, generateFeedback} = useInterviewSession();
+    const hasQuestions = Array.isArray(data.questions) && data.questions.length > 0;
+    const hasFeedback = !!data.feedback;
+
     React.useEffect(() => {
-        try {
-            const raw = sessionStorage.getItem('interview_session_v1');
-            if (!raw) {
-                setOk(false);
-                return;
-            }
-            const data = JSON.parse(raw);
-            setOk(!!data.feedback);
-        } catch (e) {
-            setOk(false);
+        if (hasQuestions && !hasFeedback) {
+            generateFeedback();
         }
-    }, []);
-    if (ok === false) return <Navigate to="/interview/job-selection" replace/>;
-    if (ok === null) return null;
+    }, [hasQuestions, hasFeedback, generateFeedback]);
+
+    if (!hasQuestions) return <Navigate to="/interview/job-selection" replace/>;
+    if (!hasFeedback) return null; // đợi generate xong
     return children;
 }
 
