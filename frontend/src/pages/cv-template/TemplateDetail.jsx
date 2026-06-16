@@ -1,3 +1,4 @@
+import React from 'react';
 import {
     Briefcase,
     Zap,
@@ -6,11 +7,49 @@ import {
     FileText,
     CheckCircle2
 } from 'lucide-react';
-import {Link, useParams} from 'react-router-dom';
+import {Link, useParams, useNavigate} from 'react-router-dom';
 import TopAction from "../../components/template/TopAction.jsx";
+import { TEMPLATES_DATA } from '../../constants/templates.jsx';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useApp } from '../../contexts/AppContext.jsx';
 
 export default function TemplateDetail() {
     const {id} = useParams();
+    const navigate = useNavigate();
+    const { profile, isLoggedIn, toggleFavorite } = useAuth();
+    const { showToast } = useApp();
+
+    // Tìm thông tin template từ constants dựa trên id từ URL
+    const template = TEMPLATES_DATA.find(t => t.id === id);
+
+    if (!template) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">Không tìm thấy mẫu CV</h1>
+                <p className="text-gray-500 mb-8">Mẫu bạn đang tìm kiếm không tồn tại hoặc đã bị gỡ bỏ.</p>
+                <Link to="/templates" className="px-6 py-2 bg-[#0b3c8f] text-white rounded-xl font-medium">
+                    Quay lại kho mẫu
+                </Link>
+            </div>
+        );
+    }
+
+    const isFavorite = profile.favorites?.includes(id);
+
+    const handleToggleFavorite = () => {
+        if (!isLoggedIn) {
+            showToast('Vui lòng đăng nhập để lưu mẫu CV này!', 'info');
+            navigate('/login');
+            return;
+        }
+
+        toggleFavorite(id);
+
+        const actionText = isFavorite ? 'đã xóa khỏi' : 'đã thêm vào';
+        const stateText = isFavorite ? 'danh sách yêu thích' : 'danh sách yêu thích';
+        showToast(`Mẫu "${template.title}" ${actionText} ${stateText}!`, 'success');
+    };
+
     return (
         <>
             <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
@@ -19,43 +58,58 @@ export default function TemplateDetail() {
                 {/* Template Details */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
                     {/* Left Column: Preview */}
-                    <div>
+                    <div className="flex flex-col">
                         <div
-                            className="bg-white rounded-xl aspect-[1/1.4] w-full border border-gray-200 custom-shadow overflow-hidden mb-6">
-                            <div className="w-full h-full bg-white"></div>
+                            className="bg-white rounded-xl aspect-[1/1.4] w-full border border-gray-200 custom-shadow overflow-hidden mb-6 relative">
+                            {template.image ? (
+                                <img
+                                    src={template.image}
+                                    alt={template.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-white flex items-center justify-center text-gray-400">
+                                    Không có ảnh xem trước
+                                </div>
+                            )}
                         </div>
                         {/* Thumbnail Toggles */}
                         <div className="flex gap-4">
                             <div
                                 className="w-24 h-32 border-2 border-blue-600 rounded-lg bg-white cursor-pointer overflow-hidden">
-                                <div className="w-full h-full bg-white"></div>
+                                {template.image && <img src={template.image} className="w-full h-full object-cover" alt="preview 1" />}
                             </div>
                             <div
                                 className="w-24 h-32 border border-gray-200 rounded-lg bg-white cursor-pointer hover:border-gray-400 transition-colors overflow-hidden">
-                                <div className="w-full h-full bg-white"></div>
+                                <div className="w-full h-full bg-gray-100"></div>
                             </div>
                         </div>
                     </div>
 
                     {/* Right Column: Info & CTA */}
                     <div className="flex flex-col gap-8">
-                        <div>
-                            <div className="flex gap-2 mb-4">
+                        <div className="space-y-4">
+                            <div className="flex gap-2">
                                 <span
                                     className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">AI-Optimized</span>
                                 <span
-                                    className="px-3 py-1 bg-gray-200 text-gray-600 text-xs font-semibold rounded-full">Premium</span>
+                                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                                        template.badgeTheme === 'premium' ? 'bg-blue-900 text-white' :
+                                        template.badgeTheme === 'pro' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                                    }`}>
+                                    {template.badgeText}
+                                </span>
                             </div>
-                            <h1 className="text-4xl font-bold text-gray-900 mb-4">Executive Technical 2024</h1>
+                            <h1 className="text-4xl font-bold text-gray-900">{template.title}</h1>
                             <div className="flex gap-6 text-gray-600">
-              <span className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5"/>
-                Công nghệ & Kỹ thuật
-              </span>
                                 <span className="flex items-center gap-2">
-                <MonitorPlay className="h-5 w-5"/>
-                Nâng cao
-              </span>
+                                    <Briefcase className="h-5 w-5"/>
+                                    {template.categoryText}
+                                </span>
+                                <span className="flex items-center gap-2">
+                                    <MonitorPlay className="h-5 w-5"/>
+                                    {template.style}
+                                </span>
                             </div>
                         </div>
 
@@ -66,119 +120,90 @@ export default function TemplateDetail() {
                                 Tại sao mẫu này hiệu quả?
                             </div>
                             <p className="text-gray-700 leading-relaxed">
-                                Thiết kế dành riêng cho các nhà lãnh đạo công nghệ, mẫu Executive Technical kết hợp sự
-                                tinh tế của phong cách tối giản với cấu trúc dữ liệu chặt chẽ. Hệ thống lưới 12 cột giúp
-                                tối ưu hóa không gian cho các dự án phức tạp và kỹ năng chuyên môn sâu, đồng thời tương
-                                thích 100% với các hệ thống quét hồ sơ (ATS) hiện đại.
+                                Mẫu {template.title} được tối ưu hóa cho phong cách {template.style},
+                                kết hợp giữa tính thẩm mỹ hiện đại và cấu trúc chuẩn ATS.
+                                Điều này giúp hồ sơ của bạn không chỉ thu hút nhà tuyển dụng mà còn dễ dàng
+                                vượt qua các hệ thống lọc tự động.
                             </p>
                         </div>
 
                         {/* Components Included */}
-                        <div>
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">Các thành phần
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">Các thành phần
                                 bao gồm</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="bg-gray-100/80 px-4 py-2 rounded-lg flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <CheckCircle2 className="h-3 w-3 text-blue-600"/>
+                                {[
+                                    "Tóm tắt chuyên môn",
+                                    "Kinh nghiệm làm việc",
+                                    "Ma trận kỹ năng",
+                                    "Dự án nổi bật",
+                                    "Học vấn & Chứng chỉ",
+                                    "Thành tựu AI"
+                                ].map((item, index) => (
+                                    <div key={index} className="bg-gray-100/80 px-4 py-2 rounded-lg flex items-center gap-3">
+                                        <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <CheckCircle2 className="h-3 w-3 text-blue-600"/>
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700">{item}</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-700">Tóm tắt chuyên môn</span>
-                                </div>
-                                <div className="bg-gray-100/80 px-4 py-2 rounded-lg flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <CheckCircle2 className="h-3 w-3 text-blue-600"/>
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-700">Kinh nghiệm làm việc</span>
-                                </div>
-                                <div className="bg-gray-100/80 px-4 py-2 rounded-lg flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <CheckCircle2 className="h-3 w-3 text-blue-600"/>
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-700">Ma trận kỹ năng</span>
-                                </div>
-                                <div className="bg-gray-100/80 px-4 py-2 rounded-lg flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <CheckCircle2 className="h-3 w-3 text-blue-600"/>
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-700">Dự án nổi bật</span>
-                                </div>
-                                <div className="bg-gray-100/80 px-4 py-2 rounded-lg flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <CheckCircle2 className="h-3 w-3 text-blue-600"/>
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-700">Học vấn & Chứng chỉ</span>
-                                </div>
-                                <div className="bg-gray-100/80 px-4 py-2 rounded-lg flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <CheckCircle2 className="h-3 w-3 text-blue-600"/>
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-700">Thành tựu AI</span>
-                                </div>
+                                ))}
                             </div>
                         </div>
 
                         {/* Call to Actions */}
                         <div className="flex flex-col gap-4 mt-4">
                             <Link to="/builder"
-                                  className="w-full py-4 bg-[#003580] text-white font-bold rounded-xl hover:bg-[#002a66] transition-colors flex items-center justify-center gap-3">
+                                  className="w-full py-4 bg-[#0b3c8f] text-white font-bold rounded-xl hover:bg-[#093278] transition-colors flex items-center justify-center gap-3">
                                 <FileText className="h-6 w-6"/>
                                 Sử dụng mẫu này
                             </Link>
                             <button
-                                className="w-full py-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-3">
-                                <Bookmark className="h-6 w-6"/>
-                                Lưu vào danh sách yêu thích
+                                onClick={handleToggleFavorite}
+                                className={`w-full py-4 border font-bold rounded-xl transition-colors flex items-center justify-center gap-3 ${
+                                    isFavorite
+                                    ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                }`}
+                            >
+                                <Bookmark className={`h-6 w-6 ${isFavorite ? 'fill-red-600' : ''}`} />
+                                {isFavorite ? 'Đã lưu trong yêu thích' : 'Lưu vào danh sách yêu thích'}
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Similar Templates */}
-                <section>
+                <section className="mt-20">
                     <div className="flex items-center justify-between mb-8">
-                        <div>
+                        <div className="space-y-2">
                             <h2 className="text-2xl font-bold text-gray-900">Mẫu tương tự</h2>
-                            <p className="text-gray-500">Khám phá các lựa chọn khác trong lĩnh vực Kỹ thuật</p>
+                            <p className="text-gray-500">Khám phá các lựa chọn khác trong phong cách {template.style}</p>
                         </div>
-                        <a href="#" className="text-[#0047AB] font-bold hover:underline">Xem tất cả</a>
+                        <Link to="/templates" className="text-[#0b3c8f] font-bold hover:underline">Xem tất cả</Link>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {/* Card 1 */}
-                        <div className="group cursor-pointer">
-                            <div
-                                className="bg-gray-50 rounded-xl aspect-[1/1.4] w-full border border-gray-200 custom-shadow overflow-hidden mb-4 group-hover:shadow-lg transition-shadow"></div>
-                            <div>
-                                <h4 className="font-bold text-gray-900">Minimalist Architect</h4>
-                                <p className="text-xs text-gray-500">Creative • Miễn phí</p>
-                            </div>
-                        </div>
-                        {/* Card 2 */}
-                        <div className="group cursor-pointer">
-                            <div
-                                className="bg-gray-50 rounded-xl aspect-[1/1.4] w-full border border-gray-200 custom-shadow overflow-hidden mb-4 group-hover:shadow-lg transition-shadow"></div>
-                            <div>
-                                <h4 className="font-bold text-gray-900">Classic Corporate</h4>
-                                <p className="text-xs text-gray-500">Business • Pro</p>
-                            </div>
-                        </div>
-                        {/* Card 3 */}
-                        <div className="group cursor-pointer">
-                            <div
-                                className="bg-gray-50 rounded-xl aspect-[1/1.4] w-full border border-gray-200 custom-shadow overflow-hidden mb-4 group-hover:shadow-lg transition-shadow"></div>
-                            <div>
-                                <h4 className="font-bold text-gray-900">Gradient Tech</h4>
-                                <p className="text-xs text-gray-500">Tech • Miễn phí</p>
-                            </div>
-                        </div>
-                        {/* Card 4 */}
-                        <div className="group cursor-pointer">
-                            <div
-                                className="bg-gray-50 rounded-xl aspect-[1/1.4] w-full border border-gray-200 custom-shadow overflow-hidden mb-4 group-hover:shadow-lg transition-shadow"></div>
-                            <div>
-                                <h4 className="font-bold text-gray-900">Modern Academic</h4>
-                                <p className="text-xs text-gray-500">Education • Miễn phí</p>
-                            </div>
-                        </div>
+                        {TEMPLATES_DATA
+                            .filter(t => t.style === template.style && t.id !== template.id)
+                            .slice(0, 4)
+                            .map(similar => (
+                                <div key={similar.id} className="group cursor-pointer">
+                                    <Link to={`/template/${similar.id}`}>
+                                        <div className="relative aspect-[1/1.4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-4 transition-transform group-hover:-translate-y-2">
+                                            <img src={similar.image} className="w-full h-full object-cover" alt={similar.title} />
+                                            <div className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <span className="bg-white text-[#0b3c8f] px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
+                                                    Sử dụng mẫu này
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="text-center">
+                                            <h4 className="font-bold text-gray-900">{similar.title}</h4>
+                                            <p className="text-xs text-gray-500">{similar.style} • {similar.badgeText}</p>
+                                        </div>
+                                    </Link>
+                                </div>
+                            ))
+                        }
                     </div>
                 </section>
             </main>

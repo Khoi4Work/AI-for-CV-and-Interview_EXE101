@@ -8,7 +8,7 @@ export default function CVEditor() {
             <main className="flex-1 overflow-auto flex justify-center p-12 bg-gray-200">
 
                 {/* CV Document */}
-                <div className="cv-page-container bg-white flex overflow-hidden shrink-0">
+                <div className="cv-page-container bg-white flex overflow-hidden shrink-0 shadow-2xl">
 
                     {/* Left Sidebar */}
                     <aside className="w-1/3 flex flex-col">
@@ -28,21 +28,21 @@ export default function CVEditor() {
                                     Liên lạc
                                 </h3>
                                 <div className="space-y-4 text-xs">
-                                    <div>
+                                    <div className="group">
                                         <p className="font-bold mb-1 opacity-90 text-[13px]">Điện thoại</p>
-                                        <p className="text-blue-200">--</p>
+                                        <p contentEditable={true} className="text-blue-200 outline-none focus:bg-white/10 rounded px-1 transition-colors">--</p>
                                     </div>
-                                    <div>
+                                    <div className="group">
                                         <p className="font-bold mb-1 opacity-90 text-[13px]">Email</p>
-                                        <p className="text-blue-200">--</p>
+                                        <p contentEditable={true} className="text-blue-200 outline-none focus:bg-white/10 rounded px-1 transition-colors">--</p>
                                     </div>
-                                    <div>
+                                    <div className="group">
                                         <p className="font-bold mb-1 uppercase opacity-90 text-[13px]">Ngày sinh</p>
-                                        <p className="text-blue-200">27/01/1998</p>
+                                        <p contentEditable={true} className="text-blue-200 outline-none focus:bg-white/10 rounded px-1 transition-colors">27/01/1998</p>
                                     </div>
-                                    <div>
+                                    <div className="group">
                                         <p className="font-bold mb-1 opacity-90 text-[13px]">Địa chỉ</p>
-                                        <p className="text-blue-200">--</p>
+                                        <p contentEditable={true} className="text-blue-200 outline-none focus:bg-white/10 rounded px-1 transition-colors">--</p>
                                     </div>
                                 </div>
                             </section>
@@ -54,12 +54,12 @@ export default function CVEditor() {
                                     Kỹ năng
                                 </h3>
                                 <ul className="text-xs space-y-2.5 list-disc ml-5 marker:text-blue-400 marker:text-[10px]">
-                                    <li className="pl-1">Quản lý dự án</li>
-                                    <li className="pl-1">Giao tiếp tốt</li>
-                                    <li className="pl-1 leading-tight">Nắm bắt kiến thức sản phẩm nhanh</li>
-                                    <li className="pl-1">Kỹ năng thuyết phục</li>
-                                    <li className="pl-1">Quản lý thời gian</li>
-                                    <li className="pl-1">Kỹ năng đàm phán</li>
+                                    <li contentEditable={true} className="pl-1 outline-none focus:bg-white/10 rounded px-1 transition-colors">Quản lý dự án</li>
+                                    <li contentEditable={true} className="pl-1 outline-none focus:bg-white/10 rounded px-1 transition-colors">Giao tiếp tốt</li>
+                                    <li contentEditable={true} className="pl-1 leading-tight outline-none focus:bg-white/10 rounded px-1 transition-colors">Nắm bắt kiến thức sản phẩm nhanh</li>
+                                    <li contentEditable={true} className="pl-1 outline-none focus:bg-white/10 rounded px-1 transition-colors">Kỹ năng thuyết phục</li>
+                                    <li contentEditable={true} className="pl-1 outline-none focus:bg-white/10 rounded px-1 transition-colors">Quản lý thời gian</li>
+                                    <li contentEditable={true} className="pl-1 outline-none focus:bg-white/10 rounded px-1 transition-colors">Kỹ năng đàm phán</li>
                                 </ul>
                             </section>
 
@@ -72,7 +72,7 @@ export default function CVEditor() {
                                 <div className="space-y-4">
                                     <div className="flex flex-col gap-1.5">
                                         <div className="flex justify-between items-center text-xs">
-                                            <span>Microsoft Word</span>
+                                            <span contentEditable={true} className="outline-none focus:bg-white/10 rounded px-1 transition-colors">Microsoft Word</span>
                                             <div className="flex">
                                                 <span className="skill-rating-dot text-[10px]">★</span>
                                                 <span className="skill-rating-dot text-[10px]">★</span>
@@ -90,7 +90,7 @@ export default function CVEditor() {
 
                                     <div className="flex flex-col gap-1.5">
                                         <div className="flex justify-between items-center text-xs">
-                                            <span>Microsoft Excel</span>
+                                            <span contentEditable={true} className="outline-none focus:bg-white/10 rounded px-1 transition-colors">Microsoft Excel</span>
                                             <div className="flex">
                                                 <span className="skill-rating-dot text-[10px]">★</span>
                                                 <span className="skill-rating-dot text-[10px]">★</span>
@@ -115,10 +115,10 @@ export default function CVEditor() {
 
                         {/* Header / Name */}
                         <header className="mb-12">
-                            <h1 className="text-[3.25rem] font-black text-cv-text-dark tracking-tighter mb-2 leading-none uppercase">
+                            <h1 contentEditable={true} className="text-[3.25rem] font-black text-cv-text-dark tracking-tighter mb-2 leading-none uppercase outline-none focus:bg-gray-100 rounded px-2 transition-colors">
                                 Nguyen Van A
                             </h1>
-                            <h2 className="text-[1.1rem] text-[#6b7280] uppercase tracking-[0.2em] font-bold">
+                            <h2 contentEditable={true} className="text-[1.1rem] text-[#6b7280] uppercase tracking-[0.2em] font-bold outline-none focus:bg-gray-100 rounded px-2 transition-colors">
                                 Nhân viên MKT
                             </h2>
                         </header>
@@ -130,7 +130,7 @@ export default function CVEditor() {
                                     tiêu nghề nghiệp</h3>
                                 <div className="h-[1px] bg-gray-300 w-full absolute left-0 z-0"></div>
                             </div>
-                            <p className="text-[13px] leading-[1.8] text-[#334155] text-justify">
+                            <p contentEditable={true} className="text-[13px] leading-[1.8] text-[#334155] text-justify outline-none focus:bg-gray-100 rounded px-2 transition-colors">
                                 Tôi là một nhân viên bán hàng chuyên nghiệp, đam mê trong việc xây dựng mối quan hệ với
                                 khách hàng và đạt được mục tiêu doanh số. Mục tiêu của tôi là phát triển sự nghiệp trong
                                 lĩnh vực bán hàng, áp dụng kỹ năng giao tiếp mạnh mẽ và khả năng thuyết phục để tạo ra
@@ -153,18 +153,18 @@ export default function CVEditor() {
                                     <div className="timeline-dot shadow-sm"></div>
 
                                     <div className="flex justify-between items-start mb-1.5">
-                                        <h4 className="font-bold text-[#1e3a5f] text-lg">Tên công ty</h4>
-                                        <span className="text-[11px] font-bold text-gray-500 tracking-wider">03/2019 - 09/2020</span>
+                                        <h4 contentEditable={true} className="font-bold text-[#1e3a5f] text-lg outline-none focus:bg-gray-100 rounded px-1 transition-colors">Tên công ty</h4>
+                                        <span contentEditable={true} className="text-[11px] font-bold text-gray-500 tracking-wider outline-none focus:bg-gray-100 rounded px-1 transition-colors">03/2019 - 09/2020</span>
                                     </div>
-                                    <p className="text-[13px] italic text-[#64748b] mb-4 font-medium">Marketing
+                                    <p contentEditable={true} className="text-[13px] italic text-[#64748b] mb-4 font-medium outline-none focus:bg-gray-100 rounded px-1 transition-colors">Marketing
                                         Manager</p>
 
                                     <ul className="text-[13px] text-[#475569] space-y-3 list-disc ml-5 leading-relaxed marker:text-gray-400">
-                                        <li>Phụ trách việc tìm kiếm và khai thác thị trường mới, xây dựng danh sách
+                                        <li contentEditable={true} className="outline-none focus:bg-gray-100 rounded px-1 transition-colors">Phụ trách việc tìm kiếm và khai thác thị trường mới, xây dựng danh sách
                                             khách hàng tiềm năng: Tại công ty ABC, tôi đã chịu trách nhiệm tìm kiếm và
                                             khai thác các thị trường mới, từ đó tạo ra danh sách khách hàng tiềm năng.
                                         </li>
-                                        <li>Tôi đã nghiên cứu và đánh giá các xu hướng thị trường để xác định các cơ hội
+                                        <li contentEditable={true} className="outline-none focus:bg-gray-100 rounded px-1 transition-colors">Tôi đã nghiên cứu và đánh giá các xu hướng thị trường để xác định các cơ hội
                                             kinh doanh mới. Tôi đã áp dụng các kỹ thuật tiếp thị và xây dựng mạng lưới
                                             khách hàng để tăng doanh số bán hàng.
                                         </li>
@@ -177,18 +177,18 @@ export default function CVEditor() {
                                     <div className="timeline-dot bg-gray-400 shadow-sm"></div>
 
                                     <div className="flex justify-between items-start mb-1.5">
-                                        <h4 className="font-bold text-[#1e3a5f] text-lg">Tên công ty</h4>
-                                        <span className="text-[11px] font-bold text-gray-500 tracking-wider">03/2019 - 09/2020</span>
+                                        <h4 contentEditable={true} className="font-bold text-[#1e3a5f] text-lg outline-none focus:bg-gray-100 rounded px-1 transition-colors">Tên công ty</h4>
+                                        <span contentEditable={true} className="text-[11px] font-bold text-gray-500 tracking-wider outline-none focus:bg-gray-100 rounded px-1 transition-colors">03/2019 - 09/2020</span>
                                     </div>
-                                    <p className="text-[13px] italic text-[#64748b] mb-4 font-medium">Marketing
+                                    <p contentEditable={true} className="text-[13px] italic text-[#64748b] mb-4 font-medium outline-none focus:bg-gray-100 rounded px-1 transition-colors">Marketing
                                         Manager</p>
 
                                     <ul className="text-[13px] text-[#475569] space-y-3 list-disc ml-5 leading-relaxed marker:text-gray-400">
-                                        <li>Phụ trách việc tìm kiếm và khai thác thị trường mới, xây dựng danh sách
+                                        <li contentEditable={true} className="outline-none focus:bg-gray-100 rounded px-1 transition-colors">Phụ trách việc tìm kiếm và khai thác thị trường mới, xây dựng danh sách
                                             khách hàng tiềm năng: Tại công ty ABC, tôi đã chịu trách nhiệm tìm kiếm và
                                             khai thác các thị trường mới, từ đó tạo ra danh sách khách hàng tiềm năng.
                                         </li>
-                                        <li>Tôi đã nghiên cứu và đánh giá các xu hướng thị trường để xác định các cơ hội
+                                        <li contentEditable={true} className="outline-none focus:bg-gray-100 rounded px-1 transition-colors">Tôi đã nghiên cứu và đánh giá các xu hướng thị trường để xác định các cơ hội
                                             kinh doanh mới. Tôi đã áp dụng các kỹ thuật tiếp thị và xây dựng mạng lưới
                                             khách hàng để tăng doanh số bán hàng.
                                         </li>
@@ -203,8 +203,6 @@ export default function CVEditor() {
             </main>
         </div>
     )
-
-
 
     function UserSvg() {
         return (
@@ -230,7 +228,7 @@ export default function CVEditor() {
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                  xmlns="http://www.w3.org/2000/svg">
                 <path
-                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2 2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
             </svg>
         );
     }
