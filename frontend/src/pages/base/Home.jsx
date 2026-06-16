@@ -44,11 +44,13 @@ export default function Home() {
                             </p>
                             <div className="flex flex-wrap gap-sm mt-sm">
                                 <button
+                                    onClick={() => navigate('/builder')}
                                     className="bg-[#0b3c8f] text-white px-lg py-sm rounded-lg font-label-md text-label-md flex items-center gap-xs transition-all hover:shadow-lg active:scale-95 cursor-pointer">
                                     Tạo CV ngay
                                     <ArrowRight className="w-4 h-4"/>
                                 </button>
                                 <button
+                                    onClick={() => navigate('/templates')}
                                     className="bg-white border border-slate-200 text-[#0b3c8f] px-lg py-sm rounded-lg font-label-md text-label-md transition-all hover:bg-slate-50 active:scale-95 cursor-pointer">
                                     Xem mẫu CV
                                 </button>

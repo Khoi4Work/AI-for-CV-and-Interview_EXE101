@@ -1,6 +1,6 @@
-import { X } from 'lucide-react';
+import { X, FileDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
-export default function TopNagivationToolBar() {
+export default function TopNagivationToolBar({ onExport }) {
     return (
         <>
             <header className="bg-white border-b px-6 py-3 flex items-center justify-between z-10 w-full shrink-0">
@@ -24,9 +24,10 @@ export default function TopNagivationToolBar() {
                 {/* Action Buttons */}
                 <div className="flex items-center gap-3">
                     <button
+                        onClick={onExport}
                         className="flex items-center gap-2 border border-cv-sidebar-blue text-cv-sidebar-blue px-6 py-2.5 rounded-md hover:bg-blue-50 transition-colors">
-                        <HeartSvg/>
-                        <span className="font-medium text-sm">Lưu mẫu</span>
+                        <FileDown className="h-5 w-5"/>
+                        <span className="font-medium text-sm">Xuất PDF</span>
                     </button>
                     <button
                         className="flex items-center gap-2 bg-cv-sidebar-blue text-white px-6 py-2.5 rounded-md hover:bg-blue-900 transition-colors shadow-md shadow-blue-900/20">
@@ -38,13 +39,6 @@ export default function TopNagivationToolBar() {
         </>
     )
     // Custom SVG Icons matched from HTML
-    function HeartSvg() {
-        return (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-            </svg>
-        );
-    }
     function LightningSvg() {
         return (
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
