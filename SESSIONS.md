@@ -208,3 +208,72 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
   1. Chạy thử `POST /api/feedbacks` có/không ảnh, đọc log để xác nhận `hasImage` đúng như kỳ vọng.
   2. Sửa bug tên field ảnh (`image` ↔ `imageFile`) nếu log cho thấy `hasImage=false` khi user có đính kèm.
   3. Cân nhắc chỉnh `application.yml` → `logging.level.fpt.su26.exe101.backend.service.FeedbackService=DEBUG` khi cần trace sâu.
+
+## [2026-06-16] Session 7: Interview Flow High-Fidelity Prototype
+### 🎯 Goals
+- Đánh giá lại luồng interview hiện tại (JobSelection → InterviewResult) so với high-fidelity prototype.
+- Mô phỏng voice interview với AI: timer 10s im lặng → skip, 5s giữa câu → skip, 2 skip liên tiếp → auto-end.
+- Feedback mock dựa trên dữ liệu setup, có tag must-have / nice-to-have, HR persona FPT.
+
+### ✅ Completed
+- [x] **Spec** tại `docs/superpowers/specs/2026-06-16-interview-flow-high-fidelity-design.md` (commit `f3d9bcd`) — đã duyệt qua 4 phần brainstorm + verification gate.
+- [x] **Plan** tại `docs/superpowers/plans/2026-06-16-interview-flow.md` — 8 tasks, file changes cụ thể.
+- [x] **Mock data** tại `frontend/src/constant/` (7 files):
+  - `jobs.js` — 6 IT job presets (Software Engineer, Frontend, Backend, DevOps, QA, Data)
+  - `companies.js` — FPT-only (industry IT, culture/slogan)
+  - `experienceLevels.js`, `interviewTypes.js` — setup data
+  - `questionBank.js` — HR (6) + Behavioral (6) + Technical (8) câu hỏi IT; Technical tham khảo `docs/FPT/All.csv` LeetCode frequency; export `pickQuestionsForSession()` để random hóa theo config
+  - `feedbackRubric.js` — 5 tiêu chí chấm điểm, 2 tag (must-have/nice-to-have), 3 HR persona FPT
+  - `stepDefinitions.js` — 10-step mapping route
+- [x] **Session hook** `frontend/src/hooks/useInterviewSession.js`:
+  - Read/write `sessionStorage` key `interview_session_v1`
+  - API: `data, update, reset, setStep, generateQuestions, generateFeedback, saveAnswer, addTranscript`
+  - Persist state tự động qua `useEffect` (skip lần đầu để tránh overwrite)
+- [x] **7 trang setup** (1-7) đã wire vào session, progress bar 1/10 → 7/10:
+  - `JobSelection` — search + grid 6 jobs, lưu `job` vào session
+  - `CVStatus` — 2 cards "Có/Chưa có CV", lưu `cvStatus`
+  - `ExperienceLevel` — 4 levels, lưu `experienceLevel`
+  - `CareerGoal` — textarea + 4 AI suggestions, lưu `careerGoal`
+  - `InterviewSetup` — FPT-locked company, 3 loại interview, language, duration, JD textarea; **fix nút Back** (đang trỏ nhầm `career-goal`)
+  - `AudioSetup` — mic thật (`getUserMedia` + `AnalyserNode`), waveform thật, lưu `audioTestPassed`
+  - `VideoSetup` — camera live preview, device selectors, lưu `videoSetupConfirmed`
+- [x] **AppLayout** thêm `RoomGuard` + `ResultGuard`:
+  - `/interview/room` không có `session.questions` → redirect `/interview/job-selection`
+  - `/interview/result` không có `session.feedback` → redirect `/interview/job-selection`
+- [x] **InterviewRoom** (8) — viết lại hoàn toàn:
+  - 5 state: `asking` (2.5s, ẩn text) → `recording` (hiện text + mic + VAD) → `processing` (1.2s) → `between` (5s) → `asking` (câu kế)
+  - Mic thật: `getUserMedia` + `AnalyserNode` (fftSize=512), threshold 12, RMS 0-2000Hz
+  - End phrase regex: `xin hết|hết rồi|xong rồi|hết câu|that's it|i'm done`
+  - 10s in-question silence → skip; 5s between-question silence → skip
+  - 2 skip liên tiếp (bất kỳ loại) → `endInterview()` → sinh feedback → navigate review
+  - KHÔNG có side panel, KHÔNG có AI suggestion box, KHÔNG có nút End
+  - Ẩn text câu hỏi trong 2.5s `asking`, hiện khi vào `recording`
+- [x] **VideoReview** (9) — fix back link (đang navigate sai), hiển thị duration từ session.
+- [x] **InterviewResult** (10) — viết lại từ session:
+  - 2 cột dark theme: HR persona + 5 criteria (trái), transcript (phải sticky)
+  - Mỗi block transcript: [AI] câu hỏi → [User] trả lời (hoặc "Đã bỏ qua") → badge status → suggestion box với tag must-have/nice-to-have
+  - HR persona: Anh Minh (HR) / Anh Hùng (Tech) / Chị Lan (Behavioral) — FPT
+  - Closer quote cuối transcript
+- [x] **Build verified**: `npx vite build` pass, 2255 modules transform, 0 error.
+- [x] **Dev server**: `npx vite` chạy thành công (port 5174 vì 5173 bận).
+
+### 🚩 Current State & Checkpoint
+- **Current Branch**: `dev`
+- **Latest Commit**: `e724343` — "Implement 10-step interview flow prototype" (20 files, +2435/-1001)
+- **Spec commit**: `f3d9bcd`
+- **Build**: ✅ Pass
+- **Dev server**: ✅ Start thành công
+- **Next Step** (bàn giao cho user test):
+  1. Chạy `npm run dev` trong `frontend/`, mở `http://localhost:5173/interview`.
+  2. Click "Bắt đầu" → đi qua 10 bước với giá trị mặc định.
+  3. Ở `AudioSetup` / `VideoSetup` cấp quyền mic + camera cho trình duyệt.
+  4. Trong `InterviewRoom`:
+     - Test nói "xin hết" sau khi trả lời → câu kết thúc ngay.
+     - Test im lặng 10s trong câu → skip.
+     - Test im lặng 5s giữa câu → skip, câu kế tiếp cũng im 5s → auto-end.
+  5. Ở `InterviewResult` kiểm tra: 5 tiêu chí có điểm, transcript có tag must-have/nice-to-have, HR persona FPT.
+  6. Báo lại bug nếu có.
+- **Known limitations** (chấp nhận cho prototype):
+  - Không có STT thật — `lastTranscriptRef` được fill bằng random words khi VAD phát hiện nói.
+  - "xin hết" detection dựa trên rolling transcript (random words) — có thể miss cụm này nếu random không trúng. Tạm chấp nhận.
+  - SessionStorage mất khi đóng tab (production sẽ cần backend).
