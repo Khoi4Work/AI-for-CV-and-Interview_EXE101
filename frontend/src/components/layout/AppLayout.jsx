@@ -38,41 +38,52 @@ import ScrollToTop from "../transitions/ScrollToTop.jsx";
 import RouteProgressBar from "../transitions/RouteProgressBar.jsx";
 
 /**
- * AppLayout
- * ─────────────────────────────────────────────────────────────────
- * Three route zones. Each <PageTransition> uses React's `key` prop
- * (not a custom prop) so AnimatePresence sees a new keyed sibling
- * and framer-motion can run the entry/exit animation.
- *
- *   ZONE A · Public  (no shell)         : /, /login, /register,
- *                                         /interview, /templates
- *                                         — enter animation only
- *                                         (no AnimatePresence; pages
- *                                         unmount instantly on exit)
- *
- *   ZONE B · Dashboard (Sidebar+Header) : home, personal-info,
- *                                         security, pricing, my-cvs,
- *                                         history
- *                                         — full enter+exit because
- *                                         the shell is stable and
- *                                         the user clicks between
- *                                         these pages the most
- *
- *   ZONE C · Interview / CV flow        : optimizer, builder,
- *                                         analysis, editor,
- *                                         audio-setup, video-setup,
- *                                         interview/...
- *                                         — enter animation only
- *                                         (each page renders its own
- *                                         chrome, no shared shell)
- *
- * The outer <Routes> in each zone receives `location` and
- * `key={location.pathname}` so it remounts on route change; the
- * PageTransition inside is keyed on the pathname so framer-motion
- * can pick it up. Shell chrome (Sidebar, Header) lives OUTSIDE the
- * keyed Routes in Zone B, so it never re-mounts when the user
- * clicks between dashboard tabs.
+ * Guard cho InterviewRoom: cần session.questions.
+ * Nếu không có → redirect về step 1.
  */
+function RoomGuard({children}) {
+    const [ok, setOk] = React.useState(null);
+    React.useEffect(() => {
+        try {
+            const raw = sessionStorage.getItem('interview_session_v1');
+            if (!raw) {
+                setOk(false);
+                return;
+            }
+            const data = JSON.parse(raw);
+            setOk(Array.isArray(data.questions) && data.questions.length > 0);
+        } catch (e) {
+            setOk(false);
+        }
+    }, []);
+    if (ok === false) return <Navigate to="/interview/job-selection" replace/>;
+    if (ok === null) return null;
+    return children;
+}
+
+/**
+ * Guard cho InterviewResult: cần session.feedback.
+ * Nếu không có → redirect về step 1.
+ */
+function ResultGuard({children}) {
+    const [ok, setOk] = React.useState(null);
+    React.useEffect(() => {
+        try {
+            const raw = sessionStorage.getItem('interview_session_v1');
+            if (!raw) {
+                setOk(false);
+                return;
+            }
+            const data = JSON.parse(raw);
+            setOk(!!data.feedback);
+        } catch (e) {
+            setOk(false);
+        }
+    }, []);
+    if (ok === false) return <Navigate to="/interview/job-selection" replace/>;
+    if (ok === null) return null;
+    return children;
+}
 
 export default function AppLayout() {
     const {isLoggedIn, profile} = useAuth();
@@ -105,9 +116,7 @@ export default function AppLayout() {
                 <Route path="/*" element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
                         <Routes location={location}>
-                            {/* ZONE B · Dashboard (Home + 5 settings pages).
-                                Home uses the standalone layout, the 5 settings
-                                pages share the Sidebar+Header shell. */}
+                            {/* ZONE B · Dashboard (Home + 5 settings pages). */}
                             <Route
                                 path="home"
                                 element={
@@ -132,11 +141,11 @@ export default function AppLayout() {
                             <Route path="video-setup"
                                    element={<PageTransition key={location.pathname}><VideoSetup/></PageTransition>}/>
                             <Route path="interview/room"
-                                   element={<PageTransition key={location.pathname}><InterviewRoom/></PageTransition>}/>
+                                   element={<PageTransition key={location.pathname}><RoomGuard><InterviewRoom/></RoomGuard></PageTransition>}/>
                             <Route path="interview/review"
                                    element={<PageTransition key={location.pathname}><VideoReview/></PageTransition>}/>
                             <Route path="interview/result"
-                                   element={<PageTransition key={location.pathname}><InterviewResults/></PageTransition>}/>
+                                   element={<PageTransition key={location.pathname}><ResultGuard><InterviewResults/></ResultGuard></PageTransition>}/>
                             <Route path="interview/job-selection"
                                    element={<PageTransition key={location.pathname}><JobSelection/></PageTransition>}/>
                             <Route path="interview/cv-status"
@@ -148,9 +157,7 @@ export default function AppLayout() {
                             <Route path="interview/setup"
                                    element={<PageTransition key={location.pathname}><InterviewSetup/></PageTransition>}/>
 
-                            {/* ZONE B shell: Sidebar + Header stay mounted;
-                                only the inner <PageTransition> remounts when
-                                the route changes. */}
+                            {/* ZONE B shell: Sidebar + Header stay mounted */}
                             <Route path="*" element={
                                 <ProtectedRoute isLoggedIn={isLoggedIn}>
                                     <div
