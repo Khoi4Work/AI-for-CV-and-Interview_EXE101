@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import FloatingCVCard from '../../components/user/FloatingCVCard.jsx';
 import GuestHeader from '../../components/layout/GuestHeader.jsx';
+import {TEMPLATES_DATA} from "../../constants/templates.jsx";
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -55,7 +56,7 @@ const LandingPage = () => {
                         </button>
                         <button
                             id="landing-cta-view-templates"
-                            onClick={() => navigate(isLoggedIn ? '/templates' : '/register')}
+                            onClick={() => navigate('/templates')}
                             className="bg-white hover:bg-slate-50 text-slate-800 font-medium px-6 py-3.5 rounded-xl border border-slate-200 transition-all flex items-center justify-center active:scale-[0.98]"
                         >
                             Xem mẫu CV
@@ -137,6 +138,43 @@ const LandingPage = () => {
             </section>
 
             <section className="py-xl w-full">
+                <div className="max-w-[1280px] mx-auto px-xl lg:px-gutter">
+                    <div className="flex justify-between items-end mb-lg">
+                        <div className="space-y-2">
+                            <h2 className="font-headline-xl text-headline-xl text-[#0b3c8f] font-bold">Kho mẫu CV
+                                hiện đại</h2>
+                            <p className="font-body-md text-body-md text-slate-500 mt-xs">Hơn 50+ mẫu thiết kế chuẩn
+                                ngành nghề, phong cách đa dạng.</p>
+                        </div>
+                        <a className="text-[#0b3c8f] font-label-md text-label-md flex items-center gap-xs hover:underline cursor-pointer"
+                           href="/templates">
+                            Khám phá tất cả mẫu
+                            <ExternalLink className="w-3 h-3"/>
+                        </a>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+                        {TEMPLATES_DATA.slice(0, 4).map((template) => (
+                            <div key={template.id} className="group cursor-pointer">
+                                <div
+                                    className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
+                                    <img className="w-full h-full object-cover" alt={template.title}
+                                         src={template.image}/>
+                                    <div
+                                        className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button
+                                            className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
+                                            onClick={() => navigate("/templates")}
+                                        >Sử dụng mẫu này
+                                        </button>
+                                    </div>
+                                </div>
+                                <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">{template.title}</h4>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+            <section className="py-xl w-full">
                 <div className="max-w-7xl mx-auto px-6 pb-20 w-full">
                     <div
                         className="bg-[#0b3c8f] text-white rounded-3xl p-10 md:p-14 text-center space-y-8 shadow-xl relative overflow-hidden flex flex-col items-center">
@@ -146,10 +184,12 @@ const LandingPage = () => {
                             className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-8 -mb-8 pointer-events-none"></div>
 
                         <div className="space-y-3 max-w-2xl z-10">
-                            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sẵn sàng để sở hữu công việc mơ
+                            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sẵn sàng để sở hữu công việc
+                                mơ
                                 ước?</h2>
                             <p className="text-blue-100 text-sm leading-relaxed max-w-2xl mx-auto">
-                                Chỉ mất 5 phút để xây dựng một bản CV thông minh, vượt qua vòng lọc tự động và nhanh chóng
+                                Chỉ mất 5 phút để xây dựng một bản CV thông minh, vượt qua vòng lọc tự động và nhanh
+                                chóng
                                 lọt vào mắt xanh của bộ phận tuyển dụng.
                             </p>
                         </div>
