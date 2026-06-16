@@ -1,5 +1,6 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
+import {useAuth} from '../../contexts/AuthContext';
 import {
     Sparkles,
     ArrowRight,
@@ -16,6 +17,7 @@ import GuestHeader from '../../components/layout/GuestHeader.jsx';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const {isLoggedIn} = useAuth();
 
     return (
         <div className="min-h-screen bg-slate-50/50 text-slate-800 font-sans flex flex-col antialiased">
@@ -45,7 +47,7 @@ const LandingPage = () => {
                         className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
                         <button
                             id="landing-cta-create-cv"
-                            onClick={() => navigate('/register')}
+                            onClick={() => navigate(isLoggedIn ? '/builder' : '/register')}
                             className="bg-[#0b3c8f] hover:bg-[#093278] text-white font-medium px-6 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#0b3c8f]/10 transition-all flex items-center justify-center space-x-2 active:scale-[0.98]"
                         >
                             <span>Tạo CV ngay</span>
@@ -53,7 +55,7 @@ const LandingPage = () => {
                         </button>
                         <button
                             id="landing-cta-view-templates"
-                            onClick={() => navigate('/login')}
+                            onClick={() => navigate(isLoggedIn ? '/templates' : '/register')}
                             className="bg-white hover:bg-slate-50 text-slate-800 font-medium px-6 py-3.5 rounded-xl border border-slate-200 transition-all flex items-center justify-center active:scale-[0.98]"
                         >
                             Xem mẫu CV
@@ -135,120 +137,31 @@ const LandingPage = () => {
             </section>
 
             <section className="py-xl w-full">
-                <div className="max-w-[1280px] mx-auto px-xl lg:px-gutter">
-                    <div className="flex justify-between items-end mb-lg">
-                        <div className="space-y-2">
-                            <h2 className="font-headline-xl text-headline-xl text-[#0b3c8f] font-bold">Kho mẫu CV
-                                hiện đại</h2>
-                            <p className="font-body-md text-body-md text-slate-500 mt-xs">Hơn 50+ mẫu thiết kế chuẩn
-                                ngành nghề, phong cách đa dạng.</p>
-                        </div>
-                        <a className="text-[#0b3c8f] font-label-md text-label-md flex items-center gap-xs hover:underline cursor-pointer"
-                           href="#">
-                            Khám phá tất cả mẫu
-                            <ExternalLink className="w-3 h-3"/>
-                        </a>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
-                        <div className="group cursor-pointer">
-                            <div
-                                className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
-                                <img className="w-full h-full object-cover" alt="Minimalist Professional"
-                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnztw7pWaIHplQXdQpl0WElpnDUIwtrO0HUTY1burywRcY4gFpHtFXNhhdmsg14VKvJ7bZjE7RLZjEUfVoZ9d3-sCSw7L1CwGQiRxWoxA2P1gYtqZ1sAQSP3f8OQsfaHCtBlSJ4MDRe6tzC_R00tjdITR1EOfNCuiDo92z6TVPiubwtBwIfNYLgJgIysyy_r5Crgv8g9UkY4AZQZoGe8dyY-6lpZ71DENl19woqs9AV0f4G3N3NLq9P1qzCEgYhsIDmTVAL3SE2Rc"/>
-                                <div
-                                    className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <button
-                                        className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
-                                    >Sử dụng mẫu này
-                                    </button>
-                                </div>
-                            </div>
-                            <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">Minimalist
-                                Professional</h4>
-                        </div>
-
-                        <div className="group cursor-pointer">
-                            <div
-                                className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
-                                <img className="w-full h-full object-cover" alt="Creative Tech"
-                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMmvOaYMR_XdWl8vIGCH5TW-FKlrgc0WvIm8WC8Db0sq3iwJ_XCRqqyiPfSj2yoHqGI0OaJCQeDeQrGDvQg6Wr2BxsA1qO2YfysUSJyW laT9S"/>
-                                <div
-                                    className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <button
-                                        className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
-                                        onClick={() => navigate("/templates")}
-                                    >Sử dụng mẫu này
-                                    </button>
-                                </div>
-                            </div>
-                            <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">Creative
-                                Tech</h4>
-                        </div>
-
-                        <div className="group cursor-pointer">
-                            <div
-                                className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
-                                <img className="w-full h-full object-cover" alt="Executive Classic"
-                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs_5PzbzuVEZqDiBO2qO4bzRtO0Fz43UKmuYkaMtZ9Tr1nAnhc4Jo5 laT9S"/>
-                                <div
-                                    className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <button
-                                        className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
-                                        onClick={() => navigate("/templates")}
-                                    >
-                                        Sử dụng mẫu này
-                                    </button>
-                                </div>
-                            </div>
-                            <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">Executive
-                                Classic</h4>
-                        </div>
-
-                        <div className="group cursor-pointer">
-                            <div
-                                className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
-                                <img className="w-full h-full object-cover" alt="Modern Artist"
-                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC--k_r2blsNESwrv3YcvgPBXQjnnLlxlEbC0VKI4-zHB6Sk_an402Cw5AaOVe1t1jCQeM0pllhMwe0U4_F7iWuGR laT9S"/>
-                                <div
-                                    className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <button
-                                        className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
-                                        onClick={() => navigate("/templates")}
-                                    >Sử dụng mẫu này
-                                    </button>
-                                </div>
-                            </div>
-                            <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">Modern
-                                Artist</h4>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section className="max-w-7xl mx-auto px-6 pb-20 w-full">
-                <div
-                    className="bg-[#0b3c8f] text-white rounded-3xl p-10 md:p-14 text-center space-y-8 shadow-xl relative overflow-hidden flex flex-col items-center">
+                <div className="max-w-7xl mx-auto px-6 pb-20 w-full">
                     <div
-                        className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
-                    <div
-                        className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-8 -mb-8 pointer-events-none"></div>
+                        className="bg-[#0b3c8f] text-white rounded-3xl p-10 md:p-14 text-center space-y-8 shadow-xl relative overflow-hidden flex flex-col items-center">
+                        <div
+                            className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
+                        <div
+                            className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-8 -mb-8 pointer-events-none"></div>
 
-                    <div className="space-y-3 max-w-2xl z-10">
-                        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sẵn sàng để sở hữu công việc mơ
-                            ước?</h2>
-                        <p className="text-blue-100 text-sm leading-relaxed max-w-2xl mx-auto">
-                            Chỉ mất 5 phút để xây dựng một bản CV thông minh, vượt qua vòng lọc tự động và nhanh chóng
-                            lọt vào mắt xanh của bộ phận tuyển dụng.
-                        </p>
+                        <div className="space-y-3 max-w-2xl z-10">
+                            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sẵn sàng để sở hữu công việc mơ
+                                ước?</h2>
+                            <p className="text-blue-100 text-sm leading-relaxed max-w-2xl mx-auto">
+                                Chỉ mất 5 phút để xây dựng một bản CV thông minh, vượt qua vòng lọc tự động và nhanh chóng
+                                lọt vào mắt xanh của bộ phận tuyển dụng.
+                            </p>
+                        </div>
+
+                        <button
+                            id="landing-bottom-cta"
+                            onClick={() => navigate(isLoggedIn ? '/builder' : '/register')}
+                            className="z-10 bg-white hover:bg-slate-50 text-[#0b3c8f] font-semibold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] text-sm"
+                        >
+                            Bắt đầu hoàn toàn miễn phí
+                        </button>
                     </div>
-
-                    <button
-                        id="landing-bottom-cta"
-                        onClick={() => navigate('/register')}
-                        className="z-10 bg-white hover:bg-slate-50 text-[#0b3c8f] font-semibold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] text-sm"
-                    >
-                        Bắt đầu hoàn toàn miễn phí
-                    </button>
                 </div>
             </section>
 

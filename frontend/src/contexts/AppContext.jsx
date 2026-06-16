@@ -16,7 +16,7 @@ export function AppProvider({ children }) {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
-    }, 100000);
+    }, 3000);
   };
 
   const handleNotificationRead = () => {

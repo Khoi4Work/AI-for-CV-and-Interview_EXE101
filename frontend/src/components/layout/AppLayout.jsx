@@ -36,6 +36,7 @@ import FeedbackWidget from "../feedback/FeedbackWidget.jsx";
 import PageTransition from "../transitions/PageTransition.jsx";
 import ScrollToTop from "../transitions/ScrollToTop.jsx";
 import RouteProgressBar from "../transitions/RouteProgressBar.jsx";
+import {useInterviewSession} from "../../hooks/useInterviewSession.js";
 
 /**
  * Guard cho InterviewRoom: cần interviewConfig (đã setup xong) + questions.
@@ -69,7 +70,9 @@ function ResultGuard({children}) {
     const hasFeedback = !!data.feedback;
 
     React.useEffect(() => {
-        if (hasQuestions && !hasFeedback) {
+        // CHỈ tự động generate feedback nếu thực sự đang ở route /interview/result
+        // Sử dụng window.location.pathname vì useLocation() có thể gây loop nếu không cẩn thận
+        if (window.location.pathname === '/interview/result' && hasQuestions && !hasFeedback) {
             generateFeedback();
         }
     }, [hasQuestions, hasFeedback, generateFeedback]);
@@ -135,7 +138,7 @@ export default function AppLayout() {
                             <Route path="video-setup"
                                    element={<PageTransition key={location.pathname}><VideoSetup/></PageTransition>}/>
                             <Route path="interview/room"
-                                   element={<PageTransition key={location.pathname}><RoomGuard><InterviewRoom/></RoomGuard></PageTransition>}/>
+                                   element={<PageTransition key={location.pathname}><RoomGuard children={<InterviewRoom/>}/></PageTransition>}/>
                             <Route path="interview/review"
                                    element={<PageTransition key={location.pathname}><VideoReview/></PageTransition>}/>
                             <Route path="interview/result"

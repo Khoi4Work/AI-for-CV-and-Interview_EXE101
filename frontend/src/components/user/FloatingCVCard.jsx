@@ -42,29 +42,15 @@ export default function FloatingCVCard() {
       {/* The Card */}
       <div
         ref={cardRef}
-        className="relative w-full max-w-[480px] aspect-[3/4] bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden border border-outline-variant p-sm flex flex-col gap-sm transition-transform duration-200 ease-out will-change-transform"
+        className="relative w-full max-w-[480px] aspect-[3/4] bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden border border-outline-variant flex flex-col gap-sm transition-transform duration-200 ease-out will-change-transform"
       >
-        {/* Simulated CV Header */}
-        <div className="h-12 w-full bg-surface-container-high rounded-lg mb-xs"></div>
+        <img
+          src="https://i.postimg.cc/zBSnG0vR/Home.jpg"
+          alt="CV Preview"
+          className="w-full h-full object-cover"
+        />
 
-        {/* Simulated Profile Section */}
-        <div className="flex gap-sm">
-          <div className="h-24 w-24 bg-surface-container rounded-lg shrink-0"></div>
-          <div className="flex flex-col gap-base w-full">
-            <div className="h-4 w-3/4 bg-surface-container-high rounded"></div>
-            <div className="h-4 w-1/2 bg-surface-container rounded"></div>
-            <div className="h-3 w-1/4 bg-surface-container-low rounded mt-base"></div>
-          </div>
-        </div>
-
-        {/* Simulated Content Lines */}
-        <div className="space-y-sm mt-md">
-          <div className="h-3 w-full bg-surface-container rounded"></div>
-          <div className="h-3 w-5/6 bg-surface-container rounded"></div>
-          <div className="h-3 w-4/5 bg-surface-container rounded"></div>
-        </div>
-
-        {/* Floating AI Suggestion Bubble - FIX: Use w-fit and increase max-width */}
+        {/* Floating AI Suggestion Bubble */}
         <div
           className="absolute bottom-1/4 right-0 transform translate-x-4 glass-effect p-sm rounded-xl shadow-lg border border-white/20 ai-glow w-fit max-w-[300px] flex flex-col gap-xs animate-bounce"
           style={{ animationDuration: '4s' }}
@@ -76,12 +62,6 @@ export default function FloatingCVCard() {
           <p className="font-body-sm text-sm text-on-surface-variant italic leading-relaxed whitespace-normal">
             "Hãy thêm từ khóa 'Quản lý dự án Agile' để tăng 40% cơ hội lọt qua bộ lọc ATS."
           </p>
-        </div>
-
-        {/* Bottom CV Content */}
-        <div className="mt-auto space-y-sm">
-          <div className="h-10 w-full bg-primary-container/10 rounded-lg"></div>
-          <div className="h-10 w-full bg-surface-container rounded-lg"></div>
         </div>
       </div>
     </div>

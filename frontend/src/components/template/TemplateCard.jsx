@@ -1,6 +1,20 @@
 import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, title, subtitle }) {
+import { useAuth } from '../../contexts/AuthContext.jsx';
+
+export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, title, subtitle, image }) {
+    const { profile, toggleFavorite, isLoggedIn } = useAuth();
+    const isFavorite = profile.favorites?.includes(id);
+
+    const handleToggleFavorite = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isLoggedIn) {
+            // We could show a toast here, but maybe that's handled by the context or a utility
+            return;
+        }
+        toggleFavorite(id);
+    };
 
     const getBadgeStyle = () => {
         switch (badgeTheme) {
@@ -19,8 +33,15 @@ export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, 
         <Link to={`/template/${id}`} className="block">
             <div className="bg-white rounded-xl overflow-hidden card-shadow group transition-all hover:-translate-y-1">
                 <div className="relative bg-gray-200 aspect-[3/4] p-4 flex items-center justify-center">
-                    {/* Placeholder for Template Preview */}
-                    <div className="absolute inset-4 border border-gray-300 bg-white/50 rounded-sm"></div>
+                    {image ? (
+                        <img
+                            src={image}
+                            alt={title}
+                            className="w-full h-full object-cover rounded-sm shadow-sm"
+                        />
+                    ) : (
+                        <div className="absolute inset-4 border border-gray-300 bg-white/50 rounded-sm"></div>
+                    )}
 
                     {/* Badges */}
                     <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -33,8 +54,11 @@ export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, 
                     </div>
 
                     {/* Heart/Favorite */}
-                    <button className={`absolute top-4 right-4 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm ${badgeTheme === 'premium' && title === 'Modern Executive' ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}>
-                        <Heart className="w-4 h-4" fill={badgeTheme === 'premium' && title === 'Modern Executive' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} />
+                    <button
+                        onClick={handleToggleFavorite}
+                        className={`absolute top-4 right-4 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm transition-colors ${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                    >
+                        <Heart className="w-4 h-4" fill={isFavorite ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} />
                     </button>
                 </div>
 
