@@ -6,6 +6,7 @@ import {useAuth} from '../../contexts/AuthContext.jsx';
 import {useApp} from '../../contexts/AppContext.jsx';
 import {ArrowRight, FileText, Bot, BarChart2, MessageSquare, ExternalLink} from 'lucide-react';
 import {useNavigate} from "react-router-dom";
+import { TEMPLATES_DATA } from '../../constants/templates.jsx';
 
 export default function Home() {
     const {profile, handleLogout} = useAuth();
@@ -144,83 +145,28 @@ export default function Home() {
                                     ngành nghề, phong cách đa dạng.</p>
                             </div>
                             <a className="text-[#0b3c8f] font-label-md text-label-md flex items-center gap-xs hover:underline cursor-pointer"
-                               href="#">
+                               href="/templates">
                                 Khám phá tất cả mẫu
                                 <ExternalLink className="w-3 h-3"/>
                             </a>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
-                            <div className="group cursor-pointer">
-                                <div
-                                    className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
-                                    <img className="w-full h-full object-cover" alt="Minimalist Professional"
-                                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnztw7pWaIHplQXdQpl0WElpnDUIwtrO0HUTY1burywRcY4gFpHtFXNhhdmsg14VKvJ7bZjE7RLZjEUfVoZ9d3-sCSw7L1CwGQiRxWoxA2P1gYtqZ1sAQSP3f8OQsfaHCtBlSJ4MDRe6tzC_R00tjdITR1EOfNCuiDo92z6TVPiubwtBwIfNYLgJgIysyy_r5Crgv8g9UkY4AZQZoGe8dyY-6lpZ71DENl19woqs9AV0f4G3N3NLq9P1qzCEgYhsIDmTVAL3SE2Rc"/>
-                                    <div
-                                        className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button
-                                            className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
-                                        >Sử dụng mẫu này
-                                        </button>
+                            {TEMPLATES_DATA.slice(0, 4).map((template) => (
+                                <div key={template.id} className="group cursor-pointer">
+                                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
+                                        <img className="w-full h-full object-cover" alt={template.title}
+                                             src={template.image}/>
+                                        <div className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button
+                                                className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
+                                                onClick={() => navigate("/templates")}
+                                            >Sử dụng mẫu này
+                                            </button>
+                                        </div>
                                     </div>
+                                    <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">{template.title}</h4>
                                 </div>
-                                <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">Minimalist
-                                    Professional</h4>
-                            </div>
-
-                            <div className="group cursor-pointer">
-                                <div
-                                    className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
-                                    <img className="w-full h-full object-cover" alt="Creative Tech"
-                                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMmvOaYMR_XdWl8vIGCH5TW-FKlrgc0WvIm8WC8Db0sq3iwJ_XCRqqyiPfSj2yoHqGI0OaJCQeDeQrGDvQg6Wr2BxsA1qO2YfysUSJyW laT9S"/>
-                                    <div
-                                        className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button
-                                            className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
-                                            onClick={() => navigate("/templates")}
-                                        >Sử dụng mẫu này
-                                        </button>
-                                    </div>
-                                </div>
-                                <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">Creative
-                                    Tech</h4>
-                            </div>
-
-                            <div className="group cursor-pointer">
-                                <div
-                                    className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
-                                    <img className="w-full h-full object-cover" alt="Executive Classic"
-                                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs_5PzbzuVEZqDiBO2qO4bzRtO0Fz43UKmuYkaMtZ9Tr1nAnhc4Jo5 laT9S"/>
-                                    <div
-                                        className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button
-                                            className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
-                                            onClick={() => navigate("/templates")}
-                                        >
-                                            Sử dụng mẫu này
-                                        </button>
-                                    </div>
-                                </div>
-                                <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">Executive
-                                    Classic</h4>
-                            </div>
-
-                            <div className="group cursor-pointer">
-                                <div
-                                    className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
-                                    <img className="w-full h-full object-cover" alt="Modern Artist"
-                                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC--k_r2blsNESwrv3YcvgPBXQjnnLlxlEbC0VKI4-zHB6Sk_an402Cw5AaOVe1t1jCQeM0pllhMwe0U4_F7iWuGR laT9S"/>
-                                    <div
-                                        className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button
-                                            className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
-                                            onClick={() => navigate("/templates")}
-                                        >Sử dụng mẫu này
-                                        </button>
-                                    </div>
-                                </div>
-                                <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">Modern
-                                    Artist</h4>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </section>

@@ -8,6 +8,9 @@ import { useApp } from '../../contexts/AppContext.jsx';
 export default function CVBuilder() {
     const { showToast } = useApp();
     const [editMode, setEditMode] = useState('direct'); // 'direct' or 'paste'
+    const [userName, setUserName] = useState('Nguyễn Văn A');
+    const [userEmail, setUserEmail] = useState('');
+    const [userPhone, setUserPhone] = useState('');
     const [experiences, setExperiences] = useState([
         { id: 1, text: '' }
     ]);
@@ -36,6 +39,16 @@ export default function CVBuilder() {
         const file = e.target.files[0];
         if (file) {
             showToast(`Đã tải lên tệp ${file.name} thành công!`, 'success');
+
+            // Giả lập trích xuất dữ liệu từ file
+            setUserName('Trần Thị B');
+            setUserEmail('tranthib@example.com');
+            setUserPhone('0901 234 567');
+            setExperiences([
+                { id: 1, text: 'Quản lý dự án phát triển phần mềm tại Công ty X trong 3 năm, tăng hiệu suất làm việc của đội ngũ lên 20%.' },
+                { id: 2, text: 'Phát triển hệ thống E-commerce sử dụng React và Node.js cho đối tác Nhật Bản.' },
+                { id: 3, text: 'Thiết kế kiến trúc hệ thống Microservices cho ứng dụng Fintech với hơn 100k người dùng.' },
+            ]);
         }
     };
 
@@ -78,43 +91,57 @@ export default function CVBuilder() {
 
                         <div className="p-6">
                             {/* Form Tabs */}
-                            <div className="bg-slate-100 p-1 rounded-lg flex mb-8 ">
-                                <button
-                                    onClick={() => setEditMode('direct')}
-                                    className={`flex-1 text-center py-2 text-xs font-semibold rounded-md transition-all ${
-                                        editMode === 'direct'
-                                        ? 'bg-white text-blue-700 shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                    }`}>
-                                    Chỉnh sửa trực tiếp
-                                </button>
-                                <button
-                                    onClick={() => setEditMode('paste')}
-                                    className={`flex-1 text-center py-2 text-xs font-semibold transition-all ${
-                                        editMode === 'paste'
-                                        ? 'bg-white text-blue-700 shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                    }`}>
-                                    Dán nội dung
-                                </button>
-                            </div>
+                            {/*<div className="bg-slate-100 p-1 rounded-lg flex mb-8 ">*/}
+                            {/*    <button*/}
+                            {/*        onClick={() => setEditMode('direct')}*/}
+                            {/*        className={`flex-1 text-center py-2 text-xs font-semibold rounded-md transition-all ${*/}
+                            {/*            editMode === 'direct'*/}
+                            {/*            ? 'bg-white text-blue-700 shadow-sm'*/}
+                            {/*            : 'text-slate-500 hover:text-slate-700'*/}
+                            {/*        }`}>*/}
+                            {/*        Chỉnh sửa trực tiếp*/}
+                            {/*    </button>*/}
+                            {/*    <button*/}
+                            {/*        onClick={() => setEditMode('paste')}*/}
+                            {/*        className={`flex-1 text-center py-2 text-xs font-semibold transition-all ${*/}
+                            {/*            editMode === 'paste'*/}
+                            {/*            ? 'bg-white text-blue-700 shadow-sm'*/}
+                            {/*            : 'text-slate-500 hover:text-slate-700'*/}
+                            {/*        }`}>*/}
+                            {/*        Dán nội dung*/}
+                            {/*    </button>*/}
+                            {/*</div>*/}
 
                             {/* Basic Fields */}
                             <div className="space-y-6">
                                 <div className="space-y-1">
                                     <label className="text-[10px] uppercase font-bold text-slate-400">Tên đầy đủ</label>
-                                    <input type="text" className="w-full input-underlined text-lg font-bold"
-                                           defaultValue="Nguyễn Văn A"/>
+                                    <input
+                                        type="text"
+                                        className="w-full input-underlined text-lg font-bold"
+                                        value={userName}
+                                        onChange={(e) => setUserName(e.target.value)}
+                                    />
                                 </div>
                                 <div className="grid grid-cols-2 gap-8">
                                     <div className="space-y-1">
                                         <label className="text-[10px] uppercase font-bold text-slate-400">Email</label>
-                                        <input type="email" className="w-full input-underlined text-slate-600"/>
+                                        <input
+                                            type="email"
+                                            className="w-full input-underlined text-slate-600"
+                                            value={userEmail}
+                                            onChange={(e) => setUserEmail(e.target.value)}
+                                        />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] uppercase font-bold text-slate-400">Số điện
                                             thoại</label>
-                                        <input type="text" className="w-full input-underlined text-slate-600"/>
+                                        <input
+                                            type="text"
+                                            className="w-full input-underlined text-slate-600"
+                                            value={userPhone}
+                                            onChange={(e) => setUserPhone(e.target.value)}
+                                        />
                                     </div>
                                 </div>
 
