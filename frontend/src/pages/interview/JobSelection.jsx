@@ -17,7 +17,15 @@ export default function JobSelection() {
 
   useEffect(() => {
     setStep(1);
-  }, [setStep]);
+    // XÓA kết quả phỏng vấn cũ khi bắt đầu luồng chuẩn bị mới
+    // Điều này ngăn chặn việc bị skip InterviewRoom do skipStreak hoặc feedback từ session trước
+    update({
+      answers: [],
+      transcriptLog: [],
+      skipStreak: 0,
+      feedback: null
+    });
+  }, [setStep, update]);
 
   const filtered = JOBS.filter((j) =>
     j.title.toLowerCase().includes(searchTerm.toLowerCase())
