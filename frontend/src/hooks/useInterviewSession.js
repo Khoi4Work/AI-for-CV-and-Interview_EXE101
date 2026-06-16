@@ -260,6 +260,7 @@ export function useInterviewSession() {
    * Cập nhật 1 answer trong answers[].
    */
   const saveAnswer = useCallback((qid, answer) => {
+    console.log('[useInterviewSession] saveAnswer called. qid:', qid, 'answer:', answer);
     setData((prev) => {
       const newAnswers = [...prev.answers.filter((a) => a.qid !== qid), answer];
       const newLog = [
@@ -268,12 +269,14 @@ export function useInterviewSession() {
       ];
       // Reset skipStreak nếu user trả lời thật
       const newSkipStreak = answer.skipped ? prev.skipStreak + 1 : 0;
-      return {
+      const newState = {
         ...prev,
         answers: newAnswers,
         transcriptLog: newLog,
         skipStreak: newSkipStreak,
       };
+      console.log('[useInterviewSession] New answers count:', newState.answers.length);
+      return newState;
     });
   }, []);
 

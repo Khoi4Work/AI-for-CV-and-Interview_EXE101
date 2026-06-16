@@ -66,6 +66,7 @@ export function InterviewRoom() {
     const spokeDurationRef = useRef(0);
     const questionStartedAtRef = useRef(null);
     const lastTranscriptRef = useRef('');
+    const interimTranscriptRef = useRef('');
     const phaseRef = useRef(phase);
     const currentIndexRef = useRef(currentIndex);
     const recorderRef = useRef(null);
@@ -118,23 +119,25 @@ export function InterviewRoom() {
             let interimTranscriptText = '';
 
             for (let i = event.resultIndex; i < event.results.length; ++i) {
+                const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
+                    finalTranscript += transcript + ' ';
                 } else {
-                    interimTranscriptText += event.results[i][0].transcript;
+                    interimTranscriptText += transcript;
                 }
             }
 
             if (finalTranscript) {
                 lastTranscriptRef.current = (lastTranscriptRef.current + ' ' + finalTranscript).trim();
             }
+            interimTranscriptRef.current = interimTranscriptText;
             setInterimTranscript(interimTranscriptText);
         };
 
         recognition.onerror = (err) => console.error("Speech Recognition Error:", err);
         recognition.onend = () => {
             if (phaseRef.current === 'recording') {
-                recognition.start(); // Restart if we are still in recording phase
+                recognition.start();
             }
         };
 
@@ -218,13 +221,7 @@ export function InterviewRoom() {
             return;
         }
         setPhase('between');
-        if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
-        phaseTimerRef.current = setTimeout(() => {
-            if (phaseRef.current === 'between') {
-                startNextQuestion(true);
-            }
-        }, BETWEEN_DURATION);
-    }, [questions, endInterview, startNextQuestion]);
+    }, [questions, endInterview]);
 
     const transitionToProcessing = useCallback((skipped) => {
         if (phaseRef.current !== 'recording') return;
@@ -233,20 +230,35 @@ export function InterviewRoom() {
         }
         stopSTT();
 
-        const answerText = lastTranscriptRef.current.trim() || (skipped ? '' : '...');
+        // Gộp cả final transcript và interim transcript cuối cùng để không bị mất lời nói
+        const finalPart = lastTranscriptRef.current.trim();
+        const interimPart = interimTranscriptRef.current.trim();
+        let answerText = '';
+
+        if (finalPart && interimPart) {
+            answerText = (finalPart + ' ' + interimPart).trim();
+        } else {
+            answerText = (finalPart || interimPart).trim();
+        }
+
+        if (!answerText) {
+            answerText = skipped ? '' : '...';
+        }
+
         const qid = questions[currentIndexRef.current]?.id;
         if (qid) {
             saveAnswer(qid, {
                 qid,
-                text: skipped ? '' : answerText,
+                text: (skipped && !answerText) ? '' : (answerText || '...'),
                 durationMs: Date.now() - (questionStartedAtRef.current || Date.now()),
-                skipped,
+                skipped: skipped && !answerText,
                 startedAt: questionStartedAtRef.current,
                 endedAt: Date.now(),
             });
         }
 
         lastTranscriptRef.current = '';
+        interimTranscriptRef.current = '';
         lastSpokeAtRef.current = null;
         spokeDurationRef.current = 0;
         setShowCurrent(false);
@@ -460,12 +472,20 @@ export function InterviewRoom() {
                 )}
                 {data.transcriptLog && data.transcriptLog.length > 0 && (
                     <div className="mt-4 max-w-2xl w-full max-h-32 overflow-y-auto space-y-1 text-sm text-gray-500">
+                        {/* Render 4 tin nhắn gần nhất từ log */}
                         {data.transcriptLog.slice(-4).map((entry, i) => (
                             <div key={i} className="flex items-start gap-2">
                                 <span className="text-xs font-bold w-12 shrink-0">{entry.role === 'ai' ? 'AI:' : 'Bạn:'}</span>
                                 <span className="line-clamp-1">{entry.text}</span>
                             </div>
                         ))}
+                        {/* HIỂN THỊ LỜI NÓI THỜI GIAN THỰC TRONG CHAT LOG */}
+                        {phase === 'recording' && interimTranscript && (
+                            <div className="flex items-start gap-2 animate-fade-in">
+                                <span className="text-xs font-bold w-12 shrink-0">Bạn:</span>
+                                <span className="italic text-blue-500 line-clamp-1">{interimTranscript}...</span>
+                            </div>
+                        )}
                     </div>
                 )}
             </main>
