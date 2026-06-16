@@ -76,7 +76,7 @@ export function Header() {
                         onClick={() => setDropdownOpen(!dropdownOpen)}
                     >
                         <img alt="User avatar" className="w-full h-full object-cover"
-                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM9XsZ4aWCS5xkVo_8SDk7jd9bdPumI-yvoRQpK2EdyEHINQSVcdliwuZj-2_2FzWV7ZF0uzt8CmMBzxR--3IxLaXuCMRQ_4jLJ5Ilj5xugbOgo4Zp1KQGhkNEvzufFHPMhQ8Mq04qtKbYprDFaH9bBUk37yVPKsH3eYYJ laT9S"/>
+                             src="https://i.postimg.cc/TPSD2BTv/avatar.avif"/>
                     </div>
 
                     {dropdownOpen && (

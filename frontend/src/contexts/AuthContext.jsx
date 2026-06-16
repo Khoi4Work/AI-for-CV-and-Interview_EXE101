@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
     github: 'https://github.com/user-example',
     membershipType: 'Pro',
     memberSince: 'Thành viên từ 2026',
+    favorites: [], // List of template IDs
   });
 
   const handleLogin = () => {
@@ -24,6 +25,18 @@ export function AuthProvider({ children }) {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+  };
+
+  const toggleFavorite = (templateId) => {
+    setProfile((prev) => {
+      const isFavorite = prev.favorites.includes(templateId);
+      return {
+        ...prev,
+        favorites: isFavorite
+          ? prev.favorites.filter(id => id !== templateId)
+          : [...prev.favorites, templateId],
+      };
+    });
   };
 
   const handleProfileUpdate = (updated) => {
@@ -49,6 +62,7 @@ export function AuthProvider({ children }) {
       profile,
       handleLogin,
       handleLogout,
+      toggleFavorite,
       handleProfileUpdate,
       handle2faToggle,
       handleUpgradePlan

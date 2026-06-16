@@ -1,5 +1,7 @@
 import {Sparkles} from 'lucide-react';
-export default function Sidebar(){
+import { TEMPLATE_CATEGORIES, TEMPLATE_STYLES } from '../../constants/templates';
+
+export default function Sidebar({ activeCategory, setActiveCategory, activeStyle, setActiveStyle }){
     return(
         <>
             {/* Sidebar */}
@@ -8,11 +10,20 @@ export default function Sidebar(){
                 <section>
                     <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Categories</h3>
                     <ul className="space-y-1">
-                        <li><button className="w-full text-left px-4 py-2 bg-blue-700 text-white rounded-md font-medium text-sm">All Templates</button></li>
-                        <li><button className="w-full text-left px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-md text-sm transition-colors">Technology</button></li>
-                        <li><button className="w-full text-left px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-md text-sm transition-colors">Marketing</button></li>
-                        <li><button className="w-full text-left px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-md text-sm transition-colors">Design</button></li>
-                        <li><button className="w-full text-left px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-md text-sm transition-colors">Communication</button></li>
+                        {TEMPLATE_CATEGORIES.map(cat => (
+                            <li key={cat.id}>
+                                <button
+                                    onClick={() => setActiveCategory(cat.id)}
+                                    className={`w-full text-left px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                                        activeCategory === cat.id
+                                        ? 'bg-blue-700 text-white'
+                                        : 'text-slate-600 hover:bg-slate-100'
+                                    }`}
+                                >
+                                    {cat.label}
+                                </button>
+                            </li>
+                        ))}
                     </ul>
                 </section>
 
@@ -20,10 +31,19 @@ export default function Sidebar(){
                 <section>
                     <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Design Style</h3>
                     <div className="grid grid-cols-2 gap-2">
-                        <button className="border border-slate-300 rounded px-2 py-1.5 text-xs font-semibold hover:border-blue-500 transition-colors">Minimalist</button>
-                        <button className="border border-slate-300 rounded px-2 py-1.5 text-xs font-semibold hover:border-blue-500 transition-colors">Creative</button>
-                        <button className="border border-slate-300 rounded px-2 py-1.5 text-xs font-semibold hover:border-blue-500 transition-colors">Executive</button>
-                        <button className="border border-slate-300 rounded px-2 py-1.5 text-xs font-semibold hover:border-blue-500 transition-colors">Modern</button>
+                        {TEMPLATE_STYLES.map(style => (
+                            <button
+                                key={style}
+                                onClick={() => setActiveStyle(prev => prev === style ? null : style)}
+                                className={`border rounded px-2 py-1.5 text-xs font-semibold transition-colors ${
+                                    activeStyle === style
+                                    ? 'border-blue-500 text-blue-600 bg-blue-50'
+                                    : 'border-slate-300 text-slate-600 hover:border-blue-500'
+                                }`}
+                            >
+                                {style}
+                            </button>
+                        ))}
                     </div>
                 </section>
 
