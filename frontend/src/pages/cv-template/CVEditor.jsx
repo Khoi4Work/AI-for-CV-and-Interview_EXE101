@@ -1,14 +1,39 @@
 import TopNagivationToolBar from "../../components/template/TopNagivationToolBar.jsx";
 import {User} from "lucide-react";
+import { useState } from 'react';
+import { useApp } from '../../contexts/AppContext.jsx';
 
 export default function CVEditor() {
+    const { showToast } = useApp();
+    const [zoom, setZoom] = useState(100);
+
+    const handleExport = () => {
+        showToast('Xuất PDF thành công! Tệp của bạn đang được tải xuống.', 'success');
+    };
+
+    const handleZoomIn = () => {
+        setZoom(prev => Math.min(prev + 10, 200));
+    };
+
+    const handleZoomOut = () => {
+        setZoom(prev => Math.max(prev - 10, 50));
+    };
+
     return (
         <div className="flex flex-col h-screen overflow-hidden editor-body">
-            <TopNagivationToolBar/>
+            <TopNagivationToolBar
+                onExport={handleExport}
+                zoom={zoom}
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+            />
             <main className="flex-1 overflow-auto flex justify-center p-12 bg-gray-200">
 
                 {/* CV Document */}
-                <div className="cv-page-container bg-white flex overflow-hidden shrink-0 shadow-2xl">
+                <div
+                    className="cv-page-container bg-white flex overflow-hidden shrink-0 shadow-2xl transition-transform duration-200 ease-in-out"
+                    style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+                >
 
                     {/* Left Sidebar */}
                     <aside className="w-1/3 flex flex-col">

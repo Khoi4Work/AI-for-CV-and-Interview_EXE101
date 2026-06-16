@@ -55,7 +55,7 @@ export default function InterviewLanding() {
                         {/* Abstract representation of the video/interview UI */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-gray-100 to-white"></div>
                         <div
-                            className="absolute bottom-6 left-6 bg-white rounded-xl p-4 shadow-lg border border-gray-100 -xs animate-pulse">
+                            className="absolute bottom-6 left-6 bg-white rounded-xl p-3 shadow-lg border border-gray-100 overflow-hidden animate-pulse">
                             <div className="flex items-center gap-2 mb-2">
                                 <div
                                     className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
@@ -63,8 +63,11 @@ export default function InterviewLanding() {
                                 </div>
                                 <span className="text-xs font-semibold text-gray-800">Feedback AI</span>
                             </div>
-                            <div className="w-full h-2 bg-gray-100 rounded mb-1"></div>
-                            <div className="w-4/5 h-2 bg-gray-100 rounded"></div>
+                            <img
+                                src="https://i.postimg.cc/dV633pjF/interview.jpg"
+                                alt="AI Feedback"
+                                className="w-full h-auto rounded-lg"
+                            />
                         </div>
                     </div>
                 </section>
