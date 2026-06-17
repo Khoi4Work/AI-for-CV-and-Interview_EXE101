@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Code, Monitor, Server, Cloud, Bug, Database, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Header } from '../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../components/layout/Footer.jsx';
-import { JOBS } from '../../constant/jobs';
+import { JOBS } from '../../constants/jobs.js';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
 
 const ICONS = { Code, Monitor, Server, Cloud, Bug, Database };

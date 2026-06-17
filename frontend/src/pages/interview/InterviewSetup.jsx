@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, ChevronDown, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Header } from '../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../components/layout/Footer.jsx';
-import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../../constant/interviewTypes';
-import { COMPANIES } from '../../constant/companies';
+import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../../constants/interviewTypes.js';
+import { COMPANIES } from '../../constants/companies.js';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
 
 export default function InterviewSetup() {

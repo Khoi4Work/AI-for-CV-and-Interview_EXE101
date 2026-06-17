@@ -1,9 +1,9 @@
 // /src/hooks/useInterviewSession.js
 // Quản lý session state qua sessionStorage — key 'interview_session_v1'
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { pickQuestionsForSession } from '../constant/questionBank';
-import { COMPANIES } from '../constant/companies';
-import { CRITERIA, HR_PERSONAS, labelForScore } from '../constant/feedbackRubric';
+import { pickQuestionsForSession } from '../constants/questionBank.js';
+import { COMPANIES } from '../constants/companies.js';
+import { CRITERIA, HR_PERSONAS, labelForScore } from '../constants/feedbackRubric.js';
 
 const SESSION_KEY = 'interview_session_v1';
 

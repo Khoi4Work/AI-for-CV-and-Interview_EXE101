@@ -6,7 +6,7 @@ import Sidebar from "../../components/template/Sidebar.jsx";
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../components/layout/GuestHeader.jsx";
 import {useAuth} from "../../contexts/AuthContext.jsx";
-import { TEMPLATES_DATA } from '../../constants/templates.jsx';
+import { TEMPLATES_DATA } from '../../constants/templates.js';
 
 export default function TemplateList() {
     const {isLoggedIn, profile} = useAuth();
