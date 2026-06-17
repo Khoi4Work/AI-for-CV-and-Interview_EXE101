@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, FileText, Sparkles, AlertCircle, Edit3, Trash2, ArrowUpRight, CheckCircle2, ChevronRight, HelpCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext.jsx';
 
 const MyCVsPage = () => {
+  const navigate = useNavigate();
   const { cvs, handleAddCV, handleRemoveCV, showToast } = useApp();
   const [newCvTitle, setNewCvTitle] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -182,7 +184,7 @@ const MyCVsPage = () => {
 
               <button
                 id={`cv-goto-editor-${cv.id}`}
-                onClick={() => showToast(`Đang mở biên tập viên thông minh cho: ${cv.title}`, 'success')}
+                onClick={() => navigate('/editor')}
                 className="w-full text-center text-[10px] font-bold text-slate-400 group-hover:text-[#0b3c8f] flex items-center justify-center space-x-1 pt-1.5 border-t border-slate-50 transition-colors"
               >
                 <span>Chỉnh sửa nội dung</span>

@@ -6,7 +6,7 @@ import Sidebar from "../../components/template/Sidebar.jsx";
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../components/layout/GuestHeader.jsx";
 import {useAuth} from "../../contexts/AuthContext.jsx";
-import { TEMPLATES_DATA } from '../../constants/templates.jsx';
+import { TEMPLATES_DATA } from '../../constant/templates.jsx';
 
 export default function TemplateList() {
     const {isLoggedIn, profile} = useAuth();
@@ -155,7 +155,7 @@ export default function TemplateList() {
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
                                 <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
                                     <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                                        <h3 className="text-xl font-bold text-gray-900">Tải lên CV của bạn</h3>
+                                        <h3 className="text-xl font-bold text-gray-900">Tải lên template CV của bạn</h3>
                                         <button
                                             onClick={() => {
                                                 setIsUploadModalOpen(false);
