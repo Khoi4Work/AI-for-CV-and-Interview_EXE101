@@ -1,5 +1,5 @@
 import {Sparkles} from 'lucide-react';
-import { TEMPLATE_CATEGORIES, TEMPLATE_STYLES } from '../../constants/templates';
+import { TEMPLATE_CATEGORIES, TEMPLATE_STYLES } from '../../constants/templates.js';
 
 export default function Sidebar({ activeCategory, setActiveCategory, activeStyle, setActiveStyle }){
     return(

@@ -11,7 +11,7 @@ import React, {useEffect, useRef, useState, useCallback, useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Clock, Mic, MicOff, Volume2, ArrowRight, Settings as SettingsIcon, Sparkles} from 'lucide-react';
 import {useInterviewSession} from '../../hooks/useInterviewSession';
-import {END_PHRASES_VN, END_PHRASES_EN} from '../../constant/questionBank';
+import {END_PHRASES_VN, END_PHRASES_EN} from '../../constants/questionBank.js';
 
 const ASKING_DURATION = 2500; // ms
 const PROCESSING_DURATION = 1200;
@@ -171,57 +171,21 @@ export function InterviewRoom() {
     // --- 2. Transition Handlers ---
     const endInterview = useCallback(() => {
         setPhase('done');
-        if (animationRef.current) cancelAnimationFrame(animationRef.current);
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach((t) => t.stop());
-            streamRef.current = null;
-        }
-        if (audioContextRef.current) {
-            audioContextRef.current.close();
-            audioContextRef.current = null;
-        }
-        analyserRef.current = null;
-        setMicState('idle');
-        setAudioLevels(new Array(20).fill(0));
+        stopMic();
+        stopSTT();
         generateFeedback();
         setTimeout(() => navigate('/interview/review'), 200);
-    }, [generateFeedback, navigate]);
+    }, [generateFeedback, navigate, stopMic]);
 
-    const startNextQuestion = useCallback((skipped = false) => {
-        if (phaseRef.current !== 'between') return;
-        if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
-
+    const transitionToNext = useCallback(() => {
         let nextIndex = currentIndex + 1;
-        if (skipped) {
-            const skippedQ = questions[nextIndex];
-            if (skippedQ) {
-                saveAnswer(skippedQ.id, {
-                    qid: skippedQ.id,
-                    text: '',
-                    durationMs: 0,
-                    skipped: true,
-                    startedAt: Date.now(),
-                    endedAt: Date.now(),
-                });
-                nextIndex++;
-            }
-        }
-
         if (nextIndex >= questions.length) {
             endInterview();
         } else {
             setCurrentIndex(nextIndex);
             setPhase('asking');
         }
-    }, [currentIndex, questions, saveAnswer, endInterview]);
-
-    const transitionToBetween = useCallback(() => {
-        if (currentIndexRef.current >= questions.length - 1) {
-            endInterview();
-            return;
-        }
-        setPhase('between');
-    }, [questions, endInterview]);
+    }, [currentIndex, questions, endInterview]);
 
     const transitionToProcessing = useCallback((skipped) => {
         if (phaseRef.current !== 'recording') return;
@@ -268,16 +232,16 @@ export function InterviewRoom() {
         if (inQuestionTimerRef.current) clearTimeout(inQuestionTimerRef.current);
 
         phaseTimerRef.current = setTimeout(() => {
-            transitionToBetween();
+            transitionToNext();
         }, PROCESSING_DURATION);
-    }, [questions, saveAnswer, addTranscript, transitionToBetween, stopSTT]);
+    }, [questions, saveAnswer, addTranscript, transitionToNext, stopSTT]);
 
     const startVAD = useCallback(() => {
         if (!analyserRef.current) return;
         const buf = new Uint8Array(analyserRef.current.frequencyBinCount);
         const tick = () => {
             const currentPhase = phaseRef.current;
-            if (currentPhase !== 'recording' && currentPhase !== 'between') return;
+            if (currentPhase !== 'recording') return;
 
             analyserRef.current.getByteFrequencyData(buf);
             const sampleBins = Math.min(buf.length, 24);
@@ -291,9 +255,7 @@ export function InterviewRoom() {
             }));
 
             if (avg > VAD_THRESHOLD) {
-                if (currentPhase === 'between') {
-                    startNextQuestion(false);
-                } else if (currentPhase === 'recording') {
+                if (currentPhase === 'recording') {
                     lastSpokeAtRef.current = Date.now();
                     spokeDurationRef.current += 100;
                     if (Math.random() < 0.15) {
@@ -307,7 +269,7 @@ export function InterviewRoom() {
             animationRef.current = requestAnimationFrame(tick);
         };
         tick();
-    }, [startNextQuestion]);
+    }, []);
 
     const startRecording = useCallback(async () => {
         setTimeout(() => setShowCurrent(true), 0);
@@ -350,25 +312,27 @@ export function InterviewRoom() {
                 const utterance = new SpeechSynthesisUtterance(currentQ.text);
                 utterance.lang = 'vi-VN';
                 utterance.rate = 1.0;
+
+                utterance.onend = () => {
+                    setPhase('recording');
+                };
+
                 window.speechSynthesis.speak(utterance);
+            } else {
+                setPhase('recording');
             }
+
+            // Fallback timer in case speech synthesis fails or hangs
             if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
             phaseTimerRef.current = setTimeout(() => {
                 setPhase('recording');
-            }, ASKING_DURATION);
+            }, 15000); // 15s fallback, longer than any typical question
         } else if (phase === 'recording') {
             setTimeout(() => {
                 startRecording().catch(console.error);
             }, 0);
-        } else if (phase === 'between') {
-            if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
-            phaseTimerRef.current = setTimeout(() => {
-                if (phaseRef.current === 'between') {
-                    startNextQuestion(true);
-                }
-            }, BETWEEN_DURATION);
         }
-    }, [phase, questions, currentQ, startRecording, startNextQuestion]);
+    }, [phase, questions, currentQ, startRecording]);
 
     useEffect(() => {
         if (phase !== 'recording') return;
@@ -384,11 +348,6 @@ export function InterviewRoom() {
         }, 200);
         return () => clearInterval(interval);
     }, [phase, transitionToProcessing]);
-
-    const handleReady = useCallback(() => {
-        if (phase !== 'between') return;
-        startNextQuestion(false);
-    }, [phase, startNextQuestion]);
 
     const handleMicClick = useCallback(() => {
         if (micState === 'denied') setupMic().catch(console.error);
@@ -500,15 +459,9 @@ export function InterviewRoom() {
                     </button>
                 </div>
                 <div className="absolute left-1/2 -translate-x-1/2">
-                    {phase === 'between' ? (
-                        <button onClick={handleReady} className="flex items-center justify-center gap-2 bg-[#111c3a] hover:bg-black text-white px-8 py-3 w-64 rounded-xl font-medium transition-colors shadow-sm">
-                            <ArrowRight size={18}/> Sẵn sàng câu tiếp
-                        </button>
-                    ) : (
-                        <div className="text-sm text-gray-500 font-medium w-64 text-center">
-                            {phase === 'asking' ? 'AI đang đọc câu hỏi...' : phase === 'recording' ? '🎤 Hãy trả lời hoặc nói "xin hết"' : phase === 'processing' ? 'Đang xử lý...' : ''}
-                        </div>
-                    )}
+                    <div className="text-sm text-gray-500 font-medium w-64 text-center">
+                        {phase === 'asking' ? 'AI đang đọc câu hỏi...' : phase === 'recording' ? '🎤 Hãy trả lời hoặc nói "xin hết"' : phase === 'processing' ? 'Đang xử lý...' : ''}
+                    </div>
                 </div>
                 <div className="w-[180px]"></div>
             </footer>
@@ -520,7 +473,6 @@ function StatusPill({phase, currentIndex, total}) {
     if (phase === 'asking') return <div className="bg-blue-100/50 text-[#1a56db] px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-[#1a56db] animate-pulse"></span>AI đang đọc câu hỏi {currentIndex + 1}/{total}</div>;
     if (phase === 'recording') return <div className="bg-red-100/50 text-red-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>ĐANG GHI ÂM — Câu {currentIndex + 1}/{total}</div>;
     if (phase === 'processing') return <div className="bg-amber-100/50 text-amber-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>AI đang xử lý...</div>;
-    if (phase === 'between') return <div className="bg-gray-100 text-gray-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">Nói bất kỳ hoặc bấm "Sẵn sàng" để tiếp tục</div>;
     return null;
 }
 
