@@ -6,22 +6,12 @@ import { useApp } from '../../contexts/AppContext.jsx';
 
 const SecurityPage = () => {
   const navigate = useNavigate();
-  const { is2faEnabled, handle2faToggle } = useAuth();
+  const { is2faEnabled, handle2faToggle, devices, removeDevice, logoutAllDevices, securityLogs, addSecurityLog } = useAuth();
   const { showToast } = useApp();
   const [state, setState] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
-    devices: [
-      { id: '1', device: 'MacBook Pro', browser: 'Chrome', isCurrent: true, location: 'TP. Hồ Chí Minh, Viêt Nam', status: 'Đang hoạt động' },
-      { id: '2', device: 'iPhone 15 Pro', browser: 'Safari', isCurrent: false, location: 'Hà Nội, Việt Nam', status: '2 giờ trước' },
-      { id: '3', device: 'Windows PC', browser: 'Edge', isCurrent: false, location: 'Đà Nẵng, Việt Nam', status: '3 ngày trước' },
-    ],
-    securityLogs: [
-      { id: 'log-1', action: 'dang_nhap_thanh_cong', title: 'Đăng nhập thành công', details: 'Trình duyệt Chrome trên macOS (IP: 113.161.xx.xx)', timeLabel: 'Hôm nay, 08:45' },
-      { id: 'log-2', action: 'thay_doi_mat_khau', title: 'Thay đổi mật khẩu', details: 'Mật khẩu tài khoản đã được cập nhật thành công.', timeLabel: '15 thg 10, 2026' },
-      { id: 'log-3', action: 'co_gang_dang_nhap_that_bai', title: 'Cố gắng đăng nhập thất bại', details: 'Có 3 lần thử đăng nhập sai từ một vị trí lạ (Campuchia).', timeLabel: '12 thg 10, 2026' },
-    ],
   });
 
   const handleUpdatePassword = (e) => {
@@ -43,36 +33,28 @@ const SecurityPage = () => {
 
     showToast('Cập nhật mật khẩu thành công!', 'success');
 
-    const newLog = {
+    addSecurityLog({
       id: `log-${Date.now()}`,
       action: 'thay_doi_mat_khau',
       title: 'Thay đổi mật khẩu',
       details: 'Mật khẩu tài khoản vừa mới được cập nhật trên thiết bị này.',
       timeLabel: 'Hôm nay, vừa mới đây',
-    };
+    });
 
-    setState((prevState) => ({
-      ...prevState,
-      securityLogs: [newLog, ...prevState.securityLogs],
+    setState({
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
-    }));
+    });
   };
 
   const handleLogoutDevice = (id, deviceName) => {
-    setState((prevState) => ({
-      ...prevState,
-      devices: prevState.devices.filter((d) => d.id !== id),
-    }));
+    removeDevice(id);
     showToast(`Đã thu hồi phiên đăng nhập trên: ${deviceName}`, 'info');
   };
 
   const handleLogoutAll = () => {
-    setState((prevState) => ({
-      ...prevState,
-      devices: prevState.devices.filter((d) => d.isCurrent),
-    }));
+    logoutAllDevices();
     showToast('Đã đăng xuất khỏi tất cả các thiết bị phụ khác thành công!', 'success');
   };
 
@@ -226,7 +208,7 @@ const SecurityPage = () => {
                 <p className="text-[10px] text-slate-400">Quản lý các trình duyệt và thiết bị đang truy cập tài khoản của bạn.</p>
               </div>
             </div>
-            {state.devices.length > 1 && (
+            {devices.length > 1 && (
               <button
                 id="sec-logout-all-btn"
                 onClick={handleLogoutAll}
@@ -238,7 +220,7 @@ const SecurityPage = () => {
           </div>
 
           <div className="divide-y divide-slate-100">
-            {state.devices.map((dev) => (
+            {devices.map((dev) => (
               <div key={dev.id} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
                 <div className="flex items-start space-x-3.5">
                   <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-150 flex items-center justify-center text-slate-500 shadow-sm">
@@ -280,7 +262,7 @@ const SecurityPage = () => {
               </div>
             ))}
 
-            {state.devices.length === 0 && (
+            {devices.length === 0 && (
               <p className="text-center text-xs text-slate-400 py-4">Không có hoạt động nào gần đây.</p>
             )}
           </div>
@@ -303,7 +285,7 @@ const SecurityPage = () => {
             <h3 className="font-bold text-slate-800">Hoạt động bảo mật gần đây</h3>
           </div>
           <div className="space-y-4">
-            {state.securityLogs.map((log) => {
+            {securityLogs.map((log) => {
               const style = getLogDetails(log.action);
               return (
                 <div key={log.id} className="flex items-start space-x-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50/50 transition-colors group">
@@ -320,7 +302,7 @@ const SecurityPage = () => {
                 </div>
               );
             })}
-            {state.securityLogs.length === 0 && (
+            {securityLogs.length === 0 && (
               <p className="text-center text-xs text-slate-400 py-4">Không có hoạt động nào gần đây.</p>
             )}
           </div>

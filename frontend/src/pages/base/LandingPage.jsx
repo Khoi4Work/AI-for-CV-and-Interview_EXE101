@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import FloatingCVCard from '../../components/user/FloatingCVCard.jsx';
 import GuestHeader from '../../components/layout/GuestHeader.jsx';
-import {TEMPLATES_DATA} from "../../constants/templates.jsx";
+import {TEMPLATES_DATA} from "../../constant/templates.jsx";
 
 const LandingPage = () => {
     const navigate = useNavigate();

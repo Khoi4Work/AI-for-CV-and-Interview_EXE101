@@ -6,7 +6,7 @@ import {useAuth} from '../../contexts/AuthContext.jsx';
 import {useApp} from '../../contexts/AppContext.jsx';
 import {ArrowRight, FileText, Bot, BarChart2, MessageSquare, ExternalLink} from 'lucide-react';
 import {useNavigate} from "react-router-dom";
-import { TEMPLATES_DATA } from '../../constants/templates.jsx';
+import { TEMPLATES_DATA } from '../../constant/templates.jsx';
 
 export default function Home() {
     const {profile, handleLogout} = useAuth();

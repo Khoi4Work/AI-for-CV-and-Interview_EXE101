@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 import TopAction from "../../components/template/TopAction.jsx";
-import { TEMPLATES_DATA } from '../../constants/templates.jsx';
+import { TEMPLATES_DATA } from '../../constant/templates.jsx';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useApp } from '../../contexts/AppContext.jsx';
 

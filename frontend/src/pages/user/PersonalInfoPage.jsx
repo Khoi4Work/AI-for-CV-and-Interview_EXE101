@@ -40,6 +40,13 @@ const PersonalInfoPage = () => {
     showToast('Đã khôi phục thông tin ban đầu.', 'info');
   };
 
+  const handlePhotoUpload = () => {
+    showToast('Đang tải ảnh đại diện lên...', 'info');
+    setTimeout(() => {
+      showToast('Đã cập nhật ảnh đại diện thành công!', 'success');
+    }, 1500);
+  };
+
   const getInitials = (name) => {
     if (!name) return 'U';
     return name
@@ -65,7 +72,10 @@ const PersonalInfoPage = () => {
             <div className="w-24 h-24 rounded-full bg-[#0b3c8f]/10 text-[#0b3c8f] border-2 border-[#0b3c8f]/20 shadow-inner flex items-center justify-center font-bold text-2xl select-none">
               {getInitials(formData.fullName)}
             </div>
-            <button className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white border border-slate-200 text-[#0b3c8f] hover:bg-slate-50 shadow transition-all active:scale-90">
+            <button
+              onClick={handlePhotoUpload}
+              className="absolute bottom-0 right-0 p-1.5 rounded-full bg-white border border-slate-200 text-[#0b3c8f] hover:bg-slate-50 shadow transition-all active:scale-90 cursor-pointer"
+            >
               <Camera className="w-4 h-4" />
             </button>
           </div>
