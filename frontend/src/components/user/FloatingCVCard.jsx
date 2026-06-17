@@ -45,7 +45,7 @@ export default function FloatingCVCard() {
         className="relative w-full max-w-[480px] aspect-[3/4] bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden border border-outline-variant flex flex-col gap-sm transition-transform duration-200 ease-out will-change-transform"
       >
         <img
-          src="https://i.postimg.cc/zBSnG0vR/Home.jpg"
+          src="https://i.postimg.cc/GtchNc1m/polished.png"
           alt="CV Preview"
           className="w-full h-full object-cover"
         />

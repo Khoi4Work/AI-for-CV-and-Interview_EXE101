@@ -1,76 +1,19 @@
 import React, { useState } from 'react';
 import { Clock, Filter, Sparkles, Video, FileEdit, Download, PlusCircle, LogIn, ChevronDown, CheckCheck, BarChart2 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext.jsx';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import Modal from '../../components/ui/Modal.jsx';
 
 const HistoryPage = () => {
   const { showToast } = useApp();
+  const { activityLogs, addActivityLog } = useAuth();
   const [filterActive, setFilterActive] = useState('all');
-  const [logs, setLogs] = useState([
-    {
-      id: 'h1',
-      type: 'phong_van',
-      title: 'Phỏng vấn giả lập: UI/UX Designer',
-      time: '15:45',
-      dateLabel: 'HÔM NAY',
-      score: '8.5/10',
-      aiComment: 'AI nhận xét: Giao tiếp tốt, cần cải thiện ngôn ngữ cơ thể và cách giải thích quy trình thiết kế.',
-    },
-    {
-      id: 'h2',
-      type: 'ai_toi_uu',
-      title: 'AI tối ưu hóa hồ sơ',
-      time: '14:30',
-      dateLabel: 'HÔM NAY',
-      details: 'Hệ thống AI đã tự động tối ưu hóa phần "Kỹ năng chuyên môn" cho CV "Frontend Developer_2024".',
-    },
-    {
-      id: 'h3',
-      type: 'chinh_sua_cv',
-      title: 'Chỉnh sửa CV',
-      time: '10:15',
-      dateLabel: 'HÔM NAY',
-      details: 'Bạn đã cập nhật thông tin tại mục "Kinh nghiệm làm việc" trong hồ sơ "Marketing Manager".',
-    },
-    {
-      id: 'h4',
-      type: 'phong_van',
-      title: 'Phỏng vấn giả lập: Frontend Developer',
-      time: '14:20',
-      dateLabel: 'HÔM QUA',
-      score: '7.8/10',
-      aiComment: 'AI nhận xét: Kiến thức kỹ thuật vững, tuy nhiên cần tự tin hơn khi trả lời các câu hỏi về xử lý tình huống.',
-    },
-    {
-      id: 'h5',
-      type: 'tai_xuong',
-      title: 'Tải xuống PDF',
-      time: '16:45',
-      dateLabel: 'HÔM QUA',
-      details: 'Đã xuất file PDF thành công cho CV.',
-      meta: '2.4 MB • Hoàn tất',
-    },
-    {
-      id: 'h6',
-      type: 'tao_cv',
-      title: 'Tạo CV mới',
-      time: '09:00',
-      dateLabel: 'HÔM QUA',
-      details: 'Bắt đầu khởi tạo CV mới với template.',
-    },
-    {
-      id: 'h7',
-      type: 'dang_nhap',
-      title: 'Smartfolio',
-      time: '08:55',
-      dateLabel: 'HÔM QUA',
-      details: 'Đăng nhập từ trình duyệt Chrome trên thiết bị macOS (IP: 113.161.xx.xx).',
-    },
-  ]);
+  const [detailModal, setDetailModal] = useState({ open: false, log: null });
 
   const handleLoadMore = () => {
     const extraLogs = [
       {
-        id: 'h8',
+        id: `h-extra-${Date.now()}`,
         type: 'ai_toi_uu',
         title: 'AI tối ưu hóa hồ sơ',
         time: '11:15',
@@ -78,7 +21,7 @@ const HistoryPage = () => {
         details: 'Đã hoàn thành sửa lỗi dấu câu và văn phong tiếng Anh chuẩn mực cho hồ sơ của bạn.',
       },
       {
-        id: 'h9',
+        id: `h-extra-${Date.now()+1}`,
         type: 'tai_xuong',
         title: 'Tải xuống PDF',
         time: '10:00',
@@ -88,7 +31,8 @@ const HistoryPage = () => {
       }
     ];
 
-    setLogs((prevLogs) => [...prevLogs, ...extraLogs]);
+    // In a real app, we would fetch from API. For now, we use the context handler.
+    extraLogs.forEach(log => addActivityLog(log));
     showToast('Đã tải thêm hoạt động bảo mật cũ hơn.', 'info');
   };
 
@@ -135,7 +79,7 @@ const HistoryPage = () => {
     return (
       <div className="space-y-4">
         <div className="flex items-center space-x-4 select-none">
-          <span className="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">{title}</span>
+          <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">{title}</span>
           <div className="flex-1 h-px bg-slate-150"></div>
         </div>
 
@@ -178,11 +122,11 @@ const HistoryPage = () => {
                   <span className="uppercase tracking-wide font-mono text-[8px] text-slate-400">Smartfolio trace</span>
                   <button
                     id={`hist-view-detail-${log.id}`}
-                    onClick={() => showToast(`Đang hiển thị dữ liệu chi tiết cho: ${log.title}`, 'info')}
+                    onClick={() => setDetailModal({ open: true, log })}
                     className="hover:underline flex items-center space-x-0.5 cursor-pointer pb-0.5"
                   >
                     <span>Xem chi tiết</span>
-                    <span>▶</span>
+                    <span className="text-[8px]">▶</span>
                   </button>
                 </div>
               </div>
@@ -201,7 +145,7 @@ const HistoryPage = () => {
     { label: 'Phỏng vấn', id: 'phong_van' },
   ];
 
-  const filteredLogs = logs.filter((log) => {
+  const filteredLogs = activityLogs.filter((log) => {
     if (filterActive === 'all') return true;
     if (filterActive === 'tao_cv') return log.type === 'tao_cv' || log.type === 'chinh_sua_cv';
     return log.type === filterActive;
@@ -261,6 +205,53 @@ const HistoryPage = () => {
           <ChevronDown className="w-4 h-4 shrink-0" />
         </button>
       </div>
+
+      <Modal
+        isOpen={detailModal.open}
+        onClose={() => setDetailModal({ open: false, log: null })}
+        title={`Chi tiết hoạt động: ${detailModal.log?.title}`}
+      >
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Thời gian</span>
+              <span className="text-sm font-semibold text-slate-800">{detailModal.log?.time}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Loại sự kiện</span>
+              <span className="text-sm font-semibold text-slate-800">{detailModal.log?.type}</span>
+            </div>
+          </div>
+
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block mb-2">Nội dung chi tiết</span>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {detailModal.log?.details || "Không có thông tin chi tiết cho sự kiện này."}
+            </p>
+          </div>
+
+          {detailModal.log?.score && (
+            <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-blue-800">Kết quả đánh giá AI</span>
+                <span className="text-sm font-extrabold text-blue-700">{detailModal.log.score}</span>
+              </div>
+              <p className="text-xs text-blue-600 leading-relaxed italic">
+                "{detailModal.log.aiComment}"
+              </p>
+            </div>
+          )}
+
+          <div className="pt-4 flex justify-end">
+            <button
+              onClick={() => setDetailModal({ open: false, log: null })}
+              className="px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:bg-slate-700 transition-colors"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
