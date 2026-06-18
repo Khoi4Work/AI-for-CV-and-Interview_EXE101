@@ -24,13 +24,22 @@ export default function CVBuilder() {
         updateSummary,
         addExperience,
         updateExperience,
-        updateExperienceDetail, // <--- THÊM Ở ĐÂY
+        updateExperienceDetail,
         removeExperience,
-        setExperiences
+        setExperiences,
+        updateEducation,
+        addEducation,
+        removeEducation,
+        setEducation,
+        updateSkills,
+        updateProjects,
+        updateCertificates,
+        updateLanguages,
+        updateAwards
     } = useCV();
 
     const [step, setStep] = useState(1);
-    const totalSteps = 3;
+    const totalSteps = 5;
 
     const handleFileUpload = () => {
         document.getElementById('cv-upload-input').click();
@@ -41,48 +50,117 @@ export default function CVBuilder() {
         if (file) {
             showToast(`Đã tải lên tệp ${file.name} thành công! AI đang trích xuất dữ liệu...`, 'success');
 
-            // Giả lập trích xuất dữ liệu từ file và cập nhật vào CVContext
+            // 1. Thông tin cá nhân
             updatePersonalInfo({
-                name: 'Trần Thị B',
-                email: 'tranthib@example.com',
-                phone: '0901 234 567',
-                address: '123 Đường ABC, Quận 1, TP. HCM'
+                name: 'Nguyễn Hoàng Nam',
+                email: 'nam.nguyen@dev.com',
+                phone: '0905 123 456',
+                address: 'Quận Cầu Giấy, Hà Nội',
+                linkedin: 'linkedin.com/in/nam-fullstack-dev'
             });
-            updateSummary('Một chuyên gia về Marketing với 5 năm kinh nghiệm trong ngành thương mại điện tử, chuyên sâu về tối ưu hóa chuyển đổi và tăng trưởng người dùng thông qua các chiến dịch dữ liệu.');
+            updateSummary('Kỹ sư Phần mềm Fullstack với hơn 5 năm kinh nghiệm xây dựng các hệ thống quy mô lớn. Chuyên gia về React, Node.js và kiến trúc Microservices. Đam mê tối ưu hóa hiệu năng hệ thống và xây dựng trải nghiệm người dùng mượt mà. Đã từng dẫn dắt đội ngũ phát triển các sản phẩm E-commerce đạt mốc 1M+ người dùng hàng tháng.');
 
-            // Mock dữ liệu kinh nghiệm làm việc
+            // 2. Kinh nghiệm làm việc
             const mockExperiences = [
                 {
                     id: 101,
-                    company: 'Shopee Việt Nam',
-                    role: 'Senior Marketing Specialist',
+                    company: 'VNG Corporation',
+                    role: 'Senior Fullstack Engineer',
                     period: '01/2021 - Hiện tại',
                     details: [
-                        'Quản lý ngân sách quảng cáo 500 triệu/tháng, tăng ROI lên 25%.',
-                        'Xây dựng chiến lược thu hút người dùng mới, đạt mốc 100k users/tháng.',
-                        'Phối hợp với đội ngũ Product để tối ưu hóa luồng checkout.'
+                        'Thiết kế và triển khai hệ thống thanh toán trực tuyến bằng Microservices (Node.js, Go, Kafka), giảm thời gian xử lý giao dịch xuống 200ms.',
+                        'Tối ưu hóa hiệu năng Frontend bằng cách triển khai Next.js và Server-Side Rendering, tăng điểm Core Web Vitals từ 60 lên 95.',
+                        'Xây dựng hệ thống CI/CD tự động với Jenkins và Docker, giảm thời gian deploy từ 30 phút xuống 5 phút.',
+                        'Dẫn dắt đội ngũ 5 developers thực hiện review code và áp dụng TDD, giảm 40% tỷ lệ bug trong giai đoạn production.'
                     ]
                 },
                 {
                     id: 102,
-                    company: 'Tiki.vn',
-                    role: 'Marketing Executive',
+                    company: 'FPT Software',
+                    role: 'Frontend Developer',
                     period: '06/2018 - 12/2020',
                     details: [
-                        'Triển khai các chiến dịch Email Marketing cho 1 triệu khách hàng.',
-                        'Phát triển nội dung cho fanpage đạt 200k followers.',
-                        'Theo dõi và phân tích báo cáo tăng trưởng hàng tuần.'
+                        'Phát triển giao diện quản trị cho đối tác Nhật Bản bằng React và Redux, xử lý dữ liệu thời gian thực qua WebSocket.',
+                        'Xây dựng bộ thư viện UI Component nội bộ giúp tăng tốc độ phát triển các dự án mới lên 30%.',
+                        'Phối hợp chặt chẽ với UI/UX Designer để tối ưu hóa luồng người dùng cho ứng dụng Mobile-first.',
+                        'Triển khai Unit Test với Jest và React Testing Library, đạt độ bao phủ code 80%.'
                     ]
                 }
             ];
-
             setExperiences(mockExperiences);
+
+            // 3. Học vấn
+            const mockEducation = [
+                {
+                    degree: 'Kỹ sư Công nghệ thông tin',
+                    school: 'Đại học Bách Khoa Hà Nội',
+                    year: '2014 - 2018',
+                    gpa: '3.6/4.0'
+                }
+            ];
+            setEducation(mockEducation);
+
+            // 4. Kỹ năng
+            const mockSkills = [
+                {name: 'React / Next.js', level: 95, category: 'frontend'},
+                {name: 'TypeScript', level: 90, category: 'frontend'},
+                {name: 'Tailwind CSS', level: 90, category: 'frontend'},
+                {name: 'Redux / Zustand', level: 85, category: 'frontend'},
+                {name: 'Node.js / Express', level: 90, category: 'backend'},
+                {name: 'Go / Gin', level: 80, category: 'backend'},
+                {name: 'MongoDB / PostgreSQL', level: 85, category: 'backend'},
+                {name: 'Redis / Kafka', level: 80, category: 'backend'},
+                {name: 'Docker / Kubernetes', level: 80, category: 'backend'},
+                {name: 'AWS (S3, EC2, Lambda)', level: 80, category: 'backend'},
+                {name: 'Team Leadership', level: 85, category: 'soft'},
+                {name: 'Problem Solving', level: 90, category: 'soft'},
+                {name: 'Agile / Scrum', level: 85, category: 'soft'},
+            ];
+            updateSkills(mockSkills);
+
+            // 5. Dự án
+            const mockProjects = [
+                {
+                    name: 'AI CV Optimizer',
+                    period: '2023 - 2024',
+                    details: ['Xây dựng hệ thống phân tích CV bằng LLM', 'Tự động gợi ý từ khóa dựa trên JD'],
+                    url: 'github.com/nam/ai-cv'
+                },
+                {
+                    name: 'E-commerce Microservices',
+                    period: '2021 - 2022',
+                    details: ['Hệ thống xử lý 10k request/s', 'Tích hợp cổng thanh toán Stripe, Momo'],
+                    url: 'github.com/nam/e-comm'
+                }
+            ];
+            updateProjects(mockProjects);
+
+            // 6. Chứng chỉ
+            const mockCerts = [
+                {name: 'AWS Certified Solutions Architect', issuer: 'Amazon', date: '2022', url: 'aws.amazon.com/cert'},
+                {name: 'Google Professional Cloud Developer', issuer: 'Google', date: '2021', url: 'google.com/cert'}
+            ];
+            updateCertificates(mockCerts);
+
+            // 7. Ngôn ngữ
+            const mockLangs = [
+                {name: 'Tiếng Việt', level: 'Bản ngữ'},
+                {name: 'Tiếng Anh', level: 'IELTS 7.5'},
+                {name: 'Tiếng Nhật', level: 'N3'}
+            ];
+            updateLanguages(mockLangs);
+
+            // 8. Giải thưởng
+            const mockAwards = [
+                {name: 'Giải Nhất Hackathon 2020', issuer: 'TechFest', date: '2020'},
+                {name: 'Học bổng Tài năng IT', issuer: 'ĐH Bách Khoa', date: '2016'}
+            ];
+            updateAwards(mockAwards);
         }
     };
 
     const addKeyword = (keyword) => {
         showToast(`Đã thêm từ khóa "${keyword}" vào gợi ý CV`, 'success');
-        // In a real app, this would push to a "suggested keywords" list or auto-insert into the active field
     };
 
     const nextStep = () => setStep(prev => Math.min(prev + 1, totalSteps));
@@ -121,7 +199,7 @@ export default function CVBuilder() {
 
                             {/* Stepper Visual */}
                             <div className="flex items-center gap-4">
-                                {[1, 2, 3].map(s => (
+                                {[1, 2, 3, 4, 5].map(s => (
                                     <div key={s} className="flex items-center gap-2 flex-1">
                                         <div
                                             className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
@@ -132,9 +210,9 @@ export default function CVBuilder() {
                                         </div>
                                         <span
                                             className={`text-xs font-bold transition-colors ${step === s ? 'text-blue-600' : 'text-slate-400'}`}>
-                                            {s === 1 ? 'Thông tin' : s === 2 ? 'Kinh nghiệm' : 'Hoàn tất'}
+                                            {s === 1 ? 'Thông tin' : s === 2 ? 'Kinh nghiệm' : s === 3 ? 'Học vấn' : s === 4 ? 'Kỹ năng' : 'Hoàn tất'}
                                         </span>
-                                        {s < 3 && <div
+                                        {s < totalSteps && <div
                                             className={`h-px flex-1 transition-colors ${step > s ? 'bg-green-500' : 'bg-slate-200'}`}></div>}
                                     </div>
                                 ))}
@@ -182,7 +260,19 @@ export default function CVBuilder() {
                                                 />
                                             </div>
                                         </div>
+                                        <div className="group space-y-1">
+                                            <label
+                                                className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-blue-600 transition-colors">LinkedIn</label>
+                                            <input
+                                                type="text"
+                                                className="w-full input-underlined text-slate-600 placeholder:text-slate-300"
+                                                placeholder="linkedin.com/in/yourprofile"
+                                                value={cvData.personalInfo.linkedin}
+                                                onChange={(e) => updatePersonalInfo({linkedin: e.target.value})}
+                                            />
+                                        </div>
                                     </div>
+
 
                                     <div className="pt-6">
                                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -287,6 +377,207 @@ export default function CVBuilder() {
                             )}
 
                             {step === 3 && (
+                                <div className="space-y-8 animate-fade-in">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Học vấn</h3>
+                                        <button
+                                            onClick={addEducation}
+                                            className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
+                                            <Plus className="w-3 h-3"/> Thêm mục
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        {cvData.education.map((edu, index) => (
+                                            <div key={index}
+                                                 className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-blue-500">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Bằng cấp / Chứng chỉ</label>
+                                                        <input
+                                                            type="text"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm font-bold py-1"
+                                                            value={edu.degree}
+                                                            onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Trường học / Tổ chức</label>
+                                                        <input
+                                                            type="text"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
+                                                            value={edu.school}
+                                                            onChange={(e) => updateEducation(index, 'school', e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Thời gian</label>
+                                                        <input
+                                                            type="text"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
+                                                            value={edu.year}
+                                                            onChange={(e) => updateEducation(index, 'year', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">GPA</label>
+                                                        <input
+                                                            type="text"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
+                                                            value={edu.gpa}
+                                                            onChange={(e) => updateEducation(index, 'gpa', e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => removeEducation(index)}
+                                                    className="absolute -top-3 -right-3 bg-white border border-slate-200 text-red-500 p-2 rounded-full hover:bg-red-50 shadow-sm opacity-0 group-hover:opacity-100 transition-all"
+                                                    title="Xóa">
+                                                    <Trash2 className="h-4 w-4"/>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {step === 4 && (
+                                <div className="space-y-8 animate-fade-in">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Kỹ năng & Thông tin khác</h3>
+                                        <Sparkles className="w-4 h-4 text-blue-600" />
+                                    </div>
+
+                                    <div className="space-y-8">
+                                        {/* Skills Section */}
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center">
+                                                <label className="text-xs font-bold text-slate-600 uppercase">Kỹ năng chuyên môn</label>
+                                                <button
+                                                    onClick={() => {
+                                                        const newSkills = [...cvData.skills, {name: '', level: 50, category: 'hard'}];
+                                                        updateSkills(newSkills);
+                                                    }}
+                                                    className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                >
+                                                    <Plus className="w-3 h-3"/> Thêm kỹ năng
+                                                </button>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {cvData.skills.map((skill, index) => (
+                                                    <div key={index} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 group">
+                                                        <input
+                                                            type="text"
+                                                            className="flex-grow bg-transparent text-sm font-medium outline-none"
+                                                            value={skill.name}
+                                                            onChange={(e) => {
+                                                                const updated = [...cvData.skills];
+                                                                updated[index].name = e.target.value;
+                                                                updateSkills(updated);
+                                                            }}
+                                                            placeholder="Tên kỹ năng..."
+                                                        />
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="number"
+                                                                className="w-12 bg-white border border-slate-200 rounded px-1 text-xs text-center"
+                                                                value={skill.level}
+                                                                onChange={(e) => {
+                                                                    const updated = [...cvData.skills];
+                                                                    updated[index].level = parseInt(e.target.value) || 0;
+                                                                    updateSkills(updated);
+                                                                }}
+                                                            />
+                                                            <select
+                                                                className="text-[10px] bg-white border border-slate-200 rounded px-1 outline-none"
+                                                                value={skill.category}
+                                                                onChange={(e) => {
+                                                                    const updated = [...cvData.skills];
+                                                                    updated[index].category = e.target.value;
+                                                                    updateSkills(updated);
+                                                                }}
+                                                            >
+                                                                <option value="frontend">Front-end</option>
+                                                                <option value="backend">Back-end</option>
+                                                                <option value="soft">Soft Skill</option>
+                                                            </select>
+                                                            <button onClick={() => {
+                                                                const updated = cvData.skills.filter((_, i) => i !== index);
+                                                                updateSkills(updated);
+                                                            }} className="text-slate-400 hover:text-red-500 transition-colors">
+                                                                <Trash2 className="w-3 h-3"/>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Others Sections: Projects, Certs, Langs, Awards */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            {[
+                                                { label: 'Dự án', field: 'projects', updater: updateProjects, placeholder: 'Tên dự án, mô tả ngắn...' },
+                                                { label: 'Chứng chỉ', field: 'certificates', updater: updateCertificates, placeholder: 'Tên chứng chỉ...' },
+                                                { label: 'Ngôn ngữ', field: 'languages', updater: updateLanguages, placeholder: 'Tiếng Anh, Tiếng Nhật...' },
+                                                { label: 'Giải thưởng', field: 'awards', updater: updateAwards, placeholder: 'Giải nhất cuộc thi...' },
+                                            ].map((section) => (
+                                                <div key={section.field} className="space-y-3">
+                                                    <label className="text-xs font-bold text-slate-600 uppercase">{section.label}</label>
+                                                    <div className="flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                                            placeholder={section.placeholder}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter' && e.target.value) {
+                                                                    const currentData = cvData[section.field] || [];
+                                                                    const newItem = { name: e.target.value, date: new Date().getFullYear().toString() };
+                                                                    section.updater([...currentData, newItem]);
+                                                                    e.target.value = '';
+                                                                }
+                                                            }}
+                                                        />
+                                                        <button
+                                                            onClick={(e) => {
+                                                                const input = e.currentTarget.previousElementSibling;
+                                                                if (input.value) {
+                                                                    const currentData = cvData[section.field] || [];
+                                                                    const newItem = { name: input.value, date: new Date().getFullYear().toString() };
+                                                                    section.updater([...currentData, newItem]);
+                                                                    input.value = '';
+                                                                }
+                                                            }}
+                                                            className="bg-blue-600 text-white p-2 rounded-xl hover:bg-blue-700 transition-all"
+                                                        >
+                                                            <Plus className="w-4 h-4"/>
+                                                        </button>
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {(cvData[section.field] || []).map((item, i) => (
+                                                            <span key={i} className="bg-slate-100 text-slate-600 text-[11px] px-3 py-1 rounded-full border border-slate-200 flex items-center gap-2 group">
+                                                                {item.name}
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const updated = (cvData[section.field] || []).filter((_, idx) => idx !== i);
+                                                                        section.updater(updated);
+                                                                    }}
+                                                                    className="text-slate-400 hover:text-red-500"
+                                                                >
+                                                                    <Trash2 className="w-2.5 h-2.5"/>
+                                                                </button>
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {step === 5 && (
                                 <div className="text-center py-12 animate-fade-in">
                                     <div
                                         className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
@@ -298,7 +589,7 @@ export default function CVBuilder() {
                                         chỉnh nó trong trình chỉnh sửa chuyên nghiệp.
                                     </p>
                                     <Link to="/editor"
-                                          className="px-10 py-4 bg-smartfolio-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-blue-800 transition-all hover:scale-105">
+                                           className="px-10 py-4 bg-smartfolio-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-blue-800 transition-all hover:scale-105">
                                         Vào Trình Chỉnh Sửa <ChevronRight className="w-5 h-5"/>
                                     </Link>
                                 </div>
@@ -306,7 +597,7 @@ export default function CVBuilder() {
                         </div>
 
                         {/* Bottom Navigation */}
-                        {step < 3 && (
+                        {step < 5 && (
                             <div
                                 className="p-6 border-t border-slate-100 flex justify-between items-center bg-slate-50/30">
                                 <button

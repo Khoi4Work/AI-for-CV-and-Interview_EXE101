@@ -81,6 +81,6 @@ export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, 
                     </div>
                 </div>
             </div>
-        </Link>
-    );
-}
+            </Link>
+        );
+    }
