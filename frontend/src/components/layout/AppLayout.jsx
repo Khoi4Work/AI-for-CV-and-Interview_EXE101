@@ -108,7 +108,10 @@ export default function AppLayout() {
                        element={<PageTransition key={location.pathname}><InterviewLanding/></PageTransition>}/>
                 <Route path="/templates"
                        element={<PageTransition key={location.pathname}><TemplateList/></PageTransition>}/>
-
+                <Route path="/cv-evaluation"
+                       element={<PageTransition key={location.pathname}><div className="p-10">CV Evaluation Placeholder</div></PageTransition>}/>
+                <Route path="/cv-analyzing"
+                       element={<PageTransition key={location.pathname}><div className="p-10">CV Analyzing Placeholder</div></PageTransition>}/>
                 {/* ── Protected block (Zones B + C) ───────────────── */}
                 <Route path="/*" element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
