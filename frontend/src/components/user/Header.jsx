@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, HelpCircle } from 'lucide-react';
+import { useLocation, useNavigate, NavLink } from 'react-router-dom';
+import { Bell, HelpCircle, BrainCircuit } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import {useApp} from '../../contexts/AppContext.jsx';
 
@@ -39,7 +39,24 @@ const Header = ({ onHelpClick }) => {
 
   return (
     <header className="h-16 border-b border-slate-200 bg-white/90 backdrop-blur px-8 flex items-center justify-between sticky top-0 z-10 w-full select-none">
-      <h1 className="text-xl font-bold text-slate-800 tracking-tight">{getTabTitle(location.pathname)}</h1>
+      <div className="flex items-center space-x-8">
+        <h1 className="text-xl font-bold text-slate-800 tracking-tight">{getTabTitle(location.pathname)}</h1>
+        <nav className="hidden md:flex items-center gap-4">
+          <NavLink
+            to="/cv-evaluation"
+            className={({ isActive }) =>
+              `flex items-center space-x-2 px-3 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 ${
+                isActive
+                  ? 'bg-[#0b3c8f] text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`
+            }
+          >
+            <BrainCircuit className="w-4 h-4" />
+            <span>Đánh giá CV</span>
+          </NavLink>
+        </nav>
+      </div>
 
       <div className="flex items-center space-x-6">
         {/* Notifications Icon with Red Dot */}
