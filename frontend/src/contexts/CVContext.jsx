@@ -4,33 +4,21 @@ const CVContext = createContext();
 
 const INITIAL_CV_STATE = {
     personalInfo: {
-        name: 'Nguyễn Văn A',
+        name: '',
         email: '',
         phone: '',
-        dob: '27/01/1998',
+        dob: '',
         address: '',
+        linkedin: '',
     },
-    summary: 'Tôi là một nhân viên bán hàng chuyên nghiệp, đam mê trong việc xây dựng mối quan hệ với khách hàng và đạt được mục tiêu doanh số...',
-    experiences: [
-        {
-            id: 1,
-            company: 'Tên công ty',
-            role: 'Marketing Manager',
-            period: '03/2019 - 09/2020',
-            details: [
-                'Phụ trách việc tìm kiếm và khai thác thị trường mới...',
-                'Nghiên cứu và đánh giá các xu hướng thị trường...'
-            ]
-        },
-    ],
-    skills: [
-        {name: 'Quản lý dự án', level: 80},
-        {name: 'Giao tiếp tốt', level: 90},
-        {name: 'Thuyết phục', level: 70},
-    ],
-    education: [
-        {degree: 'Cử nhân Quản trị Kinh doanh', school: 'Đại học Kinh tế Quốc dân', year: '2015 - 2019'},
-    ],
+    summary: '',
+    experiences: [],
+    skills: [],
+    education: [],
+    projects: [],
+    certificates: [],
+    languages: [],
+    awards: [],
     selectedTemplateId: 'modern-executive',
 };
 
@@ -82,8 +70,45 @@ export function CVProvider({children}) {
     const setTemplate = (id) => {
         setCvData(prev => ({...prev, selectedTemplateId: id}));
     };
+
     const setExperiences = (experiences) => {
         setCvData(prev => ({...prev, experiences}));
+    };
+
+    const updateEducation = (index, field, value) => {
+        setCvData(prev => {
+            const newEdu = [...prev.education];
+            newEdu[index] = {...newEdu[index], [field]: value};
+            return {...prev, education: newEdu};
+        });
+    };
+
+    const addEducation = () => {
+        setCvData(prev => ({...prev, education: [...prev.education, {degree: '', school: '', year: ''}]}));
+    };
+
+    const removeEducation = (index) => {
+        setCvData(prev => ({...prev, education: prev.education.filter((_, i) => i !== index)}));
+    };
+
+    const setEducation = (education) => {
+        setCvData(prev => ({...prev, education}));
+    };
+
+    const updateProjects = (projects) => {
+        setCvData(prev => ({...prev, projects}));
+    };
+
+    const updateCertificates = (certs) => {
+        setCvData(prev => ({...prev, certificates: certs}));
+    };
+
+    const updateLanguages = (langs) => {
+        setCvData(prev => ({...prev, languages: langs}));
+    };
+
+    const updateAwards = (awards) => {
+        setCvData(prev => ({...prev, awards}));
     };
 
     return (
@@ -97,7 +122,15 @@ export function CVProvider({children}) {
             removeExperience,
             updateSkills,
             setTemplate,
-            setExperiences
+            setExperiences,
+            updateEducation,
+            addEducation,
+            removeEducation,
+            setEducation,
+            updateProjects,
+            updateCertificates,
+            updateLanguages,
+            updateAwards
         }}>
             {children}
         </CVContext.Provider>

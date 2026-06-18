@@ -15,12 +15,14 @@ import TopAction from "../../components/template/TopAction.jsx";
 import { TEMPLATES_DATA } from '../../constant/templates.jsx';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useApp } from '../../contexts/AppContext.jsx';
+import { useCV } from '../../contexts/CVContext.jsx';
 
 export default function TemplateDetail() {
     const {id} = useParams();
     const navigate = useNavigate();
     const { profile, isLoggedIn, toggleFavorite } = useAuth();
     const { showToast } = useApp();
+    const { setTemplate } = useCV();
     const [zoom, setZoom] = useState(100);
 
     // Tìm thông tin template từ constants dựa trên id từ URL
@@ -60,39 +62,15 @@ export default function TemplateDetail() {
 
                 {/* Template Details */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-                    {/* Left Column: Preview */}
+                    {/* Left Column: Preview (Image Only) */}
                     <div className="flex flex-col">
                         <div className="relative group">
-                            <div
-                                className="bg-white rounded-2xl aspect-[1/1.4] w-full border border-gray-200 custom-shadow overflow-hidden relative transition-transform duration-200 ease-in-out"
-                                style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
-                            >
-                                {template.image ? (
-                                    <img
-                                        src={template.image}
-                                        alt={template.title}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full bg-white flex items-center justify-center text-gray-400">
-                                        Không có ảnh xem trước
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Zoom Controls */}
-                            <div className="absolute bottom-6 right-6 flex items-center gap-2 bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => setZoom(prev => Math.max(prev - 10, 50))} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
-                                    <ZoomOut className="w-4 h-4"/>
-                                </button>
-                                <span className="text-xs font-bold text-gray-700 w-10 text-center">{zoom}%</span>
-                                <button onClick={() => setZoom(prev => Math.min(prev + 10, 200))} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
-                                    <ZoomIn className="w-4 h-4"/>
-                                </button>
-                                <div className="w-px h-4 bg-gray-300 mx-1"></div>
-                                <button onClick={() => setZoom(100)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
-                                    <RotateCcw className="w-4 h-4"/>
-                                </button>
+                            <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 custom-shadow transition-all duration-300 group-hover:shadow-xl">
+                                <img
+                                    src={template.image}
+                                    alt={template.title}
+                                    className="w-full h-auto block"
+                                />
                             </div>
                         </div>
 
@@ -173,11 +151,15 @@ export default function TemplateDetail() {
 
                         {/* Call to Actions */}
                         <div className="flex flex-col gap-4 mt-4">
-                            <Link to="/builder"
-                                  className="w-full py-4 bg-[#0b3c8f] text-white font-bold rounded-2xl hover:bg-[#093278] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 group">
+                            <button
+                                onClick={() => {
+                                    setTemplate(id);
+                                    navigate('/builder');
+                                }}
+                                className="w-full py-4 bg-[#0b3c8f] text-white font-bold rounded-2xl hover:bg-[#093278] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 group">
                                 <FileText className="h-6 w-6 group-hover:scale-110 transition-transform"/>
                                 Sử dụng mẫu này
-                            </Link>
+                            </button>
                             <button
                                 onClick={handleToggleFavorite}
                                 className={`w-full py-4 border font-bold rounded-2xl transition-all flex items-center justify-center gap-3 ${
@@ -191,44 +173,44 @@ export default function TemplateDetail() {
                             </button>
                         </div>
                     </div>
-                </div>
 
-                {/* Similar Templates - Using new card logic (simplified) */}
-                <section className="mt-20">
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Mẫu tương tự</h2>
-                            <p className="text-gray-500">Khám phá các lựa chọn khác trong phong cách {template.style}</p>
+                    {/* Similar Templates - Using new card logic (simplified) */}
+                    <section className="mt-20">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="space-y-2">
+                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Mẫu tương tự</h2>
+                                <p className="text-gray-500">Khám phá các lựa chọn khác trong phong cách {template.style}</p>
+                            </div>
+                            <Link to="/templates" className="text-[#0b3c8f] font-bold hover:underline flex items-center gap-1">
+                                Xem tất cả
+                            </Link>
                         </div>
-                        <Link to="/templates" className="text-[#0b3c8f] font-bold hover:underline flex items-center gap-1">
-                            Xem tất cả
-                        </Link>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {TEMPLATES_DATA
-                            .filter(t => t.style === template.style && t.id !== template.id)
-                            .slice(0, 4)
-                            .map(similar => (
-                                <div key={similar.id} className="group cursor-pointer">
-                                    <Link to={`/template/${similar.id}`}>
-                                        <div className="relative aspect-[1/1.4] rounded-2xl overflow-hidden shadow-md border border-slate-200 mb-4 transition-all group-hover:-translate-y-2 group-hover:shadow-xl">
-                                            <img src={similar.image} className="w-full h-full object-cover" alt={similar.title} />
-                                            <div className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <span className="bg-white text-[#0b3c8f] px-4 py-2 rounded-xl font-bold text-sm shadow-lg translate-y-4 group-hover:translate-y-0 transition-transform">
-                                                    Sử dụng mẫu này
-                                                </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {TEMPLATES_DATA
+                                .filter(t => t.style === template.style && t.id !== template.id)
+                                .slice(0, 4)
+                                .map(similar => (
+                                    <div key={similar.id} className="group cursor-pointer">
+                                        <Link to={`/template/${similar.id}`}>
+                                            <div className="relative aspect-[1/1.4] rounded-2xl overflow-hidden shadow-md border border-slate-200 mb-4 transition-all group-hover:-translate-y-2 group-hover:shadow-xl">
+                                                <img src={similar.image} className="w-full h-full object-cover" alt={similar.title} />
+                                                <div className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <span className="bg-white text-[#0b3c8f] px-4 py-2 rounded-xl font-bold text-sm shadow-lg translate-y-4 group-hover:translate-y-0 transition-transform">
+                                                        Sử dụng mẫu này
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="text-center">
-                                            <h4 className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{similar.title}</h4>
-                                            <p className="text-xs text-gray-500">{similar.style} • {similar.badgeText}</p>
-                                        </div>
-                                    </Link>
-                                </div>
-                            ))
-                        }
-                    </div>
-                </section>
+                                            <div className="text-center">
+                                                <h4 className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{similar.title}</h4>
+                                                <p className="text-xs text-gray-500">{similar.style} • {similar.badgeText}</p>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </section>
+                </div>
             </main>
         </>
     )
