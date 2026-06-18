@@ -339,6 +339,13 @@ body {
 }
 
 /* Respect users with reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+    .page-enter,
+    .route-progress-bar,
+    .animate-pulse-glow {
+        animation: none !important;
+    }
+}
 
 /* CV Analyzing Animation */
 @keyframes pulse-glow {
