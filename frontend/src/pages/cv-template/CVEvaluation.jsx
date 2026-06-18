@@ -128,7 +128,7 @@ const CVEvaluation = () => {
                       e.stopPropagation();
                       removeFile();
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-2xl transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Xóa tệp
