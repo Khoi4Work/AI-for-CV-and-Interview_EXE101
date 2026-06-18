@@ -32,6 +32,7 @@ import {VideoSetup} from "../../pages/interview/VideoSetup.jsx";
 import {CvAnalysis} from "../../pages/interview/CvAnalysis.jsx";
 import {InterviewResults} from "../../pages/interview/InterviewResult.jsx";
 import CVEditor from "../../pages/cv-template/CVEditor.jsx";
+import CVEvaluation from "../../pages/cv-template/CVEvaluation.jsx";
 import FeedbackWidget from "../feedback/FeedbackWidget.jsx";
 import PageTransition from "../transitions/PageTransition.jsx";
 import ScrollToTop from "../transitions/ScrollToTop.jsx";
@@ -109,7 +110,7 @@ export default function AppLayout() {
                 <Route path="/templates"
                        element={<PageTransition key={location.pathname}><TemplateList/></PageTransition>}/>
                 <Route path="/cv-evaluation"
-                       element={<PageTransition key={location.pathname}><div className="p-10">CV Evaluation Placeholder</div></PageTransition>}/>
+                       element={<PageTransition key={location.pathname}><CVEvaluation/></PageTransition>}/>
                 <Route path="/cv-analyzing"
                        element={<PageTransition key={location.pathname}><div className="p-10">CV Analyzing Placeholder</div></PageTransition>}/>
                 {/* ── Protected block (Zones B + C) ───────────────── */}
