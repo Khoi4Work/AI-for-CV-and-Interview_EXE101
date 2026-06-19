@@ -5,6 +5,7 @@ import TemplateCard from '../../components/template/TemplateCard';
 import Sidebar from "../../components/template/Sidebar.jsx";
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../components/layout/GuestHeader.jsx";
+import {Footer} from '../../components/layout/Footer.jsx';
 import {useAuth} from "../../contexts/AuthContext.jsx";
 import {TEMPLATES_DATA, TEMPLATE_CATEGORIES, TEMPLATE_STYLES} from '../../constants/templates.js';
 
@@ -96,8 +97,8 @@ export default function TemplateList() {
                         {/* Top Toolbar */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                             <div className="space-y-1">
-                                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Professional
-                                    CV Templates</h1>
+                                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
+                                    Mẫu CV chuyên nghiệp </h1>
                                 <p className="text-sm text-gray-500">Khám phá hàng ngàn mẫu CV chuẩn ATS được tối ưu hóa
                                     bởi AI</p>
                             </div>
@@ -376,6 +377,7 @@ export default function TemplateList() {
                     </section>
                 </div>
             </main>
+            <Footer/>
         </>
     )
 }

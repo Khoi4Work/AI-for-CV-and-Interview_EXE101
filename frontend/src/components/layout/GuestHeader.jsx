@@ -25,13 +25,13 @@ const GuestHeader = () => {
             <nav className="hidden md:flex gap-md items-center">
                 <Link
                     className={`font-label-md text-label-md transition-colors ${isHome ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
-                    to="/">Home</Link>
+                    to="/">Trang chủ</Link>
                 <Link
                     className={`font-label-md text-label-md transition-colors ${isInterview ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
-                    to="/interview">Interview</Link>
+                    to="/interview">Phỏng vấn</Link>
                 <Link
                     className={`font-label-md text-label-md transition-colors ${isTemplates ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
-                    to="/templates">Templates</Link>
+                    to="/templates">Templates & Tạo CV</Link>
                 <Link
                     className={`font-label-md text-label-md transition-colors ${isEvaluation ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
                     to="/cv-evaluation">Đánh giá CV</Link>
