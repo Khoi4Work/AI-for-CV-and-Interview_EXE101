@@ -176,7 +176,7 @@ const PricingPage = () => {
                                     <h4 className="text-xl font-bold text-slate-800 mt-1">Premium</h4>
                                 </div>
                                 <div className="text-sm font-semibold text-[#0b3c8f]">
-                                    79.000đ / tháng
+                                    99.000đ / tháng
                                 </div>
                             </div>
                             <div className="space-y-5 text-xs text-slate-600 font-medium py-4 flex-1">
@@ -186,7 +186,7 @@ const PricingPage = () => {
                                 <div className="py-2.5 border-b border-slate-100 text-emerald-600">✓</div>
                                 <div className="py-2.5 text-emerald-600">✓</div>
                             </div>
-                            <div className="pt-4">
+                            <div className="pt-4 space-y-2">
                                 <button
                                     id="pricing-pkg-premium-btn"
                                     onClick={() => handleSelectPlan('Premium')}
@@ -195,7 +195,67 @@ const PricingPage = () => {
                                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 shrink-0"/>
                                     <span>Nâng cấp ngay</span>
                                 </button>
+                                <button
+                                    onClick={() => showToast('Bạn đã bắt đầu dùng thử Premium 7 ngày miễn phí!', 'success')}
+                                    className="w-full py-2 px-4 rounded-lg text-[10px] font-bold text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                                >
+                                    Dùng thử 7 ngày miễn phí
+                                </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-6 mt-10">
+                    <div className="text-center space-y-2 max-w-2xl mx-auto">
+                        <h3 className="text-lg font-bold text-slate-900">Mua lượt sử dụng lẻ</h3>
+                        <p className="text-xs text-slate-500">Không cần đăng ký gói tháng, dùng bao nhiêu trả bấy nhiêu</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center text-center space-y-4">
+                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                                <BarChart3 className="w-5 h-5" />
+                            </div>
+                            <div >
+                                <h4 className="font-bold text-slate-800">Đánh giá CV</h4>
+                                <span className="text-sm font-semibold text-[#0b3c8f]">20.000đ / lượt</span>
+                            </div>
+                            <button
+                                onClick={() => showToast('Đang chuyển hướng thanh toán cho Đánh giá CV...', 'info')}
+                                className="w-full py-2 px-4 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                            >
+                                Mua ngay
+                            </button>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center text-center space-y-4">
+                            <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                <Star className="w-5 h-5" />
+                            </div>
+                            <div >
+                                <h4 className="font-bold text-slate-800">Tạo CV</h4>
+                                <span className="text-sm font-semibold text-[#0b3c8f]">50.000đ / lượt</span>
+                            </div>
+                            <button
+                                onClick={() => showToast('Đang chuyển hướng thanh toán cho Tạo CV...', 'info')}
+                                className="w-full py-2 px-4 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                            >
+                                Mua ngay
+                            </button>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center text-center space-y-4">
+                            <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                                <HelpCircle className="w-5 h-5" />
+                            </div>
+                            <div >
+                                <h4 className="font-bold text-slate-800">Interview AI</h4>
+                                <span className="text-sm font-semibold text-[#0b3c8f]">79.000đ / lượt</span>
+                            </div>
+                            <button
+                                onClick={() => showToast('Đang chuyển hướng thanh toán cho Interview AI...', 'info')}
+                                className="w-full py-2 px-4 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                            >
+                                Mua ngay
+                            </button>
                         </div>
                     </div>
                 </div>
