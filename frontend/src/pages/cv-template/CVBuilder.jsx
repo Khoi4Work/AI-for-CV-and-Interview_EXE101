@@ -588,7 +588,8 @@ export default function CVBuilder() {
                                         Chúng tôi đã thu thập đủ thông tin. Bây giờ hãy chọn một mẫu thiết kế và tinh
                                         chỉnh nó trong trình chỉnh sửa chuyên nghiệp.
                                     </p>
-                                    <Link to="/editor"
+                                    <Link to="/cv-analyzing"
+                                           state={{ target: '/editor' }}
                                            className="px-10 py-4 bg-smartfolio-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-blue-800 transition-all hover:scale-105">
                                         Vào Trình Chỉnh Sửa <ChevronRight className="w-5 h-5"/>
                                     </Link>
