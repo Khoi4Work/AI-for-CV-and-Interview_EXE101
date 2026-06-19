@@ -5,7 +5,7 @@ import { useApp } from '../../contexts/AppContext.jsx';
 import { useCV } from '../../contexts/CVContext.jsx';
 import TemplateRenderer from '../../components/template/TemplateRenderer';
 import { mapCVDataToTemplate } from '../../components/template/cv-data-mapper';
-import { TEMPLATES_DATA } from '../../constant/templates.jsx';
+import { TEMPLATES_DATA } from '../../constants/templates';
 
 export default function CVEditor() {
     const { showToast } = useApp();
