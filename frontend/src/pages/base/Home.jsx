@@ -186,6 +186,7 @@ export default function Home() {
                             Gia nhập cộng đồng 100,000+ chuyên gia đang nâng tầm sự nghiệp cùng Smartfolio AI.
                         </p>
                         <button
+                            onClick={() => navigate("/templates")}
                             className="bg-white text-[#0b3c8f] px-xl py-sm rounded-lg font-title-md text-title-md relative z-10 transition-all hover:bg-slate-50 hover:shadow-xl active:scale-95 font-semibold cursor-pointer">
                             Bắt đầu hoàn toàn miễn phí
                         </button>

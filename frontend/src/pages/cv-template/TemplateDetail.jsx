@@ -1,23 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Briefcase,
     Zap,
     Bookmark,
     MonitorPlay,
     FileText,
-    CheckCircle2
+    CheckCircle2,
+    ZoomIn,
+    ZoomOut,
+    RotateCcw
 } from 'lucide-react';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 import TopAction from "../../components/template/TopAction.jsx";
 import { TEMPLATES_DATA } from '../../constants/templates.js';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useApp } from '../../contexts/AppContext.jsx';
+import { useCV } from '../../contexts/CVContext.jsx';
 
 export default function TemplateDetail() {
     const {id} = useParams();
     const navigate = useNavigate();
     const { profile, isLoggedIn, toggleFavorite } = useAuth();
     const { showToast } = useApp();
+    const { setTemplate } = useCV();
+    const [zoom, setZoom] = useState(100);
 
     // Tìm thông tin template từ constants dựa trên id từ URL
     const template = TEMPLATES_DATA.find(t => t.id === id);
@@ -46,8 +52,7 @@ export default function TemplateDetail() {
         toggleFavorite(id);
 
         const actionText = isFavorite ? 'đã xóa khỏi' : 'đã thêm vào';
-        const stateText = isFavorite ? 'danh sách yêu thích' : 'danh sách yêu thích';
-        showToast(`Mẫu "${template.title}" ${actionText} ${stateText}!`, 'success');
+        showToast(`Mẫu "${template.title}" ${actionText} danh sách yêu thích!`, 'success');
     };
 
     return (
@@ -57,31 +62,28 @@ export default function TemplateDetail() {
 
                 {/* Template Details */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-                    {/* Left Column: Preview */}
+                    {/* Left Column: Preview (Image Only) */}
                     <div className="flex flex-col">
-                        <div
-                            className="bg-white rounded-xl aspect-[1/1.4] w-full border border-gray-200 custom-shadow overflow-hidden mb-6 relative">
-                            {template.image ? (
+                        <div className="relative group">
+                            <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 custom-shadow transition-all duration-300 group-hover:shadow-xl">
                                 <img
                                     src={template.image}
                                     alt={template.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-auto block"
                                 />
-                            ) : (
-                                <div className="w-full h-full bg-white flex items-center justify-center text-gray-400">
-                                    Không có ảnh xem trước
-                                </div>
-                            )}
+                            </div>
                         </div>
-                        {/* Thumbnail Toggles */}
-                        <div className="flex gap-4">
-                            <div
-                                className="w-24 h-32 border-2 border-blue-600 rounded-lg bg-white cursor-pointer overflow-hidden">
+
+                        {/* Thumbnails */}
+                        <div className="flex gap-4 mt-6">
+                            <div className="w-24 h-32 border-2 border-blue-600 rounded-xl bg-white cursor-pointer overflow-hidden shadow-sm">
                                 {template.image && <img src={template.image} className="w-full h-full object-cover" alt="preview 1" />}
                             </div>
-                            <div
-                                className="w-24 h-32 border border-gray-200 rounded-lg bg-white cursor-pointer hover:border-gray-400 transition-colors overflow-hidden">
-                                <div className="w-full h-full bg-gray-100"></div>
+                            <div className="w-24 h-32 border border-gray-200 rounded-xl bg-white cursor-pointer hover:border-gray-400 transition-all overflow-hidden shadow-sm hover:shadow-md">
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-[10px] p-2 text-center">Trang 2 Preview</div>
+                            </div>
+                            <div className="w-24 h-32 border border-gray-200 rounded-xl bg-white cursor-pointer hover:border-gray-400 transition-all overflow-hidden shadow-sm hover:shadow-md">
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-[10px] p-2 text-center">Trang 3 Preview</div>
                             </div>
                         </div>
                     </div>
@@ -90,61 +92,58 @@ export default function TemplateDetail() {
                     <div className="flex flex-col gap-8">
                         <div className="space-y-4">
                             <div className="flex gap-2">
-                                <span
-                                    className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">AI-Optimized</span>
-                                <span
-                                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                                        template.badgeTheme === 'premium' ? 'bg-blue-900 text-white' :
-                                        template.badgeTheme === 'pro' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-                                    }`}>
+                                <span className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full shadow-sm">AI-Optimized</span>
+                                <span className={`px-3 py-1 text-xs font-bold rounded-full shadow-sm ${
+                                    template.badgeTheme === 'premium' ? 'bg-blue-900 text-white' :
+                                    template.badgeTheme === 'pro' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                                }`}>
                                     {template.badgeText}
                                 </span>
                             </div>
-                            <h1 className="text-4xl font-bold text-gray-900">{template.title}</h1>
+                            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">{template.title}</h1>
                             <div className="flex gap-6 text-gray-600">
-                                <span className="flex items-center gap-2">
-                                    <Briefcase className="h-5 w-5"/>
+                                <span className="flex items-center gap-2 text-sm font-medium">
+                                    <Briefcase className="h-5 w-5 text-blue-600"/>
                                     {template.categoryText}
                                 </span>
-                                <span className="flex items-center gap-2">
-                                    <MonitorPlay className="h-5 w-5"/>
+                                <span className="flex items-center gap-2 text-sm font-medium">
+                                    <MonitorPlay className="h-5 w-5 text-blue-600"/>
                                     {template.style}
                                 </span>
                             </div>
                         </div>
 
-                        {/* Why this template works */}
-                        <div className="bg-blue-50/50 rounded-2xl p-8 border border-blue-100">
-                            <div className="flex items-center gap-2 text-blue-800 font-bold mb-4">
-                                <Zap className="h-5 w-5"/>
+                        {/* Why this template works - Enhanced as Cards */}
+                        <div className="bg-blue-50/50 rounded-2xl p-8 border border-blue-100 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10">
+                                <Zap className="w-20 h-20 text-blue-600" />
+                            </div>
+                            <div className="flex items-center gap-2 text-blue-800 font-bold mb-4 relative z-10">
+                                <Zap className="h-5 w-5 fill-blue-600"/>
                                 Tại sao mẫu này hiệu quả?
                             </div>
-                            <p className="text-gray-700 leading-relaxed">
-                                Mẫu {template.title} được tối ưu hóa cho phong cách {template.style},
-                                kết hợp giữa tính thẩm mỹ hiện đại và cấu trúc chuẩn ATS.
-                                Điều này giúp hồ sơ của bạn không chỉ thu hút nhà tuyển dụng mà còn dễ dàng
-                                vượt qua các hệ thống lọc tự động.
+                            <p className="text-gray-700 leading-relaxed relative z-10">
+                                {template.description || `Mẫu ${template.title} được tối ưu hóa cho phong cách ${template.style}, kết hợp giữa tính thẩm mỹ hiện đại và cấu trúc chuẩn ATS. Điều này giúp hồ sơ của bạn không chỉ thu hút nhà tuyển dụng mà còn dễ dàng vượt qua các hệ thống lọc tự động.`}
                             </p>
                         </div>
 
-                        {/* Components Included */}
+                        {/* Components Included - Improved Grid */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500">Các thành phần
-                                bao gồm</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 px-1">Các thành phần bao gồm</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {[
+                                {(template.features || [
                                     "Tóm tắt chuyên môn",
                                     "Kinh nghiệm làm việc",
                                     "Ma trận kỹ năng",
                                     "Dự án nổi bật",
                                     "Học vấn & Chứng chỉ",
                                     "Thành tựu AI"
-                                ].map((item, index) => (
-                                    <div key={index} className="bg-gray-100/80 px-4 py-2 rounded-lg flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <CheckCircle2 className="h-3 w-3 text-blue-600"/>
+                                ]).map((item, index) => (
+                                    <div key={index} className="bg-gray-50 hover:bg-blue-50 transition-colors px-4 py-3 rounded-xl flex items-center gap-3 border border-gray-100 hover:border-blue-200 group">
+                                        <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                                            <CheckCircle2 className="h-3 w-3 text-blue-600 group-hover:text-white transition-colors"/>
                                         </div>
-                                        <span className="text-sm font-medium text-gray-700">{item}</span>
+                                        <span className="text-sm font-medium text-gray-700 group-hover:text-blue-800 transition-colors">{item}</span>
                                     </div>
                                 ))}
                             </div>
@@ -152,17 +151,21 @@ export default function TemplateDetail() {
 
                         {/* Call to Actions */}
                         <div className="flex flex-col gap-4 mt-4">
-                            <Link to="/builder"
-                                  className="w-full py-4 bg-[#0b3c8f] text-white font-bold rounded-xl hover:bg-[#093278] transition-colors flex items-center justify-center gap-3">
-                                <FileText className="h-6 w-6"/>
+                            <button
+                                onClick={() => {
+                                    setTemplate(id);
+                                    navigate('/builder');
+                                }}
+                                className="w-full py-4 bg-[#0b3c8f] text-white font-bold rounded-2xl hover:bg-[#093278] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 group">
+                                <FileText className="h-6 w-6 group-hover:scale-110 transition-transform"/>
                                 Sử dụng mẫu này
-                            </Link>
+                            </button>
                             <button
                                 onClick={handleToggleFavorite}
-                                className={`w-full py-4 border font-bold rounded-xl transition-colors flex items-center justify-center gap-3 ${
+                                className={`w-full py-4 border font-bold rounded-2xl transition-all flex items-center justify-center gap-3 ${
                                     isFavorite
-                                    ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
-                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 shadow-sm'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm'
                                 }`}
                             >
                                 <Bookmark className={`h-6 w-6 ${isFavorite ? 'fill-red-600' : ''}`} />
@@ -170,42 +173,44 @@ export default function TemplateDetail() {
                             </button>
                         </div>
                     </div>
-                </div>
 
-                {/* Similar Templates */}
-                <section className="mt-20">
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold text-gray-900">Mẫu tương tự</h2>
-                            <p className="text-gray-500">Khám phá các lựa chọn khác trong phong cách {template.style}</p>
+                    {/* Similar Templates - Using new card logic (simplified) */}
+                    <section className="mt-20">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="space-y-2">
+                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Mẫu tương tự</h2>
+                                <p className="text-gray-500">Khám phá các lựa chọn khác trong phong cách {template.style}</p>
+                            </div>
+                            <Link to="/templates" className="text-[#0b3c8f] font-bold hover:underline flex items-center gap-1">
+                                Xem tất cả
+                            </Link>
                         </div>
-                        <Link to="/templates" className="text-[#0b3c8f] font-bold hover:underline">Xem tất cả</Link>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {TEMPLATES_DATA
-                            .filter(t => t.style === template.style && t.id !== template.id)
-                            .slice(0, 4)
-                            .map(similar => (
-                                <div key={similar.id} className="group cursor-pointer">
-                                    <Link to={`/template/${similar.id}`}>
-                                        <div className="relative aspect-[1/1.4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-4 transition-transform group-hover:-translate-y-2">
-                                            <img src={similar.image} className="w-full h-full object-cover" alt={similar.title} />
-                                            <div className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <span className="bg-white text-[#0b3c8f] px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
-                                                    Sử dụng mẫu này
-                                                </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {TEMPLATES_DATA
+                                .filter(t => t.style === template.style && t.id !== template.id)
+                                .slice(0, 4)
+                                .map(similar => (
+                                    <div key={similar.id} className="group cursor-pointer">
+                                        <Link to={`/template/${similar.id}`}>
+                                            <div className="relative aspect-[1/1.4] rounded-2xl overflow-hidden shadow-md border border-slate-200 mb-4 transition-all group-hover:-translate-y-2 group-hover:shadow-xl">
+                                                <img src={similar.image} className="w-full h-full object-cover" alt={similar.title} />
+                                                <div className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <span className="bg-white text-[#0b3c8f] px-4 py-2 rounded-xl font-bold text-sm shadow-lg translate-y-4 group-hover:translate-y-0 transition-transform">
+                                                        Sử dụng mẫu này
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="text-center">
-                                            <h4 className="font-bold text-gray-900">{similar.title}</h4>
-                                            <p className="text-xs text-gray-500">{similar.style} • {similar.badgeText}</p>
-                                        </div>
-                                    </Link>
-                                </div>
-                            ))
-                        }
-                    </div>
-                </section>
+                                            <div className="text-center">
+                                                <h4 className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{similar.title}</h4>
+                                                <p className="text-xs text-gray-500">{similar.style} • {similar.badgeText}</p>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </section>
+                </div>
             </main>
         </>
     )
