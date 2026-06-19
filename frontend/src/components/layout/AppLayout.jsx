@@ -33,6 +33,7 @@ import {CvAnalysis} from "../../pages/interview/CvAnalysis.jsx";
 import {InterviewResults} from "../../pages/interview/InterviewResult.jsx";
 import CVEditor from "../../pages/cv-template/CVEditor.jsx";
 import CVEvaluation from "../../pages/cv-template/CVEvaluation.jsx";
+import CVAnalyzing from "../../pages/cv-template/CVAnalyzing.jsx";
 import FeedbackWidget from "../feedback/FeedbackWidget.jsx";
 import PageTransition from "../transitions/PageTransition.jsx";
 import ScrollToTop from "../transitions/ScrollToTop.jsx";
@@ -112,7 +113,7 @@ export default function AppLayout() {
                 <Route path="/cv-evaluation"
                        element={<PageTransition key={location.pathname}><CVEvaluation/></PageTransition>}/>
                 <Route path="/cv-analyzing"
-                       element={<PageTransition key={location.pathname}><div className="p-10">CV Analyzing Placeholder</div></PageTransition>}/>
+                       element={<PageTransition key={location.pathname}><CVAnalyzing/></PageTransition>}/>
                 {/* ── Protected block (Zones B + C) ───────────────── */}
                 <Route path="/*" element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
