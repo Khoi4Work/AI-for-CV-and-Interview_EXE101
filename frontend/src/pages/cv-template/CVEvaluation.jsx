@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileText, Trash2, Link, TextCursor, CheckCircle2 } from 'lucide-react';
+import { Upload, FileText, Trash2, Link, TextCursor, CheckCircle2, X } from 'lucide-react';
 
 const CVEvaluation = () => {
   const navigate = useNavigate();
@@ -62,7 +62,14 @@ const CVEvaluation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans antialiased">
+    <div className="relative min-h-screen bg-slate-50 p-6 md:p-12 font-sans antialiased">
+      <button
+        onClick={() => navigate('/')}
+        className="absolute left-6 top-6 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-all z-10"
+        aria-label="Close"
+      >
+        <X className="w-6 h-6" />
+      </button>
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="mb-10 text-center md:text-left">

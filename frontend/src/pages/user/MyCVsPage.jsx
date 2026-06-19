@@ -168,19 +168,19 @@ const MyCVsPage = () => {
             </div>
 
             <div className="space-y-3.5 mt-auto">
-              {cv.score && (
-                <div className="flex items-center space-x-1.5 bg-blue-50/50 p-2 rounded-xl text-[10px] font-bold text-[#0b3c8f] border border-blue-100/55 select-none">
-                  <Sparkles className="w-3.5 h-3.5 animate-pulse shrink-0" />
-                  <span>Độ tối ưu: {cv.score}%</span>
-                </div>
-              )}
+              {/*{cv.score && (*/}
+              {/*  <div className="flex items-center space-x-1.5 bg-blue-50/50 p-2 rounded-xl text-[10px] font-bold text-[#0b3c8f] border border-blue-100/55 select-none">*/}
+              {/*    <Sparkles className="w-3.5 h-3.5 animate-pulse shrink-0" />*/}
+              {/*    <span>Độ tối ưu: {cv.score}%</span>*/}
+              {/*  </div>*/}
+              {/*)}*/}
 
-              {cv.matchPercentage && (
-                <div className="flex items-center space-x-1.5 bg-indigo-50/50 p-1.5 rounded-xl text-[9px] text-[#0b3c8f] border border-[#0b3c8f]/10">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#0b3c8f] shrink-0" />
-                  <span className="leading-normal">Phù hợp: {cv.matchPercentage}% với mô tả công việc</span>
-                </div>
-              )}
+              {/*{cv.matchPercentage && (*/}
+              {/*  <div className="flex items-center space-x-1.5 bg-indigo-50/50 p-1.5 rounded-xl text-[9px] text-[#0b3c8f] border border-[#0b3c8f]/10">*/}
+              {/*    <CheckCircle2 className="w-3.5 h-3.5 text-[#0b3c8f] shrink-0" />*/}
+              {/*    <span className="leading-normal">Phù hợp: {cv.matchPercentage}% với mô tả công việc</span>*/}
+              {/*  </div>*/}
+              {/*)}*/}
 
               <button
                 id={`cv-goto-editor-${cv.id}`}
