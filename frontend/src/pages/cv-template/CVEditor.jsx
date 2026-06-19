@@ -4,7 +4,7 @@ import {User, Star, Monitor, Sparkles, Download, ZoomIn, ZoomOut, RotateCcw, Lay
 import { useApp } from '../../contexts/AppContext.jsx';
 import { useCV } from '../../contexts/CVContext.jsx';
 import TemplateRenderer from '../../components/template/TemplateRenderer';
-import { mapCVDataToTemplate } from '../../components/template/cv-data-mapper';
+import { mapCVDataToTemplate } from '../../mapper/cv-data-mapper.js';
 import { TEMPLATES_DATA } from '../../constants/templates';
 
 export default function CVEditor() {

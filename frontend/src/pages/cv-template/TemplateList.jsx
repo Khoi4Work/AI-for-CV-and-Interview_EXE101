@@ -6,7 +6,7 @@ import Sidebar from "../../components/template/Sidebar.jsx";
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../components/layout/GuestHeader.jsx";
 import {useAuth} from "../../contexts/AuthContext.jsx";
-import { TEMPLATES_DATA, TEMPLATE_CATEGORIES, TEMPLATE_STYLES} from '../../constants/templates.js';
+import {TEMPLATES_DATA, TEMPLATE_CATEGORIES, TEMPLATE_STYLES} from '../../constants/templates.js';
 
 export default function TemplateList() {
     const {isLoggedIn, profile} = useAuth();
@@ -20,6 +20,7 @@ export default function TemplateList() {
     const [sortOrder, setSortOrder] = useState('Mới nhất');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
+    const [previewTemplate, setPreviewTemplate] = useState(null);
 
     // Upload States
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -246,8 +247,8 @@ export default function TemplateList() {
                                             <h3 className="font-bold text-gray-900">{previewTemplate.title}</h3>
                                             <span
                                                 className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full uppercase">
-                        {previewTemplate.style}
-                    </span>
+                                                {previewTemplate.style}
+                                            </span>
                                         </div>
                                         <button
                                             onClick={() => setPreviewTemplate(null)}
@@ -271,14 +272,14 @@ export default function TemplateList() {
                                     <div
                                         className="p-6 border-t border-gray-100 flex justify-between items-center bg-white">
                                         <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/>
-                        {previewTemplate.rating}
-                    </span>
                                             <span className="flex items-center gap-1">
-                        <Download className="w-4 h-4"/>
+                                                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500"/>
+                                                {previewTemplate.rating}
+                                            </span>
+                                            <span className="flex items-center gap-1">
+                                                <Download className="w-4 h-4"/>
                                                 {previewTemplate.downloads} lượt tải
-                    </span>
+                                            </span>
                                         </div>
                                         <button
                                             onClick={() => {
