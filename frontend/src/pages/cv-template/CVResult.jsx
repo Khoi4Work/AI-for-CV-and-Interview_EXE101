@@ -13,14 +13,14 @@ export function CVResult() {
                     <h1 className="text-[28px] font-display font-semibold text-gr ay-900 mb-1">Phân tích CV theo JD</h1>
                     <p className="text-gray-500 text-sm">Tối ưu hóa hồ sơ của bạn với sức mạnh AI dựa trên mô tả công việc cụ thể.</p>
                 </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm">
-                        <Download size={16} /> Báo cáo chi tiết
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-[#144296] text-white rounded-lg text-sm font-medium hover:bg-[#00388d] shadow-sm">
-                        <Sparkles size={16} /> Tối ưu ngay với AI
-                    </button>
-                </div>
+                {/*<div className="flex gap-3">*/}
+                {/*    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm">*/}
+                {/*        <Download size={16} /> Báo cáo chi tiết*/}
+                {/*    </button>*/}
+                {/*    <button className="flex items-center gap-2 px-4 py-2 bg-[#144296] text-white rounded-lg text-sm font-medium hover:bg-[#00388d] shadow-sm">*/}
+                {/*        <Sparkles size={16} /> Tối ưu ngay với AI*/}
+                {/*    </button>*/}
+                {/*</div>*/}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -143,16 +143,17 @@ export function CVResult() {
                         <h3 className="text-lg font-bold text-gray-900 mb-2">Khá ổn định</h3>
                         <p className="text-sm text-gray-600 mb-6">Bạn chỉ cách mức "Hợp nhất" 12% điểm kỹ năng quan trọng.</p>
 
-                        <button className="w-full py-3 bg-[#111c3a] hover:bg-black text-white rounded-lg font-medium shadow-sm transition-colors mb-3">
-                            Tự động sửa CV với AI
-                        </button>
-                        <button
-                            onClick={() => navigate('audio')}
-                            className="w-full py-3 bg-blue-50 hover:bg-blue-100 text-[#144296] border border-blue-100 rounded-lg font-medium transition-colors">
-                            <div className="flex items-center justify-center gap-2">
-                                <MicIcon /> Bắt đầu Phỏng vấn thử
-                            </div>
-                        </button>
+                        {/*<button className="w-full py-3 bg-[#111c3a] hover:bg-black text-white rounded-lg font-medium shadow-sm transition-colors mb-3"*/}
+                        {/*        >*/}
+                        {/*    Tự động sửa CV với AI*/}
+                        {/*</button>*/}
+                        {/*<button*/}
+                        {/*    onClick={() => navigate('audio')}*/}
+                        {/*    className="w-full py-3 bg-blue-50 hover:bg-blue-100 text-[#144296] border border-blue-100 rounded-lg font-medium transition-colors">*/}
+                        {/*    <div className="flex items-center justify-center gap-2">*/}
+                        {/*        <MicIcon /> Bắt đầu Phỏng vấn thử*/}
+                        {/*    </div>*/}
+                        {/*</button>*/}
                     </div>
 
                     {/* AI Callout */}
