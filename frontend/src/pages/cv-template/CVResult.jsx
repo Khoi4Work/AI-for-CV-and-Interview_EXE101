@@ -1,16 +1,16 @@
 import React from 'react';
 import { Download, Sparkles, FileText, CheckCircle2, AlertCircle, Plus } from 'lucide-react';
-import { MainLayout } from '../../components/interview/MainLayout';
-import {useNavigation} from "react-router-dom";
+import { MainLayout } from '../../components/interview/MainLayout.jsx';
+import {useNavigate} from "react-router-dom";
 
-export function CvAnalysis() {
-    const { navigate } = useNavigation();
+export function CVResult() {
+    const navigate = useNavigate();
 
     return (
-        <MainLayout>
+        <MainLayout bgClass="bg-white">
             <div className="w-full flex justify-between items-end mb-8 pt-2">
                 <div>
-                    <h1 className="text-[28px] font-display font-semibold text-gray-900 mb-1">Phân tích CV theo JD</h1>
+                    <h1 className="text-[28px] font-display font-semibold text-gr ay-900 mb-1">Phân tích CV theo JD</h1>
                     <p className="text-gray-500 text-sm">Tối ưu hóa hồ sơ của bạn với sức mạnh AI dựa trên mô tả công việc cụ thể.</p>
                 </div>
                 <div className="flex gap-3">

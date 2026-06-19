@@ -1,12 +1,14 @@
 import React from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, useNavigate, useLocation} from 'react-router-dom';
 
 const GuestHeader = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const isHome = location.pathname === '/home' || location.pathname === '/';
     const isInterview = location.pathname === '/interview';
     const isTemplates = location.pathname === '/templates';
-    const bgClass = isHome || isInterview || isTemplates ? 'bg-white/80 backdrop-blur-md' : 'bg-surface';
+    const isEvaluation = location.pathname === '/cv-evaluation';
+    const bgClass = isHome || isInterview || isTemplates || isEvaluation ? 'bg-white/80 backdrop-blur-md' : 'bg-surface';
     const maxW = 'max-w-full';
     return (
         <header
@@ -30,6 +32,9 @@ const GuestHeader = () => {
                 <Link
                     className={`font-label-md text-label-md transition-colors ${isTemplates ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
                     to="/templates">Templates</Link>
+                <Link
+                    className={`font-label-md text-label-md transition-colors ${isEvaluation ? 'text-primary dark:text-on-primary-fixed border-b-2 border-primary dark:border-on-primary-fixed pb-1' : 'text-secondary dark:text-outline hover:text-primary'}`}
+                    to="/cv-evaluation">Đánh giá CV</Link>
             </nav>
 
             {/* Auth Actions */}
