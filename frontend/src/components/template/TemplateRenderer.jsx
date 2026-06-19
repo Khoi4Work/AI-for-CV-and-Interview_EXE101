@@ -1,5 +1,5 @@
 import React from 'react';
-import { TEMPLATE_COMPONENTS } from './TemplateMap';
+import { TEMPLATE_COMPONENTS } from '../../mapper/TemplateMap.js';
 
 export default function TemplateRenderer({ templateId, userData }) {
     const Component = TEMPLATE_COMPONENTS[templateId];
