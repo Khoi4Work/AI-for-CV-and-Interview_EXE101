@@ -56,7 +56,7 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 - **SESSIONS.md Autonomy**: Claude has full standing authorization to modify `SESSIONS.md` to record progress, task completions, and session summaries. Do not ask for permission to update this file.
 
 ### 🚀 Git & Version Control
-- **Commit Title**: Concise and imperative (e.g., "Fix layout in SecurityPage").
+- **Commit Title**: Must start with a prefix in brackets (e.g., `[FEAT]`, `[FIX]`, `[REFACTOR]`), followed by a concise and imperative description (e.g., `[FEAT] Add logout button`).
 - **Commit Description**: Detailed list of what was changed and why.
 - **No Co-authoring**: Standard commits without external attribution.
 
