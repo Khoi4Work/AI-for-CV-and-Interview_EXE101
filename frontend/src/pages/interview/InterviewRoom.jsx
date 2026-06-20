@@ -11,16 +11,12 @@ import React, {useEffect, useRef, useState, useCallback, useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Clock, Mic, MicOff, Volume2, ArrowRight, Settings as SettingsIcon, Sparkles} from 'lucide-react';
 import {useInterviewSession} from '../../hooks/useInterviewSession';
-import {END_PHRASES_VN, END_PHRASES_EN} from '../../constants/questionBank.js';
-
-const ASKING_DURATION = 2500; // ms
+import {END_PHRASES_VN, END_PHRASES_EN} from '../../constants/questionBank.js';// ms
 const PROCESSING_DURATION = 1200;
-const BETWEEN_DURATION = 5000;
-const IN_QUESTION_TIMEOUT = 10000;
-const VAD_THRESHOLD = 12;
-const END_SILENCE_MS = 1500; // 1.5s im lặng sau nói cuối → kết thúc câu
-const MIN_SPEAK_MS = 3000;    // phải nói ít nhất 3s
-
+const IN_QUESTION_TIMEOUT = 600000;
+const VAD_THRESHOLD = 55;
+const END_SILENCE_MS = 10000; // 10s im lặng sau nói cuối → kết thúc câu
+const START_SILENCE_MS = 6000;
 const END_PHRASE_REGEX = new RegExp(
     `(${END_PHRASES_VN.concat(END_PHRASES_EN).join('|')})`,
     'i'
@@ -147,6 +143,7 @@ export function InterviewRoom() {
 
     const stopSTT = useCallback(() => {
         if (recognitionRef.current) {
+            recognitionRef.current.onend = null;
             recognitionRef.current.stop();
             recognitionRef.current = null;
         }
@@ -239,9 +236,16 @@ export function InterviewRoom() {
     const startVAD = useCallback(() => {
         if (!analyserRef.current) return;
         const buf = new Uint8Array(analyserRef.current.frequencyBinCount);
+
+        let lastFrameTime = Date.now();
+
         const tick = () => {
             const currentPhase = phaseRef.current;
             if (currentPhase !== 'recording') return;
+
+            const now = Date.now();
+            const delta = now - lastFrameTime; // Tính thời gian thực tế trôi qua giữa 2 frame
+            lastFrameTime = now;
 
             analyserRef.current.getByteFrequencyData(buf);
             const sampleBins = Math.min(buf.length, 24);
@@ -257,7 +261,7 @@ export function InterviewRoom() {
             if (avg > VAD_THRESHOLD) {
                 if (currentPhase === 'recording') {
                     lastSpokeAtRef.current = Date.now();
-                    spokeDurationRef.current += 100;
+                    spokeDurationRef.current += delta;
                     if (Math.random() < 0.15) {
                         const words = ['tôi', 'làm', 'việc', 'với', 'team', 'dự án', 'công ty', 'kinh nghiệm', 'học hỏi', 'giải quyết', 'xây dựng'];
                         lastTranscriptRef.current = (lastTranscriptRef.current + ' ' + words[Math.floor(Math.random() * words.length)]).slice(-200);
@@ -284,17 +288,21 @@ export function InterviewRoom() {
             startVAD();
             startSTT();
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({audio: true});
                 const mediaRecorder = new MediaRecorder(stream);
                 const chunks = [];
-                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/webm' });
-                    console.log(`Captured ${blob.size} bytes`);
+                    const blob = new Blob(chunks, {type: 'audio/webm'});
+                    // console.log(`Captured ${blob.size} bytes`);
                 };
                 recorderRef.current = mediaRecorder;
                 mediaRecorder.start();
-            } catch (err) { console.error("MediaRecorder failed:", err); }
+            } catch (err) {
+                console.error("MediaRecorder failed:", err);
+            }
         }
 
         if (inQuestionTimerRef.current) clearTimeout(inQuestionTimerRef.current);
@@ -319,7 +327,9 @@ export function InterviewRoom() {
 
                 window.speechSynthesis.speak(utterance);
             } else {
-                setPhase('recording');
+                setTimeout(() => {
+                    setPhase('recording');
+                }, 0)
             }
 
             // Fallback timer in case speech synthesis fails or hangs
@@ -337,13 +347,28 @@ export function InterviewRoom() {
     useEffect(() => {
         if (phase !== 'recording') return;
         const interval = setInterval(() => {
+            // console.log("Đang check...");
+            const now = Date.now();
+            if (!lastSpokeAtRef.current && questionStartedAtRef.current) {
+                // console.log("NOW1: " + now);
+                if (now - questionStartedAtRef.current >= START_SILENCE_MS) {
+                    // console.log("Quá 5 giây không có tín hiệu, bỏ qua câu hỏi!");
+                    // Gọi nộp bài với tham số true (đánh dấu là skipped/bỏ qua do không trả lời)
+                    transitionToProcessing(true);
+                    return; // Dừng luôn vòng lặp
+                }
+            }
+            // console.log("NOW2: " + now);
             if (END_PHRASE_REGEX.test(lastTranscriptRef.current)) {
                 transitionToProcessing(false);
                 return;
             }
-            const now = Date.now();
-            if (lastSpokeAtRef.current && spokeDurationRef.current >= MIN_SPEAK_MS && now - lastSpokeAtRef.current >= END_SILENCE_MS) {
-                transitionToProcessing(false);
+            if (lastSpokeAtRef.current !== null) {
+                if (now - lastSpokeAtRef.current >= END_SILENCE_MS) {
+                    // console.log(`Đã nói lần cuối từ ${lastSpokeAtRef.current}s`);
+                    // console.log(`Đã nói ${Math.round(spokeDurationRef.current / 1000)}s và im lặng 10s, chuyển câu!`);
+                    transitionToProcessing(false);
+                }
             }
         }, 200);
         return () => clearInterval(interval);
@@ -387,9 +412,12 @@ export function InterviewRoom() {
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-white font-sans">
-            <header className="w-full h-16 flex items-center justify-between px-6 bg-white border-b border-gray-200 shadow-sm">
+            <header
+                className="w-full h-16 flex items-center justify-between px-6 bg-white border-b border-gray-200 shadow-sm">
                 <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-[#0b3c8f] rounded-md flex items-center justify-center text-white font-bold text-xs italic">S</div>
+                    <div
+                        className="w-6 h-6 bg-[#0b3c8f] rounded-md flex items-center justify-center text-white font-bold text-xs italic">S
+                    </div>
                     <span className="font-display font-bold text-xl tracking-tight text-[#0b3c8f]">Smartfolio</span>
                 </div>
                 <div className="flex items-center gap-2 bg-blue-50 px-4 py-1.5 rounded-full border border-blue-100">
@@ -402,22 +430,30 @@ export function InterviewRoom() {
                 </div>
             </header>
             <main className="flex-1 relative flex flex-col items-center justify-center p-6">
-                <div className={`w-28 h-28 rounded-full mb-6 border-4 border-white shadow-sm flex items-center justify-center overflow-hidden transition-all ${phase === 'asking' ? 'bg-blue-100 ring-4 ring-blue-200 animate-pulse' : 'bg-gray-200'}`}>
-                    {phase === 'asking' ? <Volume2 className="w-12 h-12 text-[#1a56db]"/> : <div className="w-full h-full bg-gradient-to-br from-[#1a56db] to-[#0b3c8f] flex items-center justify-center text-white"><Sparkles className="w-12 h-12"/></div>}
+                <div
+                    className={`w-28 h-28 rounded-full mb-6 border-4 border-white shadow-sm flex items-center justify-center overflow-hidden transition-all ${phase === 'asking' ? 'bg-blue-100 ring-4 ring-blue-200 animate-pulse' : 'bg-gray-200'}`}>
+                    {phase === 'asking' ? <Volume2 className="w-12 h-12 text-[#1a56db]"/> : <div
+                        className="w-full h-full bg-gradient-to-br from-[#1a56db] to-[#0b3c8f] flex items-center justify-center text-white">
+                        <Sparkles className="w-12 h-12"/></div>}
                 </div>
                 <div className="text-sm text-gray-500 mb-4 font-medium">
                     {data.interviewConfig?.type === 'HR' ? 'Anh Minh — HR FPT' : data.interviewConfig?.type === 'Technical' ? 'Anh Hùng — Tech Lead FPT' : 'Chị Lan — HR Manager FPT'}
                 </div>
                 <div className="flex items-end gap-1 mb-6 h-16">
                     {audioLevels.map((h, i) => (
-                        <div key={i} className={`w-1.5 rounded-full transition-all duration-100 ${phase === 'recording' ? 'bg-[#1a56db]' : phase === 'asking' ? 'bg-blue-300 animate-pulse' : 'bg-gray-300'}`} style={{height: `${h}px`, minHeight: '4px'}} />
+                        <div key={i}
+                             className={`w-1.5 rounded-full transition-all duration-100 ${phase === 'recording' ? 'bg-[#1a56db]' : phase === 'asking' ? 'bg-blue-300 animate-pulse' : 'bg-gray-300'}`}
+                             style={{height: `${h}px`, minHeight: '4px'}}/>
                     ))}
                 </div>
                 <StatusPill phase={phase} currentIndex={currentIndex} total={questions.length}/>
                 {showCurrent && currentQ && (
-                    <div className="mt-6 max-w-2xl w-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm animate-fade-in">
+                    <div
+                        className="mt-6 max-w-2xl w-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm animate-fade-in">
                         <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 text-xs font-bold">AI</div>
+                            <div
+                                className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 text-xs font-bold">AI
+                            </div>
                             <div className="flex-1">
                                 <p className="text-lg font-medium text-gray-800 leading-relaxed">{currentQ.text}</p>
                                 {phase === 'recording' && interimTranscript && (
@@ -434,7 +470,8 @@ export function InterviewRoom() {
                         {/* Render 4 tin nhắn gần nhất từ log */}
                         {data.transcriptLog.slice(-4).map((entry, i) => (
                             <div key={i} className="flex items-start gap-2">
-                                <span className="text-xs font-bold w-12 shrink-0">{entry.role === 'ai' ? 'AI:' : 'Bạn:'}</span>
+                                <span
+                                    className="text-xs font-bold w-12 shrink-0">{entry.role === 'ai' ? 'AI:' : 'Bạn:'}</span>
                                 <span className="line-clamp-1">{entry.text}</span>
                             </div>
                         ))}
@@ -450,11 +487,13 @@ export function InterviewRoom() {
             </main>
             <footer className="w-full h-20 bg-white border-t border-gray-200 px-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <button onClick={handleMicClick} className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${micState === 'active' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : micState === 'denied' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                    <button onClick={handleMicClick}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${micState === 'active' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : micState === 'denied' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                         {micState === 'active' ? <Mic size={18}/> : <MicOff size={18}/>}
                         {micState === 'active' ? 'Mic đang bật' : micState === 'denied' ? 'Bật lại mic' : 'Bật mic'}
                     </button>
-                    <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors">
+                    <button
+                        className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors">
                         <SettingsIcon size={18}/> Settings
                     </button>
                 </div>
@@ -470,9 +509,17 @@ export function InterviewRoom() {
 }
 
 function StatusPill({phase, currentIndex, total}) {
-    if (phase === 'asking') return <div className="bg-blue-100/50 text-[#1a56db] px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-[#1a56db] animate-pulse"></span>AI đang đọc câu hỏi {currentIndex + 1}/{total}</div>;
-    if (phase === 'recording') return <div className="bg-red-100/50 text-red-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>ĐANG GHI ÂM — Câu {currentIndex + 1}/{total}</div>;
-    if (phase === 'processing') return <div className="bg-amber-100/50 text-amber-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>AI đang xử lý...</div>;
+    if (phase === 'asking') return <div
+        className="bg-blue-100/50 text-[#1a56db] px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#1a56db] animate-pulse"></span>AI đang đọc câu
+        hỏi {currentIndex + 1}/{total}</div>;
+    if (phase === 'recording') return <div
+        className="bg-red-100/50 text-red-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>ĐANG GHI ÂM —
+        Câu {currentIndex + 1}/{total}</div>;
+    if (phase === 'processing') return <div
+        className="bg-amber-100/50 text-amber-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>AI đang xử lý...</div>;
     return null;
 }
 
