@@ -1,21 +1,40 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileText, Trash2, Link, TextCursor, CheckCircle2, X } from 'lucide-react';
+import { Upload, FileText, Trash2, Link, TextCursor, CheckCircle2, X, Sparkles } from 'lucide-react';
+import { goodResumeData, badResumeData } from '../../constants/cv/cv-mock-data';
+import { mockJobDescriptions } from '../../constants/jobDescription';
 
 const CVEvaluation = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [selectedFile, setSelectedFile] = useState(null);
+  const [demoCv, setDemoCv] = useState(null); // 'good' or 'bad'
   const [jdTab, setJdTab] = useState('text'); // 'text' or 'url'
   const [jdText, setJdText] = useState('');
   const [jdUrl, setJdUrl] = useState('');
+  const [selectedJdId, setSelectedJdId] = useState('');
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
+      setDemoCv(null);
+    }
+  };
+
+  const handleDemoCvSelect = (type) => {
+    setDemoCv(type);
+    setSelectedFile(null);
+  };
+
+  const handleDemoJdSelect = (id) => {
+    const jd = mockJobDescriptions.find(j => j.id === id);
+    if (jd) {
+      setSelectedJdId(id);
+      setJdText(jd.description.overview + '\n\n' + jd.description.details.map(d => d.title + ': ' + d.bullets.join(', ')).join('\n'));
+      setJdTab('text');
     }
   };
 
@@ -35,19 +54,21 @@ const CVEvaluation = () => {
     const file = e.dataTransfer.files[0];
     if (file && (file.type === 'application/pdf' || file.name.endsWith('.doc') || file.name.endsWith('.docx'))) {
       setSelectedFile(file);
+      setDemoCv(null);
     }
   };
 
   const removeFile = () => {
     setSelectedFile(null);
+    setDemoCv(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleStartEvaluation = () => {
-    if (!selectedFile) {
-      alert('Vui lòng tải lên CV của bạn.');
+    if (!selectedFile && !demoCv) {
+      alert('Vui lòng tải lên CV của bạn hoặc chọn CV demo.');
       return;
     }
     if (jdTab === 'text' && !jdText.trim()) {
@@ -58,7 +79,19 @@ const CVEvaluation = () => {
       alert('Vui lòng nhập URL tuyển dụng.');
       return;
     }
-    navigate('/cv-analyzing');
+
+    // Map the selection to a scenario key for cv-evaluation.js
+    let scenario = 'default';
+    if (demoCv === 'good') scenario = 'good-devops';
+    if (demoCv === 'bad') scenario = 'bad-devops';
+
+    navigate('/cv-analyzing', {
+        state: {
+            target: '/optimizer',
+            scenario: scenario,
+            cvName: demoCv ? (demoCv === 'good' ? 'Good_Resume_MIT.pdf' : 'Bad_Resume_Sample.pdf') : selectedFile?.name
+        }
+    });
   };
 
   return (
@@ -96,7 +129,7 @@ const CVEvaluation = () => {
                 ${isDragging
                   ? 'border-[#0b3c8f] bg-blue-50'
                   : 'border-slate-300 bg-white hover:border-[#0b3c8f] hover:bg-slate-50'}
-                ${selectedFile ? 'border-green-500 bg-green-50/30' : ''}
+                ${selectedFile || demoCv ? 'border-green-500 bg-green-50/30' : ''}
               `}
             >
               <input
@@ -107,15 +140,29 @@ const CVEvaluation = () => {
                 className="hidden"
               />
 
-              {!selectedFile ? (
+              {!selectedFile && !demoCv ? (
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-[#0b3c8f] transition-transform group-hover:scale-110 duration-200">
                     <Upload className="w-8 h-8" />
                   </div>
-                  <div>
+                  <div className="flex flex-col items-center gap-4">
                     <p className="text-lg font-medium text-slate-700">Kéo thả CV vào đây hoặc <span className="text-[#0b3c8f] font-semibold">Chọn tệp</span></p>
-                    <p className="text-sm text-slate-500 mt-1">Hỗ trợ định dạng PDF, DOC, DOCX</p>
+                    <div className="flex gap-2 mt-2">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleDemoCvSelect('good'); }}
+                            className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-bold hover:bg-green-200 transition-colors flex items-center gap-1"
+                        >
+                            <Sparkles className="w-3 h-3" /> CV Tốt (Demo)
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleDemoCvSelect('bad'); }}
+                            className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors flex items-center gap-1"
+                        >
+                            <Sparkles className="w-3 h-3" /> CV Tệ (Demo)
+                        </button>
+                    </div>
                   </div>
+                  <p className="text-sm text-slate-500 mt-1">Hỗ trợ định dạng PDF, DOC, DOCX</p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-4 w-full max-w-xs">
@@ -124,10 +171,10 @@ const CVEvaluation = () => {
                   </div>
                   <div className="text-center">
                     <p className="text-slate-900 font-semibold truncate w-full px-2">
-                      {selectedFile.name}
+                      {demoCv === 'good' ? 'Good_Resume_MIT.pdf' : demoCv === 'bad' ? 'Bad_Resume_Sample.pdf' : selectedFile?.name}
                     </p>
                     <p className="text-sm text-slate-500 mt-1">
-                      {(selectedFile.size / 1024).toFixed(1)} KB
+                      {demoCv ? 'Mẫu demo đã chọn' : `${(selectedFile.size / 1024).toFixed(1)} KB`}
                     </p>
                   </div>
                   <button
@@ -180,12 +227,26 @@ const CVEvaluation = () => {
               {/* Content */}
               <div className="p-6">
                 {jdTab === 'text' ? (
-                  <textarea
-                    value={jdText}
-                    onChange={(e) => setJdText(e.target.value)}
-                    placeholder="Dán nội dung chi tiết mô tả công việc vào đây..."
-                    className="w-full h-64 p-4 text-sm text-slate-700 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#0b3c8f] focus:border-[#0b3c8f] outline-none transition-all resize-none"
-                  />
+                  <div className="flex flex-col gap-4">
+                      <div className="flex gap-2 mb-2">
+                          <span className="text-xs font-bold text-slate-400 uppercase">Demo JD:</span>
+                          {mockJobDescriptions.map(jd => (
+                              <button
+                                  key={jd.id}
+                                  onClick={() => handleDemoJdSelect(jd.id)}
+                                  className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                                >
+                                  {jd.title}
+                                </button>
+                          ))}
+                      </div>
+                      <textarea
+                        value={jdText}
+                        onChange={(e) => setJdText(e.target.value)}
+                        placeholder="Dán nội dung chi tiết mô tả công việc vào đây..."
+                        className="w-full h-64 p-4 text-sm text-slate-700 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#0b3c8f] focus:border-[#0b3c8f] outline-none transition-all resize-none"
+                      />
+                  </div>
                 ) : (
                   <div className="flex flex-col gap-4">
                     <div className="relative">

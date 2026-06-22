@@ -26,7 +26,7 @@ const CVAnalyzing = () => {
       return () => clearTimeout(timer);
     } else if (step === MESSAGES.length - 1) {
       const timer = setTimeout(() => {
-        navigate(target);
+        navigate(target, { state: location.state });
       }, 1500);
       return () => clearTimeout(timer);
     }

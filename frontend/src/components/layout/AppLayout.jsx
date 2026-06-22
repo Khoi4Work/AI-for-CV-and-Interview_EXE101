@@ -130,7 +130,7 @@ export default function AppLayout() {
                                        key={location.pathname}><TemplateDetail/></PageTransition>}/>
                             <Route path="optimizer"
                                    element={<PageTransition key={location.pathname}><CVResult/></PageTransition>}/>
-                            <Route path="/cv-analyzing"
+                            <Route path="cv-analyzing"
                                    element={<PageTransition key={location.pathname}><CVAnalyzing/></PageTransition>}/>
                             <Route path="builder"
                                    element={<PageTransition key={location.pathname}><CVBuilder/></PageTransition>}/>
