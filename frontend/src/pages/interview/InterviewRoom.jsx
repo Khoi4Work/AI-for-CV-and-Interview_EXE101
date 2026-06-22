@@ -11,7 +11,7 @@ import React, {useEffect, useRef, useState, useCallback, useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Clock, Mic, MicOff, Volume2, ArrowRight, Settings as SettingsIcon, Sparkles} from 'lucide-react';
 import {useInterviewSession} from '../../hooks/useInterviewSession';
-import {END_PHRASES_VN, END_PHRASES_EN} from '../../constants/questionBank.js';// ms
+import {END_PHRASES_VN, END_PHRASES_EN} from '../../constants/interview/questionBank.js';// ms
 const PROCESSING_DURATION = 1200;
 const IN_QUESTION_TIMEOUT = 600000;
 const VAD_THRESHOLD = 55;
@@ -194,7 +194,7 @@ export function InterviewRoom() {
         // Gộp cả final transcript và interim transcript cuối cùng để không bị mất lời nói
         const finalPart = lastTranscriptRef.current.trim();
         const interimPart = interimTranscriptRef.current.trim();
-        let answerText = '';
+        let answerText;
 
         if (finalPart && interimPart) {
             answerText = (finalPart + ' ' + interimPart).trim();
@@ -207,6 +207,7 @@ export function InterviewRoom() {
         }
 
         const qid = questions[currentIndexRef.current]?.id;
+        console.log('answer: '+ answerText)
         if (qid) {
             saveAnswer(qid, {
                 qid,

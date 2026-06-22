@@ -7,7 +7,7 @@ import {Header} from "../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../components/layout/GuestHeader.jsx";
 import {Footer} from '../../components/layout/Footer.jsx';
 import {useAuth} from "../../contexts/AuthContext.jsx";
-import {TEMPLATES_DATA, TEMPLATE_CATEGORIES, TEMPLATE_STYLES} from '../../constants/templates.js';
+import {TEMPLATES_DATA, TEMPLATE_CATEGORIES, TEMPLATE_STYLES} from '../../constants/cv/templates.js';
 
 export default function TemplateList() {
     const {isLoggedIn, profile} = useAuth();

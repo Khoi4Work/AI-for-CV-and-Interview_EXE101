@@ -5,7 +5,7 @@ import {Header} from '../../components/layout/PublicHeader.jsx';
 import {Footer} from '../../components/layout/Footer.jsx';
 import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../../hooks/useInterviewSession';
-import {TAG_DEFINITIONS} from '../../constants/feedbackRubric.js';
+import {TAG_DEFINITIONS} from '../../constants/interview/feedbackInterviewRubric.js';
 
 export function InterviewResults() {
     const navigate = useNavigate();

@@ -1,4 +1,4 @@
-// /src/constant/feedbackRubric.js
+// /src/constant/feedbackInterviewRubric.js
 export const CRITERIA = [
   { key: 'communication', label: 'Giao tiếp (Communication)', baseScore: 70, weight: 1 },
   { key: 'content', label: 'Nội dung (Content Relevance)', baseScore: 65, weight: 1 },

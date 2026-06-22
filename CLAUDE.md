@@ -67,3 +67,9 @@ When acting as an agent in this repository, adhere to these four pillars:
 2. **Tool-Centric Action**: Use the provided shell and filesystem tools to verify state. Do not assume; check the actual code.
 3. **Explicit Reasoning**: maintain a clear "thought trace" before executing commands to ensure the path to the goal is logical.
 4. **Verification-Driven**: A task is NOT complete until it is verified. Every change must be checked against the objective before marking as resolved.
+
+## 📊 Mock Data Standards (CV Evaluation)
+Mock CV data in `frontend/src/constants/cv/cv-mock-data.js` is built based on professional HR standards:
+- **Excellent CVs**: Follow the **Google XYZ Formula** ("Accomplished [X] as measured by [Y], by doing [Z]") and focus on **Impact over Activity** (quantifiable results over task listing). Based on FAANG/Ivy League recruiting patterns.
+- **Poor CVs**: Synthesize common **HR Red Flags** (vague descriptions, unprofessional contact, "fluff" summaries without evidence, and lack of digital presence).
+

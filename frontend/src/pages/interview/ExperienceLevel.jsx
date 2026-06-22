@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, GraduationCap, Rocket, Medal, Crown } from 'lucide-react';
 import { Header } from '../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../components/layout/Footer.jsx';
-import { EXPERIENCE_LEVELS } from '../../constants/experienceLevels.js';
+import { EXPERIENCE_LEVELS } from '../../constants/interview/experienceLevels.js';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
 
 const ICONS = { GraduationCap, Rocket, Medal, Crown };
