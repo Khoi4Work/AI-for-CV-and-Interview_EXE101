@@ -38,6 +38,11 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 - `importedCode/`: Reference implementations for logic/UI (Local only).
 - `.gitignore`: Configured to ignore `node_modules/`, `target/`, `.idea/`, `.claude/`, and `importedCode/`.
 
+## ⚠️ Critical Rules & Constraints
+- **Git Commits**: Must strictly use prefixes like `[FEAT]`, `[FIX]`, `[REFACTOR]`.
+- **Session Tracking**: All session records MUST be kept exclusively in `SESSIONS.md`. Never create separate files.
+- **Agentic Principles**: Strictly follow the **Plan $\rightarrow$ Execute $\rightarrow$ Observe $\rightarrow$ Reflect** cycle.
+
 ## 📜 Development Guidelines
 
 ### 🖋 Coding Standards
@@ -53,7 +58,7 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 5. **Record**: Update `SESSIONS.md` immediately after completing a task or ending a session to maintain a clear project trail.
 
 ### 🗒 Session & Progress Tracking
-- **SESSIONS.md Autonomy**: Claude has full standing authorization to modify `SESSIONS.md` to record progress, task completions, and session summaries. Do not ask for permission to update this file.
+- **SESSIONS.md Autonomy**: Claude has full standing authorization to modify `SESSIONS.md` to record progress, task completions, and session summaries. Do not ask for permission to update this file. All session records must be kept exclusively within `SESSIONS.md`; do not create separate markdown files for sessions (e.g., avoid formats like `[absolute path]+[date]`).
 
 ### 🚀 Git & Version Control
 - **Commit Title**: Must start with a prefix in brackets (e.g., `[FEAT]`, `[FIX]`, `[REFACTOR]`), followed by a concise and imperative description (e.g., `[FEAT] Add logout button`).

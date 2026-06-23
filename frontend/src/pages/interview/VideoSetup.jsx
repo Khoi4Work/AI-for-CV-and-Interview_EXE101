@@ -12,6 +12,11 @@ export function VideoSetup() {
   const videoRef = React.useRef(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [micOn, setMicOn] = useState(false);
+  const [audioLevels, setAudioLevels] = useState(new Array(20).fill(0));
+
+  const audioContextRef = React.useRef(null);
+  const analyserRef = React.useRef(null);
+  const animationRef = React.useRef(null);
 
   useEffect(() => {
     setStep(7);
@@ -64,15 +69,14 @@ export function VideoSetup() {
         <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 mb-8">
           <div className="flex flex-col gap-4">
             <div className="bg-[#111111] rounded-xl aspect-video relative flex items-center justify-center overflow-hidden border border-gray-200 shadow-sm">
-              {cameraOn ? (
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
-              ) : (
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className={`w-full h-full object-cover ${cameraOn ? 'block' : 'hidden'}`}
+              />
+              {!cameraOn && (
                 <div className="text-white/40 text-sm">Camera tắt — bấm Camera để bật</div>
               )}
 

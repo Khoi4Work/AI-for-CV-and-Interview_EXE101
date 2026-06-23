@@ -263,10 +263,6 @@ export function InterviewRoom() {
                 if (currentPhase === 'recording') {
                     lastSpokeAtRef.current = Date.now();
                     spokeDurationRef.current += delta;
-                    if (Math.random() < 0.15) {
-                        const words = ['tôi', 'làm', 'việc', 'với', 'team', 'dự án', 'công ty', 'kinh nghiệm', 'học hỏi', 'giải quyết', 'xây dựng'];
-                        lastTranscriptRef.current = (lastTranscriptRef.current + ' ' + words[Math.floor(Math.random() * words.length)]).slice(-200);
-                    }
                 }
             } else {
                 setAudioLevels((prev) => prev.map(() => 4 + Math.random() * 4));
