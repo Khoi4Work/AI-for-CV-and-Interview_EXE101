@@ -1,14 +1,19 @@
 import { X, FileDown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, onZoomOut }) {
+    const navigate = useNavigate();
+
     return (
         <>
             <header className="bg-white border-b px-6 py-3 flex items-center justify-between z-10 w-full shrink-0">
                 <div className="flex items-center gap-4">
-                    <Link to="/" className="text-gray-500 hover:text-gray-700">
+                    <button
+                        onClick={() => navigate('/home')}
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                    >
                         <X className="h-6 w-6"/>
-                    </Link>
+                    </button>
                     <div>
                         <h1 className="font-bold text-lg text-cv-text-dark leading-tight">Executive Pro</h1>
                         <p className="text-xs text-gray-500 italic">Mẫu CV chuyên nghiệp cho quản lý cấp cao</p>

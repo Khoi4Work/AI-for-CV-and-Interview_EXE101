@@ -1,4 +1,4 @@
-import React, {createContext, useState, useContext} from 'react';
+import React, {createContext, useState, useContext, useCallback} from 'react';
 
 const CVContext = createContext();
 
@@ -25,27 +25,35 @@ const INITIAL_CV_STATE = {
 export function CVProvider({children}) {
     const [cvData, setCvData] = useState(INITIAL_CV_STATE);
 
-    const updatePersonalInfo = (info) => {
+    const setFullCVData = useCallback((newData) => {
+        setCvData(prev => ({
+            ...prev,
+            ...newData,
+            selectedTemplateId: newData.selectedTemplateId || prev.selectedTemplateId
+        }));
+    }, []);
+
+    const updatePersonalInfo = useCallback((info) => {
         setCvData(prev => ({...prev, personalInfo: {...prev.personalInfo, ...info}}));
-    };
+    }, []);
 
-    const updateSummary = (summary) => {
+    const updateSummary = useCallback((summary) => {
         setCvData(prev => ({...prev, summary}));
-    };
+    }, []);
 
-    const addExperience = () => {
+    const addExperience = useCallback(() => {
         const newExp = {id: Date.now(), company: '', role: '', period: '', details: ['']};
         setCvData(prev => ({...prev, experiences: [...prev.experiences, newExp]}));
-    };
+    }, []);
 
-    const updateExperience = (id, field, value) => {
+    const updateExperience = useCallback((id, field, value) => {
         setCvData(prev => ({
             ...prev,
             experiences: prev.experiences.map(exp => exp.id === id ? {...exp, [field]: value} : exp)
         }));
-    };
+    }, []);
 
-    const updateExperienceDetail = (expId, detailIndex, value) => {
+    const updateExperienceDetail = useCallback((expId, detailIndex, value) => {
         setCvData(prev => ({
             ...prev,
             experiences: prev.experiences.map(exp => {
@@ -57,59 +65,59 @@ export function CVProvider({children}) {
                 return exp;
             })
         }));
-    };
+    }, []);
 
-    const removeExperience = (id) => {
+    const removeExperience = useCallback((id) => {
         setCvData(prev => ({...prev, experiences: prev.experiences.filter(exp => exp.id !== id)}));
-    };
+    }, []);
 
-    const updateSkills = (skills) => {
+    const updateSkills = useCallback((skills) => {
         setCvData(prev => ({...prev, skills}));
-    };
+    }, []);
 
-    const setTemplate = (id) => {
+    const setTemplate = useCallback((id) => {
         setCvData(prev => ({...prev, selectedTemplateId: id}));
-    };
+    }, []);
 
-    const setExperiences = (experiences) => {
+    const setExperiences = useCallback((experiences) => {
         setCvData(prev => ({...prev, experiences}));
-    };
+    }, []);
 
-    const updateEducation = (index, field, value) => {
+    const updateEducation = useCallback((index, field, value) => {
         setCvData(prev => {
             const newEdu = [...prev.education];
             newEdu[index] = {...newEdu[index], [field]: value};
             return {...prev, education: newEdu};
         });
-    };
+    }, []);
 
-    const addEducation = () => {
+    const addEducation = useCallback(() => {
         setCvData(prev => ({...prev, education: [...prev.education, {degree: '', school: '', year: ''}]}));
-    };
+    }, []);
 
-    const removeEducation = (index) => {
+    const removeEducation = useCallback((index) => {
         setCvData(prev => ({...prev, education: prev.education.filter((_, i) => i !== index)}));
-    };
+    }, []);
 
-    const setEducation = (education) => {
+    const setEducation = useCallback((education) => {
         setCvData(prev => ({...prev, education}));
-    };
+    }, []);
 
-    const updateProjects = (projects) => {
+    const updateProjects = useCallback((projects) => {
         setCvData(prev => ({...prev, projects}));
-    };
+    }, []);
 
-    const updateCertificates = (certs) => {
+    const updateCertificates = useCallback((certs) => {
         setCvData(prev => ({...prev, certificates: certs}));
-    };
+    }, []);
 
-    const updateLanguages = (langs) => {
+    const updateLanguages = useCallback((langs) => {
         setCvData(prev => ({...prev, languages: langs}));
-    };
+    }, []);
 
-    const updateAwards = (awards) => {
+    const updateAwards = useCallback((awards) => {
         setCvData(prev => ({...prev, awards}));
-    };
+    }, []);
 
     return (
         <CVContext.Provider value={{
@@ -130,7 +138,8 @@ export function CVProvider({children}) {
             updateProjects,
             updateCertificates,
             updateLanguages,
-            updateAwards
+            updateAwards,
+            setFullCVData
         }}>
             {children}
         </CVContext.Provider>
