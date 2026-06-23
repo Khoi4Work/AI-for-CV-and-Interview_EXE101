@@ -1,20 +1,14 @@
 // /src/pages/interview/InterviewRoom.jsx
-// High-fidelity interview room với:
-// - State machine: idle → asking (2.5s ẩn text) → recording (hiện text + mic + VAD) → processing (1.2s) → between (5s) → asking
-// - Mic thật: getUserMedia + AnalyserNode để VAD
-// - Cụm kết: regex VN + EN
-// - 10s im lặng trong câu → skip
-// - 5s im lặng giữa câu → skip
-// - 2 skip liên tiếp (bất kỳ loại) → auto-end
-// - KHÔNG side panel, KHÔNG suggestion, KHÔNG nút End
-import React, {useEffect, useRef, useState, useCallback, useMemo} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {Clock, Mic, MicOff, Volume2, ArrowRight, Settings as SettingsIcon, Sparkles} from 'lucide-react';
-import {useInterviewSession} from '../../hooks/useInterviewSession';
-import {END_PHRASES_VN, END_PHRASES_EN} from '../../constants/interview/questionBank.js';// ms
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {Clock, Mic, MicOff, Volume2, Sparkles, SettingsIcon} from 'lucide-react';
+import { useInterviewSession } from '../../hooks/useInterviewSession';
+import { useMediaDevices } from '../../hooks/useMediaDevices';
+import { END_PHRASES_VN, END_PHRASES_EN } from '../../constants/interview/questionBank.js';
+
 const PROCESSING_DURATION = 1200;
 const IN_QUESTION_TIMEOUT = 600000;
-const VAD_THRESHOLD = 55;
+const VAD_THRESHOLD = 65; // Tăng ngưỡng để lọc nhiễu tốt hơn
 const END_SILENCE_MS = 10000; // 10s im lặng sau nói cuối → kết thúc câu
 const START_SILENCE_MS = 6000;
 const END_PHRASE_REGEX = new RegExp(
@@ -24,12 +18,18 @@ const END_PHRASE_REGEX = new RegExp(
 
 export function InterviewRoom() {
     const navigate = useNavigate();
-    const {data, update, generateQuestions, generateFeedback, saveAnswer, addTranscript} = useInterviewSession();
+    const { data, update, generateQuestions, generateFeedback, saveAnswer, addTranscript } = useInterviewSession();
+    const {
+        audioLevels,
+        volumeRef,
+        ensureStream,
+        startAudioAnalysis,
+        stopAllTracks
+    } = useMediaDevices();
 
     useEffect(() => {
-        update({step: 8});
-        // RESET skipStreak và transcriptLog khi bắt đầu vào phòng phỏng vấn để tránh dữ liệu cũ
-        update({skipStreak: 0, transcriptLog: []});
+        update({ step: 8 });
+        update({ skipStreak: 0, transcriptLog: [] });
         if (!data.questions || data.questions.length === 0) {
             if (typeof generateQuestions === 'function') {
                 try {
@@ -40,25 +40,20 @@ export function InterviewRoom() {
                 }
             }
         }
-    }, []); // Run only once on mount
-
-    const setStep = (n) => update({step: n});
+    }, [data.questions, generateQuestions, update]);
 
     const [phase, setPhase] = useState('asking'); // asking | recording | processing | between | done
     const [currentIndex, setCurrentIndex] = useState(0);
     const [elapsed, setElapsed] = useState(0);
     const [micState, setMicState] = useState('idle'); // idle | requesting | active | denied
-    const [audioLevels, setAudioLevels] = useState(new Array(20).fill(0));
     const [showCurrent, setShowCurrent] = useState(false);
     const [interimTranscript, setInterimTranscript] = useState('');
 
-    const streamRef = useRef(null);
-    const audioContextRef = useRef(null);
-    const analyserRef = useRef(null);
-    const animationRef = useRef(null);
     const phaseTimerRef = useRef(null);
     const inQuestionTimerRef = useRef(null);
     const lastSpokeAtRef = useRef(null);
+    const lastSpeechActivityAtRef = useRef(null);
+    const prevTranscriptRef = useRef('');
     const spokeDurationRef = useRef(0);
     const questionStartedAtRef = useRef(null);
     const lastTranscriptRef = useRef('');
@@ -67,6 +62,8 @@ export function InterviewRoom() {
     const currentIndexRef = useRef(currentIndex);
     const recorderRef = useRef(null);
     const recognitionRef = useRef(null);
+    const lastTickAtRef = useRef(null);
+    const firstSpokeAtRef = useRef(null);
 
     useEffect(() => {
         phaseRef.current = phase;
@@ -77,29 +74,6 @@ export function InterviewRoom() {
 
     const questions = useMemo(() => data.questions || [], [data.questions]);
     const currentQ = questions[currentIndex];
-
-    // --- 1. Mic, STT & VAD Logic (Basic Tools) ---
-    const setupMic = useCallback(async () => {
-        setMicState('requesting');
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-            streamRef.current = stream;
-            const AudioContextClass = window.AudioContext || window['webkitAudioContext'];
-            const audioContext = new AudioContextClass();
-            if (audioContext.state === 'suspended') await audioContext.resume();
-            const source = audioContext.createMediaStreamSource(stream);
-            const analyser = audioContext.createAnalyser();
-            analyser.fftSize = 512;
-            source.connect(analyser);
-            audioContextRef.current = audioContext;
-            analyserRef.current = analyser;
-            setMicState('active');
-            return true;
-        } catch (e) {
-            setMicState('denied');
-            return false;
-        }
-    }, []);
 
     const startSTT = useCallback(() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -150,29 +124,13 @@ export function InterviewRoom() {
         setInterimTranscript('');
     }, []);
 
-    const stopMic = useCallback(() => {
-        if (animationRef.current) cancelAnimationFrame(animationRef.current);
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach((t) => t.stop());
-            streamRef.current = null;
-        }
-        if (audioContextRef.current) {
-            audioContextRef.current.close();
-            audioContextRef.current = null;
-        }
-        analyserRef.current = null;
-        setMicState('idle');
-        setAudioLevels(new Array(20).fill(0));
-    }, []);
-
-    // --- 2. Transition Handlers ---
     const endInterview = useCallback(() => {
         setPhase('done');
-        stopMic();
+        stopAllTracks();
         stopSTT();
         generateFeedback();
         setTimeout(() => navigate('/interview/review'), 200);
-    }, [generateFeedback, navigate, stopMic]);
+    }, [generateFeedback, navigate, stopAllTracks, stopSTT]);
 
     const transitionToNext = useCallback(() => {
         let nextIndex = currentIndex + 1;
@@ -191,7 +149,6 @@ export function InterviewRoom() {
         }
         stopSTT();
 
-        // Gộp cả final transcript và interim transcript cuối cùng để không bị mất lời nói
         const finalPart = lastTranscriptRef.current.trim();
         const interimPart = interimTranscriptRef.current.trim();
         let answerText;
@@ -207,12 +164,11 @@ export function InterviewRoom() {
         }
 
         const qid = questions[currentIndexRef.current]?.id;
-        console.log('answer: '+ answerText)
         if (qid) {
             saveAnswer(qid, {
                 qid,
                 text: (skipped && !answerText) ? '' : (answerText || '...'),
-                durationMs: Date.now() - (questionStartedAtRef.current || Date.now()),
+                durationMs: Date.now() - (firstSpokeAtRef.current || questionStartedAtRef.current || Date.now()),
                 skipped: skipped && !answerText,
                 startedAt: questionStartedAtRef.current,
                 endedAt: Date.now(),
@@ -222,6 +178,7 @@ export function InterviewRoom() {
         lastTranscriptRef.current = '';
         interimTranscriptRef.current = '';
         lastSpokeAtRef.current = null;
+        lastSpeechActivityAtRef.current = null;
         spokeDurationRef.current = 0;
         setShowCurrent(false);
 
@@ -232,81 +189,44 @@ export function InterviewRoom() {
         phaseTimerRef.current = setTimeout(() => {
             transitionToNext();
         }, PROCESSING_DURATION);
-    }, [questions, saveAnswer, addTranscript, transitionToNext, stopSTT]);
-
-    const startVAD = useCallback(() => {
-        if (!analyserRef.current) return;
-        const buf = new Uint8Array(analyserRef.current.frequencyBinCount);
-
-        let lastFrameTime = Date.now();
-
-        const tick = () => {
-            const currentPhase = phaseRef.current;
-            if (currentPhase !== 'recording') return;
-
-            const now = Date.now();
-            const delta = now - lastFrameTime; // Tính thời gian thực tế trôi qua giữa 2 frame
-            lastFrameTime = now;
-
-            analyserRef.current.getByteFrequencyData(buf);
-            const sampleBins = Math.min(buf.length, 24);
-            let sum = 0;
-            for (let i = 0; i < sampleBins; i++) sum += buf[i];
-            const avg = sum / sampleBins;
-
-            setAudioLevels((prev) => prev.map((_, i) => {
-                const variation = Math.abs(Math.sin((Date.now() / 200) + i));
-                return avg > VAD_THRESHOLD ? 8 + (avg / 255) * 56 * variation : 4;
-            }));
-
-            if (avg > VAD_THRESHOLD) {
-                if (currentPhase === 'recording') {
-                    lastSpokeAtRef.current = Date.now();
-                    spokeDurationRef.current += delta;
-                }
-            } else {
-                setAudioLevels((prev) => prev.map(() => 4 + Math.random() * 4));
-            }
-            animationRef.current = requestAnimationFrame(tick);
-        };
-        tick();
-    }, []);
+    }, [questions, saveAnswer, transitionToNext, stopSTT]);
 
     const startRecording = useCallback(async () => {
         setTimeout(() => setShowCurrent(true), 0);
         addTranscript('ai', currentQ?.text || '');
         questionStartedAtRef.current = Date.now();
         lastSpokeAtRef.current = null;
+        lastSpeechActivityAtRef.current = null;
+        firstSpokeAtRef.current = null;
         spokeDurationRef.current = 0;
         lastTranscriptRef.current = '';
 
-        const ok = await setupMic();
-        if (ok) {
-            startVAD();
+        try {
+            const s = await ensureStream();
+            setMicState('active');
+            startAudioAnalysis();
             startSTT();
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-                const mediaRecorder = new MediaRecorder(stream);
-                const chunks = [];
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) chunks.push(e.data);
-                };
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, {type: 'audio/webm'});
-                    // console.log(`Captured ${blob.size} bytes`);
-                };
-                recorderRef.current = mediaRecorder;
-                mediaRecorder.start();
-            } catch (err) {
-                console.error("MediaRecorder failed:", err);
-            }
+
+            const mediaRecorder = new MediaRecorder(s);
+            const chunks = [];
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, {type: 'audio/webm'});
+            };
+            recorderRef.current = mediaRecorder;
+            mediaRecorder.start();
+        } catch (e) {
+            console.error("Media setup failed:", e);
+            setMicState('denied');
         }
 
         if (inQuestionTimerRef.current) clearTimeout(inQuestionTimerRef.current);
         inQuestionTimerRef.current = setTimeout(() => {
             if (phaseRef.current === 'recording') transitionToProcessing(true);
         }, IN_QUESTION_TIMEOUT);
-    }, [setupMic, startVAD, startSTT, transitionToProcessing, addTranscript, currentQ]);
+    }, [ensureStream, startAudioAnalysis, startSTT, transitionToProcessing, addTranscript, currentQ]);
 
     useEffect(() => {
         if (questions.length === 0) return;
@@ -329,11 +249,10 @@ export function InterviewRoom() {
                 }, 0)
             }
 
-            // Fallback timer in case speech synthesis fails or hangs
             if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
             phaseTimerRef.current = setTimeout(() => {
                 setPhase('recording');
-            }, 15000); // 15s fallback, longer than any typical question
+            }, 15000);
         } else if (phase === 'recording') {
             setTimeout(() => {
                 startRecording().catch(console.error);
@@ -343,37 +262,69 @@ export function InterviewRoom() {
 
     useEffect(() => {
         if (phase !== 'recording') return;
+        lastTickAtRef.current = Date.now();
         const interval = setInterval(() => {
-            // console.log("Đang check...");
             const now = Date.now();
-            if (!lastSpokeAtRef.current && questionStartedAtRef.current) {
-                // console.log("NOW1: " + now);
-                if (now - questionStartedAtRef.current >= START_SILENCE_MS) {
-                    // console.log("Quá 5 giây không có tín hiệu, bỏ qua câu hỏi!");
-                    // Gọi nộp bài với tham số true (đánh dấu là skipped/bỏ qua do không trả lời)
-                    transitionToProcessing(true);
-                    return; // Dừng luôn vòng lặp
+            const delta = now - (lastTickAtRef.current || now);
+            lastTickAtRef.current = now;
+
+            // 1. Nhận diện "Lời nói thực sự" (Speech Activity)
+            // Một người được coi là đang nói khi text transcript thực sự thay đổi nội dung
+            const currentFullText = (lastTranscriptRef.current + ' ' + interimTranscript).trim();
+            const isTextChanging = currentFullText !== prevTranscriptRef.current;
+            prevTranscriptRef.current = currentFullText;
+
+            const hasAudio = volumeRef.current > VAD_THRESHOLD;
+            const isActuallySpeaking = isTextChanging;
+            const isPreventingSkip = hasAudio || isActuallySpeaking;
+
+            if (isPreventingSkip) {
+                if (!firstSpokeAtRef.current) {
+                    firstSpokeAtRef.current = now;
+                }
+                // Reset bộ đếm Skip (6s) - Chấp nhận cả âm thanh hoặc chữ
+                lastSpokeAtRef.current = now;
+
+                // Reset bộ đếm Kết thúc (10s) - CHỈ reset khi thực sự có lời nói được ghi lại
+                if (isActuallySpeaking) {
+                    lastSpeechActivityAtRef.current = now;
+                }
+
+                if (hasAudio) {
+                    spokeDurationRef.current += delta;
                 }
             }
-            // console.log("NOW2: " + now);
+
+            // 2. Kiểm tra im lặng BẮT ĐẦU (6s)
+            if (!lastSpokeAtRef.current && questionStartedAtRef.current) {
+                if (now - questionStartedAtRef.current >= START_SILENCE_MS) {
+                    transitionToProcessing(true);
+                    return;
+                }
+            }
+
+            // 3. Kiểm tra cụm từ kết thúc (ví dụ: "xin hết", "tôi xong rồi")
             if (END_PHRASE_REGEX.test(lastTranscriptRef.current)) {
                 transitionToProcessing(false);
                 return;
             }
-            if (lastSpokeAtRef.current !== null) {
-                if (now - lastSpokeAtRef.current >= END_SILENCE_MS) {
-                    // console.log(`Đã nói lần cuối từ ${lastSpokeAtRef.current}s`);
-                    // console.log(`Đã nói ${Math.round(spokeDurationRef.current / 1000)}s và im lặng 10s, chuyển câu!`);
+
+            // 4. Kiểm tra im lặng KẾT THÚC (10s)
+            // Chỉ bắt đầu đếm 10s sau khi đã từng có lời nói thực sự (isActuallySpeaking)
+            if (lastSpeechActivityAtRef.current !== null) {
+                if (now - lastSpeechActivityAtRef.current >= END_SILENCE_MS) {
                     transitionToProcessing(false);
                 }
             }
         }, 200);
         return () => clearInterval(interval);
-    }, [phase, transitionToProcessing]);
+    }, [phase, transitionToProcessing, volumeRef, interimTranscript]);
 
     const handleMicClick = useCallback(() => {
-        if (micState === 'denied') setupMic().catch(console.error);
-    }, [micState, setupMic]);
+        if (micState === 'denied') {
+            ensureStream().then(() => setMicState('active')).catch(() => setMicState('denied'));
+        }
+    }, [micState, ensureStream]);
 
     useEffect(() => {
         const t = setInterval(() => {
@@ -390,12 +341,12 @@ export function InterviewRoom() {
 
     useEffect(() => {
         return () => {
-            stopMic();
+            stopAllTracks();
             stopSTT();
             if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
             if (inQuestionTimerRef.current) clearTimeout(inQuestionTimerRef.current);
         };
-    }, [stopMic, stopSTT]);
+    }, [stopAllTracks, stopSTT]);
 
     if (!questions.length) {
         return (
@@ -453,9 +404,9 @@ export function InterviewRoom() {
                             </div>
                             <div className="flex-1">
                                 <p className="text-lg font-medium text-gray-800 leading-relaxed">{currentQ.text}</p>
-                                {phase === 'recording' && interimTranscript && (
+                                {phase === 'recording' && (
                                     <p className="mt-3 text-md text-blue-600 italic animate-pulse">
-                                        {interimTranscript}...
+                                        {(lastTranscriptRef.current + ' ' + interimTranscript).trim()}...
                                     </p>
                                 )}
                             </div>
@@ -464,7 +415,6 @@ export function InterviewRoom() {
                 )}
                 {data.transcriptLog && data.transcriptLog.length > 0 && (
                     <div className="mt-4 max-w-2xl w-full max-h-32 overflow-y-auto space-y-1 text-sm text-gray-500">
-                        {/* Render 4 tin nhắn gần nhất từ log */}
                         {data.transcriptLog.slice(-4).map((entry, i) => (
                             <div key={i} className="flex items-start gap-2">
                                 <span
@@ -472,7 +422,6 @@ export function InterviewRoom() {
                                 <span className="line-clamp-1">{entry.text}</span>
                             </div>
                         ))}
-                        {/* HIỂN THỊ LỜI NÓI THỜI GIAN THỰC TRONG CHAT LOG */}
                         {phase === 'recording' && interimTranscript && (
                             <div className="flex items-start gap-2 animate-fade-in">
                                 <span className="text-xs font-bold w-12 shrink-0">Bạn:</span>
@@ -516,7 +465,8 @@ function StatusPill({phase, currentIndex, total}) {
         Câu {currentIndex + 1}/{total}</div>;
     if (phase === 'processing') return <div
         className="bg-amber-100/50 text-amber-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>AI đang xử lý...</div>;
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>AI đang xử lý...
+    </div>;
     return null;
 }
 
