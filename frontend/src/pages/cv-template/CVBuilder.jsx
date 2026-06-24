@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {
     Sparkles,
@@ -15,9 +15,9 @@ import Sidebar from "../../components/template/Sidebar.jsx";
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import {useApp} from '../../contexts/AppContext.jsx';
 import {useCV} from '../../contexts/CVContext.jsx';
-import { badResumeData } from '../../constants/cv/cv-mock-data';
-import { mapMockDataToCVContext } from '../../mapper/cv-data-mapper';
-import { mockJobDescriptions } from '../../constants/jobDescription';
+import {badResumeData} from '../../constants/cv/cv-mock-data';
+import {mapMockDataToCVContext} from '../../mapper/cv-data-mapper';
+import {mockJobDescriptions} from '../../constants/jobDescription';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
@@ -39,8 +39,13 @@ export default function CVBuilder() {
         updateCertificates,
         updateLanguages,
         updateAwards,
-        setFullCVData
+        setFullCVData,
+        resetCV
     } = useCV();
+
+    useEffect(() => {
+        resetCV();
+    }, [resetCV]);
 
     const [step, setStep] = useState(1);
     const [jdText, setJdText] = useState('');
@@ -58,6 +63,12 @@ export default function CVBuilder() {
             const mappedData = mapMockDataToCVContext(badResumeData);
             setFullCVData(mappedData);
         }
+    };
+
+    const handleLoadDemoBadCV = () => {
+        showToast('Đang tải mẫu CV tệ (Demo)...', 'info');
+        const mappedData = mapMockDataToCVContext(badResumeData);
+        setFullCVData(mappedData);
     };
 
     const addKeyword = (keyword) => {
@@ -119,7 +130,14 @@ export default function CVBuilder() {
                                     <Download className="h-4 w-4"/>
                                     Tải CV cũ
                                     <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.docx"
-                                           onChange={onFileChange}/>
+                                        // onChange={onFileChange}
+                                    />
+                                </button>
+                                <button
+                                    onClick={handleLoadDemoBadCV}
+                                    className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors flex items-center gap-1"
+                                >
+                                    <Sparkles className="w-3 h-3"/> CV Tệ (Demo)
                                 </button>
                             </div>
 
@@ -305,7 +323,8 @@ export default function CVBuilder() {
                             {step === 3 && (
                                 <div className="space-y-8 animate-fade-in">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Học vấn</h3>
+                                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Học
+                                            vấn</h3>
                                         <button
                                             onClick={addEducation}
                                             className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
@@ -319,7 +338,9 @@ export default function CVBuilder() {
                                                  className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-blue-500">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                                     <div className="space-y-1">
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Bằng cấp / Chứng chỉ</label>
+                                                        <label
+                                                            className="text-[10px] font-bold text-slate-400 uppercase">Bằng
+                                                            cấp / Chứng chỉ</label>
                                                         <input
                                                             type="text"
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm font-bold py-1"
@@ -328,7 +349,9 @@ export default function CVBuilder() {
                                                         />
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Trường học / Tổ chức</label>
+                                                        <label
+                                                            className="text-[10px] font-bold text-slate-400 uppercase">Trường
+                                                            học / Tổ chức</label>
                                                         <input
                                                             type="text"
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
@@ -339,7 +362,9 @@ export default function CVBuilder() {
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-1">
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Thời gian</label>
+                                                        <label
+                                                            className="text-[10px] font-bold text-slate-400 uppercase">Thời
+                                                            gian</label>
                                                         <input
                                                             type="text"
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
@@ -348,7 +373,8 @@ export default function CVBuilder() {
                                                         />
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">GPA</label>
+                                                        <label
+                                                            className="text-[10px] font-bold text-slate-400 uppercase">GPA</label>
                                                         <input
                                                             type="text"
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
@@ -372,18 +398,24 @@ export default function CVBuilder() {
                             {step === 4 && (
                                 <div className="space-y-8 animate-fade-in">
                                     <div className="flex items-center gap-2 mb-4">
-                                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Kỹ năng & Thông tin khác</h3>
-                                        <Sparkles className="w-4 h-4 text-blue-600" />
+                                        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Kỹ
+                                            năng & Thông tin khác</h3>
+                                        <Sparkles className="w-4 h-4 text-blue-600"/>
                                     </div>
 
                                     <div className="space-y-8">
                                         {/* Skills Section */}
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-center">
-                                                <label className="text-xs font-bold text-slate-600 uppercase">Kỹ năng chuyên môn</label>
+                                                <label className="text-xs font-bold text-slate-600 uppercase">Kỹ năng
+                                                    chuyên môn</label>
                                                 <button
                                                     onClick={() => {
-                                                        const newSkills = [...cvData.skills, {name: '', level: 50, category: 'hard'}];
+                                                        const newSkills = [...cvData.skills, {
+                                                            name: '',
+                                                            level: 50,
+                                                            category: 'hard'
+                                                        }];
                                                         updateSkills(newSkills);
                                                     }}
                                                     className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -393,7 +425,8 @@ export default function CVBuilder() {
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {cvData.skills.map((skill, index) => (
-                                                    <div key={index} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 group">
+                                                    <div key={index}
+                                                         className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 group">
                                                         <input
                                                             type="text"
                                                             className="flex-grow bg-transparent text-sm font-medium outline-none"
@@ -432,7 +465,8 @@ export default function CVBuilder() {
                                                             <button onClick={() => {
                                                                 const updated = cvData.skills.filter((_, i) => i !== index);
                                                                 updateSkills(updated);
-                                                            }} className="text-slate-400 hover:text-red-500 transition-colors">
+                                                            }}
+                                                                    className="text-slate-400 hover:text-red-500 transition-colors">
                                                                 <Trash2 className="w-3 h-3"/>
                                                             </button>
                                                         </div>
@@ -444,13 +478,34 @@ export default function CVBuilder() {
                                         {/* Others Sections: Projects, Certs, Langs, Awards */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             {[
-                                                { label: 'Dự án', field: 'projects', updater: updateProjects, placeholder: 'Tên dự án, mô tả ngắn...' },
-                                                { label: 'Chứng chỉ', field: 'certificates', updater: updateCertificates, placeholder: 'Tên chứng chỉ...' },
-                                                { label: 'Ngôn ngữ', field: 'languages', updater: updateLanguages, placeholder: 'Tiếng Anh, Tiếng Nhật...' },
-                                                { label: 'Giải thưởng', field: 'awards', updater: updateAwards, placeholder: 'Giải nhất cuộc thi...' },
+                                                {
+                                                    label: 'Dự án',
+                                                    field: 'projects',
+                                                    updater: updateProjects,
+                                                    placeholder: 'Tên dự án, mô tả ngắn...'
+                                                },
+                                                {
+                                                    label: 'Chứng chỉ',
+                                                    field: 'certificates',
+                                                    updater: updateCertificates,
+                                                    placeholder: 'Tên chứng chỉ...'
+                                                },
+                                                {
+                                                    label: 'Ngôn ngữ',
+                                                    field: 'languages',
+                                                    updater: updateLanguages,
+                                                    placeholder: 'Tiếng Anh, Tiếng Nhật...'
+                                                },
+                                                {
+                                                    label: 'Giải thưởng',
+                                                    field: 'awards',
+                                                    updater: updateAwards,
+                                                    placeholder: 'Giải nhất cuộc thi...'
+                                                },
                                             ].map((section) => (
                                                 <div key={section.field} className="space-y-3">
-                                                    <label className="text-xs font-bold text-slate-600 uppercase">{section.label}</label>
+                                                    <label
+                                                        className="text-xs font-bold text-slate-600 uppercase">{section.label}</label>
                                                     <div className="flex gap-2">
                                                         <input
                                                             type="text"
@@ -459,7 +514,10 @@ export default function CVBuilder() {
                                                             onKeyDown={(e) => {
                                                                 if (e.key === 'Enter' && e.target.value) {
                                                                     const currentData = cvData[section.field] || [];
-                                                                    const newItem = { name: e.target.value, date: new Date().getFullYear().toString() };
+                                                                    const newItem = {
+                                                                        name: e.target.value,
+                                                                        date: new Date().getFullYear().toString()
+                                                                    };
                                                                     section.updater([...currentData, newItem]);
                                                                     e.target.value = '';
                                                                 }
@@ -470,7 +528,10 @@ export default function CVBuilder() {
                                                                 const input = e.currentTarget.previousElementSibling;
                                                                 if (input.value) {
                                                                     const currentData = cvData[section.field] || [];
-                                                                    const newItem = { name: input.value, date: new Date().getFullYear().toString() };
+                                                                    const newItem = {
+                                                                        name: input.value,
+                                                                        date: new Date().getFullYear().toString()
+                                                                    };
                                                                     section.updater([...currentData, newItem]);
                                                                     input.value = '';
                                                                 }
@@ -482,7 +543,8 @@ export default function CVBuilder() {
                                                     </div>
                                                     <div className="flex flex-wrap gap-2">
                                                         {(cvData[section.field] || []).map((item, i) => (
-                                                            <span key={i} className="bg-slate-100 text-slate-600 text-[11px] px-3 py-1 rounded-full border border-slate-200 flex items-center gap-2 group">
+                                                            <span key={i}
+                                                                  className="bg-slate-100 text-slate-600 text-[11px] px-3 py-1 rounded-full border border-slate-200 flex items-center gap-2 group">
                                                                 {item.name}
                                                                 <button
                                                                     onClick={() => {
@@ -515,8 +577,8 @@ export default function CVBuilder() {
                                         chỉnh nó trong trình chỉnh sửa chuyên nghiệp.
                                     </p>
                                     <Link to="/cv-analyzing"
-                                           state={{ target: '/editor' }}
-                                           className="px-10 py-4 bg-smartfolio-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-blue-800 transition-all hover:scale-105">
+                                          state={{target: '/editor'}}
+                                          className="px-10 py-4 bg-smartfolio-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-blue-800 transition-all hover:scale-105">
                                         Vào Trình Chỉnh Sửa <ChevronRight className="w-5 h-5"/>
                                     </Link>
                                 </div>

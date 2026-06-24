@@ -19,7 +19,7 @@ const INITIAL_CV_STATE = {
     certificates: [],
     languages: [],
     awards: [],
-    selectedTemplateId: 'modern-executive',
+    selectedTemplateId: 'the-standard',
 };
 
 export function CVProvider({children}) {
@@ -119,6 +119,13 @@ export function CVProvider({children}) {
         setCvData(prev => ({...prev, awards}));
     }, []);
 
+    const resetCV = useCallback(() => {
+        setCvData(prev => ({
+            ...INITIAL_CV_STATE,
+            selectedTemplateId: prev.selectedTemplateId
+        }));
+    }, []);
+
     return (
         <CVContext.Provider value={{
             cvData,
@@ -139,7 +146,8 @@ export function CVProvider({children}) {
             updateCertificates,
             updateLanguages,
             updateAwards,
-            setFullCVData
+            setFullCVData,
+            resetCV
         }}>
             {children}
         </CVContext.Provider>

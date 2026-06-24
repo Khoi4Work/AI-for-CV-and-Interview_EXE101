@@ -22,7 +22,7 @@ export default function Template3_SecurityAnalyst({ data }) {
     const { personalInfo, summary, experiences, education, projects, certificates } = cvData;
 
     return (
-        <div className="max-w-[850px] mx-auto bg-white shadow-lg min-h-[1150px] flex print:shadow-none print:w-full font-sans text-slate-800">
+        <div className="max-w-[850px] mx-auto bg-white shadow-lg min-h-[1450px] flex print:shadow-none print:w-full font-sans text-slate-800">
 
             {/* Left Column */}
             <div className="w-[35%] p-10 bg-slate-50 border-r border-slate-200">
