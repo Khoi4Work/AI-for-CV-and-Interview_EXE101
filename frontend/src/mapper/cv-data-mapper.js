@@ -1,6 +1,8 @@
 export function mapCVDataToTemplate(cvData) {
     if (!cvData) return {};
 
+    const experiences = cvData.experiences || [];
+
     return {
         name: cvData.personalInfo?.name || "Full Name",
         title: "Professional Title", // Not explicitly in cvData, maybe add to context later
@@ -23,22 +25,42 @@ export function mapCVDataToTemplate(cvData) {
             intermediate: cvData.skills?.filter(s => s.level >= 40 && s.level < 80).map(s => s.name) || [],
             beginner: cvData.skills?.filter(s => s.level < 40).map(s => s.name) || [],
         },
-        experience1: cvData.experiences?.map(exp => ({
+        experience: experiences.map(exp => ({
+            title: exp.role,
+            company: exp.company,
+            dates: exp.period,
+            bullets: exp.details || [],
+        })),
+        experience1: experiences.map(exp => ({
             title: exp.role,
             company: exp.company,
             dates: exp.period,
             bullets: exp.details || [],
         })) || [],
-        experience2: cvData.experiences?.map(exp => ({
+        experience2: experiences.map((exp, index) => ({
             title: exp.role,
             company: exp.company,
             dates: exp.period,
             bullets: exp.details || [],
-            // project placeholders
-            project1: exp.projects?.[0] || null,
-            project2: exp.projects?.[1] || null,
+            // Associate global projects to experiences sequentially
+            project1: cvData.projects?.[index] ? {
+                name: cvData.projects[index].name,
+                dates: cvData.projects[index].period,
+                description: cvData.projects[index].details?.[0] || '',
+                responsibilities: cvData.projects[index].details?.slice(1).join(', ') || '',
+                techStack: 'React, Node.js, AWS', // Placeholder or derived
+                teamSize: '5 members' // Placeholder
+            } : null,
+            project2: cvData.projects?.[index + 1] ? {
+                name: cvData.projects[index + 1].name,
+                dates: cvData.projects[index + 1].period,
+                description: cvData.projects[index + 1].details?.[0] || '',
+                responsibilitiesList: cvData.projects[index + 1].details?.slice(1) || [],
+                techStack: 'React, Node.js, AWS', // Placeholder
+                teamSize: '3 members' // Placeholder
+            } : null,
         })) || [],
-        experience3: cvData.experiences?.map(exp => ({
+        experience3: experiences.map(exp => ({
             title: exp.role,
             company: exp.company,
             dates: exp.period,
@@ -77,5 +99,68 @@ export function mapCVDataToTemplate(cvData) {
             issuer: award.issuer,
             date: award.date,
         })) || [],
+    };
+}
+
+export function mapMockDataToCVContext(mockData) {
+    if (!mockData) return {};
+
+    const mapExp = (exp, index, group) => ({
+        id: Date.now() + index + (group * 1000),
+        company: exp.company || '',
+        role: exp.title || '',
+        period: exp.dates || '',
+        details: exp.bullets || [],
+    });
+
+    return {
+        personalInfo: {
+            name: mockData.name || '',
+            email: mockData.contact?.email || '',
+            phone: mockData.contact?.phone || '',
+            dob: mockData.contact?.dob || '',
+            address: mockData.contact?.location || '',
+            linkedin: mockData.contact?.linkedin || '',
+        },
+        summary: mockData.summary || '',
+        experiences: [
+            ...(mockData.experience1 || []).map((exp, i) => mapExp(exp, i, 1)),
+            ...(mockData.experience2 || []).map((exp, i) => mapExp(exp, i, 2)),
+            ...(mockData.experience3 || []).map((exp, i) => mapExp(exp, i, 3)),
+        ],
+        skills: Object.entries(mockData.skills || {}).flatMap(([category, skills]) =>
+            skills.map(skill => ({
+                name: skill.replace(/\s*\(.*\)/, '').trim(),
+                level: 80,
+                category: category === 'backend' ? 'backend' : category === 'frontend' ? 'frontend' : 'soft'
+            }))
+        ),
+        education: (mockData.education || []).map(edu => ({
+            degree: edu.degree || '',
+            school: edu.school || '',
+            year: edu.dates || '',
+            gpa: edu.gpa || '',
+        })),
+        projects: (mockData.projectsList || []).map(proj => ({
+            name: proj.name || '',
+            period: proj.dates || '',
+            details: proj.bullets || [],
+            url: proj.url || '',
+        })),
+        certificates: (mockData.certificates || []).map(cert => ({
+            name: cert.name || '',
+            issuer: cert.issuer || '',
+            date: cert.date || '',
+            url: cert.url || '',
+        })),
+        languages: (mockData.languages || []).map(lang => ({
+            name: lang.name || '',
+            level: lang.level || '',
+        })),
+        awards: (mockData.awards || []).map(award => ({
+            name: award.name || '',
+            issuer: award.issuer || '',
+            date: award.date || '',
+        })),
     };
 }
