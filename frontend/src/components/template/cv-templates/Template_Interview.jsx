@@ -5,7 +5,7 @@ import Template3_SecurityAnalyst from './Template3_SecurityAnalyst.jsx';
 import Template4 from './Template4_CouldSpecialist.jsx';
 import Template5_PortfolioHybrid from './Template5_PortfolioHybrid.jsx';
 import Template6_TheStandard from './Template6_TheStandard.jsx';
-import { resumeData } from '../../../constants/cv-mock-data.js';
+import { resumeData } from '../../../constants/cv/cv-mock-data.js';
 
 export default function TemplateInterview() {
     const [activeTemplate, setActiveTemplate] = useState(1);

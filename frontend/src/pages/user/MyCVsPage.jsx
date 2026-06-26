@@ -64,7 +64,8 @@ const MyCVsPage = () => {
         </div>
         <button
           id="cvs-add-new-btn"
-          onClick={() => setShowAddForm(!showAddForm)}
+          // onClick={() => setShowAddForm(!showAddForm)}
+          onClick={() => navigate("/templates")}
           className="bg-[#0b3c8f] hover:bg-[#093278] hover:shadow-md text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm flex items-center justify-center space-x-1.5 transition-all self-start cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -72,36 +73,36 @@ const MyCVsPage = () => {
         </button>
       </div>
 
-      {showAddForm && (
-        <form onSubmit={handleCreateCVSubmit} className="bg-slate-50/80 border border-slate-200 rounded-2xl p-5 space-y-4 animate-slide-up">
-          <h4 className="text-xs font-bold text-slate-700">Tạo mới bản CV khởi nghiệp</h4>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              value={newCvTitle}
-              onChange={(e) => setNewCvTitle(e.target.value)}
-              placeholder="e.g. Software Engineer Senior 2026..."
-              className="flex-1 text-sm border border-slate-200 bg-white rounded-xl px-4 py-2 hover:border-slate-350 focus:border-[#0b3c8f] focus:outline-none transition-all"
-            />
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setShowAddForm(false)}
-                className="text-xs border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-150 transition-colors"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                className="text-xs text-white bg-[#0b3c8f] hover:bg-[#093278] px-4 py-2 rounded-xl font-bold transition-colors"
-              >
-                Tạo nhanh
-              </button>
-            </div>
-          </div>
-          <p className="text-[10px] text-slate-400">Gợi ý: Smartfolio tự dệt cấu trúc CV chuẩn ATS ngay tức thì sau khi điền tiêu đề.</p>
-        </form>
-      )}
+      {/*{showAddForm && (*/}
+      {/*  <form onSubmit={handleCreateCVSubmit} className="bg-slate-50/80 border border-slate-200 rounded-2xl p-5 space-y-4 animate-slide-up">*/}
+      {/*    <h4 className="text-xs font-bold text-slate-700">Tạo mới bản CV khởi nghiệp</h4>*/}
+      {/*    <div className="flex flex-col sm:flex-row gap-3">*/}
+      {/*      <input*/}
+      {/*        type="text"*/}
+      {/*        value={newCvTitle}*/}
+      {/*        onChange={(e) => setNewCvTitle(e.target.value)}*/}
+      {/*        placeholder="e.g. Software Engineer Senior 2026..."*/}
+      {/*        className="flex-1 text-sm border border-slate-200 bg-white rounded-xl px-4 py-2 hover:border-slate-350 focus:border-[#0b3c8f] focus:outline-none transition-all"*/}
+      {/*      />*/}
+      {/*      <div className="flex gap-2">*/}
+      {/*        <button*/}
+      {/*          type="button"*/}
+      {/*          onClick={() => setShowAddForm(false)}*/}
+      {/*          className="text-xs border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-150 transition-colors"*/}
+      {/*        >*/}
+      {/*          Hủy*/}
+      {/*        </button>*/}
+      {/*        <button*/}
+      {/*          type="submit"*/}
+      {/*          className="text-xs text-white bg-[#0b3c8f] hover:bg-[#093278] px-4 py-2 rounded-xl font-bold transition-colors"*/}
+      {/*        >*/}
+      {/*          Tạo nhanh*/}
+      {/*        </button>*/}
+      {/*      </div>*/}
+      {/*    </div>*/}
+      {/*    <p className="text-[10px] text-slate-400">Gợi ý: Smartfolio tự dệt cấu trúc CV chuẩn ATS ngay tức thì sau khi điền tiêu đề.</p>*/}
+      {/*  </form>*/}
+      {/*)}*/}
 
       <div className="flex flex-wrap gap-2 items-center">
         {['All', 'Hoàn thành', 'AI Optimized', 'Bản nháp'].map((filter) => (
@@ -168,19 +169,19 @@ const MyCVsPage = () => {
             </div>
 
             <div className="space-y-3.5 mt-auto">
-              {cv.score && (
-                <div className="flex items-center space-x-1.5 bg-blue-50/50 p-2 rounded-xl text-[10px] font-bold text-[#0b3c8f] border border-blue-100/55 select-none">
-                  <Sparkles className="w-3.5 h-3.5 animate-pulse shrink-0" />
-                  <span>Độ tối ưu: {cv.score}%</span>
-                </div>
-              )}
+              {/*{cv.score && (*/}
+              {/*  <div className="flex items-center space-x-1.5 bg-blue-50/50 p-2 rounded-xl text-[10px] font-bold text-[#0b3c8f] border border-blue-100/55 select-none">*/}
+              {/*    <Sparkles className="w-3.5 h-3.5 animate-pulse shrink-0" />*/}
+              {/*    <span>Độ tối ưu: {cv.score}%</span>*/}
+              {/*  </div>*/}
+              {/*)}*/}
 
-              {cv.matchPercentage && (
-                <div className="flex items-center space-x-1.5 bg-indigo-50/50 p-1.5 rounded-xl text-[9px] text-[#0b3c8f] border border-[#0b3c8f]/10">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#0b3c8f] shrink-0" />
-                  <span className="leading-normal">Phù hợp: {cv.matchPercentage}% với mô tả công việc</span>
-                </div>
-              )}
+              {/*{cv.matchPercentage && (*/}
+              {/*  <div className="flex items-center space-x-1.5 bg-indigo-50/50 p-1.5 rounded-xl text-[9px] text-[#0b3c8f] border border-[#0b3c8f]/10">*/}
+              {/*    <CheckCircle2 className="w-3.5 h-3.5 text-[#0b3c8f] shrink-0" />*/}
+              {/*    <span className="leading-normal">Phù hợp: {cv.matchPercentage}% với mô tả công việc</span>*/}
+              {/*  </div>*/}
+              {/*)}*/}
 
               <button
                 id={`cv-goto-editor-${cv.id}`}

@@ -223,7 +223,7 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
   - `companies.js` — FPT-only (industry IT, culture/slogan)
   - `experienceLevels.js`, `interviewTypes.js` — setup data
   - `questionBank.js` — HR (6) + Behavioral (6) + Technical (8) câu hỏi IT; Technical tham khảo `docs/FPT/All.csv` LeetCode frequency; export `pickQuestionsForSession()` để random hóa theo config
-  - `feedbackRubric.js` — 5 tiêu chí chấm điểm, 2 tag (must-have/nice-to-have), 3 HR persona FPT
+  - `feedbackInterviewRubric.js` — 5 tiêu chí chấm điểm, 2 tag (must-have/nice-to-have), 3 HR persona FPT
   - `stepDefinitions.js` — 10-step mapping route
 - [x] **Session hook** `frontend/src/hooks/useInterviewSession.js`:
   - Read/write `sessionStorage` key `interview_session_v1`

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
     Sparkles,
@@ -11,7 +11,8 @@ import {
     FileText,
     TrendingUp,
     CheckCircle2,
-    ArrowRight
+    ArrowRight,
+    X
 } from 'lucide-react';
 import {Header} from "../../components/layout/PublicHeader.jsx";
 import {Footer} from "../../components/layout/Footer.jsx";
@@ -21,6 +22,8 @@ import GuestHeader from "../../components/layout/GuestHeader.jsx";
 export default function InterviewLanding() {
     const navigate = useNavigate();
     const {isLoggedIn} = useAuth();
+    const [isDemoOpen, setIsDemoOpen] = useState(false);
+
     return (
         <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900">
             {/* Header */}
@@ -45,6 +48,7 @@ export default function InterviewLanding() {
                                 <PlayCircle className="w-5 h-5 mr-2"/> Bắt đầu phỏng vấn ngay
                             </button>
                             <button
+                                onClick={() => setIsDemoOpen(true)}
                                 className="bg-white text-slate-700 border border-slate-200 px-6 py-3.5 rounded-xl font-medium hover:bg-slate-50 transition-all shadow-sm">
                                 Xem bản demo
                             </button>
@@ -250,6 +254,31 @@ export default function InterviewLanding() {
                     </button>
                 </section>
             </main>
+
+            {/* Demo Modal */}
+            {isDemoOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-2xl max-w-4xl w-full relative animate-in zoom-in-95 duration-300">
+                        <button
+                            onClick={() => setIsDemoOpen(false)}
+                            className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full transition-colors z-10">
+                            <X size={20} />
+                        </button>
+                        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-900">Demo Trải Nghiệm Phỏng Vấn AI</h3>
+                            <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">Preview</span>
+                        </div>
+                        <div className="aspect-video bg-black">
+                            <video
+                                src="../../assets/interview-recording-sample.mp4"
+                                controls
+                                autoPlay
+                                className="w-full h-full object-contain"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Footer */}
             <Footer/>

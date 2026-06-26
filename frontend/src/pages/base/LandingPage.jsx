@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import FloatingCVCard from '../../components/user/FloatingCVCard.jsx';
 import GuestHeader from '../../components/layout/GuestHeader.jsx';
-import {TEMPLATES_DATA} from "../../constants/templates.js";
+import {TEMPLATES_DATA} from "../../constants/cv/templates.js";
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -215,15 +215,15 @@ const LandingPage = () => {
                         <a href="#privacy" onClick={(e) => {
                             e.preventDefault();
                             navigate('/login');
-                        }} className="hover:text-slate-800">Privacy Policy</a>
+                        }} className="hover:text-slate-800">Chính sách bảo mật</a>
                         <a href="#terms" onClick={(e) => {
                             e.preventDefault();
                             navigate('/login');
-                        }} className="hover:text-slate-800">Terms of Service</a>
+                        }} className="hover:text-slate-800">Điều khoản dịch vụ</a>
                         <a href="#support" onClick={(e) => {
                             e.preventDefault();
                             navigate('/login');
-                        }} className="hover:text-slate-800">Support</a>
+                        }} className="hover:text-slate-800">Hỗ trợ</a>
                     </div>
                 </div>
             </footer>

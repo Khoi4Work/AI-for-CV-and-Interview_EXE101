@@ -12,14 +12,14 @@ const HistoryPage = () => {
 
   const handleLoadMore = () => {
     const extraLogs = [
-      {
-        id: `h-extra-${Date.now()}`,
-        type: 'ai_toi_uu',
-        title: 'AI tối ưu hóa hồ sơ',
-        time: '11:15',
-        dateLabel: 'TRƯỚC ĐÓ',
-        details: 'Đã hoàn thành sửa lỗi dấu câu và văn phong tiếng Anh chuẩn mực cho hồ sơ của bạn.',
-      },
+      // {
+      //   id: `h-extra-${Date.now()}`,
+      //   type: 'ai_toi_uu',
+      //   title: 'AI tối ưu hóa hồ sơ',
+      //   time: '11:15',
+      //   dateLabel: 'TRƯỚC ĐÓ',
+      //   details: 'Đã hoàn thành sửa lỗi dấu câu và văn phong tiếng Anh chuẩn mực cho hồ sơ của bạn.',
+      // },
       {
         id: `h-extra-${Date.now()+1}`,
         type: 'tai_xuong',
@@ -140,7 +140,7 @@ const HistoryPage = () => {
   const filterChips = [
     { label: 'Tất cả', id: 'all' },
     { label: 'Tạo CV', id: 'tao_cv' },
-    { label: 'AI Tối ưu', id: 'ai_toi_uu' },
+    // { label: 'AI Tối ưu', id: 'ai_toi_uu' },
     { label: 'Tải xuống', id: 'tai_xuong' },
     { label: 'Phỏng vấn', id: 'phong_van' },
   ];

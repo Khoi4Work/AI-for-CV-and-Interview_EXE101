@@ -23,13 +23,12 @@ import {useAuth} from '../../contexts/AuthContext';
 import {useApp} from '../../contexts/AppContext';
 import TemplateList from "../../pages/cv-template/TemplateList.jsx";
 import TemplateDetail from "../../pages/cv-template/TemplateDetail.jsx";
-import CVOptimizer from "../../pages/cv-template/CVOptimizer.jsx";
 import CVBuilder from "../../pages/cv-template/CVBuilder.jsx";
 import {AudioSetup} from "../../pages/interview/AudioSetup.jsx";
 import {InterviewRoom} from "../../pages/interview/InterviewRoom.jsx";
 import {VideoReview} from "../../pages/interview/VideoReview.jsx";
 import {VideoSetup} from "../../pages/interview/VideoSetup.jsx";
-import {CvAnalysis} from "../../pages/interview/CvAnalysis.jsx";
+import {CVResult} from "../../pages/cv-template/CVResult.jsx";
 import {InterviewResults} from "../../pages/interview/InterviewResult.jsx";
 import CVEditor from "../../pages/cv-template/CVEditor.jsx";
 import CVEvaluation from "../../pages/cv-template/CVEvaluation.jsx";
@@ -112,8 +111,7 @@ export default function AppLayout() {
                        element={<PageTransition key={location.pathname}><TemplateList/></PageTransition>}/>
                 <Route path="/cv-evaluation"
                        element={<PageTransition key={location.pathname}><CVEvaluation/></PageTransition>}/>
-                <Route path="/cv-analyzing"
-                       element={<PageTransition key={location.pathname}><CVAnalyzing/></PageTransition>}/>
+
                 {/* ── Protected block (Zones B + C) ───────────────── */}
                 <Route path="/*" element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
@@ -128,13 +126,16 @@ export default function AppLayout() {
 
                             {/* ZONE C · Interview / CV flow (each page renders its own chrome) */}
                             <Route path="template/:id"
-                                   element={<PageTransition key={location.pathname}><TemplateDetail/></PageTransition>}/>
+                                   element={<PageTransition
+                                       key={location.pathname}><TemplateDetail/></PageTransition>}/>
                             <Route path="optimizer"
-                                   element={<PageTransition key={location.pathname}><CVOptimizer/></PageTransition>}/>
+                                   element={<PageTransition key={location.pathname}><CVResult/></PageTransition>}/>
+                            <Route path="cv-analyzing"
+                                   element={<PageTransition key={location.pathname}><CVAnalyzing/></PageTransition>}/>
                             <Route path="builder"
                                    element={<PageTransition key={location.pathname}><CVBuilder/></PageTransition>}/>
                             <Route path="analysis"
-                                   element={<PageTransition key={location.pathname}><CvAnalysis/></PageTransition>}/>
+                                   element={<PageTransition key={location.pathname}><CVResult/></PageTransition>}/>
                             <Route path="editor"
                                    element={<PageTransition key={location.pathname}><CVEditor/></PageTransition>}/>
 
@@ -143,21 +144,25 @@ export default function AppLayout() {
                             <Route path="video-setup"
                                    element={<PageTransition key={location.pathname}><VideoSetup/></PageTransition>}/>
                             <Route path="interview/room"
-                                   element={<PageTransition key={location.pathname}><RoomGuard children={<InterviewRoom/>}/></PageTransition>}/>
+                                   element={<PageTransition key={location.pathname}><RoomGuard
+                                       children={<InterviewRoom/>}/></PageTransition>}/>
                             <Route path="interview/review"
                                    element={<PageTransition key={location.pathname}><VideoReview/></PageTransition>}/>
                             <Route path="interview/result"
-                                   element={<PageTransition key={location.pathname}><ResultGuard><InterviewResults/></ResultGuard></PageTransition>}/>
+                                   element={<PageTransition
+                                       key={location.pathname}><ResultGuard><InterviewResults/></ResultGuard></PageTransition>}/>
                             <Route path="interview/job-selection"
                                    element={<PageTransition key={location.pathname}><JobSelection/></PageTransition>}/>
                             <Route path="interview/cv-status"
                                    element={<PageTransition key={location.pathname}><CVStatus/></PageTransition>}/>
                             <Route path="interview/experience-level"
-                                   element={<PageTransition key={location.pathname}><ExperienceLevel/></PageTransition>}/>
+                                   element={<PageTransition
+                                       key={location.pathname}><ExperienceLevel/></PageTransition>}/>
                             <Route path="interview/career-goal"
                                    element={<PageTransition key={location.pathname}><CareerGoal/></PageTransition>}/>
                             <Route path="interview/setup"
-                                   element={<PageTransition key={location.pathname}><InterviewSetup/></PageTransition>}/>
+                                   element={<PageTransition
+                                       key={location.pathname}><InterviewSetup/></PageTransition>}/>
 
                             {/* ZONE B shell: Sidebar + Header stay mounted */}
                             <Route path="*" element={
@@ -212,7 +217,7 @@ export default function AppLayout() {
                 </div>
             )}
             {/* Global feedback widget — available on every page */}
-            <FeedbackWidget/>
+            {/*<FeedbackWidget/>*/}
         </div>
     );
 }

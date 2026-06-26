@@ -14,7 +14,7 @@
 ## Tasks (theo thứ tự thực hiện)
 
 ### Task 1: Tạo `/src/constant/` với 7 file mock data
-- `jobs.js`, `companies.js`, `experienceLevels.js`, `interviewTypes.js`, `questionBank.js`, `feedbackRubric.js`, `stepDefinitions.js`
+- `jobs.js`, `companies.js`, `experienceLevels.js`, `interviewTypes.js`, `questionBank.js`, `feedbackInterviewRubric.js`, `stepDefinitions.js`
 - FPT-only company, IT-focused questions, dùng `docs/FPT/*.csv` làm nguồn cho Technical questions.
 
 ### Task 2: Tạo hook `useInterviewSession()`
@@ -54,7 +54,7 @@
 - `src/constant/experienceLevels.js`
 - `src/constant/interviewTypes.js`
 - `src/constant/questionBank.js`
-- `src/constant/feedbackRubric.js`
+- `src/constant/feedbackInterviewRubric.js`
 - `src/constant/stepDefinitions.js`
 - `src/hooks/useInterviewSession.js`
 - `docs/superpowers/plans/2026-06-16-interview-flow.md` (this file)

@@ -1,25 +1,45 @@
 import React from 'react';
 import { Download, Sparkles, FileText, CheckCircle2, AlertCircle, Plus } from 'lucide-react';
-import { MainLayout } from '../../components/interview/MainLayout';
-import {useNavigation} from "react-router-dom";
+import { MainLayout } from '../../components/interview/MainLayout.jsx';
+import { useNavigate, useLocation } from "react-router-dom";
+import { cvEvaluations } from '../../constants/cv/cv-evaluation';
 
-export function CvAnalysis() {
-    const { navigate } = useNavigation();
+export function CVResult() {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const scenario = location.state?.scenario || 'default';
+    const cvNameFromState = location.state?.cvName || 'My_CV.pdf';
+    const evalData = cvEvaluations[scenario];
+
+    if (!evalData) {
+        return (
+            <MainLayout>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                    <AlertCircle size={48} className="text-red-400 mb-4" />
+                    <h2 className="text-xl font-semibold text-gray-800">Không tìm thấy dữ liệu phân tích</h2>
+                    <p className="text-gray-500 mb-6">Vui lòng quay lại trang đánh giá và thử lại.</p>
+                    <button
+                        onClick={() => navigate('/cv-evaluation')}
+                        className="px-6 py-2 bg-[#0b3c8f] text-white rounded-lg font-medium"
+                    >
+                        Quay lại
+                    </button>
+                </div>
+            </MainLayout>
+        );
+    }
+
+    const { jd, analysis } = evalData;
+    const score = analysis.matchingScore;
+    const offset = 264 - (264 * score) / 100;
 
     return (
-        <MainLayout>
+        <MainLayout bgClass="bg-white">
             <div className="w-full flex justify-between items-end mb-8 pt-2">
                 <div>
                     <h1 className="text-[28px] font-display font-semibold text-gray-900 mb-1">Phân tích CV theo JD</h1>
                     <p className="text-gray-500 text-sm">Tối ưu hóa hồ sơ của bạn với sức mạnh AI dựa trên mô tả công việc cụ thể.</p>
-                </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm">
-                        <Download size={16} /> Báo cáo chi tiết
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-[#144296] text-white rounded-lg text-sm font-medium hover:bg-[#00388d] shadow-sm">
-                        <Sparkles size={16} /> Tối ưu ngay với AI
-                    </button>
                 </div>
             </div>
 
@@ -35,13 +55,20 @@ export function CvAnalysis() {
                                 <div className="flex items-center gap-2 text-gray-800 font-semibold mb-1">
                                     <UserIcon /> CV của bạn
                                 </div>
-                                <button className="text-blue-600 text-xs font-semibold hover:underline">Thay đổi</button>
+                                <button
+                                    onClick={() => navigate('/cv-evaluation')}
+                                    className="text-blue-600 text-xs font-semibold hover:underline"
+                                >
+                                    Thay đổi
+                                </button>
                             </div>
 
                             <div className="h-32 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors">
                                 <FileText size={28} className="text-gray-400 mb-2" />
-                                <p className="text-sm font-medium text-gray-700">Nguyen_Van_A_CV.pdf</p>
-                                <p className="text-xs text-gray-500">Đã tải lên 2 giờ trước</p>
+                                <p className="text-sm font-medium text-gray-700 truncate px-4 w-full">
+                                    {cvNameFromState}
+                                </p>
+                                <p className="text-xs text-gray-500">Đã phân tích bởi AI</p>
                             </div>
                         </div>
 
@@ -50,12 +77,19 @@ export function CvAnalysis() {
                                 <div className="flex items-center gap-2 text-gray-800 font-semibold mb-1">
                                     <BriefcaseIcon /> Mô tả công việc (JD)
                                 </div>
-                                <button className="text-blue-600 text-xs font-semibold hover:underline">Dán JD mới</button>
+                                <button
+                                    onClick={() => navigate('/cv-evaluation')}
+                                    className="text-blue-600 text-xs font-semibold hover:underline"
+                                >
+                                    Dán JD mới
+                                </button>
                             </div>
 
                             <div className="h-32 bg-gray-50 rounded-lg p-3 text-sm text-gray-600 overflow-y-auto custom-scrollbar border border-gray-100">
-                                <p className="font-semibold text-gray-800 mb-1">Vị trí: Senior Product Designer</p>
-                                <p className="leading-relaxed">Chúng tôi đang tìm kiếm một Senior Product Designer đam mê với việc xây dựng các trải nghiệm người dùng tuyệt vời... Yêu cầu 5+ năm kinh nghiệm, thành thạo Figma, Design System, và khả năng làm việc với AI Tools.</p>
+                                <p className="font-semibold text-gray-800 mb-1">{jd.title}</p>
+                                <p className="leading-relaxed">
+                                    {jd.description.overview} {jd.description.details.map(d => ` ${d.title}: ${d.bullets.join(', ')}`).join('. ')}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -70,35 +104,28 @@ export function CvAnalysis() {
                             <div>
                                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">KỸ NĂNG HIỆN CÓ</h4>
                                 <ul className="space-y-3">
-                                    <li className="flex justify-between items-center bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
-                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-800"><CheckCircle2 size={16} className="text-green-500" /> UI/UX Design</span>
-                                        <span className="text-[10px] uppercase font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Khớp</span>
-                                    </li>
-                                    <li className="flex justify-between items-center bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
-                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-800"><CheckCircle2 size={16} className="text-green-500" /> Figma Mastery</span>
-                                        <span className="text-[10px] uppercase font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Khớp</span>
-                                    </li>
-                                    <li className="flex justify-between items-center bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
-                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-800"><CheckCircle2 size={16} className="text-green-500" /> Prototyping</span>
-                                        <span className="text-[10px] uppercase font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Khớp</span>
-                                    </li>
+                                    {analysis.gapAnalysis.matchedSkills.map((skill, idx) => (
+                                        <li key={idx} className="flex justify-between items-center bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                                            <span className="flex items-center gap-2 text-sm font-medium text-gray-800"><CheckCircle2 size={16} className="text-green-500" /> {skill.name}</span>
+                                            <span className="text-[10px] uppercase font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">{skill.level}</span>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                             <div>
                                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">KỸ NĂNG CÒN THIẾU</h4>
                                 <ul className="space-y-3">
-                                    <li className="flex justify-between items-center bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-800"><AlertCircle size={16} className="text-red-500" /> Design Systems</span>
-                                        <button className="flex items-center gap-1 text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"><Plus size={10} /> Thêm</button>
-                                    </li>
-                                    <li className="flex justify-between items-center bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-800"><AlertCircle size={16} className="text-red-500" /> AI-Assisted Workflow</span>
-                                        <button className="flex items-center gap-1 text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"><Plus size={10} /> Thêm</button>
-                                    </li>
-                                    <li className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 opacity-70">
-                                        <span className="flex items-center gap-2 text-sm font-medium text-gray-600"> <TriAlertIcon /> Stakeholder Management</span>
-                                        <button className="flex items-center gap-1 text-[10px] uppercase font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded transition-colors"><Plus size={10} /> Thêm</button>
-                                    </li>
+                                    {analysis.gapAnalysis.missingSkills.map((skill, idx) => (
+                                        <li key={idx} className="flex justify-between items-center bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                                            <span className="flex items-center gap-2 text-sm font-medium text-gray-800"><AlertCircle size={16} className="text-red-500" /> {skill.name}</span>
+                                            <button
+                                                onClick={() => navigate('/templates')}
+                                                className="flex items-center gap-1 text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
+                                            >
+                                                <Plus size={10} /> Thêm
+                                            </button>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
@@ -111,11 +138,11 @@ export function CvAnalysis() {
                         </div>
                         <p className="text-sm text-gray-600 mb-4">Thêm các "Power Words" sau vào phần mô tả kinh nghiệm để tăng thứ hạng lọc hồ sơ:</p>
                         <div className="flex flex-wrap gap-2">
-                            <span className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">Optimized conversion by 20%</span>
-                            <span className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">Scalable Design System</span>
-                            <span className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">Collaborated with stakeholders</span>
-                            <span className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">Led a team of 3</span>
-                            <span className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">Accessibility standards</span>
+                            {analysis.atsOptimization.map((phrase, idx) => (
+                                <span key={idx} className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-sm font-medium">
+                                    {phrase}
+                                </span>
+                            ))}
                         </div>
                     </div>
 
@@ -129,30 +156,30 @@ export function CvAnalysis() {
                         <div className="relative w-32 h-32 flex items-center justify-center mb-4">
                             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="42" fill="transparent" stroke="#f3f4f6" strokeWidth="10" />
-                                <circle cx="50" cy="50" r="42" fill="transparent" stroke="#144296" strokeWidth="10" strokeDasharray="264" strokeDashoffset="58" strokeLinecap="round" />
+                                <circle
+                                    cx="50" cy="50" r="42" fill="transparent"
+                                    stroke="#144296" strokeWidth="10"
+                                    strokeDasharray="264"
+                                    strokeDashoffset={offset}
+                                    strokeLinecap="round"
+                                    style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+                                />
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
-                                <span className="text-3xl font-display font-bold text-gray-900 leading-none">78%</span>
+                                <span className="text-3xl font-display font-bold text-gray-900 leading-none">{score}%</span>
                                 <span className="text-[10px] font-bold text-blue-600 mt-1 uppercase tracking-wider">Matching</span>
                             </div>
                         </div>
 
-                        <div className="inline-block px-3 py-1 bg-amber-50 text-amber-700 font-semibold text-xs rounded-full mb-3 border border-amber-200">
-                            Cần tối ưu thêm
+                        <div className={`inline-block px-3 py-1 font-semibold text-xs rounded-full mb-3 border ${
+                            score >= 80 ? 'bg-green-50 text-green-700 border-green-200' :
+                            score >= 50 ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            'bg-red-50 text-red-700 border-red-200'
+                        }`}>
+                            {analysis.statusLabel}
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Khá ổn định</h3>
-                        <p className="text-sm text-gray-600 mb-6">Bạn chỉ cách mức "Hợp nhất" 12% điểm kỹ năng quan trọng.</p>
-
-                        <button className="w-full py-3 bg-[#111c3a] hover:bg-black text-white rounded-lg font-medium shadow-sm transition-colors mb-3">
-                            Tự động sửa CV với AI
-                        </button>
-                        <button
-                            onClick={() => navigate('audio')}
-                            className="w-full py-3 bg-blue-50 hover:bg-blue-100 text-[#144296] border border-blue-100 rounded-lg font-medium transition-colors">
-                            <div className="flex items-center justify-center gap-2">
-                                <MicIcon /> Bắt đầu Phỏng vấn thử
-                            </div>
-                        </button>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">{analysis.status}</h3>
+                        <p className="text-sm text-gray-600 mb-6">{analysis.overallFeedback}</p>
                     </div>
 
                     {/* AI Callout */}
@@ -166,13 +193,13 @@ export function CvAnalysis() {
                             <div>
                                 <h5 className="text-sm font-semibold text-gray-900 mb-1">Professional Summary</h5>
                                 <p className="text-sm text-gray-600 leading-relaxed">
-                                    "Hãy nhấn mạnh hơn vào kinh nghiệm xây dựng **Design System** từ số 0. Đây là yêu cầu trọng tâm của JD này."
+                                    {analysis.aiSuggestions.professionalSummary}
                                 </p>
                             </div>
                             <div>
                                 <h5 className="text-sm font-semibold text-gray-900 mb-1">Work Experience</h5>
                                 <p className="text-sm text-gray-600 leading-relaxed">
-                                    "Sử dụng các con số cụ thể như 'Giảm 15% thời gian phát triển' thay vì chỉ nói 'Làm việc hiệu quả'."
+                                    {analysis.aiSuggestions.workExperience}
                                 </p>
                             </div>
                         </div>
@@ -184,7 +211,6 @@ export function CvAnalysis() {
                         <p className="text-sm text-blue-100/90 leading-relaxed mb-4">
                             Dựa trên JD này, AI đã chuẩn bị 5 câu hỏi phỏng vấn kỹ thuật và hành vi dành riêng cho bạn.
                         </p>
-                        {/* Just a decorative block as per cut-off image */}
                     </div>
 
                 </div>
@@ -204,5 +230,3 @@ function UserIcon() { return <svg xmlns="http://www.w3.org/2000/svg" width="18" 
 function BriefcaseIcon() { return <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>; }
 function ChartIcon() { return <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><rect width="4" height="7" x="7" y="10" rx="1"/><rect width="4" height="12" x="15" y="5" rx="1"/></svg>; }
 function SettingsIcon() { return <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>; }
-function TriAlertIcon() { return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>; }
-function MicIcon() { return <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>; }

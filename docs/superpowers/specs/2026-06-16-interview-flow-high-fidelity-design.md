@@ -41,7 +41,7 @@ Trang interview hiện tại là bộ shell rỗng, mock data rải rác trong t
    experienceLevels.js
    interviewTypes.js
    questionBank.js
-   feedbackRubric.js
+   feedbackInterviewRubric.js
    stepDefinitions.js
 ```
 
@@ -259,7 +259,7 @@ export const COMPANIES = [
 - 70% câu theo `type` đã chọn, 30% câu HR/behavioral chung.
 - Lấy ngẫu nhiên từ bank phù hợp với `experienceLevel`.
 
-### `feedbackRubric.js`
+### `feedbackInterviewRubric.js`
 ```js
 {
   criteria: [
@@ -323,7 +323,7 @@ Chạy khi vào `/interview/result`:
 - `src/constant/experienceLevels.js`
 - `src/constant/interviewTypes.js`
 - `src/constant/questionBank.js`
-- `src/constant/feedbackRubric.js`
+- `src/constant/feedbackInterviewRubric.js`
 - `src/constant/stepDefinitions.js`
 - `src/hooks/useInterviewSession.js`
 

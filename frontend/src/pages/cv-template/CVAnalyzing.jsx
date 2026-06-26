@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MESSAGES = [
@@ -13,6 +13,10 @@ const MESSAGES = [
 const CVAnalyzing = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Lấy điểm đến từ state, nếu không có thì mặc định về /optimizer hoặc /cv-result
+  const target = location.state?.target || '/optimizer';
 
   useEffect(() => {
     if (step < MESSAGES.length - 1) {
@@ -22,7 +26,7 @@ const CVAnalyzing = () => {
       return () => clearTimeout(timer);
     } else if (step === MESSAGES.length - 1) {
       const timer = setTimeout(() => {
-        navigate('/cv-optimizer');
+        navigate(target, { state: location.state });
       }, 1500);
       return () => clearTimeout(timer);
     }

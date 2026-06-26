@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { AppProvider } from './contexts/AppContext';
 import { CVProvider } from './contexts/CVContext';
+import { MediaProvider } from './contexts/MediaContext';
 import AppLayout from './components/layout/AppLayout';
 
 function App() {
@@ -11,7 +12,9 @@ function App() {
       <AuthProvider>
         <AppProvider>
           <CVProvider>
-            <AppLayout />
+            <MediaProvider>
+              <AppLayout />
+            </MediaProvider>
           </CVProvider>
         </AppProvider>
       </AuthProvider>

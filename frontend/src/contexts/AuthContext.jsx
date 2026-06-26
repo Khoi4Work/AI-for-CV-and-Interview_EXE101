@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
-import { INITIAL_ACTIVITY_LOGS, INITIAL_DEVICES, INITIAL_SECURITY_LOGS } from '../constants/SettingProfile.js';
+import { INITIAL_ACTIVITY_LOGS, INITIAL_DEVICES, INITIAL_SECURITY_LOGS } from '../constants/user_info/userProfile.js';
 
 const AuthContext = createContext();
 

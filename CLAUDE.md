@@ -38,6 +38,11 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 - `importedCode/`: Reference implementations for logic/UI (Local only).
 - `.gitignore`: Configured to ignore `node_modules/`, `target/`, `.idea/`, `.claude/`, and `importedCode/`.
 
+## ⚠️ Critical Rules & Constraints
+- **Git Commits**: Must strictly use prefixes like `[FEAT]`, `[FIX]`, `[REFACTOR]`.
+- **Session Tracking**: All session records MUST be kept exclusively in `SESSIONS.md`. Never create separate files.
+- **Agentic Principles**: Strictly follow the **Plan $\rightarrow$ Execute $\rightarrow$ Observe $\rightarrow$ Reflect** cycle.
+
 ## 📜 Development Guidelines
 
 ### 🖋 Coding Standards
@@ -53,10 +58,10 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 5. **Record**: Update `SESSIONS.md` immediately after completing a task or ending a session to maintain a clear project trail.
 
 ### 🗒 Session & Progress Tracking
-- **SESSIONS.md Autonomy**: Claude has full standing authorization to modify `SESSIONS.md` to record progress, task completions, and session summaries. Do not ask for permission to update this file.
+- **SESSIONS.md Autonomy**: Claude has full standing authorization to modify `SESSIONS.md` to record progress, task completions, and session summaries. Do not ask for permission to update this file. All session records must be kept exclusively within `SESSIONS.md`; do not create separate markdown files for sessions (e.g., avoid formats like `[absolute path]+[date]`).
 
 ### 🚀 Git & Version Control
-- **Commit Title**: Concise and imperative (e.g., "Fix layout in SecurityPage").
+- **Commit Title**: Must start with a prefix in brackets (e.g., `[FEAT]`, `[FIX]`, `[REFACTOR]`), followed by a concise and imperative description (e.g., `[FEAT] Add logout button`).
 - **Commit Description**: Detailed list of what was changed and why.
 - **No Co-authoring**: Standard commits without external attribution.
 
@@ -67,3 +72,9 @@ When acting as an agent in this repository, adhere to these four pillars:
 2. **Tool-Centric Action**: Use the provided shell and filesystem tools to verify state. Do not assume; check the actual code.
 3. **Explicit Reasoning**: maintain a clear "thought trace" before executing commands to ensure the path to the goal is logical.
 4. **Verification-Driven**: A task is NOT complete until it is verified. Every change must be checked against the objective before marking as resolved.
+
+## 📊 Mock Data Standards (CV Evaluation)
+Mock CV data in `frontend/src/constants/cv/cv-mock-data.js` is built based on professional HR standards:
+- **Excellent CVs**: Follow the **Google XYZ Formula** ("Accomplished [X] as measured by [Y], by doing [Z]") and focus on **Impact over Activity** (quantifiable results over task listing). Based on FAANG/Ivy League recruiting patterns.
+- **Poor CVs**: Synthesize common **HR Red Flags** (vague descriptions, unprofessional contact, "fluff" summaries without evidence, and lack of digital presence).
+

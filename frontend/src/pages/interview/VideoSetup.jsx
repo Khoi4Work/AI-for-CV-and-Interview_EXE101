@@ -1,55 +1,38 @@
 // /src/pages/interview/VideoSetup.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Mic, Info, Lightbulb, Shirt, Image as ImageIcon, CheckCircle2, ChevronDown, ArrowLeft } from 'lucide-react';
 import { MainLayout } from '../../components/interview/MainLayout';
 import { useInterviewSession } from '../../hooks/useInterviewSession';
+import { useMediaDevices } from '../../hooks/useMediaDevices';
 
 export function VideoSetup() {
   const navigate = useNavigate();
-  const { data, update, setStep } = useInterviewSession();
-  const [stream, setStream] = useState(null);
+  const { update, setStep } = useInterviewSession();
+  const {
+    stream,
+    cameraOn,
+    micOn,
+    toggleCamera,
+    toggleMic,
+    stopAllTracks
+  } = useMediaDevices();
   const videoRef = React.useRef(null);
-  const [cameraOn, setCameraOn] = useState(false);
-  const [micOn, setMicOn] = useState(false);
 
   useEffect(() => {
     setStep(7);
   }, [setStep]);
 
   useEffect(() => {
-    return () => {
-      if (stream) stream.getTracks().forEach((t) => t.stop());
-    };
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    } else if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   }, [stream]);
 
-  const toggleCamera = async () => {
-    if (cameraOn) {
-      if (stream) stream.getTracks().forEach((t) => t.stop());
-      setStream(null);
-      if (videoRef.current) videoRef.current.srcObject = null;
-      setCameraOn(false);
-    } else {
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        setStream(s);
-        if (videoRef.current) videoRef.current.srcObject = s;
-        setCameraOn(true);
-        setMicOn(true);
-      } catch (e) {
-        console.warn('Camera/mic denied:', e);
-      }
-    }
-  };
-
-  const toggleMic = () => {
-    if (!stream) return;
-    stream.getAudioTracks().forEach((t) => (t.enabled = !micOn));
-    setMicOn(!micOn);
-  };
-
   const handleStart = () => {
-    if (stream) stream.getTracks().forEach((t) => t.stop());
+    stopAllTracks();
     update({ videoSetupConfirmed: true });
     navigate('/interview/room');
   };
