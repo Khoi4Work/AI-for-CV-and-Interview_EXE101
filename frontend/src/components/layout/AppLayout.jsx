@@ -217,7 +217,7 @@ export default function AppLayout() {
                 </div>
             )}
             {/* Global feedback widget — available on every page */}
-            <FeedbackWidget/>
+            {/*<FeedbackWidget/>*/}
         </div>
     );
 }

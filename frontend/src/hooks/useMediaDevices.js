@@ -73,7 +73,9 @@ export function useMediaDevices() {
   }, [stream, micOn, setMicState]);
 
   const ensureStream = useCallback(async () => {
-    if (stream && stream.getAudioTracks().length > 0) {
+    const isStreamAlive = stream && stream.active && stream.getAudioTracks().some(track => track.readyState === 'live');
+
+    if (isStreamAlive) {
       return stream;
     }
     try {
@@ -83,6 +85,20 @@ export function useMediaDevices() {
       setMicState(true);
       return s;
     } catch (e) {
+      // Fallback
+      if (e.name === 'NotFoundError' || e.name === 'NotReadableError') {
+        console.warn('[useMediaDevices] Không thể truy cập Camera. Đang thử lấy luồng Microphone only...');
+        try {
+          const audioOnlyStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+          updateStream(audioOnlyStream);
+          setCameraState(false); // Đánh dấu là không có camera
+          setMicState(true);
+          return audioOnlyStream;
+        } catch (audioErr) {
+          console.error('[useMediaDevices] Không tìm thấy cả Microphone:', audioErr);
+          throw audioErr;
+        }
+      }
       console.error('[useMediaDevices] Failed to re-acquire stream:', e);
       throw e;
     }
