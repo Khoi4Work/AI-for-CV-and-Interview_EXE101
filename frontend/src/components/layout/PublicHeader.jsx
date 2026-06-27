@@ -1,7 +1,7 @@
 import {useState, useEffect, useRef} from 'react';
 import {Link, useLocation, useNavigate} from 'react-router-dom';
 import {User, Shield, CreditCard, Clock, FileText, LogOut} from 'lucide-react';
-import {useAuth} from "../../contexts/AuthContext.jsx";
+import {useAuth} from "../../features/auth/contexts/AuthContext.jsx";
 
 export function Header() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
