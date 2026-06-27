@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useLocation} from 'react-router-dom';
 import {
     Sparkles,
     Trash2,
@@ -21,6 +21,7 @@ import {mockJobDescriptions} from '../../../constants/jobDescription.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
+    const location = useLocation();
     const {
         cvData,
         updatePersonalInfo,
@@ -43,9 +44,18 @@ export default function CVBuilder() {
         resetCV
     } = useCV();
 
+    const handleLoadDemoBadCV = () => {
+        showToast('Đang tải mẫu CV tệ (Demo)...', 'info');
+        const mappedData = mapMockDataToCVContext(badResumeData);
+        setFullCVData(mappedData);
+    };
+
     useEffect(() => {
         resetCV();
-    }, [resetCV]);
+        if (location.state?.loadBadCV) {
+            handleLoadDemoBadCV();
+        }
+    }, [resetCV, location.state]);
 
     const [step, setStep] = useState(1);
     const [jdText, setJdText] = useState('');
@@ -65,11 +75,7 @@ export default function CVBuilder() {
         }
     };
 
-    const handleLoadDemoBadCV = () => {
-        showToast('Đang tải mẫu CV tệ (Demo)...', 'info');
-        const mappedData = mapMockDataToCVContext(badResumeData);
-        setFullCVData(mappedData);
-    };
+
 
     const addKeyword = (keyword) => {
         showToast(`Đã thêm từ khóa "${keyword}" vào gợi ý CV`, 'success');

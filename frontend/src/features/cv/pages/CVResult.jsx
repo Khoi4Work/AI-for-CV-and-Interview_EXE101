@@ -1,5 +1,5 @@
-import React from 'react';
-import { Download, Sparkles, FileText, CheckCircle2, AlertCircle, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, Sparkles, FileText, CheckCircle2, AlertCircle, Plus, X } from 'lucide-react';
 import { MainLayout } from '../../interview/components/MainLayout.jsx';
 import { useNavigate, useLocation } from "react-router-dom";
 import { cvEvaluations } from '../constants/cv-evaluation.js';
@@ -7,6 +7,11 @@ import { cvEvaluations } from '../constants/cv-evaluation.js';
 export function CVResult() {
     const navigate = useNavigate();
     const location = useLocation();
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeSkillIndex, setActiveSkillIndex] = useState(null);
+    const [addedSkills, setAddedSkills] = useState([]);
+    const [inputValue, setInputValue] = useState('');
 
     const scenario = location.state?.scenario || 'default';
     const cvNameFromState = location.state?.cvName || 'My_CV.pdf';
@@ -33,6 +38,30 @@ export function CVResult() {
     const { jd, analysis } = evalData;
     const score = analysis.matchingScore;
     const offset = 264 - (264 * score) / 100;
+
+    const openModal = (idx) => {
+        setActiveSkillIndex(idx);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setActiveSkillIndex(null);
+        setInputValue('');
+    };
+
+    const handleAddSkill = () => {
+        if (activeSkillIndex !== null) {
+            setAddedSkills(prev => [...prev, activeSkillIndex]);
+            closeModal();
+        }
+    };
+
+    const handleFileUpload = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            handleAddSkill();
+        }
+    };
 
     return (
         <MainLayout bgClass="bg-white">
@@ -118,12 +147,18 @@ export function CVResult() {
                                     {analysis.gapAnalysis.missingSkills.map((skill, idx) => (
                                         <li key={idx} className="flex justify-between items-center bg-red-50 border border-red-100 rounded-lg px-3 py-2">
                                             <span className="flex items-center gap-2 text-sm font-medium text-gray-800"><AlertCircle size={16} className="text-red-500" /> {skill.name}</span>
-                                            <button
-                                                onClick={() => navigate('/templates')}
-                                                className="flex items-center gap-1 text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
-                                            >
-                                                <Plus size={10} /> Thêm
-                                            </button>
+                                            {addedSkills.includes(idx) ? (
+                                                <span className="flex items-center gap-1 text-[10px] uppercase font-bold bg-green-100 text-green-700 px-2 py-1 rounded border border-green-200">
+                                                    <CheckCircle2 size={10} /> Đã thêm
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => openModal(idx)}
+                                                    className="flex items-center gap-1 text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
+                                                >
+                                                    <Plus size={10} /> Thêm
+                                                </button>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
@@ -205,6 +240,16 @@ export function CVResult() {
                         </div>
                     </div>
 
+                    {/* Optimization CTA */}
+                    <div className="bg-white rounded-xl border border-blue-200 p-5 shadow-sm text-center">
+                        <button
+                            onClick={() => navigate('/builder', { state: { loadBadCV: true } })}
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
+                        >
+                            <Sparkles size={18} /> Tối ưu CV ngay
+                        </button>
+                    </div>
+
                     {/* Interview Prep Banner */}
                     <div className="bg-[#144296] rounded-xl p-5 text-white shadow-md">
                         <h3 className="font-semibold text-lg mb-2">Luyện tập Phỏng vấn</h3>
@@ -215,6 +260,61 @@ export function CVResult() {
 
                 </div>
             </div>
+
+            {/* Modal for adding skill */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in duration-200">
+                        <div className="flex justify-between items-center p-5 border-b border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-900">Thêm kỹ năng</h3>
+                            <button onClick={closeModal} className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Nhập mô tả kỹ năng</label>
+                                <textarea
+                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all min-h-[100px]"
+                                    placeholder="Ví dụ: Có kinh nghiệm 2 năm làm việc với React và Tailwind CSS..."
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="relative">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Hoặc tải lên chứng chỉ/tài liệu</label>
+                                <div className="flex items-center justify-center w-full">
+                                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <FileText className="text-gray-400 mb-2" size={24} />
+                                            <p className="text-xs text-gray-500">Nhấn để chọn file</p>
+                                        </div>
+                                        <input type="file" className="hidden" onChange={handleFileUpload} />
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 p-5 bg-gray-50 border-t border-gray-100">
+                            <button
+                                onClick={closeModal}
+                                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleAddSkill}
+                                disabled={!inputValue}
+                                className="px-4 py-2 text-sm font-bold text-white bg-[#0b3c8f] rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Xác nhận
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }

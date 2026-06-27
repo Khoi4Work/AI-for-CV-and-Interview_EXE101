@@ -19,7 +19,7 @@ const INITIAL_CV_STATE = {
     certificates: [],
     languages: [],
     awards: [],
-    selectedTemplateId: 'the-standard',
+    selectedTemplateId: 'boardroom-ready',
 };
 
 export function CVProvider({children}) {
