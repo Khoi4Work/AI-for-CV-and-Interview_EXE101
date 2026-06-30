@@ -483,7 +483,7 @@ export function InterviewRoom() {
                                 <span className="text-xs font-bold w-12 shrink-0">Bạn:</span>
                                 <span className="italic text-primary line-clamp-1">{interimTranscript}...</span>
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
             </main>
