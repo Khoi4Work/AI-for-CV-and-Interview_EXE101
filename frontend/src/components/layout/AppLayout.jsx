@@ -168,7 +168,7 @@ export default function AppLayout() {
                             <Route path="*" element={
                                 <ProtectedRoute isLoggedIn={isLoggedIn}>
                                     <div
-                                        className="flex bg-slate-50 min-h-screen text-slate-800 font-sans antialiased">
+                                        className="flex bg-background min-h-screen text-on-surface font-sans antialiased">
                                         <Sidebar/>
                                         <div className="flex-1 flex flex-col min-w-0">
                                             <Header

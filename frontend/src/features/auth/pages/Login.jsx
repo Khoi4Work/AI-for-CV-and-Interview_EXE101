@@ -35,7 +35,7 @@ export default function Login() {
                     <div className="text-center mb-lg">
                         <h1 className="font-display-lg text-[36px] leading-[1.2] text-primary mb-xs font-extrabold tracking-tight">Đăng
                             nhập</h1>
-                        <p className="font-body-md text-body-md text-secondary">Chào mừng bạn quay trở lại</p>
+                        <p className="font-body-md text-body-md text-on-surface-variant">Chào mừng bạn quay trở lại</p>
                     </div>
 
                     {/* Social Logins */}
@@ -101,12 +101,12 @@ export default function Login() {
                         <div className="flex items-center gap-xs">
                             <input className="w-5 h-5 rounded-md border-outline-variant text-primary focus:ring-primary"
                                    id="remember" type="checkbox"/>
-                            <label className="font-label-md text-label-md text-secondary select-none"
+                            <label className="font-label-md text-label-md text-on-surface-variant select-none"
                                    htmlFor="remember">Ghi nhớ đăng nhập</label>
                         </div>
 
                         <button
-                            className="w-full bg-primary text-on-primary py-sm rounded-lg font-title-md text-[18px] font-semibold flex items-center justify-center gap-xs hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_4px_12px_rgba(0,80,203,0.2)] mt-sm cursor-pointer"
+                            className="w-full bg-primary text-on-primary py-sm rounded-lg font-title-md text-[18px] font-semibold flex items-center justify-center gap-xs hover:opacity-95 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 mt-sm cursor-pointer"
                             type="submit">
                             Đăng nhập
                             <ArrowRight className="w-5 h-5"/>
@@ -114,7 +114,7 @@ export default function Login() {
                     </form>
 
                     <div className="mt-lg text-center">
-                        <p className="font-body-md text-body-md text-secondary">
+                        <p className="font-body-md text-body-md text-on-surface-variant">
                             Chưa có tài khoản?{' '}
                             <Link className="text-primary font-semibold hover:underline decoration-2 underline-offset-4"
                                   to="/register">Đăng ký ngay</Link>

@@ -25,7 +25,7 @@ export default function InterviewLanding() {
     const [isDemoOpen, setIsDemoOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900">
+        <div className="min-h-screen bg-background font-sans text-on-surface">
             {/* Header */}
             {isLoggedIn ? <Header/> : <GuestHeader/>}
             <main>
@@ -33,39 +33,39 @@ export default function InterviewLanding() {
                 <section
                     className="px-6 md:px-12 py-16 lg:py-24  mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
                     <div className="flex-1 lg:pr-10">
-                        <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
+                        <h1 className="text-4xl lg:text-5xl font-extrabold text-on-surface leading-tight mb-6">
                             Luyện phỏng vấn AI -<br/>
-                            <span className="text-[#0b3c8f]">Chinh phục mọi nhà tuyển dụng</span>
+                            <span className="text-primary">Chinh phục mọi nhà tuyển dụng</span>
                         </h1>
-                        <p className="text-lg text-slate-600 mb-8  leading-relaxed">
+                        <p className="text-lg text-on-surface-variant mb-8  leading-relaxed">
                             Mô phỏng môi trường phỏng vấn thực tế, nhận phản hồi tức thì và cải thiện kỹ năng giao tiếp
                             của bạn với trợ lý trí tuệ nhân tạo chuyên sâu.
                         </p>
                         <div className="flex flex-wrap items-center gap-4">
                             <button
                                 onClick={() => navigate('/interview/job-selection')}
-                                className="bg-[#0b3c8f] text-white px-6 py-3.5 rounded-xl font-medium hover:bg-[#093278] transition-all shadow-md flex items-center">
+                                className="bg-primary text-on-primary px-6 py-3.5 rounded-xl font-medium hover:bg-primary-container transition-all shadow-md flex items-center cursor-pointer">
                                 <PlayCircle className="w-5 h-5 mr-2"/> Bắt đầu phỏng vấn ngay
                             </button>
                             <button
                                 onClick={() => setIsDemoOpen(true)}
-                                className="bg-white text-slate-700 border border-slate-200 px-6 py-3.5 rounded-xl font-medium hover:bg-slate-50 transition-all shadow-sm">
+                                className="glass-panel text-on-surface-variant border border-outline-variant px-6 py-3.5 rounded-xl font-medium hover:bg-surface-container-low transition-all shadow-sm cursor-pointer">
                                 Xem bản demo
                             </button>
                         </div>
                     </div>
                     <div
-                        className="flex-1 w-full rounded-2xl bg-slate-50 border border-slate-100 shadow-2xl relative aspect-video flex items-center justify-center overflow-hidden">
+                        className="flex-1 w-full rounded-2xl bg-surface-container-low border border-outline-variant shadow-2xl relative aspect-video flex items-center justify-center overflow-hidden">
                         {/* Abstract representation of the video/interview UI */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-slate-100 to-white"></div>
+                        <div className="absolute inset-0 bg-gradient-to-tr from-surface-container to-background"></div>
                         <div
-                            className="absolute bottom-6 left-6 bg-white rounded-xl p-3 shadow-lg border border-gray-100 overflow-hidden animate-pulse">
+                            className="absolute bottom-6 left-6 glass-panel rounded-xl p-3 shadow-lg border border-outline-variant overflow-hidden animate-pulse">
                             <div className="flex items-center gap-2 mb-2">
                                 <div
-                                    className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                                    className="w-6 h-6 rounded-full bg-primary-container text-primary flex items-center justify-center">
                                     <Sparkles className="w-3 h-3"/>
                                 </div>
-                                <span className="text-xs font-semibold text-slate-800">Feedback AI</span>
+                                <span className="text-xs font-semibold text-on-surface">Feedback AI</span>
                             </div>
                             <img
                                 src="https://i.postimg.cc/dV633pjF/interview.jpg"
@@ -76,12 +76,12 @@ export default function InterviewLanding() {
                     </div>
                 </section>
 
-                {/* Features Section */}
-                <section className="bg-slate-50 py-20 px-6 md:px-12 border-t border-slate-100">
+                {/*Features Section */}
+                <section className="bg-surface-container-low py-20 px-6 md:px-12 border-t border-outline-variant">
                     <div className="-7xl mx-auto">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl font-bold text-slate-900 mb-4">Đa dạng hình thức phỏng vấn</h2>
-                            <p className="text-slate-500 -2xl mx-auto">
+                            <h2 className="text-3xl font-bold text-on-surface mb-4">Đa dạng hình thức phỏng vấn</h2>
+                            <p className="text-on-surface-variant -2xl mx-auto">
                                 Chọn loại hình phỏng vấn phù hợp với nhu cầu của bạn. AI của chúng tôi được huấn luyện
                                 trên hàng ngàn kịch bản thực tế.
                             </p>
@@ -90,58 +90,58 @@ export default function InterviewLanding() {
                         <div className="grid md:grid-cols-3 gap-6">
                             {/* Card 1 */}
                             <div
-                                className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
+                                className="glass-panel rounded-2xl p-8 border border-outline-variant shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
                                 <div
-                                    className="w-16 h-16 rounded-2xl bg-blue-50 text-[#0b3c8f] flex items-center justify-center mb-6">
+                                    className="w-16 h-16 rounded-2xl bg-primary-container text-primary flex items-center justify-center mb-6">
                                     <Users className="w-8 h-8" strokeWidth={1.5}/>
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-3">HR Interview</h3>
-                                <p className="text-slate-600 mb-6 flex-grow">
+                                <h3 className="text-xl font-bold text-on-surface mb-3">HR Interview</h3>
+                                <p className="text-on-surface-variant mb-6 flex-grow">
                                     Tập trung vào văn hóa doanh nghiệp, kỹ năng mềm và khả năng hòa nhập đội ngũ.
                                 </p>
                                 <div className="flex gap-2">
                                     <span
-                                        className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">Văn hóa</span>
+                                        className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-medium">Văn hóa</span>
                                     <span
-                                        className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">Kỹ năng mềm</span>
+                                        className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-medium">Kỹ năng mềm</span>
                                 </div>
                             </div>
 
                             {/* Card 2 (Active/Primary) */}
                             <div
-                                className="bg-[#0b3c8f] rounded-2xl p-8 shadow-xl flex flex-col items-center text-center text-white transform scale-105 z-10">
+                                className="bg-primary rounded-2xl p-8 shadow-xl flex flex-col items-center text-center text-on-primary transform scale-105 z-10">
                                 <div
-                                    className="w-16 h-16 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-6 backdrop-blur-sm">
+                                    className="w-16 h-16 rounded-2xl bg-on-primary/20 text-on-primary flex items-center justify-center mb-6 backdrop-blur-sm">
                                     <Terminal className="w-8 h-8" strokeWidth={1.5}/>
                                 </div>
                                 <h3 className="text-xl font-bold mb-3">Technical Interview</h3>
-                                <p className="text-blue-100 mb-6 flex-grow">
+                                <p className="text-on-primary-container mb-6 flex-grow">
                                     Kiểm tra kiến thức chuyên môn, khả năng giải quyết vấn đề và tư duy logic kỹ thuật.
                                 </p>
                                 <div className="flex gap-2">
                                     <span
-                                        className="px-3 py-1 bg-white/20 text-white rounded-full text-xs font-medium border border-white/10">System Design</span>
+                                        className="px-3 py-1 bg-on-primary/20 text-on-primary rounded-full text-xs font-medium border border-on-primary/10">System Design</span>
                                     <span
-                                        className="px-3 py-1 bg-white/20 text-white rounded-full text-xs font-medium border border-white/10">Coding</span>
+                                        className="px-3 py-1 bg-on-primary/20 text-on-primary rounded-full text-xs font-medium border border-on-primary/10">Coding</span>
                                 </div>
                             </div>
 
                             {/* Card 3 */}
                             <div
-                                className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
+                                className="glass-panel rounded-2xl p-8 border border-outline-variant shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
                                 <div
-                                    className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6">
+                                    className="w-16 h-16 rounded-2xl bg-tertiary-container text-on-tertiary-container flex items-center justify-center mb-6">
                                     <UserSquare2 className="w-8 h-8" strokeWidth={1.5}/>
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-3">Behavioral Interview</h3>
-                                <p className="text-slate-600 mb-6 flex-grow">
+                                <h3 className="text-xl font-bold text-on-surface mb-3">Behavioral Interview</h3>
+                                <p className="text-on-surface-variant mb-6 flex-grow">
                                     Phỏng vấn dựa trên hành vi, xử lý tình huống thực tế bằng phương pháp STAR.
                                 </p>
                                 <div className="flex gap-2">
                                     <span
-                                        className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">STAR</span>
+                                        className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-medium">STAR</span>
                                     <span
-                                        className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">Leadership</span>
+                                        className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-medium">Leadership</span>
                                 </div>
                             </div>
                         </div>
@@ -154,86 +154,86 @@ export default function InterviewLanding() {
 
                         {/* Left Grid */}
                         <div className="flex-1 grid grid-cols-2 gap-4">
-                            <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100/50">
+                            <div className="bg-primary-container/50 rounded-2xl p-6 border border-primary-container/50">
                                 <div
-                                    className="w-10 h-10 rounded-full bg-blue-100 text-[#0b3c8f] flex items-center justify-center mb-4">
+                                    className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center mb-4">
                                     <Target className="w-5 h-5"/>
                                 </div>
-                                <h4 className="font-bold text-slate-900 mb-2">Giảm lo lắng</h4>
-                                <p className="text-sm text-slate-600">Thực hành trong không gian riêng tư giúp bạn tự tin
+                                <h4 className="font-bold text-on-surface mb-2">Giảm lo lắng</h4>
+                                <p className="text-sm text-on-surface-variant">Thực hành trong không gian riêng tư giúp bạn tự tin
                                     hơn trước buổi phỏng vấn thật.</p>
                             </div>
-                            <div className="bg-green-50/50 rounded-2xl p-6 border border-green-100/50 mt-8">
+                            <div className="bg-primary-container/50 rounded-2xl p-6 border border-primary-container/50 mt-8">
                                 <div
-                                    className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
+                                    className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center mb-4">
                                     <Zap className="w-5 h-5"/>
                                 </div>
-                                <h4 className="font-bold text-slate-900 mb-2">Cải thiện phản xạ</h4>
-                                <p className="text-sm text-slate-600">Luyện tập trả lời câu hỏi hóc búa một cách trôi
+                                <h4 className="font-bold text-on-surface mb-2">Cải thiện phản xạ</h4>
+                                <p className="text-sm text-on-surface-variant">Luyện tập trả lời câu hỏi hóc búa một cách trôi
                                     chảy và mạch lạc nhất.</p>
                             </div>
-                            <div className="bg-orange-50/50 rounded-2xl p-6 border border-orange-100/50 -mt-8">
+                            <div className="bg-primary-container/50 rounded-2xl p-6 border border-primary-container/50 -mt-8">
                                 <div
-                                    className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-4">
+                                    className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center mb-4">
                                     <FileText className="w-5 h-5"/>
                                 </div>
-                                <h4 className="font-bold text-slate-900 mb-2">Feedback chi tiết</h4>
-                                <p className="text-sm text-slate-600">Nhận báo cáo phân tích về ngôn ngữ cơ thể, tông
+                                <h4 className="font-bold text-on-surface mb-2">Feedback chi tiết</h4>
+                                <p className="text-sm text-on-surface-variant">Nhận báo cáo phân tích về ngôn ngữ cơ thể, tông
                                     giọng và nội dung câu trả lời.</p>
                             </div>
-                            <div className="bg-[#0b3c8f] rounded-2xl p-6 shadow-lg text-white">
+                            <div className="bg-primary rounded-2xl p-6 shadow-lg text-on-primary">
                                 <div
-                                    className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mb-4">
+                                    className="w-10 h-10 rounded-full bg-on-primary/20 flex items-center justify-center mb-4">
                                     <TrendingUp className="w-5 h-5"/>
                                 </div>
                                 <h4 className="font-bold mb-2">Kết quả thực tế</h4>
-                                <p className="text-sm text-blue-100">Tăng tỷ lệ nhận được offer lên đến 60% sau chỉ 3
+                                <p className="text-sm text-on-primary-container">Tăng tỷ lệ nhận được offer lên đến 60% sau chỉ 3
                                     buổi luyện tập.</p>
                             </div>
                         </div>
 
                         {/* Right Content */}
                         <div className="flex-1 space-y-8">
-                            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900">Tại sao nên luyện phỏng vấn với
+                            <h2 className="text-3xl lg:text-4xl font-bold text-on-surface">Tại sao nên luyện phỏng vấn với
                                 AI?</h2>
 
                             <div className="space-y-6">
                                 <div className="flex gap-4">
                                     <div className="flex-shrink-0 mt-1">
-                                        <CheckCircle2 className="w-6 h-6 text-[#0b3c8f]"/>
+                                        <CheckCircle2 className="w-6 h-6 text-primary"/>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-slate-900 text-lg mb-1">Môi trường an toàn</h4>
-                                        <p className="text-slate-600">Tự do thử nghiệm các phương án trả lời khác nhau mà
+                                        <h4 className="font-bold text-on-surface text-lg mb-1">Môi trường an toàn</h4>
+                                        <p className="text-on-surface-variant">Tự do thử nghiệm các phương án trả lời khác nhau mà
                                             không sợ phán xét.</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="flex-shrink-0 mt-1">
-                                        <CheckCircle2 className="w-6 h-6 text-[#0b3c8f]"/>
+                                        <CheckCircle2 className="w-6 h-6 text-primary"/>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-slate-900 text-lg mb-1">Cá nhân hóa theo ngành
+                                        <h4 className="font-bold text-on-surface text-lg mb-1">Cá nhân hóa theo ngành
                                             nghề</h4>
-                                        <p className="text-slate-600">AI điều chỉnh câu hỏi dựa trên vị trí ứng tuyển và
+                                        <p className="text-on-surface-variant">AI điều chỉnh câu hỏi dựa trên vị trí ứng tuyển và
                                             mô tả công việc (JD) cụ thể.</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="flex-shrink-0 mt-1">
-                                        <CheckCircle2 className="w-6 h-6 text-[#0b3c8f]"/>
+                                        <CheckCircle2 className="w-6 h-6 text-primary"/>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-slate-900 text-lg mb-1">Tiết kiệm thời gian & chi
+                                        <h4 className="font-bold text-on-surface text-lg mb-1">Tiết kiệm thời gian & chi
                                             phí</h4>
-                                        <p className="text-slate-600">Luyện tập bất cứ khi nào, bất cứ nơi đâu chỉ với
+                                        <p className="text-on-surface-variant">Luyện tập bất cứ khi nào, bất cứ nơi đâu chỉ với
                                             một chiếc laptop có mic.</p>
                                     </div>
                                 </div>
                             </div>
 
                             <button
-                                className="text-[#0b3c8f] font-bold inline-flex items-center hover:text-blue-800 transition-colors pt-4">
+                                className="text-primary font-bold inline-flex items-center hover:text-primary-container transition-colors pt-4 cursor-pointer">
                                 Khám phá thêm các tính năng khác <ArrowRight className="w-4 h-4 ml-2"/>
                             </button>
                         </div>
@@ -241,15 +241,15 @@ export default function InterviewLanding() {
                 </section>
 
                 {/* Bottom CTA */}
-                <section className="bg-[#0b3c8f] py-20 px-6 text-center text-white">
+                <section className="bg-primary py-20 px-6 text-center text-on-primary">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4">Sẵn sàng để tỏa sáng?</h2>
-                    <p className="text-blue-100 -2xl mx-auto mb-10 text-lg">
+                    <p className="text-on-primary-container -2xl mx-auto mb-10 text-lg">
                         Đừng để buổi phỏng vấn mơ ước trôi qua chỉ vì thiếu sự chuẩn bị. Hãy bắt đầu luyện tập ngay hôm
                         nay.
                     </p>
                     <button
                         onClick={() => navigate('/interview/job-selection')}
-                        className="bg-white text-[#0b3c8f] px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition-all shadow-lg">
+                        className="bg-surface-container text-primary px-8 py-4 rounded-xl font-bold text-lg hover:bg-surface-container-low transition-all shadow-lg cursor-pointer">
                         Bắt đầu phỏng vấn ngay - Miễn phí
                     </button>
                 </section>
@@ -257,16 +257,16 @@ export default function InterviewLanding() {
 
             {/* Demo Modal */}
             {isDemoOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl overflow-hidden shadow-2xl max-w-4xl w-full relative animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="glass-panel rounded-2xl overflow-hidden shadow-2xl max-w-4xl w-full relative animate-in zoom-in-95 duration-300 border border-outline-variant">
                         <button
                             onClick={() => setIsDemoOpen(false)}
-                            className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full transition-colors z-10">
+                            className="absolute top-4 right-4 p-2 bg-on-surface/20 hover:bg-on-surface/40 text-on-surface rounded-full transition-colors z-10 cursor-pointer">
                             <X size={20} />
                         </button>
-                        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="font-bold text-slate-900">Demo Trải Nghiệm Phỏng Vấn AI</h3>
-                            <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">Preview</span>
+                        <div className="p-4 border-b border-outline-variant flex items-center justify-between">
+                            <h3 className="font-bold text-on-surface">Demo Trải Nghiệm Phỏng Vấn AI</h3>
+                            <span className="text-xs font-medium text-outline bg-surface-container px-2 py-1 rounded">Preview</span>
                         </div>
                         <div className="aspect-video bg-black">
                             <video

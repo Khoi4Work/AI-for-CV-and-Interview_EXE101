@@ -5,7 +5,7 @@ export default function RouteProgressBar() {
     return (
         <div
             key={pathname}
-            className="route-progress-bar"
+            className="route-progress-bar max-h-0"
             aria-hidden="true"
         />
     );

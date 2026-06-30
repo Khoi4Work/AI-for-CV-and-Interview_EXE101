@@ -1,4 +1,3 @@
-// /src/pages/interview/InterviewResult.jsx
 import React, {useEffect} from 'react';
 import {Download, Sparkles, FileText, CheckCircle2, AlertCircle, Home} from 'lucide-react';
 import {Header} from '../../../components/layout/PublicHeader.jsx';
@@ -19,7 +18,7 @@ export function InterviewResults() {
 
     if (!feedback) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-surface">
+            <div className="min-h-screen flex items-center justify-center bg-background text-on-surface">
                 <div className="text-on-surface-variant">Đang tải kết quả...</div>
             </div>
         );
@@ -31,16 +30,16 @@ export function InterviewResults() {
     const skippedCount = transcript.filter((t) => t.status === 'skipped').length;
 
     return (
-        <div className="min-h-screen flex flex-col bg-surface text-on-surface font-sans selection:bg-primary-container/20">
+        <div className="min-h-screen flex flex-col bg-background text-on-surface font-sans selection:bg-primary-container/20">
             <Header/>
 
             <main className="flex-1 w-full max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6">
                 {/* Left Column */}
                 <div className="space-y-6">
                     {/* HR Persona Card */}
-                    <div className="bg-white rounded-2xl p-6 border border-outline-variant shadow-sm">
+                    <div className="glass-panel rounded-2xl p-6 border border-outline-variant shadow-sm">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">
                                 {hrPersona.name.split(' ').map(n => n[0]).join('')}
                             </div>
                             <div className="overflow-hidden">
@@ -53,10 +52,14 @@ export function InterviewResults() {
                     </div>
 
                     {/* Total Score Card */}
-                    <div className="bg-white rounded-2xl p-6 border border-outline-variant shadow-sm">
+                    <div className="glass-panel rounded-2xl p-6 border border-outline-variant shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-lg font-display font-semibold text-primary">Tổng điểm AI</h2>
-                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border bg-emerald-100 text-emerald-700 border-emerald-200`}>
+                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                                overallScore >= 80 ? 'bg-primary-container text-primary border-primary-container' :
+                                overallScore >= 50 ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                'bg-red-500/10 text-red-500 border-red-500/20'
+                            }`}>
                                 {overallLabel}
                             </span>
                         </div>
@@ -64,7 +67,7 @@ export function InterviewResults() {
                         <div className="flex items-center gap-6 mb-6">
                             <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
                                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e2e8f0" strokeWidth="8"/>
+                                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--color-outline)" strokeWidth="8"/>
                                     <circle
                                         cx="50" cy="50" r="40" fill="transparent"
                                         stroke="var(--color-primary)" strokeWidth="8"
@@ -86,13 +89,13 @@ export function InterviewResults() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => alert('Chức năng lưu kết quả (mock)')}
-                                className="flex-1 flex justify-center items-center gap-2 bg-primary text-white py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-colors"
+                                className="flex-1 flex justify-center items-center gap-2 bg-primary text-on-primary py-2.5 rounded-lg font-medium text-sm hover:bg-primary-container transition-colors"
                             >
                                 <Download size={16}/> Lưu kết quả
                             </button>
                             <button
                                 onClick={() => navigate('/history')}
-                                className="flex-1 flex justify-center items-center gap-2 bg-transparent text-on-surface-variant border border-outline-variant py-2.5 rounded-lg font-medium text-sm hover:bg-surface-container-low transition-colors"
+                                className="flex-1 flex justify-center items-center gap-2 bg-surface-container text-on-surface-variant border border-outline-variant py-2.5 rounded-lg font-medium text-sm hover:bg-surface-container-low transition-colors"
                             >
                                 <Home size={16}/> Lịch sử
                             </button>
@@ -100,8 +103,8 @@ export function InterviewResults() {
                     </div>
 
                     {/* Detail Scores */}
-                    <div className="bg-white rounded-2xl p-6 border border-outline-variant shadow-sm">
-                        <h3 className="text-xs font-bold text-on-surface-variant mb-5 tracking-wider uppercase">Chi Tiết Năng Lực</h3>
+                    <div className="glass-panel rounded-2xl p-6 border border-outline-variant shadow-sm">
+                        <h3 className="text-xs font-bold text-outline mb-5 tracking-wider uppercase">Chi Tiết Năng Lực</h3>
 
                         <div className="space-y-4">
                             {criteria.map((item, idx) => (
@@ -123,14 +126,14 @@ export function InterviewResults() {
                 </div>
 
                 {/* Right Column - Transcript */}
-                <div className="bg-white rounded-2xl border border-outline-variant shadow-sm flex flex-col overflow-hidden h-[calc(100vh-112px)] sticky top-24">
-                    <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-white shrink-0 flex-wrap gap-2">
+                <div className="glass-panel rounded-2xl border border-outline-variant shadow-sm flex flex-col overflow-hidden h-[calc(100vh-112px)] sticky top-24">
+                    <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low shrink-0 flex-wrap gap-2">
                         <h2 className="text-lg font-display font-semibold text-on-surface">Bản ghi hội thoại & Đánh giá</h2>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded text-xs font-medium">{passedCount} Đạt</span>
-                            <span className="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-xs font-medium">{improveCount} Cần cải thiện</span>
+                            <span className="bg-primary-container text-primary border border-primary-container px-2 py-0.5 rounded text-xs font-medium">{passedCount} Đạt</span>
+                            <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-xs font-medium">{improveCount} Cần cải thiện</span>
                             {skippedCount > 0 && (
-                                <span className="bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded text-xs font-medium">{skippedCount} Bỏ qua</span>
+                                <span className="bg-surface-container text-outline border border-outline-variant px-2 py-0.5 rounded text-xs font-medium">{skippedCount} Bỏ qua</span>
                             )}
                         </div>
                     </div>
@@ -146,10 +149,10 @@ export function InterviewResults() {
                         </div>
                     </div>
 
-                    <div className="p-4 border-t border-outline-variant bg-white flex justify-end shrink-0">
+                    <div className="p-4 border-t border-outline-variant bg-surface-container-low flex justify-end shrink-0">
                         <button
                             onClick={() => alert('Chức năng xuất PDF (mock)')}
-                            className="flex items-center gap-2 bg-primary hover:opacity-90 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm"
+                            className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm"
                         >
                             <FileText size={16}/> Xuất báo cáo PDF
                         </button>
@@ -161,10 +164,10 @@ export function InterviewResults() {
 
             <style dangerouslySetInnerHTML={{__html: `
                 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: #f2f4f6; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-            `}}/>
+                .custom-scrollbar::-webkit-scrollbar-track { background: var(--color-surface-container); }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-outline); border-radius: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-on-surface-variant); }
+            `.replace(/var\(--color-outline\)/g, '#cbd5e1')}}/>
         </div>
     );
 }
@@ -174,10 +177,10 @@ function TranscriptBlock({entry, persona}) {
 
     const statusBadge = () => {
         if (status === 'skipped') {
-            return <span className="bg-gray-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Bỏ qua</span>;
+            return <span className="bg-outline text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Bỏ qua</span>;
         }
         if (status === 'pass') {
-            return <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Đạt</span>;
+            return <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Đạt</span>;
         }
         return <span className="bg-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Cần cải thiện</span>;
     };
@@ -185,7 +188,7 @@ function TranscriptBlock({entry, persona}) {
     return (
         <div className="group">
             <div className="flex gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <div className="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center shrink-0 border border-primary-container">
                     <span className="font-bold text-xs italic">AI</span>
                 </div>
                 <div className="flex-1">
@@ -207,13 +210,13 @@ function TranscriptBlock({entry, persona}) {
                 {suggestions && suggestions.length > 0 && suggestions.map((s, i) => {
                     const tagDef = TAG_DEFINITIONS[s.tag] || TAG_DEFINITIONS['nice-to-have'];
                     return (
-                        <div key={i} className={`${tagDef.bgClass}/10 border ${tagDef.bgClass.replace('bg-', 'border-')} rounded-lg p-4 mb-2`}>
-                            <div className={`flex items-center gap-2 ${tagDef.textClass} mb-2`}>
+                        <div key={i} className={`${tagDef.bgClass.replace('bg-', 'bg-primary-container/10')} border ${tagDef.bgClass.replace('bg-', 'border-')} rounded-lg p-4 mb-2`}>
+                            <div className={`flex items-center gap-2 ${tagDef.textClass.replace('text-blue-600', 'text-primary')} mb-2`}>
                                 <Sparkles size={14}/>
                                 <span className="text-xs font-bold uppercase tracking-wider">
                                     {s.tag === 'must-have' ? 'Phải cải thiện' : 'Gợi ý thêm'}
                                 </span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${tagDef.textClass} ${tagDef.bgClass}`}>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${tagDef.textClass.replace('text-blue-600', 'text-primary')} ${tagDef.bgClass.replace('bg-blue-600', 'bg-primary')}`}>
                                     {tagDef.label}
                                 </span>
                             </div>

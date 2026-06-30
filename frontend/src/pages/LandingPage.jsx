@@ -12,25 +12,25 @@ const LandingPage = () => {
     const navigate = useNavigate();
     const {isLoggedIn} = useAuth();
 
-    return (<div className="min-h-screen bg-slate-50/50 text-slate-800 font-sans flex flex-col antialiased">
+    return (<div className="min-h-screen bg-background text-on-surface font-sans flex flex-col antialiased">
         <GuestHeader/>
         {/* Hero Section */}
         <section
             className="max-w-7xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-1 w-full">
             <div className="lg:col-span-6 flex flex-col space-y-6">
                 <div className="inline-flex items-center self-start">
-                    <span className="h-2 w-8 bg-[#0b3c8f]/20 rounded-full"></span>
+                    <span className="h-2 w-8 bg-primary/20 rounded-full"></span>
                 </div>
 
-                <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                <h1 className="text-4xl sm:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
                     Nâng tầm sự nghiệp với <br/>
-                    <span className="text-[#0b3c8f] relative">
+                    <span className="text-primary relative">
                         CV tối ưu bởi AI
-                        <span className="absolute bottom-1 left-0 w-full h-2 bg-blue-100 -z-10 rounded"></span>
+                        <span className="absolute bottom-1 left-0 w-full h-2 bg-primary-container/30 -z-10 rounded"></span>
                     </span>
                 </h1>
 
-                <p className="text-slate-500 text-base sm:text-lg max-w-2xl leading-relaxed">
+                <p className="text-on-surface-variant text-base sm:text-lg max-w-2xl leading-relaxed">
                     Áp dụng trí tuệ nhân tạo tiên tiến giúp rà soát lỗi, chấm điểm kỹ năng và đề xuất các từ khóa
                     chuẩn ATS giúp bạn chinh phục mọi nhà tuyển dụng.
                 </p>
@@ -40,7 +40,7 @@ const LandingPage = () => {
                     <button
                         id="landing-cta-create-cv"
                         onClick={() => navigate(isLoggedIn ? '/builder' : '/register')}
-                        className="bg-[#0b3c8f] hover:bg-[#093278] text-white font-medium px-6 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#0b3c8f]/10 transition-all flex items-center justify-center space-x-2 active:scale-[0.98]"
+                        className="bg-primary hover:bg-primary-container text-on-primary font-medium px-6 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-all flex items-center justify-center space-x-2 active:scale-[0.98]"
                     >
                         <span>Tạo CV ngay</span>
                         <ArrowRight className="w-4 h-4"/>
@@ -48,7 +48,7 @@ const LandingPage = () => {
                     <button
                         id="landing-cta-view-templates"
                         onClick={() => navigate('/templates')}
-                        className="bg-white hover:bg-slate-50 text-slate-800 font-medium px-6 py-3.5 rounded-xl border border-slate-200 transition-all flex items-center justify-center active:scale-[0.98]"
+                        className="bg-surface-container hover:bg-surface-container-low text-on-surface font-medium px-6 py-3.5 rounded-xl border border-outline-variant transition-all flex items-center justify-center active:scale-[0.98]"
                     >
                         Xem mẫu CV
                     </button>
@@ -62,12 +62,12 @@ const LandingPage = () => {
         </section>
 
         {/* AI Features Section */}
-        <section className="bg-slate-50 border-t border-b border-slate-100 py-20 px-6">
+        <section className="bg-surface-container-low border-t border-b border-outline-variant py-20 px-6">
             <div className="max-w-[1280px] mx-auto flex flex-col space-y-12">
                 <div className="text-center mb-lg space-y-xs">
                     <h2 className="font-headline-xl text-headline-xl text-primary font-bold">Tính năng đột phá từ
                         AI</h2>
-                    <p className="font-body-md text-body-md text-secondary max-w-2xl mx-auto">
+                    <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
                         Quy trình tạo CV truyền thống đã lỗi thời. Hãy để AI đồng hành cùng bạn trên con đường sự
                         nghiệp với bộ công cụ thông minh nhất.
                     </p>
@@ -132,12 +132,12 @@ const LandingPage = () => {
             <div className="max-w-[1280px] mx-auto px-xl lg:px-gutter">
                 <div className="flex justify-between items-end mb-lg">
                     <div className="space-y-2">
-                        <h2 className="font-headline-xl text-headline-xl text-[#0b3c8f] font-bold">Kho mẫu CV
+                        <h2 className="font-headline-xl text-headline-xl text-primary font-bold">Kho mẫu CV
                             hiện đại</h2>
-                        <p className="font-body-md text-body-md text-slate-500 mt-xs">Hơn 50+ mẫu thiết kế chuẩn
+                        <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Hơn 50+ mẫu thiết kế chuẩn
                             ngành nghề, phong cách đa dạng.</p>
                     </div>
-                    <a className="text-[#0b3c8f] font-label-md text-label-md flex items-center gap-xs hover:underline cursor-pointer"
+                    <a className="text-primary font-label-md text-label-md flex items-center gap-xs hover:underline cursor-pointer"
                        href="/templates">
                         Khám phá tất cả mẫu
                         <ExternalLink className="w-3 h-3"/>
@@ -147,19 +147,19 @@ const LandingPage = () => {
                     {TEMPLATES_DATA.slice(0, 4).map((template) => (
                         <div key={template.id} className="group cursor-pointer">
                             <div
-                                className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-slate-200 mb-sm transition-transform group-hover:-translate-y-2">
+                                className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-outline-variant mb-sm transition-transform group-hover:-translate-y-2">
                                 <img className="w-full h-full object-cover" alt={template.title}
                                      src={template.image}/>
                                 <div
-                                    className="absolute inset-0 bg-[#0b3c8f]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <button
-                                        className="bg-white text-[#0b3c8f] px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
+                                        className="bg-surface-container text-primary px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
                                         onClick={() => navigate("/templates")}
                                     >Sử dụng mẫu này
                                     </button>
                                 </div>
                             </div>
-                            <h4 className="font-label-md text-label-md text-[#0b3c8f] text-center">{template.title}</h4>
+                            <h4 className="font-label-md text-label-md text-primary text-center">{template.title}</h4>
                         </div>))}
                 </div>
             </div>
@@ -167,7 +167,7 @@ const LandingPage = () => {
         <section className="py-xl w-full">
             <div className="max-w-7xl mx-auto px-6 pb-20 w-full">
                 <div
-                    className="bg-[#0b3c8f] text-white rounded-3xl p-10 md:p-14 text-center space-y-8 shadow-xl relative overflow-hidden flex flex-col items-center">
+                    className="bg-primary text-on-primary rounded-3xl p-10 md:p-14 text-center space-y-8 shadow-xl relative overflow-hidden flex flex-col items-center">
                     <div
                         className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
                     <div
@@ -177,7 +177,7 @@ const LandingPage = () => {
                         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sẵn sàng để sở hữu công việc
                             mơ
                             ước?</h2>
-                        <p className="text-blue-100 text-sm leading-relaxed max-w-2xl mx-auto">
+                        <p className="text-on-primary-container text-sm leading-relaxed max-w-2xl mx-auto">
                             Chỉ mất 5 phút để xây dựng một bản CV thông minh, vượt qua vòng lọc tự động và nhanh
                             chóng
                             lọt vào mắt xanh của bộ phận tuyển dụng.
@@ -187,7 +187,7 @@ const LandingPage = () => {
                     <button
                         id="landing-bottom-cta"
                         onClick={() => navigate(isLoggedIn ? '/builder' : '/register')}
-                        className="z-10 bg-white hover:bg-slate-50 text-[#0b3c8f] font-semibold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] text-sm"
+                        className="z-10 bg-surface-container hover:bg-surface-container-low text-primary font-semibold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] text-sm"
                     >
                         Bắt đầu hoàn toàn miễn phí
                     </button>
@@ -195,25 +195,25 @@ const LandingPage = () => {
             </div>
         </section>
 
-        <footer className="bg-slate-150/50 border-t border-slate-200 py-8 px-6 mt-auto text-xs text-slate-500">
+        <footer className="bg-surface-container-low border-t border-outline-variant py-8 px-6 mt-auto text-xs text-on-surface-variant">
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="space-y-1 text-center sm:text-left">
-                    <span className="font-bold text-slate-700 text-sm">Smartfolio</span>
+                    <span className="font-bold text-on-surface text-sm">Smartfolio</span>
                     <p>© 2026 Smartfolio. Precision built for professionals.</p>
                 </div>
                 <div className="flex items-center space-x-6 font-medium">
                     <a href="#privacy" onClick={(e) => {
                         e.preventDefault();
                         navigate('/login');
-                    }} className="hover:text-slate-800">Chính sách bảo mật</a>
+                    }} className="hover:text-primary">Chính sách bảo mật</a>
                     <a href="#terms" onClick={(e) => {
                         e.preventDefault();
                         navigate('/login');
-                    }} className="hover:text-slate-800">Điều khoản dịch vụ</a>
+                    }} className="hover:text-primary">Điều khoản dịch vụ</a>
                     <a href="#support" onClick={(e) => {
                         e.preventDefault();
                         navigate('/login');
-                    }} className="hover:text-slate-800">Hỗ trợ</a>
+                    }} className="hover:text-primary">Hỗ trợ</a>
                 </div>
             </div>
         </footer>

@@ -18,15 +18,15 @@ const Sidebar = () => {
     }
     return (
         <aside
-            className="w-64 bg-slate-50 border-r border-slate-200 flex flex-col justify-between h-screen sticky top-0 left-0 text-slate-800 select-none pb-6 z-20">
+            className="w-64 bg-background border-r border-surface-container flex flex-col justify-between h-screen sticky top-0 left-0 text-on-surface select-none pb-6 z-20">
             <div className="flex flex-col">
                 {/* Brand/Logo */}
-                <div className="px-6 py-6 border-b border-slate-100 flex items-center space-x-2">
+                <div className="px-6 py-6 border-b border-surface-container flex items-center space-x-2">
                     <div
-                        className="w-8 h-8 rounded-lg bg-[#0b3c8f] flex items-center justify-center text-white font-bold text-lg">
+                        className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold text-lg">
                         S
                     </div>
-                    <span className="text-xl font-extrabold text-[#0b3c8f] tracking-tight cursor-pointer"
+                    <span className="text-xl font-extrabold text-primary tracking-tight cursor-pointer"
                           onClick={handleBackHome}>Smartfolio</span>
                 </div>
 
@@ -41,14 +41,14 @@ const Sidebar = () => {
                                 className={({isActive}) =>
                                     `w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-150 text-sm font-medium ${
                                         isActive
-                                            ? 'bg-[#0b3c8f] text-white shadow-md shadow-[#0b3c8f]/10'
-                                            : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+                                            ? 'bg-primary text-on-primary shadow-primary/10'
+                                            : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                                     }`
                                 }
                             >
                                 {({isActive}) => (
                                     <>
-                                        <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-white' : 'text-slate-400'}`}/>
+                                        <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-on-primary' : 'text-on-surface-variant'}`}/>
                                         <span>{item.label}</span>
                                         {item.path === '/security' && is2faEnabled && (
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-auto"></span>
@@ -62,23 +62,23 @@ const Sidebar = () => {
             </div>
 
             {/* Footer Side Actions */}
-            <div className="px-4 space-y-1.5 pt-4 border-t border-slate-200/60">
+            <div className="px-4 space-y-1.5 pt-4 border-t border-surface-container">
                 <NavLink
                     to="/personal-info"
                     className={({isActive}) =>
                         `w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-colors text-sm font-medium ${
                             isActive
-                                ? 'bg-[#0b3c8f] text-white'
-                                : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+                                ? 'bg-primary text-on-primary'
+                                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                         }`
                     }
                 >
-                    <Settings className="w-4.5 h-4.5 text-slate-400"/>
+                    <Settings className="w-4.5 h-4.5 text-on-surface-variant"/>
                     <span>Cài đặt</span>
                 </NavLink>
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
+                    className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-rose-600 hover:bg-surface-container hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
                 >
                     <LogOut className="w-4.5 h-4.5 text-rose-500"/>
                     <span>Đăng xuất</span>

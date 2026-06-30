@@ -1,92 +1,88 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100..1000;1,100..1000&display=swap');
 @import "tailwindcss";
 
 @theme {
-    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-    --font-display: "Space Grotesk", system-ui, sans-serif;
+    --font-sans: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+    --font-display: "Be Vietnam Pro", system-ui, sans-serif;
 
-    --color-surface-dim: #d8dadc;
-    --color-primary-container: #0b3c8f;
-    --color-tertiary-container: #0079ad;
-    --color-on-primary-fixed: #001849;
-    --color-error-container: #ffdad6;
-    --color-surface-container-low: #f2f4f6;
-    --color-inverse-primary: #b3c5ff;
-    --color-surface-container-highest: #e0e3e5;
-    --color-on-tertiary-fixed: #001e2f;
-    --color-on-error-container: #93000a;
-    --color-tertiary: #005f89;
-    --color-on-tertiary-fixed-variant: #004c6e;
-    --color-tertiary-fixed-dim: #89ceff;
-    --color-on-secondary-fixed: #0b1c30;
-    --color-secondary: #505f76;
-    --color-background: #f7f9fb;
-    --color-surface-container: #eceef0;
-    --color-on-secondary: #ffffff;
-    --color-surface-bright: #f7f9fb;
-    --color-primary-fixed-dim: #b3c5ff;
-    --color-surface-variant: #e0e3e5;
-    --color-on-primary-container: #f8f7ff;
-    --color-outline: #727687;
-    --color-outline-variant: #c2c6d8;
-    --color-secondary-container: #d0e1fb;
-    --color-on-tertiary: #ffffff;
-    --color-surface-container-lowest: #ffffff;
-    --color-inverse-on-surface: #eff1f3;
-    --color-surface: #f7f9fb;
-    --color-on-error: #ffffff;
-    --color-primary: #0b3c8f;
-    --color-on-secondary-fixed-variant: #38485d;
-    --color-on-primary: #ffffff;
-    --color-secondary-fixed-dim: #b7c8e1;
-    --color-error: #ba1a1a;
-    --color-on-primary-fixed-variant: #003fa4;
-    --color-tertiary-fixed: #c9e6ff;
-    --color-on-surface: #191c1e;
-    --color-on-background: #191c1e;
-    --color-on-secondary-container: #54647a;
-    --color-inverse-surface: #2d3133;
-    --color-surface-tint: #0054d6;
-    --color-on-surface-variant: #424656;
-    --color-primary-fixed: #dae1ff;
-    --color-surface-container-high: #e6e8ea;
-    --color-secondary-fixed: #d3e4fe;
-    --color-on-tertiary-container: #f3f8ff;
-    --color-cv-dark-blue: #00337C;
-    --color-cv-grey: #B8B8B8;
-    --color-cv-text-dark: #1A374D;
-    --color-cv-sidebar-blue: #003171;
-    --color-cv-accent-blue: #002654;
-    --color-smartfolio-blue: #004AAD;
-    --color-cream: #FAF7F2;
-    --color-cream-deep: #F1EBDF;
+    /* Emerald Night Theme Palette - Based on DESIGN.md */
+    --color-primary: #12C999;
+    --color-on-primary: #003828;
+    --color-primary-container: #12c999;
+    --color-on-primary-container: #004e39;
 
+    --color-background: #0D1B2A;
+    --color-on-background: #E0E1DD;
+    --color-surface: #0D1B2A;
+    --color-on-surface: #E0E1DD;
+    --color-on-surface-variant: #bbcac1;
+
+    --color-surface-container-lowest: #0D1B2A;
+    --color-surface-container-low: #0D1B2A;
+    --color-surface-container: #1B263B;
+    --color-surface-container-high: #1B263B;
+    --color-surface-container-highest: #1B263B;
+    --color-surface-bright: #1B263B;
+    --color-surface-variant: #1B263B;
+    --color-surface-dim: #0D1B2A;
+    --color-surface-tint: #12C999;
+
+    --color-tertiary: #1B4332;
+    --color-on-tertiary: #E0E1DD;
+    --color-tertiary-container: #1B4332;
+    --color-on-tertiary-container: #E0E1DD;
+
+    --color-secondary: #bac8dc;
+    --color-on-secondary: #243141;
+    --color-secondary-container: #3a4859;
+    --color-on-secondary-container: #a8b6ca;
+
+    --color-error: #ffb4ab;
+    --color-on-error: #690005;
+    --color-error-container: #93000a;
+    --color-on-error-container: #ffdad6;
+
+    --color-outline: #85948c;
+    --color-outline-variant: #3c4a43;
+
+    /* Specialized / Legacy CV Variables */
+    --color-cv-dark-blue: #0D1B2A;
+    --color-cv-grey: #85948c;
+    --color-cv-text-dark: #E0E1DD;
+    --color-cv-sidebar-blue: #1B4332;
+    --color-cv-accent-blue: #12C999;
+    --color-smartfolio-blue: #12C999;
+    --color-cream: #1B263B;
+    --color-cream-deep: #0D1B2A;
+
+    /* Spacing */
     --spacing-xs: 4px;
-    --spacing-xl: 80px;
-    --spacing-margin-mobile: 16px;
-    --spacing-margin-desktop: 40px;
-    --spacing-md: 24px;
-    --spacing-gutter: 24px;
-    --spacing-base: 8px;
     --spacing-sm: 12px;
+    --spacing-base: 8px;
+    --spacing-md: 24px;
     --spacing-lg: 48px;
+    --spacing-xl: 80px;
+    --spacing-gutter: 24px;
+    --spacing-margin-mobile: 16px;
+    --spacing-margin-desktop: 64px;
     --spacing-container-max: 1280px;
 
-    --font-label-md: Geist, sans-serif;
-    --font-label-sm: Geist, sans-serif;
-    --font-body-lg: "Hanken Grotesk", sans-serif;
-    --font-display-lg: Manrope, sans-serif;
-    --font-title-md: Manrope, sans-serif;
-    --font-headline-lg-mobile: Manrope, sans-serif;
-    --font-headline-lg: Manrope, sans-serif;
-    --font-body-md: "Hanken Grotesk", sans-serif;
-    --font-headline-xl: Manrope, sans-serif;
-    --font-headline-xl-mobile: Manrope, sans-serif;
-    --font-body-sm: "Hanken Grotesk", sans-serif;
+    /* Typography */
+    --font-label-md: "Be Vietnam Pro", sans-serif;
+    --font-label-sm: "Be Vietnam Pro", sans-serif;
+    --font-body-lg: "Be Vietnam Pro", sans-serif;
+    --font-body-md: "Be Vietnam Pro", sans-serif;
+    --font-body-sm: "Be Vietnam Pro", sans-serif;
+    --font-display-lg: "Be Vietnam Pro", sans-serif;
+    --font-title-md: "Be Vietnam Pro", sans-serif;
+    --font-headline-lg: "Be Vietnam Pro", sans-serif;
+    --font-headline-lg-mobile: "Be Vietnam Pro", sans-serif;
+    --font-headline-xl: "Be Vietnam Pro", sans-serif;
+    --font-headline-xl-mobile: "Be Vietnam Pro", sans-serif;
 
     --text-label-md: 14px;
-    --text-label-md--line-height: 20px;
-    --text-label-md--letter-spacing: 0.02em;
+    --text-label-md--line-height: 1;
+    --text-label-md--letter-spacing: 0.05em;
     --text-label-md--font-weight: 500;
 
     --text-label-sm: 12px;
@@ -95,11 +91,11 @@
     --text-label-sm--font-weight: 600;
 
     --text-body-lg: 18px;
-    --text-body-lg--line-height: 28px;
+    --text-body-lg--line-height: 1.6;
     --text-body-lg--font-weight: 400;
 
     --text-display-lg: 48px;
-    --text-display-lg--line-height: 56px;
+    --text-display-lg--line-height: 1.2;
     --text-display-lg--letter-spacing: -0.02em;
     --text-display-lg--font-weight: 800;
 
@@ -112,99 +108,102 @@
     --text-headline-lg-mobile--font-weight: 700;
 
     --text-headline-lg: 32px;
-    --text-headline-lg--line-height: 40px;
+    --text-headline-lg--line-height: 1.3;
     --text-headline-lg--letter-spacing: -0.01em;
     --text-headline-lg--font-weight: 700;
 
     --text-body-md: 16px;
-    --text-body-md--line-height: 24px;
+    --text-body-md--line-height: 1.6;
     --text-body-md--font-weight: 400;
 
     --text-body-sm: 14px;
     --text-body-sm--line-height: 20px;
     --text-body-sm--font-weight: 400;
 
-    --text-headline-xl: 36px;
-    --text-headline-xl--line-height: 44px;
+    --text-headline-xl: 48px;
+    --text-headline-xl--line-height: 1.2;
     --text-headline-xl--font-weight: 700;
 
-    --text-headline-xl-mobile: 30px;
-    --text-headline-xl-mobile--line-height: 36px;
+    --text-headline-xl-mobile: 32px;
+    --text-headline-xl-mobile--line-height: 1.2;
     --text-headline-xl-mobile--font-weight: 700;
 }
 
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: var(--color-surface);
+    background-color: var(--color-background);
     color: var(--color-on-surface);
     font-family: var(--font-body-md);
 }
 
 .glass-effect {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .glass-panel {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .ai-gradient-bg {
-    background: linear-gradient(135deg, #0b3c8f 0%, #0b3c8f 100%);
+    background: linear-gradient(135deg, var(--color-background) 0%, var(--color-surface-container) 100%);
 }
 
 .ai-gradient {
-    background: linear-gradient(135deg, #0b3c8f 0%, #0b3c8f 50%, #0079ad 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 50%, var(--color-tertiary) 100%);
 }
 
 .ai-glow {
-    box-shadow: 0 0 20px rgba(11, 60, 143, 0.2);
+    box-shadow: 0 0 20px rgba(18, 201, 153, 0.2);
 }
 
 .custom-shadow {
-    box-shadow: 0 10px 40px -10px rgba(11, 60, 143, 0.08);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
+
 /* General utility classes */
-.card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+.card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2); }
 
 /* CV Builder variants */
 .active-tab {
-    background-color: white;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     font-weight: 600;
 }
 
 .input-underlined {
     border: none;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--color-outline-variant);
     border-radius: 0;
     padding-left: 0;
     padding-right: 0;
     background: transparent;
+    color: var(--color-on-surface);
 }
 .input-underlined:focus {
     outline: none;
-    border-bottom: 1px solid #1d4ed8;
+    border-bottom: 1px solid var(--color-primary);
     box-shadow: none;
 }
 
 /* CV Editor variants */
 .editor-body {
-    background-color: #E5E7EB;
+    background-color: #2a2e2a;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .cv-page-container {
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     min-height: 1200px;
     width: 850px;
 }
@@ -213,7 +212,7 @@ body {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: #00337C;
+    background-color: var(--color-primary);
     position: absolute;
     left: -6px;
     top: 6px;
@@ -221,7 +220,7 @@ body {
 
 .timeline-line {
     width: 1px;
-    background-color: #D1D5DB;
+    background-color: var(--color-outline-variant);
     position: absolute;
     left: 0;
     top: 10px;
@@ -229,17 +228,15 @@ body {
 }
 
 .skill-rating-dot { color: #FBBF24; }
-.skill-rating-dot-empty { color: #D1D5DB; }
+.skill-rating-dot-empty { color: var(--color-outline-variant); }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-track { background: var(--color-surface-container-low); }
+::-webkit-scrollbar-thumb { background: var(--color-outline); border-radius: 10px; }
 
 /* ─── Feedback Widget ─────────────────────────────────────────────── */
 
-/* Modal entrance: scale + fade, layered shadow. Modal is flex-centered
-   by its parent overlay, so no translate offsets here. */
 @keyframes fw-overlay-in {
     from { opacity: 0; }
     to   { opacity: 1; }
@@ -251,14 +248,12 @@ body {
 .fw-overlay { animation: fw-overlay-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 .fw-modal   { animation: fw-modal-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-/* Floating button entrance: gentle rise + fade */
 @keyframes fw-fab-in {
     from { opacity: 0; transform: translateY(12px) scale(0.92); }
     to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 .fw-fab { animation: fw-fab-in 420ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both; }
 
-/* Magnetic-ink fill on primary CTA: ink sweeps in from the left */
 .fw-ink {
     position: relative;
     overflow: hidden;
@@ -274,11 +269,10 @@ body {
     transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
     z-index: -1;
 }
-.fw-ink:hover { color: #fff; }
+.fw-ink:hover { color: var(--color-on-primary); }
 .fw-ink:hover::before,
 .fw-ink:focus-visible::before { transform: translateX(0); }
 
-/* Quiet hairline focus ring, no neon outline */
 .fw-focus:focus-visible {
     outline: none;
     box-shadow: 0 0 0 1.5px var(--color-primary);
@@ -287,19 +281,6 @@ body {
 
 /* ─── Page transitions ─────────────────────────────────────────────── */
 
-/* ─── Page transitions ───────────────────────────────────────────────
-   NOTE: route-level page transitions are now handled by
-   <PageTransition> (framer-motion) in components/transitions/ —
-   see AppLayout.jsx. The two CSS classes below are kept for
-   non-route use cases (toasts, popovers, ad-hoc reveals):
-     .page-enter        — keyframe-driven container entry
-     .animate-fade-in   — short content fade-in (e.g. toast in
-                          AppLayout, dropdown in PublicHeader)
-   Do NOT sprinkle `animate-fade-in` onto page roots — the
-   PageTransition wrapper above already animates route changes.
-*/
-
-/* ─── Global Page Transition (Container Level) ─── */
 @keyframes pageEnter {
     from { opacity: 0; transform: scale(0.99); }
     to   { opacity: 1; transform: scale(1); }
@@ -309,7 +290,6 @@ body {
     will-change: opacity, transform;
 }
 
-/* ─── Content Fade-In (Toast / Popover) ─── */
 @keyframes fadeInContent {
     from { opacity: 0; transform: translateY(15px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -319,7 +299,6 @@ body {
     will-change: opacity, transform;
 }
 
-/* Top-of-screen progress bar — High visibility for verification */
 @keyframes routeProgress {
     0%   { transform: scaleX(0);   opacity: 1; }
     60%  { transform: scaleX(0.7); opacity: 1; }
@@ -329,8 +308,8 @@ body {
     position: fixed;
     top: 0; left: 0; right: 0;
     height: 4px;
-    background: #0b3c8f;
-    box-shadow: 0 0 15px rgba(11, 60, 143, 0.8);
+    background: var(--color-primary);
+    box-shadow: 0 0 15px rgba(18, 201, 153, 0.8);
     transform-origin: left center;
     z-index: 99999;
     animation: routeProgress 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -338,7 +317,6 @@ body {
     will-change: transform, opacity;
 }
 
-/* Respect users with reduced-motion preferences. */
 @media (prefers-reduced-motion: reduce) {
     .page-enter,
     .route-progress-bar,
@@ -347,22 +325,21 @@ body {
     }
 }
 
-/* CV Analyzing Animation */
 @keyframes pulse-glow {
     0% {
         transform: scale(1);
         opacity: 0.6;
-        box-shadow: 0 0 0 0 rgba(11, 60, 143, 0.7);
+        box-shadow: 0 0 0 0 rgba(18, 201, 153, 0.7);
     }
     70% {
         transform: scale(1.1);
         opacity: 0.3;
-        box-shadow: 0 0 0 20px rgba(11, 60, 143, 0);
+        box-shadow: 0 0 0 20px rgba(18, 201, 153, 0);
     }
     100% {
         transform: scale(1);
         opacity: 0.6;
-        box-shadow: 0 0 0 0 rgba(11, 60, 143, 0);
+        box-shadow: 0 0 0 0 rgba(18, 201, 153, 0);
     }
 }
 .animate-pulse-glow {

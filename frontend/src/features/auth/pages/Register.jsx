@@ -52,7 +52,7 @@ export default function Register() {
         <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-lg items-center">
 
           {/* Left Side: Branding/Value Prop */}
-          <div ref={panelRef} className="hidden md:flex md:col-span-6 relative min-h-[600px] rounded-[32px] overflow-hidden ai-gradient p-lg lg:p-xl flex-col justify-end text-white">
+          <div ref={panelRef} className="hidden md:flex md:col-span-6 relative min-h-[600px] rounded-[32px] overflow-hidden ai-gradient p-lg lg:p-xl flex-col justify-end text-on-primary">
             <div className="absolute top-0 right-0 p-lg opacity-20 transition-transform duration-300 ease-out" ref={iconRef}>
               <ChartPie className="text-[200px] text-white opacity-20" />
             </div>
@@ -65,7 +65,7 @@ export default function Register() {
             </div>
 
             {/* Floating Suggestion Preview */}
-            <div ref={glassRef} className="absolute top-20 left-12 glass-panel p-md rounded-xl  custom-shadow transform -rotate-3 transition-transform duration-300 ease-out">
+            <div ref={glassRef} className="absolute top-20 left-12 glass-panel p-md rounded-xl custom-shadow transform -rotate-3 transition-transform duration-300 ease-out">
               <div className="flex items-center gap-xs mb-xs">
                 <Bot className="w-5 h-5 text-primary" />
                 <span className="font-label-sm text-label-sm text-primary uppercase tracking-widest font-bold">AI Suggestion</span>
@@ -76,10 +76,10 @@ export default function Register() {
 
           {/* Right Side: Registration Form */}
           <div className="md:col-span-6 flex justify-center">
-            <div className="bg-surface-container-lowest p-lg md:p-xl rounded-[24px] w-full  custom-shadow">
+            <div className="bg-surface-container-lowest p-lg md:p-xl rounded-[24px] w-full custom-shadow border border-outline-variant">
               <div className="mb-lg">
                 <h2 className="font-headline-xl text-headline-xl font-bold leading-tight text-primary mb-base">Bắt đầu ngay</h2>
-                <p className="font-body-md text-secondary">Tạo tài khoản Smartfolio để trải nghiệm</p>
+                <p className="font-body-md text-on-surface-variant">Tạo tài khoản Smartfolio để trải nghiệm</p>
               </div>
 
               <form className="space-y-md" onSubmit={handleRegister}>
@@ -87,7 +87,7 @@ export default function Register() {
                   <label className="font-label-md text-label-md text-on-surface-variant block">Họ và tên</label>
                   <div className="relative group">
                     <User className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors" />
-                    <input required className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-white focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-body-md" placeholder="Nguyễn Văn A" type="text"/>
+                    <input required className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-body-md" placeholder="Nguyễn Văn A" type="text"/>
                   </div>
                 </div>
 
@@ -95,7 +95,7 @@ export default function Register() {
                   <label className="font-label-md text-label-md text-on-surface-variant block">Email</label>
                   <div className="relative group">
                     <Mail className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors" />
-                    <input required className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-white focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-body-md" placeholder="example@gmail.com" type="email"/>
+                    <input required className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-body-md" placeholder="example@gmail.com" type="email"/>
                   </div>
                 </div>
 
@@ -104,7 +104,7 @@ export default function Register() {
                     <label className="font-label-md text-label-md text-on-surface-variant block">Mật khẩu</label>
                     <div className="relative group">
                       <Lock className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors" />
-                      <input required className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-white focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-body-md" placeholder="••••••••" type="password"/>
+                      <input required className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-body-md" placeholder="••••••••" type="password"/>
                     </div>
                   </div>
 
@@ -112,7 +112,7 @@ export default function Register() {
                     <label className="font-label-md text-label-md text-on-surface-variant block">Xác nhận mật khẩu</label>
                     <div className="relative group">
                       <ShieldCheck className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors" />
-                      <input required className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-white focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-body-md" placeholder="••••••••" type="password"/>
+                      <input required className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-body-md" placeholder="••••••••" type="password"/>
                     </div>
                   </div>
                 </div>
@@ -131,7 +131,7 @@ export default function Register() {
               </form>
 
               <div className="mt-lg text-center">
-                <p className="font-body-sm text-body-sm text-secondary">
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
                   Đã có tài khoản? <Link className="text-primary font-bold hover:underline" to="/login">Đăng nhập</Link>
                 </p>
               </div>
