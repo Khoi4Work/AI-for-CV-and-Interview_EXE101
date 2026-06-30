@@ -33,41 +33,41 @@ export default function CareerGoal() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">
+    <div className="min-h-screen flex flex-col bg-background font-sans text-on-surface">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-10 px-6 pb-20">
         <div className="w-full max-w-2xl">
           <div className="flex flex-col items-center mb-10 w-full max-w-2xl mx-auto">
-            <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden mb-4">
-              <div className="bg-[#1a56db] h-full rounded-full transition-all" style={{ width: '40%' }} />
+            <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-4">
+              <div className="bg-primary h-full rounded-full transition-all" style={{ width: '40%' }} />
             </div>
-            <p className="text-sm text-gray-500 font-medium">Bước 4 trên 10 • 40% hoàn tất</p>
+            <p className="text-sm text-on-surface-variant font-medium">Bước 4 trên 10 • 40% hoàn tất</p>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">Mục tiêu nghề nghiệp?</h1>
-            <p className="text-gray-600 text-base">Mô tả ngắn gọn về định hướng và giá trị bạn muốn mang lại. AI của chúng tôi sẽ giúp bạn hoàn thiện nó.</p>
+            <h1 className="text-3xl font-bold text-on-surface mb-3">Mục tiêu nghề nghiệp?</h1>
+            <p className="text-on-surface-variant text-base">Mô tả ngắn gọn về định hướng và giá trị bạn muốn mang lại. AI của chúng tôi sẽ giúp bạn hoàn thiện nó.</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-12">
+          <div className="glass-panel rounded-xl border border-outline-variant shadow-sm overflow-hidden mb-12">
             <textarea
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              className="w-full h-40 p-5 text-gray-700 placeholder-gray-400 focus:outline-none resize-none"
+              className="w-full h-40 p-5 text-on-surface placeholder-outline-variant focus:outline-none resize-none bg-transparent"
               placeholder="Tôi muốn đóng góp vào các dự án..."
             />
 
-            <div className="bg-gray-50/80 p-5 border-t border-gray-100">
+            <div className="bg-surface-container/50 p-5 border-t border-outline-variant">
               <div className="flex items-center gap-2 mb-3">
-                <p className="text-sm font-bold text-gray-800">Gợi ý từ AI</p>
+                <p className="text-sm font-bold text-on-surface">Gợi ý từ AI</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map((sug, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleAppend(sug)}
-                    className="bg-gray-200/60 hover:bg-gray-300/60 text-gray-700 px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
+                    className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
                   >
                     {sug}
                   </button>
@@ -76,23 +76,23 @@ export default function CareerGoal() {
             </div>
           </div>
 
-          <hr className="border-gray-200 mb-8" />
+          <hr className="border-outline-variant mb-8" />
 
           <div className="flex flex-col gap-3 w-full">
             <button
               onClick={() => navigate('/interview/experience-level')}
-              className="w-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 px-6 py-3.5 rounded-xl text-base font-medium hover:bg-gray-50 transition-colors shadow-sm"
+              className="w-full flex items-center justify-center bg-surface-container border border-outline-variant text-on-surface-variant px-6 py-3.5 rounded-xl text-base font-medium hover:bg-surface-container-low transition-colors shadow-sm"
             >
               <ArrowLeft className="w-5 h-5 mr-2" /> Quay lại
             </button>
             <button
               onClick={handleNext}
-              className="w-full flex items-center justify-center bg-[#4f6bf5] text-white px-6 py-3.5 rounded-xl text-base font-medium hover:bg-blue-600 transition-colors shadow-md"
+              className="w-full flex items-center justify-center bg-primary text-on-primary px-6 py-3.5 rounded-xl text-base font-medium hover:opacity-90 transition-colors shadow-md"
             >
               <Sparkles className="w-5 h-5 mr-2 fill-current" /> Bắt đầu ngay
               <ArrowRight className="w-5 h-5 ml-2" />
             </button>
-            <p className="text-center text-xs text-gray-500 mt-2">
+            <p className="text-center text-xs text-on-surface-variant mt-2">
               Thông tin này sẽ được sử dụng để tối ưu hồ sơ Smartfolio của bạn.
             </p>
           </div>

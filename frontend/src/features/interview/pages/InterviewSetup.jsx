@@ -36,38 +36,38 @@ export default function InterviewSetup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc] font-sans">
+    <div className="min-h-screen flex flex-col bg-background font-sans text-on-surface">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-8 px-6 pb-20 relative">
         <div className="w-full max-w-3xl">
           <div className="flex flex-col items-center mb-10">
-            <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden mb-4">
-              <div className="bg-blue-800 h-full rounded-full transition-all" style={{ width: '50%' }} />
+            <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-4">
+              <div className="bg-primary h-full rounded-full transition-all" style={{ width: '50%' }} />
             </div>
-            <p className="text-sm text-gray-500 font-medium">Bước 5 trên 10 • 50% hoàn tất</p>
+            <p className="text-sm text-on-surface-variant font-medium">Bước 5 trên 10 • 50% hoàn tất</p>
           </div>
 
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Cấu hình phỏng vấn</h1>
-            <p className="text-gray-500 text-sm">Thiết lập buổi luyện tập với các chi tiết để AI cá nhân hóa.</p>
+            <h1 className="text-2xl font-bold text-on-surface mb-2">Cấu hình phỏng vấn</h1>
+            <p className="text-on-surface-variant text-sm">Thiết lập buổi luyện tập với các chi tiết để AI cá nhân hóa.</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-xl p-8 lg:p-10 w-full z-20">
+          <div className="glass-panel rounded-2xl border border-outline-variant shadow-xl p-8 lg:p-10 w-full z-20">
             <div className="space-y-6">
               {/* Company (FPT cố định) */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Công ty</label>
-                <div className="w-full bg-blue-50 border border-blue-200 text-gray-900 py-3 px-4 rounded-xl text-sm flex items-center justify-between">
-                  <span className="font-medium">{fpt.name} <span className="text-gray-500 font-normal">— {fpt.industry}</span></span>
-                  <span className="text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">Đã xác nhận</span>
+                <label className="block text-sm font-semibold text-on-surface mb-2">Công ty</label>
+                <div className="w-full bg-primary/10 border border-primary/30 text-on-surface py-3 px-4 rounded-xl text-sm flex items-center justify-between">
+                  <span className="font-medium">{fpt.name} <span className="text-on-surface-variant font-normal">— {fpt.industry}</span></span>
+                  <span className="text-xs text-primary bg-primary/20 px-2 py-0.5 rounded-full font-bold">Đã xác nhận</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 italic">"{fpt.culture}"</p>
+                <p className="text-xs text-on-surface-variant mt-2 italic">"{fpt.culture}"</p>
               </div>
 
               {/* Interview Type */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Loại phỏng vấn</label>
+                <label className="block text-sm font-semibold text-on-surface mb-2">Loại phỏng vấn</label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {INTERVIEW_TYPES.map((t) => (
                     <button
@@ -75,12 +75,12 @@ export default function InterviewSetup() {
                       onClick={() => setType(t.id)}
                       className={`text-left p-3 rounded-xl border-2 transition-all ${
                         type === t.id
-                          ? 'border-[#1a56db] bg-blue-50/30 shadow-sm'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-primary bg-primary/10 shadow-sm'
+                          : 'border-outline-variant hover:border-primary'
                       }`}
                     >
-                      <div className="font-bold text-gray-900 text-sm mb-1">{t.title}</div>
-                      <div className="text-xs text-gray-500">{t.desc}</div>
+                      <div className="font-bold text-on-surface text-sm mb-1">{t.title}</div>
+                      <div className="text-xs text-on-surface-variant">{t.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -89,25 +89,25 @@ export default function InterviewSetup() {
               {/* Language & Duration */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Ngôn ngữ</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Ngôn ngữ</label>
                   <div className="relative">
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full appearance-none bg-white border border-gray-200 text-gray-900 font-medium py-3 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="w-full appearance-none bg-surface-container border border-outline-variant text-on-surface font-medium py-3 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                     >
                       {LANGUAGES.map((l) => (
                         <option key={l.id} value={l.id}>{l.label}</option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
                       <ChevronDown className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Thời lượng</label>
+                  <label className="block text-sm font-semibold text-on-surface mb-2">Thời lượng</label>
                   <div className="grid grid-cols-3 gap-2">
                     {DURATIONS.map((d) => (
                       <button
@@ -115,12 +115,12 @@ export default function InterviewSetup() {
                         onClick={() => setDuration(d.value)}
                         className={`py-2.5 px-1 border rounded-xl text-center transition-colors ${
                           duration === d.value
-                            ? 'bg-blue-100/50 border-blue-200 shadow-inner'
-                            : 'border-gray-200 hover:bg-gray-50'
+                            ? 'bg-primary/20 border-primary shadow-inner'
+                            : 'border-outline-variant hover:bg-surface-container-low'
                         }`}
                       >
-                        <div className={`font-bold text-lg ${duration === d.value ? 'text-blue-700' : 'text-gray-900'}`}>{d.value}</div>
-                        <div className={`text-xs ${duration === d.value ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>phút</div>
+                        <div className={`font-bold text-lg ${duration === d.value ? 'text-primary' : 'text-on-surface'}`}>{d.value}</div>
+                        <div className={`text-xs ${duration === d.value ? 'text-primary font-medium' : 'text-on-surface-variant'}`}>phút</div>
                       </button>
                     ))}
                   </div>
@@ -129,22 +129,22 @@ export default function InterviewSetup() {
 
               {/* JD */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Mô tả công việc (JD)</label>
+                <label className="block text-sm font-semibold text-on-surface mb-2">Mô tả công việc (JD)</label>
                 <textarea
                   value={jd}
                   onChange={(e) => setJd(e.target.value)}
                   rows={4}
-                  className="w-full bg-white border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                  className="w-full bg-surface-container border border-outline-variant text-on-surface py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none"
                   placeholder="Dán JD vào đây để AI cá nhân hóa câu hỏi (tùy chọn)..."
                 />
-                <p className="text-xs text-gray-500 mt-1">{jd.length} ký tự</p>
+                <p className="text-xs text-on-surface-variant mt-1">{jd.length} ký tự</p>
               </div>
 
-              <div className="bg-[#f4f7fa] border border-blue-100 rounded-xl p-4 flex gap-3 mt-2">
-                <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 flex gap-3 mt-2">
+                <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-gray-900 mb-1">Cá nhân hóa bằng AI</h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">
+                  <h4 className="text-sm font-bold text-on-surface mb-1">Cá nhân hóa bằng AI</h4>
+                  <p className="text-xs text-on-surface-variant leading-relaxed">
                     AI sẽ dựa trên cấu hình + JD của bạn để sinh bộ câu hỏi phù hợp với vị trí ứng tuyển tại FPT.
                   </p>
                 </div>
@@ -153,19 +153,19 @@ export default function InterviewSetup() {
               <div className="flex flex-col gap-3 pt-2">
                 <button
                   onClick={() => navigate('/interview/career-goal')}
-                  className="w-full flex items-center justify-center bg-white border border-gray-200 text-gray-700 py-3.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm"
+                  className="w-full flex items-center justify-center bg-surface-container border border-outline-variant text-on-surface-variant py-3.5 rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors shadow-sm"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
                 </button>
                 <button
                   onClick={handleNext}
-                  className="w-full flex items-center justify-center bg-[#0e3a9f] text-white py-3.5 rounded-xl text-sm font-bold hover:bg-blue-800 transition-colors shadow-md"
+                  className="w-full flex items-center justify-center bg-primary text-on-primary py-3.5 rounded-xl text-sm font-bold hover:opacity-90 transition-colors shadow-md"
                 >
                   Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
                 </button>
               </div>
 
-              <p className="text-center text-[10px] text-gray-400 mt-4">© 2024 Smartfolio AI Platform. Bảo mật thông tin người dùng là ưu tiên hàng đầu.</p>
+              <p className="text-center text-[10px] text-outline mt-4">© 2024 Smartfolio AI Platform. Bảo mật thông tin người dùng là ưu tiên hàng đầu.</p>
             </div>
           </div>
         </div>

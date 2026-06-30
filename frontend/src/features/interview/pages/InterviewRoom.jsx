@@ -87,7 +87,6 @@ export function InterviewRoom() {
             return;
         }
 
-        // 1.khởi tạo apiSTT trước
         try {
             const apiSTT = new ElevenLabsTranscriptionClient((result) => {
                 if (result.isFinal) {
@@ -106,7 +105,7 @@ export function InterviewRoom() {
             apiSttRef.current = apiSTT;
             setSttEngine('apiSTT');
             console.log("[STT] Đang sử dụng apiSTT Engine.");
-            return; // Khởi tạo thành công -> Không chạy mã Fallback
+            return;
         } catch (err) {
             console.warn("[STT] apiSTT thất bại, chuyển sang Web Speech API fallback:", err);
             if (apiSttRef.current) {
@@ -115,7 +114,6 @@ export function InterviewRoom() {
             }
         }
 
-        // 2. Fallback: Khởi tạo Web Speech API
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
             console.error("[STT] Trình duyệt này không hỗ trợ Web Speech API.");
@@ -151,7 +149,6 @@ export function InterviewRoom() {
 
         recognition.onerror = (err) => console.error("Speech Recognition Error:", err);
         recognition.onend = () => {
-            // Chỉ restart Web Speech nếu vẫn đang trong phase ghi âm
             if (phaseRef.current === 'recording') {
                 try { recognition.start(); } catch(e){ /* empty */ }
             }
@@ -169,7 +166,7 @@ export function InterviewRoom() {
             apiSttRef.current = null;
         }
         if (recognitionRef.current) {
-            recognitionRef.current.onend = null; // Ngăn chặn tự động restart
+            recognitionRef.current.onend = null;
             recognitionRef.current.stop();
             recognitionRef.current = null;
         }
@@ -289,9 +286,7 @@ export function InterviewRoom() {
         }, IN_QUESTION_TIMEOUT);
     }, [ensureStream, startAudioAnalysis, startSTT, transitionToProcessing, addTranscript, currentQ]);
 
-    // Gọi Custom Hook
     const { playTTS, stopAudio } = useElevenLabsTTS(() => {
-        // Hàm này tự động chạy khi âm thanh kết thúc
         setPhase('recording');
     });
 
@@ -332,8 +327,6 @@ export function InterviewRoom() {
             const delta = now - (lastTickAtRef.current || now);
             lastTickAtRef.current = now;
 
-            // 1. Nhận diện "Lời nói thực sự" (Speech Activity)
-            // Một người được coi là đang nói khi text transcript thực sự thay đổi nội dung
             const currentFullText = (lastTranscriptRef.current + ' ' + interimTranscript).trim();
             const isTextChanging = currentFullText !== prevTranscriptRef.current;
             prevTranscriptRef.current = currentFullText;
@@ -346,10 +339,8 @@ export function InterviewRoom() {
                 if (!firstSpokeAtRef.current) {
                     firstSpokeAtRef.current = now;
                 }
-                // Reset bộ đếm Skip (6s) - Chấp nhận cả âm thanh hoặc chữ
                 lastSpokeAtRef.current = now;
 
-                // Reset bộ đếm Kết thúc (10s) - CHỈ reset khi thực sự có lời nói được ghi lại
                 if (isActuallySpeaking) {
                     lastSpeechActivityAtRef.current = now;
                 }
@@ -359,7 +350,6 @@ export function InterviewRoom() {
                 }
             }
 
-            // 2. Kiểm tra im lặng BẮT ĐẦU (6s)
             if (!lastSpokeAtRef.current && questionStartedAtRef.current) {
                 if (now - questionStartedAtRef.current >= START_SILENCE_MS) {
                     transitionToProcessing(true);
@@ -367,14 +357,11 @@ export function InterviewRoom() {
                 }
             }
 
-            // 3. Kiểm tra cụm từ kết thúc (ví dụ: "xin hết", "tôi xong rồi")
             if (END_PHRASE_REGEX.test(lastTranscriptRef.current)) {
                 transitionToProcessing(false);
                 return;
             }
 
-            // 4. Kiểm tra im lặng KẾT THÚC (10s)
-            // Chỉ bắt đầu đếm 10s sau khi đã từng có lời nói thực sự (isActuallySpeaking)
             if (lastSpeechActivityAtRef.current !== null) {
                 if (now - lastSpeechActivityAtRef.current >= END_SILENCE_MS) {
                     transitionToProcessing(false);
@@ -409,7 +396,6 @@ export function InterviewRoom() {
         cleanupRefs.current = { stopAllTracks, stopSTT };
     });
 
-    // Giải phóng tài nguyên hệ thống khi component unmount (người dùng thoát phòng phỏng vấn)
     useEffect(() => {
         return () => {
             cleanupRefs.current.stopAllTracks();
@@ -422,8 +408,8 @@ export function InterviewRoom() {
 
     if (!questions.length) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-surface-dim font-sans">
-                <div className="text-gray-500">Đang tải câu hỏi...</div>
+            <div className="min-h-screen flex items-center justify-center bg-surface-dim font-sans text-on-surface">
+                <div className="text-on-surface-variant">Đang tải câu hỏi...</div>
             </div>
         );
     }
@@ -431,51 +417,51 @@ export function InterviewRoom() {
     if (currentIndex >= questions.length) return null;
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-white font-sans">
+        <div className="min-h-screen flex flex-col bg-background font-sans">
             <header
-                className="w-full h-16 flex items-center justify-between px-6 bg-white border-b border-gray-200 shadow-sm">
+                className="w-full h-16 flex items-center justify-between px-6 bg-surface-container border-b border-outline-variant shadow-sm">
                 <div className="flex items-center gap-2">
                     <div
-                        className="w-6 h-6 bg-[#0b3c8f] rounded-md flex items-center justify-center text-white font-bold text-xs italic">S
+                        className="w-6 h-6 bg-primary rounded-md flex items-center justify-center text-on-primary font-bold text-xs italic">S
                     </div>
-                    <span className="font-display font-bold text-xl tracking-tight text-[#0b3c8f]">Smartfolio</span>
+                    <span className="font-display font-bold text-xl tracking-tight text-primary">Smartfolio</span>
                 </div>
-                <div className="flex items-center gap-2 bg-blue-50 px-4 py-1.5 rounded-full border border-blue-100">
-                    <span className="w-2 h-2 rounded-full bg-[#1a56db]"></span>
-                    <span className="text-sm font-semibold text-[#1a56db] tracking-wide">PHÒNG PHỎNG VẤN</span>
+                <div className="flex items-center gap-2 bg-primary/10 px-4 py-1.5 rounded-full border border-primary/30">
+                    <span className="w-2 h-2 rounded-full bg-primary"></span>
+                    <span className="text-sm font-semibold text-primary tracking-wide">PHÒNG PHỎNG VẤN</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600 font-medium text-sm">
+                <div className="flex items-center gap-2 text-on-surface-variant font-medium text-sm">
                     <Clock size={16}/>
                     <span>Thời gian: {formatTime(elapsed)}</span>
                 </div>
             </header>
-            <main className="flex-1 relative flex flex-col items-center justify-center p-6">
+            <main className="flex-1 relative flex flex-col items-center justify-center p-6 text-on-surface">
                 <div
-                    className={`w-28 h-28 rounded-full mb-6 border-4 border-white shadow-sm flex items-center justify-center overflow-hidden transition-all ${phase === 'asking' ? 'bg-blue-100 ring-4 ring-blue-200 animate-pulse' : 'bg-gray-200'}`}>
-                    {phase === 'asking' ? <Volume2 className="w-12 h-12 text-[#1a56db]"/> : <div
-                        className="w-full h-full bg-gradient-to-br from-[#1a56db] to-[#0b3c8f] flex items-center justify-center text-white">
+                    className={`w-28 h-28 rounded-full mb-6 border-4 border-background shadow-sm flex items-center justify-center overflow-hidden transition-all ${phase === 'asking' ? 'bg-primary/20 ring-4 ring-primary/30 animate-pulse' : 'bg-surface-container'}`}>
+                    {phase === 'asking' ? <Volume2 className="w-12 h-12 text-primary"/> : <div
+                        className="w-full h-full bg-primary flex items-center justify-center text-on-primary">
                         <Sparkles className="w-12 h-12"/></div>}
                 </div>
-                <div className="text-sm text-gray-500 mb-4 font-medium">
+                <div className="text-sm text-on-surface-variant mb-4 font-medium">
                     {data.interviewConfig?.type === 'HR' ? 'Anh Minh — HR FPT' : data.interviewConfig?.type === 'Technical' ? 'Anh Hùng — Tech Lead FPT' : 'Chị Lan — HR Manager FPT'}
                 </div>
                 <div className="flex items-end gap-1 mb-6 h-16">
                     {audioLevels.map((h, i) => (
                         <div key={i}
-                             className={`w-1.5 rounded-full transition-all duration-100 ${phase === 'recording' ? 'bg-[#1a56db]' : phase === 'asking' ? 'bg-blue-300 animate-pulse' : 'bg-gray-300'}`}
+                             className={`w-1.5 rounded-full transition-all duration-100 ${phase === 'recording' ? 'bg-primary' : phase === 'asking' ? 'bg-primary/40 animate-pulse' : 'bg-surface-container'}`}
                              style={{height: `${h}px`, minHeight: '4px'}}/>
                     ))}
                 </div>
                 <StatusPill phase={phase} currentIndex={currentIndex} total={questions.length}/>
                 {showCurrent && currentQ && (
                     <div
-                        className="mt-6 max-w-2xl w-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm animate-fade-in">
+                        className="mt-6 max-w-2xl w-full glass-panel border border-outline-variant rounded-2xl p-6 shadow-sm animate-fade-in">
                         <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0 text-xs font-bold">AI</div>
+                            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 text-xs font-bold">AI</div>
                             <div className="flex-1">
-                                <p className="text-lg font-medium text-gray-800 leading-relaxed">{currentQ.text}</p>
+                                <p className="text-lg font-medium text-on-surface leading-relaxed">{currentQ.text}</p>
                                 {phase === 'recording' && (
-                                    <p className="mt-3 text-md text-blue-600 italic animate-pulse">
+                                    <p className="mt-3 text-md text-primary italic animate-pulse">
                                         {(finalTranscript + ' ' + interimTranscript).trim()}...
                                     </p>
                                 )}
@@ -484,7 +470,7 @@ export function InterviewRoom() {
                     </div>
                 )}
                 {data.transcriptLog && data.transcriptLog.length > 0 && (
-                    <div className="mt-4 max-w-2xl w-full max-h-32 overflow-y-auto space-y-1 text-sm text-gray-500">
+                    <div className="mt-4 max-w-2xl w-full max-h-32 overflow-y-auto space-y-1 text-sm text-on-surface-variant">
                         {data.transcriptLog.slice(-4).map((entry, i) => (
                             <div key={i} className="flex items-start gap-2">
                                 <span
@@ -495,30 +481,30 @@ export function InterviewRoom() {
                         {phase === 'recording' && interimTranscript && (
                             <div className="flex items-start gap-2 animate-fade-in">
                                 <span className="text-xs font-bold w-12 shrink-0">Bạn:</span>
-                                <span className="italic text-blue-500 line-clamp-1">{interimTranscript}...</span>
+                                <span className="italic text-primary line-clamp-1">{interimTranscript}...</span>
                             </div>
-                        )}
+                        ))}
                     </div>
                 )}
             </main>
-            <footer className="w-full h-20 bg-white border-t border-gray-200 px-6 flex items-center justify-between">
+            <footer className="w-full h-20 bg-surface-container border-t border-outline-variant px-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <button onClick={handleMicClick}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${micState === 'active' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : micState === 'denied' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${micState === 'active' ? 'bg-primary/20 text-primary hover:bg-primary/30' : micState === 'denied' ? 'bg-rose-500/20 text-rose-500 hover:bg-rose-500/30' : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container'}`}>
                         {micState === 'active' ? <Mic size={18}/> : <MicOff size={18}/>}
                         {micState === 'active' ? 'Mic đang bật' : micState === 'denied' ? 'Bật lại mic' : 'Bật mic'}
                     </button>
                     <button
-                        className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors">
+                        className="flex items-center gap-2 bg-surface-container-high hover:bg-surface-container text-on-surface-variant px-4 py-2.5 rounded-lg font-medium text-sm transition-colors">
                         <SettingsIcon size={18}/> Settings
                     </button>
                 </div>
                 <div className="absolute left-1/2 -translate-x-1/2">
-                    <div className="text-sm text-gray-500 font-medium w-64 text-center">
+                    <div className="text-sm text-on-surface-variant font-medium w-64 text-center">
                         {phase === 'asking' ? 'AI đang đọc câu hỏi...' : phase === 'recording' ? '🎤 Hãy trả lời hoặc nói "xin hết"' : phase === 'processing' ? 'Đang xử lý...' : ''}
                     </div>
                     {phase === 'recording' && sttEngine !== 'none' && (
-                        <span className="text-[10px] uppercase font-bold text-gray-400 mt-1 tracking-wider">
+                        <span className="text-[10px] uppercase font-bold text-outline mt-1 tracking-wider">
                             POWERED BY {sttEngine === 'apiSTT' ? 'apiSTT NOVA-2' : 'WEB SPEECH API'}
                         </span>
                     )}
@@ -531,15 +517,15 @@ export function InterviewRoom() {
 
 function StatusPill({phase, currentIndex, total}) {
     if (phase === 'asking') return <div
-        className="bg-blue-100/50 text-[#1a56db] px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#1a56db] animate-pulse"></span>AI đang đọc câu
+        className="bg-primary/20 text-primary px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
+        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>AI đang đọc câu
         hỏi {currentIndex + 1}/{total}</div>;
     if (phase === 'recording') return <div
-        className="bg-red-100/50 text-red-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
-        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>ĐANG GHI ÂM —
+        className="bg-rose-500/20 text-rose-500 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
+        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>ĐANG GHI ÂM —
         Câu {currentIndex + 1}/{total}</div>;
     if (phase === 'processing') return <div
-        className="bg-amber-100/50 text-amber-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
+        className="bg-amber-500/20 text-amber-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>AI đang xử lý...
     </div>;
     return null;
