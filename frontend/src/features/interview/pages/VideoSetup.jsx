@@ -9,7 +9,8 @@ import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
 
 export function VideoSetup() {
   const navigate = useNavigate();
-  const { update, setStep } = useInterviewSession();
+  const { data, update, setStep } = useInterviewSession();
+  const duration = data.interviewConfig?.duration || 15;
   const {
     stream,
     cameraOn,
@@ -113,8 +114,9 @@ export function VideoSetup() {
 
             <div className="flex flex-col gap-4">
               <div className="bg-interview-card-bg border border-outline-variant rounded-xl p-6 shadow-sm">
-                <div className="inline-block px-3 py-1 bg-primary/20 text-primary rounded-md font-semibold text-sm mb-6 border border-primary/30">
-                  Lưu ý quan trọng
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/20 text-green-900 rounded-md font-semibold text-sm mb-6 border border-primary/30">
+                  <Info size={20} className="shrink-0" />
+                  <span>Lưu ý quan trọng</span>
                 </div>
 
                 <ul className="space-y-6">
@@ -151,7 +153,7 @@ export function VideoSetup() {
 
               <div className="bg-primary/10 rounded-xl p-4 flex gap-3 text-sm text-primary border border-primary/20">
                 <Info size={20} className="shrink-0" />
-                <p>Buổi phỏng vấn này sẽ kéo dài khoảng 15 phút. Bạn sẽ có 30 giây chuẩn bị cho mỗi câu hỏi.</p>
+                <p>Buổi phỏng vấn này sẽ kéo dài khoảng {duration} phút. Bạn sẽ có 5 giây chuẩn bị cho mỗi câu hỏi.</p>
               </div>
             </div>
           </div>
