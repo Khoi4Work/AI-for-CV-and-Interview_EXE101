@@ -37,28 +37,28 @@ export function InterviewResults() {
                 {/* Left Column */}
                 <div className="space-y-6">
                     {/* HR Persona Card */}
-                    <div className="glass-panel rounded-2xl p-6 border border-outline-variant shadow-sm">
+                    <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">
+                            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-black font-bold">
                                 {hrPersona.name.split(' ').map(n => n[0]).join('')}
                             </div>
                             <div className="overflow-hidden">
-                                <h3 className="font-semibold text-on-surface truncate">{hrPersona.name}</h3>
-                                <p className="text-xs text-on-surface-variant truncate">{hrPersona.role}</p>
+                                <h3 className="font-semibold text-black truncate">{hrPersona.name}</h3>
+                                <p className="text-xs text-black/60 truncate">{hrPersona.role}</p>
                             </div>
                         </div>
-                        <p className="text-xs text-on-surface-variant italic mb-3">"{hrPersona.tone}"</p>
-                        <p className="text-sm text-on-surface-variant leading-relaxed mb-3">{hrPersona.opener}</p>
+                        <p className="text-xs text-black/60 italic mb-3">"{hrPersona.tone}"</p>
+                        <p className="text-sm text-black/80 leading-relaxed mb-3">{hrPersona.opener}</p>
                     </div>
 
                     {/* Total Score Card */}
-                    <div className="glass-panel rounded-2xl p-6 border border-outline-variant shadow-sm">
+                    <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-lg font-display font-semibold text-primary">Tổng điểm AI</h2>
                             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                                overallScore >= 80 ? 'bg-primary-container text-primary border-primary-container' :
-                                overallScore >= 50 ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                'bg-red-500/10 text-red-500 border-red-500/20'
+                                overallScore >= 80 ? 'bg-primary text-on-primary border-primary' :
+                                overallScore >= 50 ? 'bg-amber-500 text-white border-amber-600' :
+                                'bg-rose-500 text-white border-rose-600'
                             }`}>
                                 {overallLabel}
                             </span>
@@ -77,11 +77,11 @@ export function InterviewResults() {
                                     />
                                 </svg>
                                 <div className="absolute inset-0 flex items-center justify-center flex-col">
-                                    <span className="text-3xl font-display font-bold text-on-surface">{overallScore}<span className="text-sm font-sans text-on-surface-variant font-medium">/100</span></span>
+                                    <span className="text-3xl font-display font-bold text-black">{overallScore}<span className="text-sm font-sans text-black/60 font-medium">/100</span></span>
                                 </div>
                             </div>
-                            <p className="text-sm text-on-surface-variant leading-relaxed">
-                                <strong className="text-on-surface block mb-1">Tóm tắt:</strong>
+                            <p className="text-sm text-black/80 leading-relaxed">
+                                <strong className="text-black block mb-1">Tóm tắt:</strong>
                                 {summary}
                             </p>
                         </div>
@@ -95,7 +95,7 @@ export function InterviewResults() {
                             </button>
                             <button
                                 onClick={() => navigate('/history')}
-                                className="flex-1 flex justify-center items-center gap-2 bg-surface-container text-on-surface-variant border border-outline-variant py-2.5 rounded-lg font-medium text-sm hover:bg-surface-container-low transition-colors"
+                                className="flex-1 flex justify-center items-center gap-2 bg-interview-card-bg text-black border-2 border-selection-border selection-card-hover py-2.5 rounded-lg font-medium text-sm transition-all"
                             >
                                 <Home size={16}/> Lịch sử
                             </button>
@@ -103,15 +103,15 @@ export function InterviewResults() {
                     </div>
 
                     {/* Detail Scores */}
-                    <div className="glass-panel rounded-2xl p-6 border border-outline-variant shadow-sm">
+                    <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm">
                         <h3 className="text-xs font-bold text-outline mb-5 tracking-wider uppercase">Chi Tiết Năng Lực</h3>
 
                         <div className="space-y-4">
                             {criteria.map((item, idx) => (
                                 <div key={idx}>
                                     <div className="flex justify-between text-sm mb-1.5">
-                                        <span className="text-on-surface-variant">{item.label}</span>
-                                        <span className="font-semibold text-on-surface">{item.score}/100</span>
+                                        <span className="text-black/60">{item.label}</span>
+                                        <span className="font-semibold text-black">{item.score}/100</span>
                                     </div>
                                     <div className="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
                                         <div
@@ -126,14 +126,14 @@ export function InterviewResults() {
                 </div>
 
                 {/* Right Column - Transcript */}
-                <div className="glass-panel rounded-2xl border border-outline-variant shadow-sm flex flex-col overflow-hidden h-[calc(100vh-112px)] sticky top-24">
-                    <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low shrink-0 flex-wrap gap-2">
-                        <h2 className="text-lg font-display font-semibold text-on-surface">Bản ghi hội thoại & Đánh giá</h2>
+                <div className="bg-interview-card-bg rounded-2xl border border-outline-variant shadow-sm flex flex-col overflow-hidden h-[calc(100vh-112px)] sticky top-24">
+                    <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-interview-card-bg/50 shrink-0 flex-wrap gap-2">
+                        <h2 className="text-lg font-display font-semibold text-black">Bản ghi hội thoại & Đánh giá</h2>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="bg-primary-container text-primary border border-primary-container px-2 py-0.5 rounded text-xs font-medium">{passedCount} Đạt</span>
-                            <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-xs font-medium">{improveCount} Cần cải thiện</span>
+                            <span className="bg-primary text-on-primary border border-primary px-2 py-0.5 rounded text-xs font-bold">{passedCount} Đạt</span>
+                            <span className="bg-amber-500 text-white border border-amber-600 px-2 py-0.5 rounded text-xs font-bold">{improveCount} Cần cải thiện</span>
                             {skippedCount > 0 && (
-                                <span className="bg-surface-container text-outline border border-outline-variant px-2 py-0.5 rounded text-xs font-medium">{skippedCount} Bỏ qua</span>
+                                <span className="bg-gray-400 text-black border border-gray-500 px-2 py-0.5 rounded text-xs font-bold">{skippedCount} Bỏ qua</span>
                             )}
                         </div>
                     </div>
@@ -145,11 +145,11 @@ export function InterviewResults() {
 
                         {/* Closer */}
                         <div className="pt-6 border-t border-outline-variant">
-                            <p className="text-sm text-on-surface-variant italic">{hrPersona.closer}</p>
+                            <p className="text-sm text-black/60 italic">{hrPersona.closer}</p>
                         </div>
                     </div>
 
-                    <div className="p-4 border-t border-outline-variant bg-surface-container-low flex justify-end shrink-0">
+                    <div className="p-4 border-t border-outline-variant bg-interview-card-bg/50 flex justify-end shrink-0">
                         <button
                             onClick={() => alert('Chức năng xuất PDF (mock)')}
                             className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm"
@@ -188,18 +188,18 @@ function TranscriptBlock({entry, persona}) {
     return (
         <div className="group">
             <div className="flex gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center shrink-0 border border-primary-container">
+                <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0 border border-primary">
                     <span className="font-bold text-xs italic">AI</span>
                 </div>
                 <div className="flex-1">
                     <p className="text-xs font-bold text-primary mb-1 uppercase tracking-wider">{persona.name}</p>
-                    <p className="text-on-surface text-sm leading-relaxed">{question}</p>
+                    <p className="text-black text-sm leading-relaxed">{question}</p>
                 </div>
             </div>
 
             <div className="ml-11 border-l-2 border-outline-variant pl-4 py-1 relative group-hover:border-primary/30 transition-colors">
-                <p className="text-xs font-bold text-on-surface-variant mb-1 uppercase tracking-wider opacity-70">Câu trả lời của bạn</p>
-                <p className="text-on-surface-variant text-sm leading-relaxed mb-3 italic">
+                <p className="text-xs font-bold text-black/60 mb-1 uppercase tracking-wider opacity-70">Câu trả lời của bạn</p>
+                <p className="text-black/80 text-sm leading-relaxed mb-3 italic">
                     {status === 'skipped' ? '"(Đã bỏ qua câu hỏi này)"' : `"${answer}"`}
                 </p>
 
@@ -208,19 +208,20 @@ function TranscriptBlock({entry, persona}) {
                 </div>
 
                 {suggestions && suggestions.length > 0 && suggestions.map((s, i) => {
+                    const isMustHave = s.tag === 'must-have';
                     const tagDef = TAG_DEFINITIONS[s.tag] || TAG_DEFINITIONS['nice-to-have'];
                     return (
-                        <div key={i} className={`${tagDef.bgClass.replace('bg-', 'bg-primary-container/10')} border ${tagDef.bgClass.replace('bg-', 'border-')} rounded-lg p-4 mb-2`}>
-                            <div className={`flex items-center gap-2 ${tagDef.textClass.replace('text-blue-600', 'text-primary')} mb-2`}>
+                        <div key={i} className={`bg-interview-card-bg border-2 ${isMustHave ? 'border-rose-500' : 'border-selection-border'} rounded-lg p-4 mb-2 shadow-sm`}>
+                            <div className={`flex items-center gap-2 ${isMustHave ? 'text-rose-600' : 'text-primary'} mb-2`}>
                                 <Sparkles size={14}/>
                                 <span className="text-xs font-bold uppercase tracking-wider">
-                                    {s.tag === 'must-have' ? 'Phải cải thiện' : 'Gợi ý thêm'}
+                                    {isMustHave ? 'Phải cải thiện' : 'Gợi ý thêm'}
                                 </span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${tagDef.textClass.replace('text-blue-600', 'text-primary')} ${tagDef.bgClass.replace('bg-blue-600', 'bg-primary')}`}>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isMustHave ? 'bg-rose-600 text-white' : 'bg-primary text-on-primary'}`}>
                                     {tagDef.label}
                                 </span>
                             </div>
-                            <p className="text-on-surface-variant text-sm">{s.text}</p>
+                            <p className="text-black/80 text-sm">{s.text}</p>
                         </div>
                     );
                 })}
