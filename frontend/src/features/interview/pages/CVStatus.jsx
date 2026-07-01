@@ -22,7 +22,7 @@ export default function CvStatus() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background font-sans relative">
+    <div className="min-h-screen flex flex-col bg-interview-radial font-sans relative">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-16 px-6 relative pb-32">
@@ -42,15 +42,15 @@ export default function CvStatus() {
           <div className="grid md:grid-cols-2 gap-6 mb-16">
             <div
               onClick={() => setSelected('have')}
-              className={`glass-panel p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col ${
-                selected === 'have' ? 'border-primary shadow-md ring-1 ring-primary ring-opacity-20' : 'border-outline-variant shadow-sm hover:border-primary hover:shadow-md'
+              className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-job-card-bg ${
+                selected === 'have' ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
               }`}
             >
-              <div className="w-14 h-14 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-xl bg-job-icon-bg text-job-icon-text flex items-center justify-center mb-6">
                 <Upload className="w-7 h-7" strokeWidth={1.5} />
               </div>
-              <h3 className="text-xl font-bold text-on-surface mb-3">Tôi đã có CV</h3>
-              <p className="text-on-surface-variant text-sm mb-8 flex-grow leading-relaxed">
+              <h3 className="text-xl font-bold text-black mb-3">Tôi đã có CV</h3>
+              <p className="text-black text-sm mb-8 flex-grow leading-relaxed">
                 Tải lên file PDF hoặc Word hiện có. AI sẽ phân tích và gợi ý các cải thiện ngay lập tức.
               </p>
               <div className="flex items-center text-primary font-semibold text-sm">
@@ -60,15 +60,15 @@ export default function CvStatus() {
 
             <div
               onClick={() => setSelected('nothave')}
-              className={`glass-panel p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col ${
-                selected === 'nothave' ? 'border-primary shadow-md ring-1 ring-primary ring-opacity-20' : 'border-outline-variant shadow-sm hover:border-primary hover:shadow-md'
+              className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-job-card-bg ${
+                selected === 'nothave' ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
               }`}
             >
-              <div className="w-14 h-14 rounded-xl bg-primary text-white flex items-center justify-center mb-6 shadow-md shadow-primary/20">
+              <div className="w-14 h-14 rounded-xl bg-job-icon-bg text-job-icon-text flex items-center justify-center mb-6">
                 <Sparkles className="w-7 h-7" strokeWidth={1.5} />
               </div>
-              <h3 className="text-xl font-bold text-on-surface mb-3">Tôi chưa có CV</h3>
-              <p className="text-on-surface-variant text-sm mb-8 flex-grow leading-relaxed">
+              <h3 className="text-xl font-bold text-black mb-3">Tôi chưa có CV</h3>
+              <p className="text-black text-sm mb-8 flex-grow leading-relaxed">
                 Tạo mới bằng AI. Chỉ cần trả lời vài câu hỏi, chúng tôi sẽ viết nội dung chuyên nghiệp cho bạn.
               </p>
               <div className="flex items-center text-on-surface font-semibold text-sm">

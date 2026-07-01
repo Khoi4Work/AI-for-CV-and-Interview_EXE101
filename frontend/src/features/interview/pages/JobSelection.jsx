@@ -37,7 +37,7 @@ export default function JobSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans relative">
+    <div className="min-h-screen bg-interview-radial flex flex-col font-sans relative">
       <Header />
       <div className="flex-1 pt-8 px-6 max-w-3xl mx-auto w-full">
         <ProgressBar current={1} />
@@ -68,19 +68,15 @@ export default function JobSelection() {
               <div
                 key={job.id}
                 onClick={() => setSelectedId(job.id)}
-                className={`flex flex-col items-center justify-center p-6 glass-panel border-2 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-md ${
-                  isSelected ? 'border-primary bg-primary-container/10' : 'border-transparent shadow-sm hover:border-primary'
+                className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-md bg-job-card-bg ${
+                  isSelected ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
                 }`}
-                style={{
-                  boxShadow: isSelected ? '0 4px 20px -5px rgba(19, 201, 153, 0.1)' : '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
-                  borderColor: isSelected ? 'var(--color-primary)' : 'transparent',
-                }}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isSelected ? 'bg-primary text-on-primary' : 'bg-surface-container text-primary'}`}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-job-icon-bg text-job-icon-text`}>
                   <Icon className="w-6 h-6" strokeWidth={1.5} />
                 </div>
-                <h3 className="font-semibold text-on-surface mb-1">{job.title}</h3>
-                <p className="text-sm text-on-surface-variant text-center">{job.desc}</p>
+                <h3 className="font-bold text-black mb-1">{job.title}</h3>
+                <p className="text-sm text-black text-center">{job.desc}</p>
               </div>
             );
           })}

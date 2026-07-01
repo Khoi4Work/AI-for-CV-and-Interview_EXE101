@@ -36,7 +36,7 @@ export default function InterviewSetup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background font-sans text-on-surface">
+    <div className="min-h-screen flex flex-col bg-interview-radial font-sans text-on-surface">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-8 px-6 pb-20 relative">
@@ -44,7 +44,7 @@ export default function InterviewSetup() {
           <div className="flex flex-col items-center mb-10">
             <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-4">
               <div className="bg-primary h-full rounded-full transition-all" style={{ width: '50%' }} />
-            </div>
+            </div}
             <p className="text-sm text-on-surface-variant font-medium">Bước 5 trên 10 • 50% hoàn tất</p>
           </div>
 
@@ -73,14 +73,14 @@ export default function InterviewSetup() {
                     <button
                       key={t.id}
                       onClick={() => setType(t.id)}
-                      className={`text-left p-3 rounded-xl border-2 transition-all ${
+                      className={`text-left p-3 rounded-xl border-2 transition-all bg-job-card-bg ${
                         type === t.id
-                          ? 'border-primary bg-primary/10 shadow-sm'
-                          : 'border-outline-variant hover:border-primary'
+                          ? 'selection-card-selected'
+                          : 'border-transparent shadow-sm hover:border-primary'
                       }`}
                     >
-                      <div className="font-bold text-on-surface text-sm mb-1">{t.title}</div>
-                      <div className="text-xs text-on-surface-variant">{t.desc}</div>
+                      <div className="font-bold text-black text-sm mb-1">{t.title}</div>
+                      <div className="text-black text-xs">{t.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -113,14 +113,14 @@ export default function InterviewSetup() {
                       <button
                         key={d.value}
                         onClick={() => setDuration(d.value)}
-                        className={`py-2.5 px-1 border rounded-xl text-center transition-colors ${
+                        className={`py-2.5 px-1 border rounded-xl text-center transition-colors bg-job-card-bg ${
                           duration === d.value
-                            ? 'bg-primary/20 border-primary shadow-inner'
-                            : 'border-outline-variant hover:bg-surface-container-low'
+                            ? 'selection-card-selected'
+                            : 'border-transparent shadow-sm hover:border-primary'
                         }`}
                       >
-                        <div className={`font-bold text-lg ${duration === d.value ? 'text-primary' : 'text-on-surface'}`}>{d.value}</div>
-                        <div className={`text-xs ${duration === d.value ? 'text-primary font-medium' : 'text-on-surface-variant'}`}>phút</div>
+                        <div className={`font-bold text-lg text-black`}>{d.value}</div>
+                        <div className={`text-xs text-black`}>phút</div>
                       </button>
                     ))}
                   </div>

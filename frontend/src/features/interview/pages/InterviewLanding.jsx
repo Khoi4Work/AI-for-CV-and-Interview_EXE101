@@ -25,7 +25,7 @@ export default function InterviewLanding() {
     const [isDemoOpen, setIsDemoOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-background font-sans text-on-surface">
+        <div className="min-h-screen font-sans text-on-surface">
             {/* Header */}
             {isLoggedIn ? <Header/> : <GuestHeader/>}
             <main>
@@ -33,7 +33,7 @@ export default function InterviewLanding() {
                 <section
                     className="px-6 md:px-12 py-16 lg:py-24  mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
                     <div className="flex-1 lg:pr-10">
-                        <h1 className="text-4xl lg:text-5xl font-extrabold text-on-surface leading-tight mb-6">
+                        <h1 className="text-4xl lg:text-5xl font-extrabold text-on-surface leading-tight mb-6 font-display">
                             Luyện phỏng vấn AI -<br/>
                             <span className="text-primary">Chinh phục mọi nhà tuyển dụng</span>
                         </h1>
@@ -77,10 +77,10 @@ export default function InterviewLanding() {
                 </section>
 
                 {/*Features Section */}
-                <section className="bg-surface-container-low py-20 px-6 md:px-12 border-t border-outline-variant">
+                <section className="py-20 px-6 md:px-12">
                     <div className="-7xl mx-auto">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl font-bold text-on-surface mb-4">Đa dạng hình thức phỏng vấn</h2>
+                            <h2 className="text-3xl font-bold text-on-surface mb-4 font-display">Đa dạng hình thức phỏng vấn</h2>
                             <p className="text-on-surface-variant -2xl mx-auto">
                                 Chọn loại hình phỏng vấn phù hợp với nhu cầu của bạn. AI của chúng tôi được huấn luyện
                                 trên hàng ngàn kịch bản thực tế.
@@ -90,58 +90,58 @@ export default function InterviewLanding() {
                         <div className="grid md:grid-cols-3 gap-6">
                             {/* Card 1 */}
                             <div
-                                className="glass-panel rounded-2xl p-8 border border-outline-variant shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
+                                className="bg-feature-bg rounded-2xl p-8 border border-white/10 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center text-white">
                                 <div
-                                    className="w-16 h-16 rounded-2xl bg-primary-container text-primary flex items-center justify-center mb-6">
+                                    className="w-16 h-16 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-6">
                                     <Users className="w-8 h-8" strokeWidth={1.5}/>
                                 </div>
-                                <h3 className="text-xl font-bold text-on-surface mb-3">HR Interview</h3>
-                                <p className="text-on-surface-variant mb-6 flex-grow">
+                                <h3 className="text-xl font-bold mb-3">HR Interview</h3>
+                                <p className="text-white/80 mb-6 flex-grow">
                                     Tập trung vào văn hóa doanh nghiệp, kỹ năng mềm và khả năng hòa nhập đội ngũ.
                                 </p>
                                 <div className="flex gap-2">
                                     <span
-                                        className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-medium">Văn hóa</span>
+                                        className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium">Văn hóa</span>
                                     <span
-                                        className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-medium">Kỹ năng mềm</span>
+                                        className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium">Kỹ năng mềm</span>
                                 </div>
                             </div>
 
-                            {/* Card 2 (Active/Primary) */}
+                            {/* Card 2 */}
                             <div
-                                className="bg-primary rounded-2xl p-8 shadow-xl flex flex-col items-center text-center text-on-primary transform scale-105 z-10">
+                                className="bg-feature-bg rounded-2xl p-8 border border-white/10 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center text-white">
                                 <div
-                                    className="w-16 h-16 rounded-2xl bg-on-primary/20 text-on-primary flex items-center justify-center mb-6 backdrop-blur-sm">
+                                    className="w-16 h-16 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-6">
                                     <Terminal className="w-8 h-8" strokeWidth={1.5}/>
                                 </div>
                                 <h3 className="text-xl font-bold mb-3">Technical Interview</h3>
-                                <p className="text-on-primary-container mb-6 flex-grow">
+                                <p className="text-white/80 mb-6 flex-grow">
                                     Kiểm tra kiến thức chuyên môn, khả năng giải quyết vấn đề và tư duy logic kỹ thuật.
                                 </p>
                                 <div className="flex gap-2">
                                     <span
-                                        className="px-3 py-1 bg-on-primary/20 text-on-primary rounded-full text-xs font-medium border border-on-primary/10">System Design</span>
+                                        className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium">System Design</span>
                                     <span
-                                        className="px-3 py-1 bg-on-primary/20 text-on-primary rounded-full text-xs font-medium border border-on-primary/10">Coding</span>
+                                        className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium">Coding</span>
                                 </div>
                             </div>
 
                             {/* Card 3 */}
                             <div
-                                className="glass-panel rounded-2xl p-8 border border-outline-variant shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
+                                className="bg-feature-bg rounded-2xl p-8 border border-white/10 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center text-white">
                                 <div
-                                    className="w-16 h-16 rounded-2xl bg-tertiary-container text-on-tertiary-container flex items-center justify-center mb-6">
+                                    className="w-16 h-16 rounded-2xl bg-white/20 text-white flex items-center justify-center mb-6">
                                     <UserSquare2 className="w-8 h-8" strokeWidth={1.5}/>
                                 </div>
-                                <h3 className="text-xl font-bold text-on-surface mb-3">Behavioral Interview</h3>
-                                <p className="text-on-surface-variant mb-6 flex-grow">
+                                <h3 className="text-xl font-bold mb-3">Behavioral Interview</h3>
+                                <p className="text-white/80 mb-6 flex-grow">
                                     Phỏng vấn dựa trên hành vi, xử lý tình huống thực tế bằng phương pháp STAR.
                                 </p>
                                 <div className="flex gap-2">
                                     <span
-                                        className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-medium">STAR</span>
+                                        className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium">STAR</span>
                                     <span
-                                        className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-medium">Leadership</span>
+                                        className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium">Leadership</span>
                                 </div>
                             </div>
                         </div>
@@ -194,7 +194,7 @@ export default function InterviewLanding() {
 
                         {/* Right Content */}
                         <div className="flex-1 space-y-8">
-                            <h2 className="text-3xl lg:text-4xl font-bold text-on-surface">Tại sao nên luyện phỏng vấn với
+                            <h2 className="text-3xl lg:text-4xl font-bold text-on-surface font-display">Tại sao nên luyện phỏng vấn với
                                 AI?</h2>
 
                             <div className="space-y-6">
@@ -241,15 +241,15 @@ export default function InterviewLanding() {
                 </section>
 
                 {/* Bottom CTA */}
-                <section className="bg-primary py-20 px-6 text-center text-on-primary">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Sẵn sàng để tỏa sáng?</h2>
-                    <p className="text-on-primary-container -2xl mx-auto mb-10 text-lg">
+                <section className="py-20 px-6 text-center text-white">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 font-display">Sẵn sàng để tỏa sáng?</h2>
+                    <p className="text-white/80 -2xl mx-auto mb-10 text-lg">
                         Đừng để buổi phỏng vấn mơ ước trôi qua chỉ vì thiếu sự chuẩn bị. Hãy bắt đầu luyện tập ngay hôm
                         nay.
                     </p>
                     <button
                         onClick={() => navigate('/interview/job-selection')}
-                        className="bg-surface-container text-primary px-8 py-4 rounded-xl font-bold text-lg hover:bg-surface-container-low transition-all shadow-lg cursor-pointer">
+                        className="bg-cta-button text-white px-8 py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-all shadow-lg cursor-pointer">
                         Bắt đầu phỏng vấn ngay - Miễn phí
                     </button>
                 </section>

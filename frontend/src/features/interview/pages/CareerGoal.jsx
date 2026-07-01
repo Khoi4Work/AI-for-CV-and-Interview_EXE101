@@ -33,7 +33,7 @@ export default function CareerGoal() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background font-sans text-on-surface">
+    <div className="min-h-screen flex flex-col bg-interview-radial font-sans text-on-surface">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-10 px-6 pb-20">

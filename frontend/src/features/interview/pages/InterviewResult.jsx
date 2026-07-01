@@ -30,7 +30,7 @@ export function InterviewResults() {
     const skippedCount = transcript.filter((t) => t.status === 'skipped').length;
 
     return (
-        <div className="min-h-screen flex flex-col bg-background text-on-surface font-sans selection:bg-primary-container/20">
+        <div className="min-h-screen flex flex-col bg-interview-radial text-on-surface font-sans selection:bg-primary-container/20">
             <Header/>
 
             <main className="flex-1 w-full max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6">

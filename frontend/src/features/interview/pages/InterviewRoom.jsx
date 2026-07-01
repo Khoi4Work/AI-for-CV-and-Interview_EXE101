@@ -417,7 +417,7 @@ export function InterviewRoom() {
     if (currentIndex >= questions.length) return null;
 
     return (
-        <div className="min-h-screen flex flex-col bg-background font-sans">
+        <div className="min-h-screen flex flex-col bg-interview-radial font-sans">
             <header
                 className="w-full h-16 flex items-center justify-between px-6 bg-surface-container border-b border-outline-variant shadow-sm">
                 <div className="flex items-center gap-2">

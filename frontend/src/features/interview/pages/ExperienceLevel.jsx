@@ -25,7 +25,7 @@ export default function ExperienceLevel() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background font-sans relative text-on-surface">
+    <div className="min-h-screen flex flex-col bg-interview-radial font-sans relative text-on-surface">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-10 px-6 pb-20">
@@ -50,15 +50,15 @@ export default function ExperienceLevel() {
                 <div
                   key={level.id}
                   onClick={() => setSelected(level.id)}
-                  className={`bg-surface-container p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col ${
-                    isSelected ? 'border-primary shadow-md bg-primary/10' : 'border-outline-variant shadow-sm hover:border-primary'
+                  className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-job-card-bg ${
+                    isSelected ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${isSelected ? 'bg-primary text-on-primary shadow-sm' : 'bg-surface-container-high text-primary'}`}>
+                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-job-icon-bg text-job-icon-text`}>
                     <Icon className="w-6 h-6" strokeWidth={1.5} />
                   </div>
-                  <h3 className="text-xl font-bold text-on-surface mb-2">{level.title}</h3>
-                  <p className="text-on-surface-variant text-sm flex-grow leading-relaxed">{level.desc}</p>
+                  <h3 className="text-xl font-bold text-black mb-2">{level.title}</h3>
+                  <p className="text-black text-sm flex-grow leading-relaxed">{level.desc}</p>
                 </div>
               );
             })}

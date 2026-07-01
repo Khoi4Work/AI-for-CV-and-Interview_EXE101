@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100..1000;1,100..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mina:wght@100..1000&display=swap');
 @import "tailwindcss";
 
 @theme {
-    --font-sans: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
-    --font-display: "Be Vietnam Pro", system-ui, sans-serif;
+    --font-sans: "Mina", system-ui, -apple-system, sans-serif;
+    --font-display: "Mina", system-ui, sans-serif;
 
     /* Emerald Night Theme Palette - Based on DESIGN.md */
     --color-primary: #12C999;
@@ -11,7 +11,7 @@
     --color-primary-container: #12c999;
     --color-on-primary-container: #004e39;
 
-    --color-background: #0D1B2A;
+    --color-background: transparent;
     --color-on-background: #E0E1DD;
     --color-surface: #0D1B2A;
     --color-on-surface: #E0E1DD;
@@ -48,6 +48,18 @@
     --color-interview-card-2: #388877;
     --color-interview-icon-1: #33796A;
     --color-interview-icon-2: #256E60;
+    --color-cta-bg: #0E303B;
+    --color-cta-button: #4EB094;
+    --color-feature-bg: #066A55;
+    --color-bg-radial-start: #0F6959;
+    --color-bg-radial-end: #0C1830;
+    --color-interview-bg-start: #0F3940;
+    --color-interview-bg-end: #0C1830;
+    --color-job-card-bg: #C3C6D5;
+    --color-job-icon-bg: #D9DCDD;
+    --color-job-icon-text: #039D7B;
+    --color-selection-border: #4ab183;
+    --color-selection-bg: #4ab183;
 
     /* Specialized / Legacy CV Variables */
     --color-cv-dark-blue: #0D1B2A;
@@ -72,17 +84,17 @@
     --spacing-container-max: 1280px;
 
     /* Typography */
-    --font-label-md: "Be Vietnam Pro", sans-serif;
-    --font-label-sm: "Be Vietnam Pro", sans-serif;
-    --font-body-lg: "Be Vietnam Pro", sans-serif;
-    --font-body-md: "Be Vietnam Pro", sans-serif;
-    --font-body-sm: "Be Vietnam Pro", sans-serif;
-    --font-display-lg: "Be Vietnam Pro", sans-serif;
-    --font-title-md: "Be Vietnam Pro", sans-serif;
-    --font-headline-lg: "Be Vietnam Pro", sans-serif;
-    --font-headline-lg-mobile: "Be Vietnam Pro", sans-serif;
-    --font-headline-xl: "Be Vietnam Pro", sans-serif;
-    --font-headline-xl-mobile: "Be Vietnam Pro", sans-serif;
+    --font-label-md: "Mina", sans-serif;
+    --font-label-sm: "Mina", sans-serif;
+    --font-body-lg: "Mina", sans-serif;
+    --font-body-md: "Mina", sans-serif;
+    --font-body-sm: "Mina", sans-serif;
+    --font-display-lg: "Mina", sans-serif;
+    --font-title-md: "Mina", sans-serif;
+    --font-headline-lg: "Mina", sans-serif;
+    --font-headline-lg-mobile: "Mina", sans-serif;
+    --font-headline-xl: "Mina", sans-serif;
+    --font-headline-xl-mobile: "Mina", sans-serif;
 
     --text-label-md: 14px;
     --text-label-md--line-height: 1;
@@ -136,7 +148,7 @@
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: var(--color-background);
+    background: radial-gradient(circle at center, var(--color-bg-radial-start) 0%, var(--color-bg-radial-end) 100%);
     color: var(--color-on-surface);
     font-family: var(--font-body-md);
 }
@@ -168,6 +180,17 @@ body {
 
 .custom-shadow {
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+.bg-interview-radial {
+    background: radial-gradient(circle at center, var(--color-interview-bg-start) 0%, var(--color-interview-bg-end) 100%);
+    background-attachment: fixed;
+}
+
+.selection-card-selected {
+    background-color: var(--color-selection-bg) !important;
+    border-color: var(--color-selection-border) !important;
+    box-shadow: 0 0 0 3px var(--color-selection-border), 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
 }
 
 .material-symbols-outlined {
