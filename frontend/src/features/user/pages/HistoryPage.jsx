@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Clock, Filter, Sparkles, Video, FileEdit, Download, PlusCircle, LogIn, ChevronDown, CheckCheck, BarChart2 } from 'lucide-react';
+import { Clock, Sparkles, Video, FileEdit, Download, PlusCircle, LogIn, ChevronDown, CheckCheck, BarChart2 } from 'lucide-react';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
+import { Card, Badge, Button } from './Pattern/core';
 
 const HistoryPage = () => {
   const { showToast } = useApp();
@@ -30,96 +31,96 @@ const HistoryPage = () => {
   const getIconForType = (type) => {
     switch (type) {
       case 'phong_van':
-        return <Video className="w-4 h-4 text-primary" />;
+        return <Video size={18} className="text-[#10B981]" />;
       case 'ai_toi_uu':
-        return <Sparkles className="w-4 h-4 text-primary animate-pulse" />;
+        return <Sparkles size={18} className="text-white" />;
       case 'chinh_sua_cv':
-        return <FileEdit className="w-4 h-4 text-on-surface-variant" />;
+        return <FileEdit size={18} className="text-[#64748B]" />;
       case 'tai_xuong':
-        return <Download className="w-4 h-4 text-primary" />;
+        return <Download size={18} className="text-white" />;
       case 'tao_cv':
-        return <PlusCircle className="w-4 h-4 text-primary" />;
+        return <PlusCircle size={18} className="text-[#10B981]" />;
       case 'dang_nhap':
-        return <LogIn className="w-4 h-4 text-primary" />;
+        return <LogIn size={18} className="text-[#64748B]" />;
       default:
-        return <Clock className="w-4 h-4 text-on-surface-variant" />;
+        return <Clock size={18} className="text-[#64748B]" />;
     }
   };
 
   const getIconBg = (type) => {
     switch (type) {
       case 'phong_van':
-      case 'dang_nhap':
-        return 'bg-primary-container border-primary-container';
-      case 'ai_toi_uu':
-        return 'bg-primary-container border-primary-container';
-      case 'chinh_sua_cv':
-        return 'bg-surface-container border-outline-variant';
-      case 'tai_xuong':
-        return 'bg-primary-container border-primary-container';
       case 'tao_cv':
-        return 'bg-primary-container border-primary-container';
+        return 'bg-white border-4 border-[#E2E8F0]';
+      case 'ai_toi_uu':
+        return 'bg-[#7D5BE2] border-4 border-[#E2E8F0]';
+      case 'chinh_sua_cv':
+        return 'bg-white border-4 border-[#E2E8F0]';
+      case 'tai_xuong':
+        return 'bg-[#10B981] border-4 border-[#E2E8F0]';
+      case 'dang_nhap':
+        return 'bg-white border-4 border-[#E2E8F0]';
       default:
-        return 'bg-surface-container-low border-outline-variant';
+        return 'bg-white border-4 border-[#E2E8F0]';
     }
   };
 
   const renderSectionLogs = (title, sectionLogs) => {
     if (sectionLogs.length === 0) return null;
     return (
-      <div className="space-y-4">
-        <div className="flex items-center space-x-4 select-none">
-          <span className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">{title}</span>
-          <div className="flex-1 h-px bg-outline-variant"></div>
+      <div className="relative z-10 mb-8">
+        <div className="flex items-center gap-4 mb-6 relative z-10">
+            <div className="w-10 sm:w-12 h-0 border-t-2 border-white"></div>
+            <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider bg-[#E2E8F0] px-2">{title}</span>
+            <div className="flex-1 border-t-2 border-white"></div>
         </div>
 
-        <div className="space-y-6 relative pl-8 border-l border-outline-variant/80 ml-4 pb-2">
+        <div className="space-y-6 pl-4 sm:pl-6">
           {sectionLogs.map((log) => (
-            <div key={log.id} className="relative group">
-              <span className={`absolute -left-[41px] top-1 w-6 h-6 rounded-full border flex items-center justify-center shadow-sm shrink-0 z-10 bg-surface-container ${getIconBg(log.type)}`}>
+            <div key={log.id} className="relative flex gap-6 group">
+              <div className={`absolute -left-[45px] sm:-left-[53px] mt-1 w-10 h-10 rounded-full flex items-center justify-center z-10 shadow-sm ${getIconBg(log.type)}`}>
                 {getIconForType(log.type)}
-              </span>
+              </div>
 
-              <div className="glass-panel rounded-2xl border border-outline-variant p-5 shadow-sm space-y-4 relative hover:border-primary hover:shadow-md transition-all">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-sm font-bold text-on-surface leading-snug">{log.title}</h3>
-                  <span className="text-[10px] text-on-surface-variant font-medium font-mono whitespace-nowrap pt-0.5">{log.time}</span>
+              <Card className="flex-1 p-5 bg-white border-none shadow-sm">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-lg font-bold text-[#0F172A]">{log.title}</h3>
+                  <span className="text-[#64748B] text-sm font-medium">{log.time}</span>
                 </div>
 
                 {log.score && (
-                  <div className="bg-primary-container/50 rounded-xl p-4 border border-primary-container/40 space-y-2">
-                    <p className="text-xs font-bold text-on-surface">
-                      Điểm: <span className="text-primary bg-primary-container/60 px-2 py-0.5 rounded-md font-extrabold">{log.score}</span>
-                    </p>
-                    <p className="text-xs text-on-surface-variant leading-relaxed font-medium">
-                      {log.aiComment}
+                  <div className="bg-[#F1F5F9] rounded-lg p-3 mb-4">
+                    <p className="text-sm text-[#0F172A]">
+                      <span className="font-bold text-[#10B981]">Điểm: {log.score}</span> - AI nhận xét: {log.aiComment}
                     </p>
                   </div>
                 )}
 
                 {log.details && (
-                  <p className="text-xs text-on-surface-variant leading-relaxed font-medium max-w-2xl">{log.details}</p>
+                  <p className="text-[#475569] text-sm mb-4">{log.details}</p>
                 )}
 
                 {log.meta && (
-                  <div className="flex items-center space-x-2 text-[10px] text-on-surface-variant border-t border-outline-variant pt-3 select-none">
-                    <span>{log.meta}</span>
-                    <CheckCheck className="w-3.5 h-3.5 text-primary" />
+                  <div className="flex items-center gap-2 text-xs text-[#64748B] mb-4">
+                    <FileEdit size={14} /> <span>{log.meta}</span>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between border-t border-outline-variant hover:border-primary pt-3.5 text-[10px] font-bold text-primary">
-                  <span className="uppercase tracking-wide font-mono text-[8px] text-on-surface-variant">Smartfolio trace</span>
-                  <button
-                    id={`hist-view-detail-${log.id}`}
-                    onClick={() => setDetailModal({ open: true, log })}
-                    className="hover:underline flex items-center space-x-0.5 cursor-pointer pb-0.5"
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant={log.type === 'ai_toi_uu' ? 'purple' : 'success'}
+                    className={log.type === 'ai_toi_uu' ? 'bg-[#EDE9FE] text-[#7D5BE2]' : 'bg-[#10B981] text-white'}
                   >
-                    <span>Xem chi tiết</span>
-                    <span className="text-[8px]">▶</span>
+                    {log.type.replace('_', ' ').toUpperCase()}
+                  </Badge>
+                  <button
+                    onClick={() => setDetailModal({ open: true, log })}
+                    className="text-xs text-[#10B981] hover:underline transition-colors"
+                  >
+                    Xem chi tiết ›
                   </button>
                 </div>
-              </div>
+              </Card>
             </div>
           ))}
         </div>
@@ -145,54 +146,62 @@ const HistoryPage = () => {
   const olderLogs = filteredLogs.filter(log => log.dateLabel === 'TRƯỚC ĐÓ');
 
   return (
-    <div className="space-y-8 pb-16 text-on-surface">
-      <div className="glass-panel rounded-2xl border border-outline-variant p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-[10px] font-bold text-on-surface-variant block mr-2 uppercase tracking-wide">Lọc theo:</span>
-          {filterChips.map((chip) => (
-            <button
-              key={chip.id}
-              id={`history-filter-${chip.id}`}
-              onClick={() => setFilterActive(chip.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors border ${
-                filterActive === chip.id
-                  ? 'bg-primary text-on-primary border-transparent shadow shadow-primary/10'
-                  : 'bg-surface-container hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface border-outline-variant'
-              }`}
-            >
-              {chip.label}
-            </button>
-          ))}
+    <div className="max-w-4xl mx-auto pb-12">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold text-[#10B981]">Lịch sử hoạt động</h1>
+      </div>
+
+      <div className="flex items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-4 bg-[#E2E8F0] p-1.5 rounded-xl flex-1">
+          <span className="text-sm text-[#0F172A] font-medium ml-3">Lọc theo:</span>
+          <div className="flex flex-wrap gap-2">
+            {filterChips.map((chip) => (
+              <button
+                key={chip.id}
+                onClick={() => setFilterActive(chip.id)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  filterActive === chip.id
+                    ? 'bg-[#10B981] text-white shadow-sm'
+                    : 'bg-white text-[#475569] hover:bg-gray-50'
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2 bg-surface-container-low border border-outline-variant px-3 py-1.5 rounded-xl self-start md:self-auto text-on-surface-variant">
-          <BarChart2 className="w-4.5 h-4.5 text-primary" />
-          <span className="text-[10px] font-extrabold uppercase tracking-wide">Tổng hoạt động</span>
+        <div className="bg-[#E2E8F0] p-2 px-4 rounded-xl flex items-center justify-between gap-8 h-12">
+          <span className="text-xs text-[#475569]">Tổng hoạt động</span>
+          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#10B981]">
+            <BarChart2 size={16} />
+          </div>
         </div>
       </div>
 
-      <div className="space-y-10">
+      <div className="bg-[#E2E8F0] rounded-2xl p-6 sm:p-8 relative">
+        <div className="absolute left-12 sm:left-14 top-12 bottom-12 w-[2px] bg-white"></div>
+
         {renderSectionLogs('HÔM NAY', todayLogs)}
         {renderSectionLogs('HÔM QUA', yesterdayLogs)}
         {renderSectionLogs('TRƯỚC ĐÓ', olderLogs)}
 
         {filteredLogs.length === 0 && (
-          <div className="text-center py-12 glass-panel rounded-2xl border border-outline-variant shadow-sm text-on-surface-variant space-y-2">
-            <Clock className="w-8 h-8 mx-auto text-on-surface-variant shrink-0" />
-            <p className="text-xs">Không tìm thấy hoạt động nào phù hợp với bộ lọc đã chọn.</p>
+          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-[#64748B] space-y-2">
+            <Clock className="w-8 h-8 mx-auto text-[#64748B] shrink-0" />
+            <p className="text-sm">Không tìm thấy hoạt động nào phù hợp với bộ lọc đã chọn.</p>
           </div>
         )}
-      </div>
 
-      <div className="pt-4 flex justify-center">
-        <button
-          id="history-load-more"
-          onClick={handleLoadMore}
-          className="bg-surface-container hover:bg-surface-container-low border border-outline-variant hover:border-primary text-on-surface-variant text-xs font-bold px-6 py-3 rounded-2xl flex items-center justify-center space-x-2 transition-all active:scale-[0.98] cursor-pointer"
-        >
-          <span>Tải thêm hoạt động</span>
-          <ChevronDown className="w-4 h-4 shrink-0" />
-        </button>
+        <div className="mt-8 flex justify-center">
+          <Button
+            variant="outline"
+            onClick={handleLoadMore}
+            className="rounded-full px-6 flex items-center gap-2 bg-white text-[#0F172A] border-none shadow-sm"
+          >
+            Tải thêm hoạt động <ChevronDown size={16} />
+          </Button>
+        </div>
       </div>
 
       <Modal
@@ -202,17 +211,17 @@ const HistoryPage = () => {
       >
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
-            <div>
+            <div className="text-sm">
               <span className="text-[10px] font-bold text-on-surface-variant uppercase block">Thời gian</span>
               <span className="text-sm font-semibold text-on-surface">{detailModal.log?.time}</span>
             </div>
-            <div>
+            <div className="text-sm">
               <span className="text-[10px] font-bold text-on-surface-variant uppercase block">Loại sự kiện</span>
               <span className="text-sm font-semibold text-on-surface">{detailModal.log?.type}</span>
             </div>
           </div>
 
-          <div>
+          <div className="text-sm">
             <span className="text-[10px] font-bold text-on-surface-variant uppercase block mb-2">Nội dung chi tiết</span>
             <p className="text-sm text-on-surface-variant leading-relaxed">
               {detailModal.log?.details || "Không có thông tin chi tiết cho sự kiện này."}
@@ -220,12 +229,12 @@ const HistoryPage = () => {
           </div>
 
           {detailModal.log?.score && (
-            <div className="p-4 rounded-xl bg-primary-container border border-primary-container space-y-2">
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-primary">Kết quả đánh giá AI</span>
-                <span className="text-sm font-extrabold text-primary">{detailModal.log.score}</span>
+                <span className="text-xs font-bold text-[#10B981]">Kết quả đánh giá AI</span>
+                <span className="text-sm font-extrabold text-[#10B981]">{detailModal.log.score}</span>
               </div>
-              <p className="text-xs text-primary leading-relaxed italic">
+              <p className="text-xs text-[#10B981] leading-relaxed italic">
                 "{detailModal.log.aiComment}"
               </p>
             </div>
@@ -234,7 +243,7 @@ const HistoryPage = () => {
           <div className="pt-4 flex justify-end">
             <button
               onClick={() => setDetailModal({ open: false, log: null })}
-              className="px-4 py-2 rounded-lg bg-on-surface text-on-primary text-xs font-bold hover:opacity-90 transition-colors"
+              className="px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:opacity-90 transition-colors"
             >
               Đóng
             </button>

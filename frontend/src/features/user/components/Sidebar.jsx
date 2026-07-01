@@ -18,69 +18,71 @@ const Sidebar = () => {
     }
     return (
         <aside
-            className="w-64 bg-background border-r border-surface-container flex flex-col justify-between h-screen sticky top-0 left-0 text-on-surface select-none pb-6 z-20">
-            <div className="flex flex-col">
-                {/* Brand/Logo */}
-                <div className="px-6 py-6 border-b border-surface-container flex items-center space-x-2">
-                    <div
-                        className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold text-lg">
+            className="w-64 min-h-screen border-r border-[#1E2E42] bg-[#0A1118] flex flex-col pt-8 sticky top-0 left-0 text-white select-none z-20">
+            <div className="px-6 mb-8">
+                <div
+                    className="flex items-center space-x-2 cursor-pointer"
+                    onClick={handleBackHome}
+                >
+                    <div className="w-8 h-8 rounded-lg bg-[#10B981] flex items-center justify-center text-white font-bold text-lg">
                         S
                     </div>
-                    <span className="text-xl font-extrabold text-primary tracking-tight cursor-pointer"
-                          onClick={handleBackHome}>Smartfolio</span>
+                    <span className="text-xl font-extrabold text-white tracking-tight">Smartfolio</span>
                 </div>
+            </div>
 
-                {/* Menu Navigation */}
-                <nav className="mt-8 px-4 space-y-1.5 flex-1">
+            <nav className="flex-1 px-3">
+                <h2 className="px-3 text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-4">Menu chính</h2>
+                <ul className="space-y-1">
                     {menuItems.map((item) => {
                         const Icon = item.icon;
                         return (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                className={({isActive}) =>
-                                    `w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-all duration-150 text-sm font-medium ${
-                                        isActive
-                                            ? 'bg-primary text-on-primary shadow-primary/10'
-                                            : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                                    }`
-                                }
-                            >
-                                {({isActive}) => (
-                                    <>
-                                        <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-on-primary' : 'text-on-surface-variant'}`}/>
-                                        <span>{item.label}</span>
-                                        {item.path === '/security' && is2faEnabled && (
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-auto"></span>
-                                        )}
-                                    </>
-                                )}
-                            </NavLink>
+                            <li key={item.path}>
+                                <NavLink
+                                    to={item.path}
+                                    className={({isActive}) =>
+                                        `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                                            isActive
+                                                ? 'bg-[#10B981]/10 text-[#10B981]'
+                                                : 'text-[#94A3B8] hover:bg-[#1E2E42] hover:text-white'
+                                        }`
+                                    }
+                                >
+                                    {({isActive}) => (
+                                        <>
+                                            <Icon size={18} className={`${isActive ? 'text-[#10B981]' : 'text-[#94A3B8]'}`}/>
+                                            <span>{item.label}</span>
+                                            {item.path === '/security' && is2faEnabled && (
+                                                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] ml-auto"></span>
+                                            )}
+                                        </>
+                                    )}
+                                </NavLink>
+                            </li>
                         );
                     })}
-                </nav>
-            </div>
+                </ul>
+            </nav>
 
-            {/* Footer Side Actions */}
-            <div className="px-4 space-y-1.5 pt-4 border-t border-surface-container">
+            <div className="p-4 border-t border-[#1E2E42] space-y-1">
                 <NavLink
                     to="/personal-info"
                     className={({isActive}) =>
-                        `w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl transition-colors text-sm font-medium ${
+                        `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
                             isActive
-                                ? 'bg-primary text-on-primary'
-                                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                                ? 'bg-[#10B981]/10 text-[#10B981]'
+                                : 'text-[#94A3B8] hover:bg-[#1E2E42] hover:text-white'
                         }`
                     }
                 >
-                    <Settings className="w-4.5 h-4.5 text-on-surface-variant"/>
+                    <Settings size={18} className="text-[#94A3B8]"/>
                     <span>Cài đặt</span>
                 </NavLink>
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-rose-600 hover:bg-surface-container hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-400/10 transition-colors cursor-pointer"
                 >
-                    <LogOut className="w-4.5 h-4.5 text-rose-500"/>
+                    <LogOut size={18} />
                     <span>Đăng xuất</span>
                 </button>
             </div>
