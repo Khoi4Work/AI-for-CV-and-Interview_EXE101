@@ -30,21 +30,21 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             <div
                 role="dialog"
                 aria-modal="true"
-                className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
+                className="relative w-full max-w-3xl glass-panel rounded-2xl shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                    <h3 className="text-sm font-bold text-slate-800">{title}</h3>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant bg-surface-container-low">
+                    <h3 className="text-sm font-bold text-on-surface">{title}</h3>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                        className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
                     >
                         <X className="w-4 h-4" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto text-slate-600">
+                <div className="p-6 overflow-y-auto text-on-surface-variant">
                     {children}
                 </div>
             </div>

@@ -8,17 +8,17 @@ const GuestHeader = () => {
     const isInterview = location.pathname === '/interview';
     const isTemplates = location.pathname === '/templates';
     const isEvaluation = location.pathname === '/cv-evaluation';
-    const bgClass = isHome || isInterview || isTemplates || isEvaluation ? 'bg-white/80 backdrop-blur-md' : 'bg-surface';
+    const bgClass = isHome || isInterview || isTemplates || isEvaluation ? 'glass-panel' : 'bg-surface';
     const maxW = 'max-w-full';
     return (
         <header
             className={`flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop lg:px-gutter h-[72px] sticky top-0 z-50 ${maxW} mx-auto ${bgClass}`}>
             <div className="flex items-center space-x-2">
                 <div
-                    className="w-8 h-8 rounded-lg bg-[#0b3c8f] flex items-center justify-center text-white font-bold text-lg select-none">
+                    className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold text-lg select-none">
                     S
                 </div>
-                <Link to="/" className="text-xl font-bold text-[#0b3c8f] tracking-tight font-sans">Smartfolio</Link>
+                <Link to="/" className="text-xl font-bold text-primary tracking-tight font-sans">Smartfolio</Link>
             </div>
 
             {/* Navigation Links */}
@@ -41,13 +41,13 @@ const GuestHeader = () => {
             <div className="flex items-center space-x-4">
                 <button
                     onClick={() => navigate('/register')}
-                    className="text-sm font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 transition-colors"
+                    className="text-sm font-semibold text-on-surface-variant hover:text-on-surface px-3 py-1.5 transition-colors"
                 >
                     Đăng ký
                 </button>
                 <button
                     onClick={() => navigate('/login')}
-                    className="bg-[#0b3c8f] hover:bg-[#093278] text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.98]"
+                    className="bg-primary hover:bg-primary-container text-on-primary text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.98]"
                 >
                     Đăng nhập
                 </button>
