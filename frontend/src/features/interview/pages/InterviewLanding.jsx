@@ -154,40 +154,40 @@ export default function InterviewLanding() {
 
                         {/* Left Grid */}
                         <div className="flex-1 grid grid-cols-2 gap-4">
-                            <div className="bg-primary-container/50 rounded-2xl p-6 border border-primary-container/50">
+                            <div className="bg-interview-card-1 rounded-2xl p-6 border border-interview-card-1 text-white">
                                 <div
-                                    className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center mb-4">
+                                    className="w-10 h-10 rounded-full bg-interview-icon-1 text-white flex items-center justify-center mb-4">
                                     <Target className="w-5 h-5"/>
                                 </div>
-                                <h4 className="font-bold text-on-surface mb-2">Giảm lo lắng</h4>
-                                <p className="text-sm text-on-surface-variant">Thực hành trong không gian riêng tư giúp bạn tự tin
+                                <h4 className="font-bold mb-2">Giảm lo lắng</h4>
+                                <p className="text-sm text-white">Thực hành trong không gian riêng tư giúp bạn tự tin
                                     hơn trước buổi phỏng vấn thật.</p>
                             </div>
-                            <div className="bg-primary-container/50 rounded-2xl p-6 border border-primary-container/50 mt-8">
+                            <div className="bg-interview-card-2 rounded-2xl p-6 border border-interview-card-2 text-white">
                                 <div
-                                    className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center mb-4">
+                                    className="w-10 h-10 rounded-full bg-interview-icon-2 text-white flex items-center justify-center mb-4">
                                     <Zap className="w-5 h-5"/>
                                 </div>
-                                <h4 className="font-bold text-on-surface mb-2">Cải thiện phản xạ</h4>
-                                <p className="text-sm text-on-surface-variant">Luyện tập trả lời câu hỏi hóc búa một cách trôi
+                                <h4 className="font-bold mb-2">Cải thiện phản xạ</h4>
+                                <p className="text-sm text-white">Luyện tập trả lời câu hỏi hóc búa một cách trôi
                                     chảy và mạch lạc nhất.</p>
                             </div>
-                            <div className="bg-primary-container/50 rounded-2xl p-6 border border-primary-container/50 -mt-8">
+                            <div className="bg-interview-card-2 rounded-2xl p-6 border border-interview-card-2 text-white">
                                 <div
-                                    className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center mb-4">
+                                    className="w-10 h-10 rounded-full bg-interview-icon-2 text-white flex items-center justify-center mb-4">
                                     <FileText className="w-5 h-5"/>
                                 </div>
-                                <h4 className="font-bold text-on-surface mb-2">Feedback chi tiết</h4>
-                                <p className="text-sm text-on-surface-variant">Nhận báo cáo phân tích về ngôn ngữ cơ thể, tông
+                                <h4 className="font-bold mb-2">Feedback chi tiết</h4>
+                                <p className="text-sm text-white">Nhận báo cáo phân tích về ngôn ngữ cơ thể, tông
                                     giọng và nội dung câu trả lời.</p>
                             </div>
-                            <div className="bg-primary rounded-2xl p-6 shadow-lg text-on-primary">
+                            <div className="bg-interview-card-1 rounded-2xl p-6 shadow-lg text-white">
                                 <div
-                                    className="w-10 h-10 rounded-full bg-on-primary/20 flex items-center justify-center mb-4">
+                                    className="w-10 h-10 rounded-full bg-interview-icon-1 text-white flex items-center justify-center mb-4">
                                     <TrendingUp className="w-5 h-5"/>
                                 </div>
                                 <h4 className="font-bold mb-2">Kết quả thực tế</h4>
-                                <p className="text-sm text-on-primary-container">Tăng tỷ lệ nhận được offer lên đến 60% sau chỉ 3
+                                <p className="text-sm text-white">Tăng tỷ lệ nhận được offer lên đến 60% sau chỉ 3
                                     buổi luyện tập.</p>
                             </div>
                         </div>

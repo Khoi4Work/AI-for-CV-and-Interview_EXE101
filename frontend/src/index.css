@@ -44,6 +44,10 @@
 
     --color-outline: #85948c;
     --color-outline-variant: #3c4a43;
+    --color-interview-card-1: #005845;
+    --color-interview-card-2: #388877;
+    --color-interview-icon-1: #33796A;
+    --color-interview-icon-2: #256E60;
 
     /* Specialized / Legacy CV Variables */
     --color-cv-dark-blue: #0D1B2A;
