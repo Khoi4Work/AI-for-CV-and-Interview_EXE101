@@ -261,17 +261,24 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
 - **Latest Commit**: `e724343` — "Implement 10-step interview flow prototype" (20 files, +2435/-1001)
 - **Spec commit**: `f3d9bcd`
 
-## [2026-06-30] Session 8: Emerald Night Design System Alignment
+## [2026-07-01] Session 9: Interview Flow Visual Identity Standardization
 ### 🎯 Goals
-- Align UI components and pages with the "Emerald Night" design system (navy background, emerald accent, high-contrast dark mode).
-- Fix text contrast issues in user profile pages.
-- Transition CV Evaluation and Interview flow pages from light mode to dark mode.
+- Standardize the visual identity of the interview flow pages.
+- Implement "large card" layout for configuration pages (`CareerGoal`, `InterviewSetup`).
+- Refine selection card styles and introduce a consistent hover state.
+- Align all interview-related CSS tokens to a unified `interview-` prefix.
 
 ### ✅ Completed
-- [x] Updated Sidebars (`CV` and `User`) to use design tokens (`bg-background`, `bg-primary`, `text-on-surface`).
-- [x] Fixed text contrast and surface colors across all User pages (`SecurityPage`, `PersonalInfoPage`, `MyCVsPage`, `HistoryPage`, `PricingPage`).
-- [x] Overhauled `CVEvaluation.jsx` from Light Mode to Dark Mode using `glass-panel` and themed tokens.
-- [x] Aligned Interview flow pages (`ExperienceLevel`, `CareerGoal`, `InterviewSetup`, `InterviewRoom`) with the emerald palette.
-- [x] Fixed a syntax error in `InterviewRoom.jsx` transcript rendering.
-- [x] Verified alignment across all target pages.
-- [x] Committed changes to `dev` branch.
+- [x] **CSS Token Update**: Renamed generic tokens to specific interview tokens in `index.css` (e.g., `--color-job-card-bg` $\rightarrow$ `--color-interview-card-bg`, `--color-selection-border` $\rightarrow$ `--color-interview-selection-border`).
+- [x] **Hover Effect**: Created `.selection-card-hover` in CSS to mirror the `.selection-card-selected` state, providing clear visual feedback during user interaction.
+- [x] **Large Card Layout**: Refactored `CareerGoal.jsx` and `InterviewSetup.jsx` to use a primary `bg-interview-card-bg` container, acting as a "large card" for the page content.
+- [x] **AI Suggestions Refinement**: Updated AI suggestion tags in `CareerGoal.jsx` to:
+    - Use the card's background color (`bg-interview-card-bg`).
+    - Apply the selection border (`border-selection-border`).
+    - Implement the new `selection-card-hover` effect.
+- [x] **Visual Alignment**: Verified and updated `JobSelection`, `CVStatus`, `ExperienceLevel`, `AudioSetup`, and `VideoSetup` to use the new design tokens and consistent card styles.
+
+### 🚩 Current State & Checkpoint
+- **Current Branch**: `dev`
+- **Latest Commit**: `63fe2ab` — "[UI] Align interview flow pages and cards with updated design system tokens"
+- **Next Step**: Continue refining remaining interview flow pages or move towards the final review of the setup phase.

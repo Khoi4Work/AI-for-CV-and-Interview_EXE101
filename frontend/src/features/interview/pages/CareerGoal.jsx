@@ -54,7 +54,7 @@ export default function CareerGoal() {
             <textarea
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              className="w-full h-40 p-5 text-black placeholder-outline-variant focus:outline-none resize-none bg-transparent"
+              className="w-full h-40 p-5 text-black placeholder-outline-variant focus:outline-none resize-none bg-interview-card-bg  rounded-t-2xl"
               placeholder="Tôi muốn đóng góp vào các dự án..."
             />
 

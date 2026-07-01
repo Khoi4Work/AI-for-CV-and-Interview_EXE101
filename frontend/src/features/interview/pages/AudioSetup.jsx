@@ -89,7 +89,7 @@ export function AudioSetup() {
                 className={`flex items-center justify-center gap-2 py-2.5 border rounded-lg font-medium transition-colors ${
                     isRecording
                       ? 'border-red-500 text-red-500 hover:bg-red-50'
-                      : 'border-primary text-primary hover:bg-primary/10'
+                      : 'border-interview-selection-border text-black hover:bg-primary/10'
                 }`}
             >
               {isRecording ? <Square size={18} fill="currentColor" /> : <Play size={18} />}

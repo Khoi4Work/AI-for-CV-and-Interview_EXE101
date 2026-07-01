@@ -53,21 +53,21 @@ export default function InterviewSetup() {
             <p className="text-on-surface-variant text-sm">Thiết lập buổi luyện tập với các chi tiết để AI cá nhân hóa.</p>
           </div>
 
-          <div className="glass-panel rounded-2xl border border-outline-variant shadow-xl p-8 lg:p-10 w-full z-20">
+          <div className="bg-interview-card-bg rounded-2xl border border-outline-variant shadow-xl p-8 lg:p-10 w-full z-20">
             <div className="space-y-6">
               {/* Company (FPT cố định) */}
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-2">Công ty</label>
-                <div className="w-full bg-primary/10 border border-primary/30 text-on-surface py-3 px-4 rounded-xl text-sm flex items-center justify-between">
-                  <span className="font-medium">{fpt.name} <span className="text-on-surface-variant font-normal">— {fpt.industry}</span></span>
-                  <span className="text-xs text-primary bg-primary/20 px-2 py-0.5 rounded-full font-bold">Đã xác nhận</span>
+                <label className="block text-sm font-semibold text-black mb-2">Công ty</label>
+                <div className="w-full bg-primary/15 border border-primary/30 text-black py-3 px-4 rounded-xl text-sm flex items-center justify-between">
+                  <span className="font-medium">{fpt.name} <span className="text-black/60 font-normal">— {fpt.industry}</span></span>
+                  <span className="text-xs text-black bg-interview-selection-bg px-2 py-0.5 rounded-full font-bold">Đã xác nhận</span>
                 </div>
-                <p className="text-xs text-on-surface-variant mt-2 italic">"{fpt.culture}"</p>
+                <p className="text-xs text-black/60 mt-2 italic">"{fpt.culture}"</p>
               </div>
 
               {/* Interview Type */}
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-2">Loại phỏng vấn</label>
+                <label className="block text-sm font-semibold text-black mb-2">Loại phỏng vấn</label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {INTERVIEW_TYPES.map((t) => (
                     <button
@@ -89,25 +89,25 @@ export default function InterviewSetup() {
               {/* Language & Duration */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-on-surface mb-2">Ngôn ngữ</label>
+                  <label className="block text-sm font-semibold text-black mb-2">Ngôn ngữ</label>
                   <div className="relative">
                     <select
                       value={language}
                       onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full appearance-none bg-surface-container border border-outline-variant text-on-surface font-medium py-3 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                      className="w-full appearance-none bg-interview-card-bg border border-outline-variant text-black font-medium py-3 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                     >
                       {LANGUAGES.map((l) => (
                         <option key={l.id} value={l.id}>{l.label}</option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-black/40">
                       <ChevronDown className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-on-surface mb-2">Thời lượng</label>
+                  <label className="block text-sm font-semibold text-black mb-2">Thời lượng</label>
                   <div className="grid grid-cols-3 gap-2">
                     {DURATIONS.map((d) => (
                       <button
@@ -129,22 +129,22 @@ export default function InterviewSetup() {
 
               {/* JD */}
               <div>
-                <label className="block text-sm font-semibold text-on-surface mb-2">Mô tả công việc (JD)</label>
+                <label className="block text-sm font-semibold text-black mb-2">Mô tả công việc (JD)</label>
                 <textarea
                   value={jd}
                   onChange={(e) => setJd(e.target.value)}
                   rows={4}
-                  className="w-full bg-surface-container border border-outline-variant text-on-surface py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none"
+                  className="w-full bg-interview-card-bg border border-outline-variant text-black py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none"
                   placeholder="Dán JD vào đây để AI cá nhân hóa câu hỏi (tùy chọn)..."
                 />
-                <p className="text-xs text-on-surface-variant mt-1">{jd.length} ký tự</p>
+                <p className="text-xs text-black/60 mt-1">{jd.length} ký tự</p>
               </div>
 
               <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 flex gap-3 mt-2">
                 <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-on-surface mb-1">Cá nhân hóa bằng AI</h4>
-                  <p className="text-xs text-on-surface-variant leading-relaxed">
+                  <h4 className="text-sm font-bold text-black mb-1">Cá nhân hóa bằng AI</h4>
+                  <p className="text-xs text-black/60 leading-relaxed">
                     AI sẽ dựa trên cấu hình + JD của bạn để sinh bộ câu hỏi phù hợp với vị trí ứng tuyển tại FPT.
                   </p>
                 </div>
