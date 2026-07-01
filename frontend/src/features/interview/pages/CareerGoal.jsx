@@ -50,24 +50,24 @@ export default function CareerGoal() {
             <p className="text-on-surface-variant text-base">Mô tả ngắn gọn về định hướng và giá trị bạn muốn mang lại. AI của chúng tôi sẽ giúp bạn hoàn thiện nó.</p>
           </div>
 
-          <div className="glass-panel rounded-xl border border-outline-variant shadow-sm overflow-hidden mb-12">
+          <div className="bg-interview-card-bg rounded-2xl border border-outline-variant shadow-sm overflow-hidden mb-12">
             <textarea
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              className="w-full h-40 p-5 text-on-surface placeholder-outline-variant focus:outline-none resize-none bg-transparent"
+              className="w-full h-40 p-5 text-black placeholder-outline-variant focus:outline-none resize-none bg-transparent"
               placeholder="Tôi muốn đóng góp vào các dự án..."
             />
 
-            <div className="bg-surface-container/50 p-5 border-t border-outline-variant">
+            <div className="bg-interview-card-bg p-5 border-t border-outline-variant">
               <div className="flex items-center gap-2 mb-3">
-                <p className="text-sm font-bold text-on-surface">Gợi ý từ AI</p>
+                <p className="text-sm font-bold text-black">Gợi ý từ AI</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map((sug, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleAppend(sug)}
-                    className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
+                    className="bg-interview-card-bg text-black border-2 border-selection-border selection-card-hover px-3 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer"
                   >
                     {sug}
                   </button>

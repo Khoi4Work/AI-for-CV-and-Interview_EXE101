@@ -40,7 +40,7 @@ export function AudioSetup() {
     <div className="min-h-screen flex flex-col bg-interview-radial font-sans relative text-on-surface">
       <Header />
       <main className="flex-grow flex items-center justify-center p-6">
-        <div className="bg-job-card-bg rounded-xl shadow-sm border border-outline-variant w-full p-8 max-w-3xl">
+        <div className="bg-interview-card-bg rounded-xl shadow-sm border border-outline-variant w-full p-8 max-w-3xl">
           <div className="flex items-center justify-center gap-2 mb-8">
             <div className="h-1.5 w-24 bg-primary rounded-full"></div>
             <div className="h-1.5 w-24 bg-gray-300 rounded-full"></div>

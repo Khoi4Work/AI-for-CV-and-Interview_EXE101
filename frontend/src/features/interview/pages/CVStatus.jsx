@@ -42,11 +42,11 @@ export default function CvStatus() {
           <div className="grid md:grid-cols-2 gap-6 mb-16">
             <div
               onClick={() => setSelected('have')}
-              className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-job-card-bg ${
+              className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-interview-card-bg ${
                 selected === 'have' ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
               }`}
             >
-              <div className="w-14 h-14 rounded-xl bg-job-icon-bg text-job-icon-text flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-xl bg-interview-icon-bg text-interview-icon-text flex items-center justify-center mb-6">
                 <Upload className="w-7 h-7" strokeWidth={1.5} />
               </div>
               <h3 className="text-xl font-bold text-black mb-3">Tôi đã có CV</h3>
@@ -60,11 +60,11 @@ export default function CvStatus() {
 
             <div
               onClick={() => setSelected('nothave')}
-              className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-job-card-bg ${
+              className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-interview-card-bg ${
                 selected === 'nothave' ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
               }`}
             >
-              <div className="w-14 h-14 rounded-xl bg-job-icon-bg text-job-icon-text flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-xl bg-interview-icon-bg text-interview-icon-text flex items-center justify-center mb-6">
                 <Sparkles className="w-7 h-7" strokeWidth={1.5} />
               </div>
               <h3 className="text-xl font-bold text-black mb-3">Tôi chưa có CV</h3>

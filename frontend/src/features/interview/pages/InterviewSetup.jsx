@@ -44,7 +44,7 @@ export default function InterviewSetup() {
           <div className="flex flex-col items-center mb-10">
             <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-4">
               <div className="bg-primary h-full rounded-full transition-all" style={{ width: '50%' }} />
-            </div}
+            </div>
             <p className="text-sm text-on-surface-variant font-medium">Bước 5 trên 10 • 50% hoàn tất</p>
           </div>
 
@@ -73,7 +73,7 @@ export default function InterviewSetup() {
                     <button
                       key={t.id}
                       onClick={() => setType(t.id)}
-                      className={`text-left p-3 rounded-xl border-2 transition-all bg-job-card-bg ${
+                      className={`text-left p-3 rounded-xl border-2 transition-all bg-interview-card-bg ${
                         type === t.id
                           ? 'selection-card-selected'
                           : 'border-transparent shadow-sm hover:border-primary'
@@ -113,7 +113,7 @@ export default function InterviewSetup() {
                       <button
                         key={d.value}
                         onClick={() => setDuration(d.value)}
-                        className={`py-2.5 px-1 border rounded-xl text-center transition-colors bg-job-card-bg ${
+                        className={`py-2.5 px-1 border rounded-xl text-center transition-colors bg-interview-card-bg ${
                           duration === d.value
                             ? 'selection-card-selected'
                             : 'border-transparent shadow-sm hover:border-primary'

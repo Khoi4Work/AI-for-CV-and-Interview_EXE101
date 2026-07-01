@@ -55,11 +55,11 @@
     --color-bg-radial-end: #0C1830;
     --color-interview-bg-start: #0F3940;
     --color-interview-bg-end: #0C1830;
-    --color-job-card-bg: #C3C6D5;
-    --color-job-icon-bg: #D9DCDD;
-    --color-job-icon-text: #039D7B;
-    --color-selection-border: #4ab183;
-    --color-selection-bg: #4ab183;
+    --color-interview-card-bg: #C3C6D5;
+    --color-interview-icon-bg: #D9DCDD;
+    --color-interview-icon-text: #039D7B;
+    --color-interview-selection-border: #4ab183;
+    --color-interview-selection-bg: #4ab183;
 
     /* Specialized / Legacy CV Variables */
     --color-cv-dark-blue: #0D1B2A;
@@ -188,9 +188,15 @@ body {
 }
 
 .selection-card-selected {
-    background-color: var(--color-selection-bg) !important;
-    border-color: var(--color-selection-border) !important;
-    box-shadow: 0 0 0 3px var(--color-selection-border), 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+    background-color: var(--color-interview-selection-bg) !important;
+    border-color: var(--color-interview-selection-border) !important;
+    box-shadow: 0 0 0 3px var(--color-interview-selection-border), 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+}
+
+.selection-card-hover:hover {
+    background-color: var(--color-interview-selection-bg) !important;
+    border-color: var(--color-interview-selection-border) !important;
+    box-shadow: 0 0 0 3px var(--color-interview-selection-border), 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
 }
 
 .material-symbols-outlined {

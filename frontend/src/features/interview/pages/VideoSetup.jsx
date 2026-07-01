@@ -83,7 +83,7 @@ export function VideoSetup() {
                 </div>
               </div>
 
-              <div className="bg-job-card-bg rounded-xl p-4 border border-primary/30 shadow-sm flex flex-col sm same-row gap-4 ring-1 ring-primary/20">
+              <div className="bg-interview-card-bg rounded-xl p-4 border border-primary/30 shadow-sm flex flex-col sm same-row gap-4 ring-1 ring-primary/20">
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5 mb-2">
                     <span className="text-sm font-medium text-black">Máy ảnh:</span>
@@ -112,7 +112,7 @@ export function VideoSetup() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="bg-job-card-bg border border-outline-variant rounded-xl p-6 shadow-sm">
+              <div className="bg-interview-card-bg border border-outline-variant rounded-xl p-6 shadow-sm">
                 <div className="inline-block px-3 py-1 bg-primary/20 text-primary rounded-md font-semibold text-sm mb-6 border border-primary/30">
                   Lưu ý quan trọng
                 </div>

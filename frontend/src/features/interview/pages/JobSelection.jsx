@@ -68,11 +68,11 @@ export default function JobSelection() {
               <div
                 key={job.id}
                 onClick={() => setSelectedId(job.id)}
-                className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-md bg-job-card-bg ${
+                className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-md bg-interview-card-bg ${
                   isSelected ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-job-icon-bg text-job-icon-text`}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-interview-icon-bg text-interview-icon-text`}>
                   <Icon className="w-6 h-6" strokeWidth={1.5} />
                 </div>
                 <h3 className="font-bold text-black mb-1">{job.title}</h3>

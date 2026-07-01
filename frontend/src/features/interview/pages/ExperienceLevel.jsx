@@ -50,11 +50,11 @@ export default function ExperienceLevel() {
                 <div
                   key={level.id}
                   onClick={() => setSelected(level.id)}
-                  className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-job-card-bg ${
+                  className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-interview-card-bg ${
                     isSelected ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-job-icon-bg text-job-icon-text`}>
+                  <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-interview-icon-bg text-interview-icon-text`}>
                     <Icon className="w-6 h-6" strokeWidth={1.5} />
                   </div>
                   <h3 className="text-xl font-bold text-black mb-2">{level.title}</h3>
