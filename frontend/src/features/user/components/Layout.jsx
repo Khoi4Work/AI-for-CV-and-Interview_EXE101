@@ -1,11 +1,15 @@
 import React from 'react';
 
 // Common Card Component
-export const Card = ({ children, className = '' }) => (
-    <div className={`bg-[#E2E8F0] rounded-xl overflow-hidden shadow-sm ${className}`}>
-        {children}
-    </div>
-);
+export const Card = ({ children, className = '' }) => {
+    const hasBg = className.includes('bg-');
+    const bgClass = hasBg ? '' : 'bg-[#E2E8F0]';
+    return (
+        <div className={`${bgClass} rounded-xl overflow-hidden shadow-sm ${className}`}>
+            {children}
+        </div>
+    );
+};
 
 // Common Button Component
 export const Button = ({ children, variant = 'primary', size = 'md', className = '', ...props }) => {

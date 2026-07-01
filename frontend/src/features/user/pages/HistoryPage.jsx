@@ -3,7 +3,7 @@ import { Clock, Sparkles, Video, FileEdit, Download, PlusCircle, LogIn, ChevronD
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
-import { Card, Badge, Button } from './Pattern/core';
+import { Card, Badge, Button } from '../components/Layout.jsx';
 
 const HistoryPage = () => {
   const { showToast } = useApp();
@@ -31,98 +31,100 @@ const HistoryPage = () => {
   const getIconForType = (type) => {
     switch (type) {
       case 'phong_van':
-        return <Video size={18} className="text-[#10B981]" />;
+        return <Video size={18} />;
       case 'ai_toi_uu':
-        return <Sparkles size={18} className="text-white" />;
-      case 'chinh_sua_cv':
-        return <FileEdit size={18} className="text-[#64748B]" />;
+        return <Sparkles size={18} />;
       case 'tai_xuong':
-        return <Download size={18} className="text-white" />;
+        return <Download size={18} />;
+      case 'chinh_sua_cv':
+        return <FileEdit size={18} />;
       case 'tao_cv':
-        return <PlusCircle size={18} className="text-[#10B981]" />;
+        return <PlusCircle size={18} />;
       case 'dang_nhap':
-        return <LogIn size={18} className="text-[#64748B]" />;
+        return <LogIn size={18} />;
       default:
-        return <Clock size={18} className="text-[#64748B]" />;
+        return <Clock size={18} />;
     }
   };
 
-  const getIconBg = (type) => {
+  const getIconStyle = (type) => {
     switch (type) {
       case 'phong_van':
-      case 'tao_cv':
-        return 'bg-white border-4 border-[#E2E8F0]';
+        return 'bg-[#D1FAE5] text-[#10B981]';
       case 'ai_toi_uu':
-        return 'bg-[#7D5BE2] border-4 border-[#E2E8F0]';
-      case 'chinh_sua_cv':
-        return 'bg-white border-4 border-[#E2E8F0]';
+        return 'bg-[#4F46E5] text-white';
       case 'tai_xuong':
-        return 'bg-[#10B981] border-4 border-[#E2E8F0]';
-      case 'dang_nhap':
-        return 'bg-white border-4 border-[#E2E8F0]';
+        return 'bg-[#10B981] text-white';
       default:
-        return 'bg-white border-4 border-[#E2E8F0]';
+        return 'bg-white text-[#64748B]';
     }
   };
 
   const renderSectionLogs = (title, sectionLogs) => {
     if (sectionLogs.length === 0) return null;
     return (
-      <div className="relative z-10 mb-8">
-        <div className="flex items-center gap-4 mb-6 relative z-10">
-            <div className="w-10 sm:w-12 h-0 border-t-2 border-white"></div>
-            <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider bg-[#E2E8F0] px-2">{title}</span>
-            <div className="flex-1 border-t-2 border-white"></div>
+      <div className="mb-8">
+        <div className="text-center text-[#475569] font-semibold text-sm my-4 uppercase tracking-wide relative z-10">
+            {title}
         </div>
 
-        <div className="space-y-6 pl-4 sm:pl-6">
-          {sectionLogs.map((log) => (
-            <div key={log.id} className="relative flex gap-6 group">
-              <div className={`absolute -left-[45px] sm:-left-[53px] mt-1 w-10 h-10 rounded-full flex items-center justify-center z-10 shadow-sm ${getIconBg(log.type)}`}>
-                {getIconForType(log.type)}
+        <div className="relative pt-2">
+          <div className="absolute top-0 bottom-0 left-[19px] w-[2px] bg-white z-0 hidden sm:block"></div>
+
+          <div className="space-y-6 relative z-10">
+            {sectionLogs.map((log) => (
+              <div key={log.id} className="flex flex-col sm:flex-row items-start gap-4">
+                <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center shadow-sm ${getIconStyle(log.type)}`}>
+                  {getIconForType(log.type)}
+                </div>
+
+                <Card className="flex-1 p-4 bg-[#F1F5F9] border-none shadow-sm rounded-xl">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-semibold text-[#10B981]">{log.title}</h3>
+                    <span className="text-[#64748B] text-sm font-medium">{log.time}</span>
+                  </div>
+
+                  {log.score && (
+                    <div className="bg-white rounded-lg p-3 mt-2 mb-4 border border-gray-100 shadow-sm">
+                      <p className="text-sm text-[#0F172A]">
+                        <span className="font-bold text-[#10B981]">Điểm: {log.score}</span> - AI nhận xét: {log.aiComment}
+                      </p>
+                    </div>
+                  )}
+
+                  {log.details && (
+                    <p className="text-[#475569] text-sm mb-4">{log.details}</p>
+                  )}
+
+                  {log.meta && (
+                    <div className="flex items-center gap-2 text-xs text-[#64748B] mb-4">
+                      <FileEdit size={14} /> <span>{log.meta}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      className={`text-xs px-2 py-1 rounded-full border-none ${
+                          log.type === 'phong_van'
+                          ? 'bg-[#10B981] text-white'
+                          : log.type === 'ai_toi_uu'
+                          ? 'bg-[#F3E8FF] text-[#9333EA]'
+                          : 'bg-slate-200 text-slate-600'
+                      }`}
+                    >
+                      {log.type.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                    <button
+                      onClick={() => setDetailModal({ open: true, log })}
+                      className="text-xs text-[#10B981] hover:underline transition-colors"
+                    >
+                      Xem chi tiết ›
+                    </button>
+                  </div>
+                </Card>
               </div>
-
-              <Card className="flex-1 p-5 bg-white border-none shadow-sm">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-bold text-[#0F172A]">{log.title}</h3>
-                  <span className="text-[#64748B] text-sm font-medium">{log.time}</span>
-                </div>
-
-                {log.score && (
-                  <div className="bg-[#F1F5F9] rounded-lg p-3 mb-4">
-                    <p className="text-sm text-[#0F172A]">
-                      <span className="font-bold text-[#10B981]">Điểm: {log.score}</span> - AI nhận xét: {log.aiComment}
-                    </p>
-                  </div>
-                )}
-
-                {log.details && (
-                  <p className="text-[#475569] text-sm mb-4">{log.details}</p>
-                )}
-
-                {log.meta && (
-                  <div className="flex items-center gap-2 text-xs text-[#64748B] mb-4">
-                    <FileEdit size={14} /> <span>{log.meta}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant={log.type === 'ai_toi_uu' ? 'purple' : 'success'}
-                    className={log.type === 'ai_toi_uu' ? 'bg-[#EDE9FE] text-[#7D5BE2]' : 'bg-[#10B981] text-white'}
-                  >
-                    {log.type.replace('_', ' ').toUpperCase()}
-                  </Badge>
-                  <button
-                    onClick={() => setDetailModal({ open: true, log })}
-                    className="text-xs text-[#10B981] hover:underline transition-colors"
-                  >
-                    Xem chi tiết ›
-                  </button>
-                </div>
-              </Card>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -152,17 +154,17 @@ const HistoryPage = () => {
       </div>
 
       <div className="flex items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4 bg-[#E2E8F0] p-1.5 rounded-xl flex-1">
-          <span className="text-sm text-[#0F172A] font-medium ml-3">Lọc theo:</span>
+        <div className="flex items-center gap-2 bg-white p-2 px-4 rounded-xl shadow-sm border border-slate-100 w-fit">
+          <span className="text-sm text-[#0F172A] font-medium ml-1">Lọc theo:</span>
           <div className="flex flex-wrap gap-2">
             {filterChips.map((chip) => (
               <button
                 key={chip.id}
                 onClick={() => setFilterActive(chip.id)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
                   filterActive === chip.id
                     ? 'bg-[#10B981] text-white shadow-sm'
-                    : 'bg-white text-[#475569] hover:bg-gray-50'
+                    : 'text-[#475569] hover:bg-slate-100'
                 }`}
               >
                 {chip.label}
@@ -171,17 +173,15 @@ const HistoryPage = () => {
           </div>
         </div>
 
-        <div className="bg-[#E2E8F0] p-2 px-4 rounded-xl flex items-center justify-between gap-8 h-12">
+        <div className="bg-white p-2 px-4 rounded-xl flex items-center justify-between gap-8 h-12 shadow-sm border border-slate-100">
           <span className="text-xs text-[#475569]">Tổng hoạt động</span>
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#10B981]">
+          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-[#10B981] border border-slate-100">
             <BarChart2 size={16} />
           </div>
         </div>
       </div>
 
-      <div className="bg-[#E2E8F0] rounded-2xl p-6 sm:p-8 relative">
-        <div className="absolute left-12 sm:left-14 top-12 bottom-12 w-[2px] bg-white"></div>
-
+      <div className="bg-[#9BA9AF] rounded-2xl p-6 sm:p-8 relative">
         {renderSectionLogs('HÔM NAY', todayLogs)}
         {renderSectionLogs('HÔM QUA', yesterdayLogs)}
         {renderSectionLogs('TRƯỚC ĐÓ', olderLogs)}
@@ -193,14 +193,14 @@ const HistoryPage = () => {
           </div>
         )}
 
-        <div className="mt-8 flex justify-center">
-          <Button
-            variant="outline"
+        <div className="mt-8 flex justify-center pb-4">
+          <button
             onClick={handleLoadMore}
-            className="rounded-full px-6 flex items-center gap-2 bg-white text-[#0F172A] border-none shadow-sm"
+            className="flex items-center justify-center gap-2 bg-white text-[#10B981] font-medium px-6 py-2.5 rounded-full shadow-sm border border-transparent hover:bg-slate-50 hover:border-slate-200 transition-all cursor-pointer"
           >
-            Tải thêm hoạt động <ChevronDown size={16} />
-          </Button>
+            <span>Tải thêm hoạt động</span>
+            <ChevronDown size={18} className="text-[#10B981]" />
+          </button>
         </div>
       </div>
 

@@ -3,7 +3,7 @@ import {useNavigate} from 'react-router-dom';
 import {Package, Camera, Link, Globe, Code, Sparkles, Shield, User, FileText, ChevronRight} from 'lucide-react';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
-import {Card, Button, Input, Toggle, Badge, SectionHeader} from './Pattern/core';
+import {Card, Button, Input, Toggle, Badge, SectionHeader} from '../components/Layout.jsx';
 
 const PersonalInfoPage = () => {
     const navigate = useNavigate();
@@ -67,7 +67,7 @@ const PersonalInfoPage = () => {
             </div>
 
             {/* User Banner */}
-            <Card className="mb-8 p-6 bg-[#10B981] border-none">
+            <Card className="mb-8 p-6 bg-[#CBD5E1] border-none">
                 <div className="flex items-center gap-6">
                     <div className="relative">
                         <div
@@ -173,7 +173,7 @@ const PersonalInfoPage = () => {
             <div className="mb-8">
                 <SectionHeader title="Cài đặt tài khoản" icon={<Shield size={18}/>}/>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="p-5 flex flex-col justify-center bg-[#10B981] border-none shadow-sm ">
+                    <Card className="p-5 flex flex-col justify-between bg-[#CBD5E1] border-none shadow-sm ">
                         <h4 className="text-[#0F172A] font-medium mb-1">Quản lý mật khẩu</h4>
                         <p className="text-[#475569] text-sm mb-3">Cập nhật lần cuối 3 tháng trước.</p>
                         <button
@@ -183,7 +183,7 @@ const PersonalInfoPage = () => {
                             Đổi mật khẩu ›
                         </button>
                     </Card>
-                    <Card className="p-5 flex items-center justify-between bg-[#10B981] border-none shadow-sm">
+                    <Card className="p-5 flex items-center justify-between bg-[#CBD5E1]  border-none shadow-sm">
                         <div>
                             <h4 className="text-[#0F172A] font-medium mb-1">Xác thực hai yếu tố</h4>
                             <p className="text-[#475569] text-sm">Tăng cường bảo vệ tài khoản.</p>
@@ -216,7 +216,7 @@ const PersonalInfoPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {cvs.slice(0, 2).map((cv) => (
                         <Card key={cv.id }
-                              className="p-4 flex items-center justify-between bg-[#10B981] border-none shadow-sm">
+                              className="p-4 flex items-center justify-between bg-[#CBD5E1]  border-none shadow-sm">
                             <div>
                                 <h4 className="text-[#0F172A] font-medium">{cv.title}</h4>
                                 <p className="text-[#475569] text-xs">
@@ -239,7 +239,7 @@ const PersonalInfoPage = () => {
             <div className="mb-8">
                 <SectionHeader title="Gói dịch vụ" icon={<Package size={18}/>}/>
                 <Card
-                    className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#10B981] border-none">
+                    className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#28615F] border-none">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-[#042F2E] rounded-full">
                             <Shield size={20} className="text-white"/>

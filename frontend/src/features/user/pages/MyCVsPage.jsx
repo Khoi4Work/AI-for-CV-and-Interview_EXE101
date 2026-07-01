@@ -2,34 +2,12 @@ import React, { useState } from 'react';
 import { Plus, FileText, Sparkles, Trash2, ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
-import { Card, Badge, Button } from './Pattern/core';
+import { Card, Badge, Button } from '../components/Layout.jsx';
 
 const MyCVsPage = () => {
   const navigate = useNavigate();
   const { cvs, handleAddCV, handleRemoveCV, showToast } = useApp();
-  const [newCvTitle, setNewCvTitle] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
   const [activeTabFilter, setActiveTabFilter] = useState('All');
-
-  const handleCreateCVSubmit = (e) => {
-    e.preventDefault();
-    if (!newCvTitle.trim()) {
-      showToast('Vui lòng nhập tên tiêu đề CV!', 'info');
-      return;
-    }
-
-    const newCV = {
-      id: `cv-${Date.now()}`,
-      title: newCvTitle,
-      status: 'Bản nháp',
-      updatedAt: 'Vừa xong',
-    };
-
-    handleAddCV(newCV);
-    setNewCvTitle('');
-    setShowAddForm(false);
-    showToast(`Đã tạo bản nháp CV mới: "${newCV.title}"`, 'success');
-  };
 
   const handleQuickAdd = () => {
     const occupations = [
