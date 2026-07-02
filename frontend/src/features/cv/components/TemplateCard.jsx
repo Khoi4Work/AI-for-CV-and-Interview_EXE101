@@ -18,7 +18,7 @@ export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, 
     const getBadgeStyle = () => {
         switch (badgeTheme) {
             case 'premium':
-                return 'bg-blue-900 text-white';
+                return 'bg-green-800  text-white';
             case 'free':
                 return 'bg-blue-100 text-blue-800';
             case 'pro':

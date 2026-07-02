@@ -18,6 +18,7 @@ import {useCV} from '../contexts/CVContext.jsx';
 import {badResumeData} from '../constants/cv-mock-data.js';
 import {mapMockDataToCVContext} from '../mapper/cv-data-mapper.js';
 import {mockJobDescriptions} from '../../../constants/jobDescription.js';
+import {Footer} from "../../../components/layout/Footer.jsx";
 
 export default function CVBuilder() {
     const {showToast} = useApp();
@@ -75,8 +76,6 @@ export default function CVBuilder() {
         }
     };
 
-
-
     const addKeyword = (keyword) => {
         showToast(`Đã thêm từ khóa "${keyword}" vào gợi ý CV`, 'success');
     };
@@ -125,14 +124,14 @@ export default function CVBuilder() {
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-2">
                                     <div
-                                        className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center">
+                                        className="w-6 h-6 bg-green-100 text-green-700 rounded-full flex items-center justify-center">
                                         <LayoutTemplate className="h-4 w-4"/>
                                     </div>
                                     <h2 className="text-xl font-bold text-slate-800">Xây dựng nội dung CV</h2>
                                 </div>
                                 <button
                                     onClick={handleFileUpload}
-                                    className="text-sm font-medium text-blue-700 flex items-center gap-1 hover:underline transition-colors">
+                                    className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors">
                                     <Download className="h-4 w-4"/>
                                     Tải CV cũ
                                     <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.docx"
@@ -153,13 +152,13 @@ export default function CVBuilder() {
                                     <div key={s} className="flex items-center gap-2 flex-1">
                                         <div
                                             className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                                                step === s ? 'bg-blue-600 text-white shadow-md scale-110' :
+                                                step === s ? 'bg-green-700 text-white shadow-md scale-110' :
                                                     step > s ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-500'
                                             }`}>
                                             {step > s ? <CheckCircle2 className="w-5 h-5"/> : s}
                                         </div>
                                         <span
-                                            className={`text-xs font-bold transition-colors ${step === s ? 'text-blue-600' : 'text-slate-400'}`}>
+                                            className={`text-xs font-bold transition-colors ${step === s ? 'text-green-700' : 'text-slate-400'}`}>
                                             {s === 1 ? 'Thông tin' : s === 2 ? 'Kinh nghiệm' : s === 3 ? 'Học vấn' : s === 4 ? 'Kỹ năng' : 'Hoàn tất'}
                                         </span>
                                         {s < totalSteps && <div
@@ -175,11 +174,11 @@ export default function CVBuilder() {
                                     <div className="space-y-6">
                                         <div className="group space-y-1">
                                             <label
-                                                className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-blue-600 transition-colors">Tên
+                                                className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Tên
                                                 đầy đủ</label>
                                             <input
                                                 type="text"
-                                                className="w-full input-underlined text-lg font-bold placeholder:text-slate-300"
+                                                className="w-full input-underlined text-lg font-bold text-black placeholder:text-slate-300"
                                                 placeholder="Nguyễn Văn A..."
                                                 value={cvData.personalInfo.name}
                                                 onChange={(e) => updatePersonalInfo({name: e.target.value})}
@@ -188,10 +187,10 @@ export default function CVBuilder() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="group space-y-1">
                                                 <label
-                                                    className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-blue-600 transition-colors">Email</label>
+                                                    className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Email</label>
                                                 <input
                                                     type="email"
-                                                    className="w-full input-underlined text-slate-600 placeholder:text-slate-300"
+                                                    className="w-full input-underlined text-black placeholder:text-slate-300"
                                                     placeholder="example@gmail.com"
                                                     value={cvData.personalInfo.email}
                                                     onChange={(e) => updatePersonalInfo({email: e.target.value})}
@@ -199,11 +198,11 @@ export default function CVBuilder() {
                                             </div>
                                             <div className="group space-y-1">
                                                 <label
-                                                    className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-blue-600 transition-colors">Số
+                                                    className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Số
                                                     điện thoại</label>
                                                 <input
                                                     type="text"
-                                                    className="w-full input-underlined text-slate-600 placeholder:text-slate-300"
+                                                    className="w-full input-underlined text-black placeholder:text-slate-300"
                                                     placeholder="090..."
                                                     value={cvData.personalInfo.phone}
                                                     onChange={(e) => updatePersonalInfo({phone: e.target.value})}
@@ -212,10 +211,10 @@ export default function CVBuilder() {
                                         </div>
                                         <div className="group space-y-1">
                                             <label
-                                                className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-blue-600 transition-colors">LinkedIn</label>
+                                                className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">LinkedIn</label>
                                             <input
                                                 type="text"
-                                                className="w-full input-underlined text-slate-600 placeholder:text-slate-300"
+                                                className="w-full input-underlined text-black placeholder:text-slate-300"
                                                 placeholder="linkedin.com/in/yourprofile"
                                                 value={cvData.personalInfo.linkedin}
                                                 onChange={(e) => updatePersonalInfo({linkedin: e.target.value})}
@@ -223,14 +222,13 @@ export default function CVBuilder() {
                                         </div>
                                     </div>
 
-
                                     <div className="pt-6">
                                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                            <Sparkles className="w-4 h-4 text-blue-600"/>
+                                            <Sparkles className="w-4 h-4 text-green-600"/>
                                             Mục tiêu nghề nghiệp
                                         </h3>
                                         <textarea
-                                            className="w-full h-32 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                                            className="w-full h-32 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all resize-none"
                                             placeholder="Mô tả ngắn gọn về mục tiêu và giá trị bạn mang lại..."
                                             value={cvData.summary}
                                             onChange={(e) => updateSummary(e.target.value)}
@@ -246,7 +244,7 @@ export default function CVBuilder() {
                                             nghiệm làm việc</h3>
                                         <button
                                             onClick={addExperience}
-                                            className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
+                                            className="text-xs font-bold text-green-600 hover:text-green-800 flex items-center gap-1 transition-colors">
                                             <Plus className="w-3 h-3"/> Thêm mục
                                         </button>
                                     </div>
@@ -254,7 +252,7 @@ export default function CVBuilder() {
                                     <div className="space-y-6">
                                         {cvData.experiences.map((exp, index) => (
                                             <div key={exp.id}
-                                                 className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-blue-500">
+                                                 className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-green-500">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                                     <div className="space-y-1">
                                                         <label
@@ -262,7 +260,7 @@ export default function CVBuilder() {
                                                             ty</label>
                                                         <input
                                                             type="text"
-                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm font-bold py-1"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm font-bold py-1 text-black"
                                                             value={exp.company}
                                                             onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
                                                         />
@@ -273,7 +271,7 @@ export default function CVBuilder() {
                                                             gian</label>
                                                         <input
                                                             type="text"
-                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={exp.period}
                                                             onChange={(e) => updateExperience(exp.id, 'period', e.target.value)}
                                                         />
@@ -284,7 +282,7 @@ export default function CVBuilder() {
                                                         trí</label>
                                                     <input
                                                         type="text"
-                                                        className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
+                                                        className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                         value={exp.role}
                                                         onChange={(e) => updateExperience(exp.id, 'role', e.target.value)}
                                                     />
@@ -297,7 +295,7 @@ export default function CVBuilder() {
                                                             <div
                                                                 className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0"></div>
                                                             <textarea
-                                                                className="w-full bg-transparent border-none resize-none focus:ring-0 text-sm py-1 placeholder:text-slate-300 outline-none"
+                                                                className="w-full bg-transparent border-none resize-none focus:ring-0 text-sm py-1 placeholder:text-slate-300 outline-none text-black"
                                                                 placeholder="Ví dụ: Tăng doanh thu 20% trong 6 tháng..."
                                                                 value={detail}
                                                                 onChange={(e) => updateExperienceDetail(exp.id, dIdx, e.target.value)}
@@ -309,7 +307,7 @@ export default function CVBuilder() {
                                                             const newDetails = [...cvData.experiences.find(e => e.id === exp.id).details, ''];
                                                             updateExperience(exp.id, 'details', newDetails);
                                                         }}
-                                                        className="text-xs text-slate-400 hover:text-blue-600 flex items-center gap-1 transition-colors"
+                                                        className="text-xs text-slate-400 hover:text-green-600 flex items-center gap-1 transition-colors"
                                                     >
                                                         <Plus className="w-3 h-3"/> Thêm gạch đầu dòng
                                                     </button>
@@ -333,7 +331,7 @@ export default function CVBuilder() {
                                             vấn</h3>
                                         <button
                                             onClick={addEducation}
-                                            className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
+                                            className="text-xs font-bold text-green-600 hover:text-green-800 flex items-center gap-1 transition-colors">
                                             <Plus className="w-3 h-3"/> Thêm mục
                                         </button>
                                     </div>
@@ -341,7 +339,7 @@ export default function CVBuilder() {
                                     <div className="space-y-6">
                                         {cvData.education.map((edu, index) => (
                                             <div key={index}
-                                                 className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-blue-500">
+                                                 className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-green-500">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                                     <div className="space-y-1">
                                                         <label
@@ -349,7 +347,7 @@ export default function CVBuilder() {
                                                             cấp / Chứng chỉ</label>
                                                         <input
                                                             type="text"
-                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm font-bold py-1"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm font-bold py-1 text-black"
                                                             value={edu.degree}
                                                             onChange={(e) => updateEducation(index, 'degree', e.target.value)}
                                                         />
@@ -360,7 +358,7 @@ export default function CVBuilder() {
                                                             học / Tổ chức</label>
                                                         <input
                                                             type="text"
-                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={edu.school}
                                                             onChange={(e) => updateEducation(index, 'school', e.target.value)}
                                                         />
@@ -373,7 +371,7 @@ export default function CVBuilder() {
                                                             gian</label>
                                                         <input
                                                             type="text"
-                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={edu.year}
                                                             onChange={(e) => updateEducation(index, 'year', e.target.value)}
                                                         />
@@ -383,7 +381,7 @@ export default function CVBuilder() {
                                                             className="text-[10px] font-bold text-slate-400 uppercase">GPA</label>
                                                         <input
                                                             type="text"
-                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 outline-none text-sm py-1"
+                                                            className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={edu.gpa}
                                                             onChange={(e) => updateEducation(index, 'gpa', e.target.value)}
                                                         />
@@ -406,7 +404,7 @@ export default function CVBuilder() {
                                     <div className="flex items-center gap-2 mb-4">
                                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Kỹ
                                             năng & Thông tin khác</h3>
-                                        <Sparkles className="w-4 h-4 text-blue-600"/>
+                                        <Sparkles className="w-4 h-4 text-green-600"/>
                                     </div>
 
                                     <div className="space-y-8">
@@ -424,7 +422,7 @@ export default function CVBuilder() {
                                                         }];
                                                         updateSkills(newSkills);
                                                     }}
-                                                    className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                    className="text-xs font-bold text-green-600 hover:text-green-800 flex items-center gap-1"
                                                 >
                                                     <Plus className="w-3 h-3"/> Thêm kỹ năng
                                                 </button>
@@ -435,7 +433,7 @@ export default function CVBuilder() {
                                                          className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 group">
                                                         <input
                                                             type="text"
-                                                            className="flex-grow bg-transparent text-sm font-medium outline-none"
+                                                            className="flex-grow bg-transparent text-sm font-medium outline-none text-black"
                                                             value={skill.name}
                                                             onChange={(e) => {
                                                                 const updated = [...cvData.skills];
@@ -445,18 +443,8 @@ export default function CVBuilder() {
                                                             placeholder="Tên kỹ năng..."
                                                         />
                                                         <div className="flex items-center gap-2">
-                                                            {/*<input*/}
-                                                            {/*    type="number"*/}
-                                                            {/*    className="w-12 bg-white border border-slate-200 rounded px-1 text-xs text-center"*/}
-                                                            {/*    value={skill.level}*/}
-                                                            {/*    onChange={(e) => {*/}
-                                                            {/*        const updated = [...cvData.skills];*/}
-                                                            {/*        updated[index].level = parseInt(e.target.value) || 0;*/}
-                                                            {/*        updateSkills(updated);*/}
-                                                            {/*    }}*/}
-                                                            {/*/>*/}
                                                             <select
-                                                                className="text-[10px] bg-white border border-slate-200 rounded px-1 outline-none"
+                                                                className="text-[12px] bg-white border text-black border-slate-200 rounded px-1 outline-none"
                                                                 value={skill.category}
                                                                 onChange={(e) => {
                                                                     const updated = [...cvData.skills];
@@ -515,7 +503,7 @@ export default function CVBuilder() {
                                                     <div className="flex gap-2">
                                                         <input
                                                             type="text"
-                                                            className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                                            className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500 text-black"
                                                             placeholder={section.placeholder}
                                                             onKeyDown={(e) => {
                                                                 if (e.key === 'Enter' && e.target.value) {
@@ -542,7 +530,7 @@ export default function CVBuilder() {
                                                                     input.value = '';
                                                                 }
                                                             }}
-                                                            className="bg-blue-600 text-white p-2 rounded-xl hover:bg-blue-700 transition-all"
+                                                            className="bg-green-700 text-white p-2 rounded-xl hover:bg-green-800 transition-all"
                                                         >
                                                             <Plus className="w-4 h-4"/>
                                                         </button>
@@ -584,7 +572,7 @@ export default function CVBuilder() {
                                     </p>
                                     <Link to="/cv-analyzing"
                                           state={{target: '/editor'}}
-                                          className="px-10 py-4 bg-smartfolio-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-blue-800 transition-all hover:scale-105">
+                                          className="px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105">
                                         Vào Trình Chỉnh Sửa <ChevronRight className="w-5 h-5"/>
                                     </Link>
                                 </div>
@@ -598,12 +586,12 @@ export default function CVBuilder() {
                                 <button
                                     onClick={prevStep}
                                     disabled={step === 1}
-                                    className="px-6 py-2 text-sm font-bold text-slate-500 hover:text-slate-800 disabled:opacity-30 flex items-center gap-1 transition-colors">
+                                    className="px-6 py-2 text-sm font-bold text-green-500 hover:text-green-700  flex items-center gap-1 transition-colors">
                                     <ChevronLeft className="w-4 h-4"/> Quay lại
                                 </button>
                                 <button
                                     onClick={nextStep}
-                                    className="px-8 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-md shadow-blue-200 transition-all flex items-center gap-1">
+                                    className="px-8 py-2 bg-green-700 text-white text-sm font-bold rounded-xl hover:bg-green-800 shadow-md shadow-green-200 transition-all flex items-center gap-1">
                                     Tiếp tục <ChevronRight className="w-4 h-4"/>
                                 </button>
                             </div>
@@ -625,8 +613,8 @@ export default function CVBuilder() {
                                 <div className="flex justify-between items-center mb-4">
                                     <span className="text-xs font-medium text-slate-400">Dán nội dung JD mục tiêu để AI hỗ trợ</span>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="block w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
-                                        <span className="text-[10px] font-bold text-blue-900 tracking-wider">AI LISTENING</span>
+                                        <span className="block w-2 h-2 bg-green-600 rounded-full animate-pulse"></span>
+                                        <span className="text-[10px] font-bold text-green-900 tracking-wider">AI LISTENING</span>
                                     </div>
                                 </div>
 
@@ -637,7 +625,7 @@ export default function CVBuilder() {
                                             <button
                                                 key={jd.id}
                                                 onClick={() => handleDemoJdSelect(jd.id)}
-                                                className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                                                className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] hover:bg-green-100 hover:text-green-700 transition-colors"
                                             >
                                                 {jd.title}
                                             </button>
@@ -647,21 +635,21 @@ export default function CVBuilder() {
                                         value={jdText}
                                         onChange={(e) => setJdText(e.target.value)}
                                         placeholder="Dán nội dung chi tiết mô tả công việc vào đây..."
-                                        className="w-full h-64 p-4 text-sm text-slate-700 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#0b3c8f] focus:border-[#0b3c8f] outline-none transition-all resize-none"
+                                        className="w-full h-64 p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-none"
                                     ></textarea>
                                 </div>
 
                                 {/* AI Suggestions Card */}
                                 <div
-                                    className="bg-white border-2 border-blue-500 rounded-2xl p-5 shadow-md relative overflow-hidden transition-all hover:shadow-lg group">
+                                    className="bg-white border-2 border-green-500 rounded-2xl p-5 shadow-md relative overflow-hidden transition-all hover:shadow-lg group">
                                     <div
                                         className="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition-opacity">
-                                        <Sparkles className="w-16 h-16 text-blue-500"/>
+                                        <Sparkles className="w-16 h-16 text-green-500"/>
                                     </div>
 
                                     <div className="flex items-center gap-2 mb-2 relative z-10">
-                                        <Sparkles className="w-4 h-4 text-blue-600" fill="currentColor"/>
-                                        <h4 className="text-sm font-bold text-blue-900">Gợi ý từ AI</h4>
+                                        <Sparkles className="w-4 h-4 text-green-600" fill="currentColor"/>
+                                        <h4 className="text-sm font-bold text-green-900">Gợi ý từ AI</h4>
                                     </div>
                                     <p className="text-[11px] text-slate-500 leading-relaxed mb-4 relative z-10">
                                         Dựa trên JD, hãy cân nhắc thêm các từ khóa sau vào CV để tăng tỷ lệ khớp:
@@ -671,7 +659,7 @@ export default function CVBuilder() {
                                             <button
                                                 key={keyword}
                                                 onClick={() => addKeyword(keyword)}
-                                                className="bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-blue-100 flex items-center gap-1 transition-all hover:scale-105 active:scale-95">
+                                                className="bg-green-50 hover:bg-green-100 text-green-700 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-green-100 flex items-center gap-1 transition-all hover:scale-105 active:scale-95">
                                                 <span className="text-xs font-bold">+</span> {keyword}
                                             </button>
                                         ))}
@@ -683,6 +671,8 @@ export default function CVBuilder() {
 
                 </div>
             </main>
+            <Footer/>
+
         </>
     )
 }

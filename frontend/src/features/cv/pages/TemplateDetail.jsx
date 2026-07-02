@@ -16,6 +16,9 @@ import {TEMPLATES_DATA} from '../constants/templates.js';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
+import {Header} from "../../../components/layout/PublicHeader.jsx";
+import GuestHeader from "../../../components/layout/GuestHeader.jsx";
+import {Footer} from "../../../components/layout/Footer.jsx";
 
 export default function TemplateDetail() {
     const {id} = useParams();
@@ -57,6 +60,7 @@ export default function TemplateDetail() {
 
     return (
         <>
+            {isLoggedIn ? <Header/> : <GuestHeader/>}
             <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
                 <TopAction/>
 
@@ -112,8 +116,8 @@ export default function TemplateDetail() {
                                     {template.badgeText}
                                 </span>
                             </div>
-                            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">{template.title}</h1>
-                            <div className="flex gap-6 text-gray-600">
+                            <h1 className="text-4xl font-bold text-white-500 tracking-tight">{template.title}</h1>
+                            <div className="flex gap-6 text-white-500">
                                 <span className="flex items-center gap-2 text-sm font-medium">
                                     <Briefcase className="h-5 w-5 text-green-600"/>
                                     {template.categoryText}
@@ -142,7 +146,7 @@ export default function TemplateDetail() {
 
                         {/* Components Included - Improved Grid */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 px-1">Các thành phần
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-white-500 px-1">Các thành phần
                                 bao gồm</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {(template.features || [
@@ -196,8 +200,8 @@ export default function TemplateDetail() {
                     <section className="mt-20">
                         <div className="flex items-center justify-between mb-8">
                             <div className="space-y-2">
-                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Mẫu tương tự</h2>
-                                <p className="text-gray-500">Khám phá các lựa chọn khác trong phong
+                                <h2 className="text-2xl font-bold text-white tracking-tight">Mẫu tương tự</h2>
+                                <p className="text-green-700">Khám phá các lựa chọn khác trong phong
                                     cách {template.style}</p>
                             </div>
                             <Link to="/templates"
@@ -236,6 +240,8 @@ export default function TemplateDetail() {
                     </section>
                 </div>
             </main>
+            <Footer/>
+
         </>
     )
 }

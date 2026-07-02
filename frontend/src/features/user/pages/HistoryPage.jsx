@@ -81,7 +81,7 @@ const HistoryPage = () => {
                     {title}
                 </div>
 
-                <div className="relative pt-2">
+                <div className="relative pt-">
                     <div className="absolute top-0 bottom-0 left-[19px] w-[2px] bg-white z-0 hidden sm:block"></div>
 
                     <div className="space-y-6 relative z-10">

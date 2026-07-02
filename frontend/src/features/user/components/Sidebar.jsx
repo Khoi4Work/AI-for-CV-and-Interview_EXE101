@@ -13,7 +13,7 @@ const Sidebar = () => {
         {path: '/pricing', label: 'Gói dịch vụ', icon: CreditCard},
         {path: '/history', label: 'Lịch sử', icon: Clock},
         {path: '/my-cvs', label: 'CV của tôi', icon: FileText},
-        {path: '/help', label: 'Trợ giúp', icon: HelpCircle},
+        // {path: '/help', label: 'Trợ giúp', icon: HelpCircle},
         {onClick: handleLogout, label: 'Đăng xuất', icon: LogOut, variant: 'danger'}
     ];
 

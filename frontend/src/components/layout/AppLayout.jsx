@@ -32,6 +32,7 @@ import {VideoSetup} from "../../features/interview/pages/VideoSetup.jsx";
 import {CVResult} from "../../features/cv/pages/CVResult.jsx";
 import {InterviewResults} from "../../features/interview/pages/InterviewResult.jsx";
 import CVEditor from "../../features/cv/pages/CVEditor.jsx";
+import {PaymentPage} from "../../features/payment/pages/PaymentPage.jsx";
 import CVEvaluation from "../../features/cv/pages/CVEvaluation.jsx";
 import CVAnalyzing from "../../features/cv/pages/CVAnalyzing.jsx";
 import FeedbackWidget from "../../features/feedback/components/FeedbackWidget.jsx";
@@ -139,7 +140,8 @@ function AppLayout() {
                                    element={<PageTransition key={location.pathname}><CVResult/></PageTransition>}/>
                             <Route path="editor"
                                    element={<PageTransition key={location.pathname}><CVEditor/></PageTransition>}/>
-
+                            <Route path="payment"
+                                   element={<PageTransition key={location.pathname}><PaymentPage/></PageTransition>}/>
                             <Route path="audio-setup"
                                    element={<PageTransition key={location.pathname}><AudioSetup/></PageTransition>}/>
                             <Route path="video-setup"

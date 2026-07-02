@@ -128,6 +128,8 @@ export default function TemplateList() {
                         </div>
 
                         {/* Filter and Sort Tabs */}
+                        <div className="bg-slate-500 rounded-2xl p-6">
+
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10">
                             <div className="flex bg-gray-100 p-1 rounded-xl">
                                 {['Phổ biến', 'Mới nhất', 'Yêu thích'].map(tab => (
@@ -374,6 +376,7 @@ export default function TemplateList() {
                                 </button>
                             </div>
                         )}
+                        </div>
                     </section>
                 </div>
             </main>
