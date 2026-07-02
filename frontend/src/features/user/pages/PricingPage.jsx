@@ -143,7 +143,7 @@ const PricingPage = () => {
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#8B5CF6]"/> Interview Middle</li>
                         </ul >
                         <Button
-                            className="w-full mt-auto !bg-transparent border-2 !border-[#8B5CF6] !text-[#8B5CF6]"
+                            className="w-full mt-auto !bg-transparent border-2 !border-[#8B5CF6] !text-[#8B5CF6] hover:!bg-[#8B5CF6] hover:!text-white transition-colors"
                             onClick={() => handleSelectPlan('Middle All')}
                         >
                             Chọn gói
@@ -163,7 +163,7 @@ const PricingPage = () => {
                         </ul >
                         <Button
                             variant="primary"
-                            className="w-full mt-auto !bg-transparent border-2 !border-[#10B981] !text-[#10B981]"
+                            className="w-full mt-auto !bg-transparent border-2 !border-[#10B981] !text-[#10B981] hover:!bg-[#10B981] hover:!text-white transition-colors"
                             onClick={() => handleSelectPlan('Enhance All')}
                         >
                             Chọn gói
@@ -182,7 +182,7 @@ const PricingPage = () => {
                             <li className="text-xs text-[#94A3B8] mt-2 italic">Dành cho ứng viên tự tin vào CV của mình, cần tập dượt phỏng vấn kỹ.</li>
                         </ul >
                         <Button
-                            className="w-full mt-auto !bg-transparent border-2 !border-[#EF4444] !text-[#EF4444]"
+                            className="w-full mt-auto !bg-transparent border-2  !border-[#EF4444] !text-[#EF4444] hover:!bg-[#EF4444] hover:!text-white transition-colors"
                             onClick={() => handleSelectPlan('Thực chiến')}
                         >
                             Chọn gói
@@ -203,7 +203,7 @@ const PricingPage = () => {
                             <p className="text-[#475569] text-sm">Tất cả để có 1 CV chuẩn ATS</p>
                         </div >
                     </div >
-                    <Button variant="outline" className="!bg-transparent !border-[#065F46] !text-[#065F46] text-xs h-8 rounded flex items-center gap-2">× Xem so sánh tính năng</Button>
+                    <Button variant="outline" className="!bg-transparent !border-[#065F46] !text-[#065F46] text-xs h-8 rounded flex items-center gap-2 hover:!bg-[#065F46] hover:!text-white transition-colors">× Xem so sánh tính năng</Button>
                 </div >
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -212,12 +212,12 @@ const PricingPage = () => {
                         <h4 className="font-bold text-[#0F172A] mb-1">Cơ bản</h4>
                         <div className="text-2xl font-bold text-[#0F172A] mb-1">0 VNĐ <span className="text-sm font-normal text-[#475569]">/ vĩnh viễn</span></div >
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="text-slate-300"/> 1 CV</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="text-slate-300"/> Template cơ bản</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="text-slate-300"/> Phân tích CV 1 lần (có bảng điểm)</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="text-slate-300"/> Gợi ý kĩ năng</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> 1 CV</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Template cơ bản</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Phân tích CV 1 lần (có bảng điểm)</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Gợi ý kĩ năng</li>
                         </ul >
-                        <Button variant="outline" className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46]">
+                        <Button variant="outline" className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">
                             Đang dùng miễn phí
                         </Button>
                     </div >
@@ -235,7 +235,7 @@ const PricingPage = () => {
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#7C3AED]"/> Hỗ trợ 2 ngôn ngữ</li>
                         </ul >
                         <Button
-                            className="w-full mt-auto bg-[#9333EA] hover:bg-[#7E22CE] text-white"
+                            className="w-full mt-auto bg-[#9333EA]  hover:bg-[#7E22CE] text-white"
                             onClick={() => handleSelectPlan('CV Middle')}
                         >
                             Nâng cấp
@@ -276,7 +276,7 @@ const PricingPage = () => {
                             <p className="text-[#475569] text-sm">Luyện phỏng vấn và nhận phản hồi chuyên sâu</p>
                         </div >
                     </div >
-                    <Button variant="outline" className="!bg-transparent !border-[#065F46] !text-[#065F46] text-xs h-8 rounded flex items-center gap-2">
+                    <Button variant="outline" className="!bg-transparent !border-[#065F46] !text-[#065F46] text-xs h-8 rounded flex items-center gap-2 hover:!bg-[#065F46] hover:!text-white transition-colors">
                         × Xem so sánh tính năng
                     </Button>
                 </div >
@@ -291,7 +291,7 @@ const PricingPage = () => {
                             <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Dựa trên vị trí</li>
                             <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Không có feedback</li>
                         </ul >
-                        <Button variant="outline" className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46]">Dùng thử miễn phí</Button>
+                        <Button variant="outline" className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">Dùng thử miễn phí</Button>
                     </div >
 
                     {/* Middle */}
@@ -307,7 +307,7 @@ const PricingPage = () => {
                             <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#7C3AED] shrink-0 mt-0.5"/> Ghi hình + 3 lần</li>
                         </ul >
                         <Button
-                            className="w-full mt-auto !bg-[#7C3AED] !text-white"
+                            className="w-full mt-auto !bg-[#7C3AED] hover:!bg-[#7E22CE]  !text-white"
                             onClick={() => handleSelectPlan('Interview Middle')}
                         >
                             Nâng cấp

@@ -3,6 +3,7 @@ import {Routes, Route, Navigate, useLocation} from 'react-router-dom';
 import {AnimatePresence} from 'framer-motion';
 import Sidebar from '../../features/user/components/Sidebar.jsx';
 import Header from '../../features/user/components/Header.jsx';
+import { Footer } from './Footer.jsx';
 import ProtectedRoute from '../ProtectedRoute.jsx';
 import LandingPage from '../../pages/LandingPage.jsx';
 import Home from '../../pages/Home.jsx';
@@ -63,7 +64,7 @@ function RoomGuard({children}) {
 /**
  * Guard cho InterviewResult: cần session.feedback.
  * - Nếu chưa có feedback → tự generate rồi cho vào.
- * - Nếu thiếu questions (chưa từng vào room) → redirect về step 1.
+ * - Nếu thiếu questions (không từng vào room) → redirect về step 1.
  */
 function ResultGuard({children}) {
     const {data, generateFeedback} = useInterviewSession();
@@ -83,7 +84,7 @@ function ResultGuard({children}) {
     return children;
 }
 
-export default function AppLayout() {
+function AppLayout() {
     const {isLoggedIn, profile} = useAuth();
     const {notificationsCount, showToast, toast} = useApp();
     const location = useLocation();
@@ -167,36 +168,38 @@ export default function AppLayout() {
                             {/* ZONE B shell: Sidebar + Header stay mounted */}
                             <Route path="*" element={
                                 <ProtectedRoute isLoggedIn={isLoggedIn}>
-                                    <div
-                                        className="flex bg-background min-h-screen text-on-surface font-sans antialiased">
-                                        <Sidebar/>
-                                        <div className="flex-1 flex flex-col min-w-0">
-                                            <Header
-                                                profile={profile}
-                                                notificationsCount={notificationsCount}
-                                                onHelpClick={() => showToast('Trung tâm trợ giúp Smartfolio đang tải dữ liệu.', 'info')}
-                                            />
-                                            <main
-                                                className="flex-1 p-8 overflow-y-auto max-w-5xl w-full mx-auto">
-                                                <AnimatePresence mode="wait">
-                                                    <PageTransition key={location.pathname}>
-                                                        <Routes location={location}>
-                                                            <Route path="personal-info"
-                                                                   element={<PersonalInfoPage/>}/>
-                                                            <Route path="security"
-                                                                   element={<SecurityPage/>}/>
-                                                            <Route path="pricing"
-                                                                   element={<PricingPage/>}/>
-                                                            <Route path="my-cvs"
-                                                                   element={<MyCVsPage/>}/>
-                                                            <Route path="history"
-                                                                   element={<HistoryPage/>}/>
-                                                        </Routes>
-                                                    </PageTransition>
-                                                </AnimatePresence>
-                                            </main>
-                                        </div>
-                                    </div>
+                                    <div className="flex flex-col min-h-screen">
+                                        <div className="flex bg-background text-on-surface font-sans antialiased flex-1">
+                                            <Sidebar/>
+                                            <div className="flex-1 flex flex-col min-w-0">
+                                                <Header
+                                                    profile={profile}
+                                                    notificationsCount={notificationsCount}
+                                                    onHelpClick={() => showToast('Trung tâm trợ giúp Smartfolio đang tải dữ liệu.', 'info')}
+                                                />
+                                                <main
+                                                    className="flex-1 p-8 overflow-y-auto max-w-5xl w-full mx-auto">
+                                                    <AnimatePresence mode="wait">
+                                                        <PageTransition key={location.pathname}>
+                                                            <Routes location={location}>
+                                                                <Route path="personal-info"
+                                                                        element={<PersonalInfoPage/>}/>
+                                                                <Route path="security"
+                                                                        element={<SecurityPage/>}/>
+                                                                <Route path="pricing"
+                                                                        element={<PricingPage/>}/>
+                                                                <Route path="my-cvs"
+                                                                        element={<MyCVsPage/>}/>
+                                                                <Route path="history"
+                                                                        element={<HistoryPage/>}/>
+                                                            </Routes>
+                                                        </PageTransition>
+                                                    </AnimatePresence>
+                                                </main>
+                                            </div >
+                                        </div >
+                                        <Footer />
+                                    </div >
                                 </ProtectedRoute>
                             }/>
                         </Routes>
@@ -221,3 +224,5 @@ export default function AppLayout() {
         </div>
     );
 }
+
+export default AppLayout;

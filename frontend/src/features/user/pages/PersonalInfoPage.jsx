@@ -4,6 +4,7 @@ import {Package, Camera, Link, Globe, Code, Sparkles, Shield, User, FileText, Ch
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Input, Toggle, Badge, SectionHeader} from '../components/Layout.jsx';
+import { Footer } from '../../../components/layout/Footer.jsx';
 
 const PersonalInfoPage = () => {
     const navigate = useNavigate();
@@ -59,6 +60,7 @@ const PersonalInfoPage = () => {
     };
 
     return (
+
         <div className="max-w-4xl mx-auto pb-12">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-[#10B981] mb-2">Cài đặt tài khoản</h1>
@@ -282,6 +284,7 @@ const PersonalInfoPage = () => {
                 </Button>
             </div>
         </div>
+
     );
 };
 
