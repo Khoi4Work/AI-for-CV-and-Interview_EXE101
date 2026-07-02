@@ -22,7 +22,7 @@ export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, 
             case 'free':
                 return 'bg-blue-100 text-blue-800';
             case 'pro':
-                return 'bg-blue-600 text-white';
+                return 'bg-green-800 text-white';
             default:
                 return 'bg-gray-200 text-gray-800';
         }
@@ -64,7 +64,7 @@ export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, 
                 <div className="p-5 border-t border-gray-100 bg-white">
                     <div className="flex justify-between items-start mb-2">
                         <div className="max-w-[80%]">
-                            <h4 className="font-bold text-gray-900 text-sm group-hover:text-blue-700 transition-colors truncate">{title}</h4>
+                            <h4 className="font-bold text-gray-900 text-sm group-hover:text-green-700 transition-colors truncate">{title}</h4>
                             <p className="text-xs text-gray-500 mt-1 truncate">{subtitle}</p>
                         </div>
                     </div>

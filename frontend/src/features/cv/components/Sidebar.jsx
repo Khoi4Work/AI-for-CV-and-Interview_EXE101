@@ -37,8 +37,8 @@ export default function Sidebar({ activeCategory, setActiveCategory, activeStyle
                                 onClick={() => setActiveStyle(prev => prev === style ? null : style)}
                                 className={`border rounded px-2 py-1.5 text-xs font-semibold transition-colors ${
                                     activeStyle === style
-                                    ? 'border-primary text-primary bg-surface-container'
-                                    : 'border-surface-container text-on-surface-variant hover:border-primary'
+                                        ? 'border-primary text-primary bg-surface-container' 
+                                        : 'border-white text-on-surface-variant hover:border-primary' 
                                 }`}
                             >
                                 {style}
