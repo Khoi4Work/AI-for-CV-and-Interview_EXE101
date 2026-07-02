@@ -23,7 +23,7 @@ const Sidebar = () => {
 
     return (
         <aside
-            className="w-64 min-h-screen border-r border-[#1E2E42] bg-[#0A1118] flex flex-col pt-8 sticky top-0 left-0 text-white select-none z-20">
+            className="w-64 min-h-screen border-r border-[#1E2E42]  flex flex-col pt-8 sticky top-0 left-0 text-white select-none z-20">
             <div className="px-6 mb-8">
                 <div
                     className="flex items-center space-x-2 cursor-pointer"

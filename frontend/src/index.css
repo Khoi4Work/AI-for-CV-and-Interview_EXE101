@@ -71,6 +71,10 @@
     --color-cream: #1B263B;
     --color-cream-deep: #0D1B2A;
 
+    /*Home LandingPage*/
+    --color-bg-card-home-1: #2A8B75;
+    --color-bg-card-home-2: #305D66;
+
     /* Spacing */
     --spacing-xs: 4px;
     --spacing-sm: 12px;

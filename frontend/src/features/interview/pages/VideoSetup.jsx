@@ -44,7 +44,7 @@ export function VideoSetup() {
       <Header />
       <main className="flex-grow flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-5xl mx-auto">
-          <p className="text-center text-sm text-black/60 font-medium mb-6">Bước 7 trên 10 • 70% hoàn tất</p>
+          <p className="text-center text-sm text-white/60 font-medium mb-6">Bước 7 trên 10 • 70% hoàn tất</p>
 
           <h1 className="text-3xl font-display font-semibold text-center mb-8 text-on-surface">Chuẩn bị Phỏng vấn Ghi hình</h1>
 
@@ -171,7 +171,7 @@ export function VideoSetup() {
             >
               Bắt đầu phỏng vấn
             </button>
-            <p className="text-xs text-black/60 mt-1">
+            <p className="text-xs text-white/60 mt-1">
               Bằng cách nhấn bắt đầu, bạn đồng ý với các <a href="#" className="underline text-primary">điều khoản ghi hình</a> của chúng tôi.
             </p>
           </div>
