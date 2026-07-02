@@ -135,7 +135,7 @@ const PricingPage = () => {
                     <Card className="mb-8 p-6 bg-[#DFE6E2] border-none shadow-sm flex flex-col h-full">
                         <h4 className="text-lg font-bold text-[#0F172A] mb-1">Middle All</h4>
                         <div className="flex items-end gap-2 mb-4">
-                            <span className="text-2xl font-bold text-[#9333EA]">49.000 VNĐ</span>
+                            <span className="text-2xl font-bold text-[#9333EA]">89.000 VNĐ</span>
                             <span className="text-[#94A3B8] text-sm line-through mb-1">98.000 VNĐ</span>
                         </div >
                         <ul className="space-y-2 mb-6 text-sm text-[#475569]">
@@ -154,7 +154,7 @@ const PricingPage = () => {
                     <Card className="mb-8 p-6 bg-[#DFE6E2] border-none shadow-sm flex flex-col h-full">
                         <h4 className="text-lg font-bold text-[#0F172A] mb-1">Enhance All</h4>
                         <div className="flex items-end gap-2 mb-4">
-                            <span className="text-2xl font-bold text-[#10B981]">157.000 VNĐ</span>
+                            <span className="text-2xl font-bold text-[#10B981]">167.000 VNĐ</span>
                             <span className="text-[#94A3B8] text-sm line-through mb-1">188.000 VNĐ</span>
                         </div >
                         <ul className="space-y-2 mb-6 text-sm text-[#475569]">
@@ -214,8 +214,7 @@ const PricingPage = () => {
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
                             <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> 1 CV</li>
                             <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Template cơ bản</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Phân tích CV 1 lần (có bảng điểm)</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Gợi ý kĩ năng</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Phân tích CV 1 lần (Thấy score, không sửa)</li>
                         </ul >
                         <Button variant="outline" className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">
                             Đang dùng miễn phí
@@ -228,10 +227,9 @@ const PricingPage = () => {
                         <h4 className="font-bold text-[#9333EA] mb-1">Middle</h4>
                         <div className="text-2xl font-bold text-[#0F172A] mb-1">39.000 VNĐ <span className="text-sm font-normal text-[#475569]">/ tháng</span></div >
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#7C3AED]"/> 10 CV / tháng</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#7C3AED]"/> Tạo CV x5 lần / tháng</li>
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#7C3AED]"/> Template cao cấp</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#7C3AED]"/> Phân tích CV 5 lần (có bảng điểm)</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#7C3AED]"/> Gợi ý AI từ ngữ</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#7C3AED]"/> Phân tích CV x5 lần (Thấy score, gợi ý kỹ năng, ngữ nghĩa)</li>
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#7C3AED]"/> Hỗ trợ 2 ngôn ngữ</li>
                         </ul >
                         <Button
@@ -247,10 +245,9 @@ const PricingPage = () => {
                         <h4 className="font-bold text-[#2563EB] mb-1">Enhance</h4>
                         <div className="text-2xl font-bold text-[#0F172A] mb-1">59.000 VNĐ <span className="text-sm font-normal text-[#475569]">/ tháng</span></div >
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#2563EB]"/> Vô hạn CV / tháng</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#2563EB]"/> Template cao cấp +</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#2563EB]"/> Phân tích CV Vô hạn (có bảng điểm)</li>
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#2563EB]"/> Gợi ý AI AI viết lại đoạn văn</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#2563EB]"/> Tạo CV x10 lần / tháng</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#2563EB]"/> Template cao cấp - % đậu của từng template</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#2563EB]"/> Phân tích CV x10 lần (Thấy score, gợi ý kỹ năng, chỉnh sửa)</li>
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#2563EB]"/> AI tối ưu theo Job JD</li>
                         </ul >
                         <Button
@@ -287,9 +284,9 @@ const PricingPage = () => {
                         <h4 className="font-bold text-[#0F172A] mb-1">Cơ bản</h4>
                         <div className="text-2xl font-bold text-[#0F172A] mb-1">0 VNĐ <span className="text-sm font-normal text-[#475569]">/ vĩnh viễn</span></div >
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
-                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Bộ câu hỏi mẫu</li>
-                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Dựa trên vị trí</li>
+                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Bộ câu hỏi mẫu (Unlimited/Intern)</li>
                             <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Không có feedback</li>
+                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#065F46] shrink-0 mt-0.5"/> Không có ghi hình</li>
                         </ul >
                         <Button variant="outline" className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">Dùng thử miễn phí</Button>
                     </div >
@@ -319,10 +316,10 @@ const PricingPage = () => {
                         <h4 className="font-bold text-[#2563EB] mb-1">Enhance</h4>
                         <div className="text-2xl font-bold text-[#0F172A] mb-1">129.000 VNĐ <span className="text-sm font-normal text-[#475569]">/ tháng</span></div >
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
-                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#2563EB] shrink-0 mt-0.5"/> Mở khóa 15 phút</li>
-                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#2563EB] shrink-0 mt-0.5"/> Bộ câu hỏi nâng cao</li>
-                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#2563EB] shrink-0 mt-0.5"/> Phản hồi và chấm điểm chi tiết</li>
+                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#2563EB] shrink-0 mt-0.5"/> Toàn bộ chức năng gói Middle</li>
+                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#2563EB] shrink-0 mt-0.5"/> Văn hóa doanh nghiệp đang ứng tuyển</li>
                             <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#2563EB] shrink-0 mt-0.5"/> Feedback chuyên sâu</li>
+                            <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#2563EB] shrink-0 mt-0.5"/> Mở khóa 15 phút</li>
                             <li className="flex items-start gap-2"><CheckCircle size={16} className="!text-[#2563EB] shrink-0 mt-0.5"/> Ghi hình + 6 lần</li>
                         </ul >
                         <Button
@@ -373,57 +370,30 @@ const PricingPage = () => {
                                 <tr >
                                     <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Số lượng CV</td>
                                     <td>1 CV</td>
-                                    <td>5 CV / tháng</td>
-                                    <td className="border-r border-slate-300">10 CV / tháng</td>
+                                    <td>5 CV</td>
+                                    <td className="border-r border-slate-300">10 CV</td>
                                     <td>–</td>
                                     <td>–</td>
                                     <td>–</td>
-                                </tr>
+                                </tr >
                                 <tr >
                                     <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Template</td>
                                     <td>Cơ bản</td>
                                     <td>Cao cấp</td>
-                                    <td className="border-r border-slate-300">Cao cấp +</td>
+                                    <td className="border-r border-slate-300">Cao cấp (% đậu)</td>
                                     <td>–</td>
                                     <td>Cơ bản</td>
                                     <td>Nâng cao</td>
-                                </tr>
+                                </tr >
                                 <tr >
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Phân tích CV (Có bảng điểm)</td>
-                                    <td>1 lần</td>
-                                    <td>5 lần</td>
-                                    <td className="border-r border-slate-300">10 lần</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td><CheckCircle size={18} className="mx-auto text-[#10B981]" /></td>
-                                </tr>
-                                <tr >
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Gợi ý kỹ năng</td>
-                                    <td>–</td>
-                                    <td><CheckCircle size={18} className="mx-auto text-[#9333EA]" /></td>
-                                    <td className="border-r border-slate-300"><CheckCircle size={18} className="mx-auto text-[#10B981]" /></td>
+                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Phân tích CV</td>
+                                    <td>1 lần (không sửa)</td>
+                                    <td>5 lần (Score, kỹ năng, ngữ nghĩa)</td>
+                                    <td className="border-r border-slate-300">10 lần (Score, kỹ năng, chỉnh sửa)</td>
                                     <td>–</td>
                                     <td>–</td>
                                     <td>–</td>
-                                </tr>
-                                <tr >
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Gợi ý ngữ nghĩa, câu từ</td>
-                                    <td>–</td>
-                                    <td><CheckCircle size={18} className="mx-auto text-[#9333EA]" /></td>
-                                    <td className="border-r border-slate-300"><CheckCircle size={18} className="mx-auto text-[#10B981]" /></td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                </tr>
-                                <tr >
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">AI chỉnh sửa / Tối ưu CV</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td className="border-r border-slate-300"><CheckCircle size={18} className="mx-auto text-[#10B981]" /></td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                </tr>
+                                </tr >
                                 <tr >
                                     <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Số phút phỏng vấn</td>
                                     <td>–</td>
@@ -432,16 +402,25 @@ const PricingPage = () => {
                                     <td>–</td>
                                     <td>10 phút</td>
                                     <td>15 phút</td>
-                                </tr>
+                                </tr >
                                 <tr >
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Feedback và chấm điểm</td>
+                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Câu hỏi mẫu</td>
+                                    <td>Unlimited/Intern</td>
+                                    <td>Cơ bản (Vị trí/Fresher)</td>
+                                    <td className="border-r border-slate-300">Nâng cao</td>
+                                    <td>Unlimited/Intern</td>
+                                    <td>Cơ bản (Vị trí/Fresher)</td>
+                                    <td>Nâng cao</td>
+                                </tr >
+                                <tr >
+                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Văn hóa doanh nghiệp</td>
                                     <td>–</td>
                                     <td>–</td>
                                     <td className="border-r border-slate-300">–</td>
                                     <td>–</td>
                                     <td>–</td>
-                                    <td>–</td>
-                                </tr>
+                                    <td className="text-[#10B981]"><CheckCircle size={18} className="mx-auto" /></td>
+                                </tr >
                                 <tr >
                                     <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Feedback chuyên sâu</td>
                                     <td>–</td>
@@ -449,8 +428,8 @@ const PricingPage = () => {
                                     <td className="border-r border-slate-300">–</td>
                                     <td>–</td>
                                     <td>–</td>
-                                    <td><CheckCircle size={18} className="mx-auto text-[#10B981]" /></td>
-                                </tr>
+                                    <td className="text-[#10B981]"><CheckCircle size={18} className="mx-auto" /></td>
+                                </tr >
                                 <tr >
                                     <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Ghi hình</td>
                                     <td>–</td>
@@ -459,14 +438,12 @@ const PricingPage = () => {
                                     <td>–</td>
                                     <td>3 lần</td>
                                     <td>6 lần</td>
-                                </tr>
+                                </tr >
                             </tbody>
                         </table>
                     </div>
                 </Card>
             )}
-
-
 
             <Card className="bg-[#E2E8F0] rounded-2xl p-6 space-y-4 shadow-sm border-none mb-8">
                 <div className="flex items-center space-x-2 pb-3 border-b border-slate-200">
@@ -552,7 +529,7 @@ const PricingPage = () => {
                                 <div className="flex items-center space-x-2 text-xs text-[#64748B] bg-emerald-50 p-2 rounded-lg border border-emerald-100">
                                     <Lock size={14} className="text-[#10B981]" />
                                     <span >Thanh toán được bảo mật qua Stripe SSL Encryption.</span>
-                                </div >
+                                </div>
                                 <Button
                                     onClick={processPayment}
                                     disabled={isProcessing}
