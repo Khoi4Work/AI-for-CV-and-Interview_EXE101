@@ -1,7 +1,7 @@
 // /src/pages/interview/AudioSetup.jsx
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Mic, AudioLines, ArrowLeft, Square } from 'lucide-react';
+import { Play, Mic, AudioLines, ArrowLeft, Square, ArrowRight} from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
@@ -19,6 +19,7 @@ export function AudioSetup() {
     startRecording,
     stopRecording,
     playAudio,
+    stopAudio,
     stopAllTracks
   } = useMediaDevices();
 
@@ -57,12 +58,13 @@ export function AudioSetup() {
           </div>
 
           <div className="flex justify-center mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">
-              <span className={`w-2 h-2 rounded-full bg-primary ${isRecording ? 'animate-pulse' : ''}`}></span>
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary text-on-primary rounded-full text-sm font-medium">
+              <span className={`w-2 h-2 rounded-full bg-on-primary ${isRecording ? 'animate-pulse' : ''}`}></span>
               {isRecording ? 'Đang ghi âm...' : 'Microphone detected'}
             </span>
           </div>
 
+          {/*Audio Pulse*/}
           <div className="bg-black/10 rounded-lg p-8 py-12 flex items-center justify-center relative overflow-hidden mb-6 h-40">
             <div className="absolute inset-0 flex items-center justify-center opacity-30 text-black/40">
               <AudioLines size={120} strokeWidth={1} />
@@ -71,7 +73,7 @@ export function AudioSetup() {
               {audioLevels.map((level, i) => (
                 <div
                     key={i}
-                    className="w-1.5 bg-primary rounded-full transition-all"
+                    className="w-1.5 bg-primary rounded-full transition-[height] duration-75"
                     style={{ height: `${level}px` }}
                 />
               ))}
@@ -97,7 +99,7 @@ export function AudioSetup() {
             </button>
             <button
                 disabled={!isRecorded || !audioUrl}
-                onClick={playAudio}
+                onClick={isPlaying ? stopAudio : playAudio}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium ${
                     isRecorded && audioUrl
                       ? 'bg-primary text-on-primary hover:bg-primary-container'
@@ -106,8 +108,8 @@ export function AudioSetup() {
             >
               {isPlaying ? (
                 <>
-                  <span className="w-2 h-2 rounded-full bg-on-primary animate-pulse"></span>
-                  Đang phát...
+                  <Square size={18} fill="currentColor" />
+                  Dừng phát
                 </>
               ) : (
                 <>
@@ -122,18 +124,18 @@ export function AudioSetup() {
             <Mic size={14} className="text-black/40" /> Chúng tôi cam kết không lưu trữ bản ghi âm của bạn.
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-3 pt-2">
             <button
                 onClick={handleBack}
-                className="flex-1 py-3 bg-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-400 transition-colors flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center bg-surface-container border border-on-primary text-outline py-3.5 rounded-xl text-sm font-bold hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
             >
-              <ArrowLeft size={18} /> Quay lại
+              <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>
             <button
                 onClick={handleContinue}
-                className="flex-1 py-3 bg-primary text-on-primary font-medium rounded-lg hover:opacity-90 transition-colors"
+                className="hover:text-on-primary hover:opacity-90 w-full flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
             >
-              Tiếp tục
+              Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
             </button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 // /src/pages/interview/VideoSetup.jsx
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Mic, Info, Lightbulb, Shirt, Image as ImageIcon, CheckCircle2, ChevronDown, ArrowLeft } from 'lucide-react';
+import { Camera, Mic, Info, Lightbulb, Shirt, Image as ImageIcon, CheckCircle2, ChevronDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
@@ -44,7 +44,7 @@ export function VideoSetup() {
       <Header />
       <main className="flex-grow flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-5xl mx-auto">
-          <p className="text-center text-sm text-black/60 font-medium mb-6">Bước 7 trên 10 • 70% hoàn tất</p>
+          <p className="text-center text-sm text-white/60 font-medium mb-6">Bước 7 trên 10 • 70% hoàn tất</p>
 
           <h1 className="text-3xl font-display font-semibold text-center mb-8 text-on-surface">Chuẩn bị Phỏng vấn Ghi hình</h1>
 
@@ -161,17 +161,17 @@ export function VideoSetup() {
           <div className="flex flex-col items-center justify-center mt-12 gap-3">
             <button
               onClick={() => navigate('/audio-setup')}
-              className="w-full max-w-2xl py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              className="w-full max-w-2xl flex items-center justify-center bg-surface-container border border-on-primary text-outline py-3.5 rounded-xl text-sm font-bold hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
             >
-              <ArrowLeft size={18} /> Quay lại
+              <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>
             <button
               onClick={handleStart}
-              className="w-full max-w-2xl bg-primary hover:bg-primary-container text-on-primary py-3.5 rounded-lg font-medium shadow-sm transition-colors text-lg"
+              className="hover:text-on-primary hover:opacity-90 w-full max-w-2xl flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
             >
-              Bắt đầu phỏng vấn
+              Bắt đầu phỏng vấn <ArrowRight className="w-4 h-4 ml-2" />
             </button>
-            <p className="text-xs text-black/60 mt-1">
+            <p className="text-xs text-white/60 mt-1">
               Bằng cách nhấn bắt đầu, bạn đồng ý với các <a href="#" className="underline text-primary">điều khoản ghi hình</a> của chúng tôi.
             </p>
           </div>

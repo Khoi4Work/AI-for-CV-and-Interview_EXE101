@@ -153,13 +153,31 @@ export default function InterviewSetup() {
               <div className="flex flex-col gap-3 pt-2">
                 <button
                   onClick={() => navigate('/interview/career-goal')}
-                  className="w-full flex items-center justify-center bg-surface-container border border-outline-variant text-on-surface-variant py-3.5 rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors shadow-sm"
+                  className="
+                  w-full
+                  flex
+                  items-center
+                  justify-center
+                  bg-surface-container
+                  border
+                  border-on-primary
+                  text-outline
+                  py-3.5
+                  rounded-xl
+                  text-sm
+                  font-bold
+                  hover:text-on-surface
+                  hover:bg-surface-container-low
+                   transition-colors shadow-sm"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
                 </button>
                 <button
                   onClick={handleNext}
-                  className="w-full flex items-center justify-center bg-primary text-on-primary py-3.5 rounded-xl text-sm font-bold hover:opacity-90 transition-colors shadow-md"
+                  className="
+                  hover:text-on-primary
+                  hover:opacity-90
+                  w-full flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
                 >
                   Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
                 </button>

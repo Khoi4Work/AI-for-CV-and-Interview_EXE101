@@ -67,7 +67,7 @@ export default function ExperienceLevel() {
           <div className="flex items-center justify-between w-full">
             <button
               onClick={() => navigate('/interview/cv-status')}
-              className="flex items-center text-on-surface-variant hover:text-on-surface font-medium transition-colors"
+              className="flex items-center text-outline hover:text-on-surface font-medium transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>

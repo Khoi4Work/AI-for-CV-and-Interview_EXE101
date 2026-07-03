@@ -18,21 +18,19 @@ const LandingPage = () => {
         <section
             className="max-w-7xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-1 w-full">
             <div className="lg:col-span-6 flex flex-col space-y-6">
-                <div className="inline-flex items-center self-start">
-                    <span className="h-2 w-8 bg-primary/20 rounded-full"></span>
+                <div
+                    className="bg-primary text-on-primary px-sm py-xs rounded-full w-fit font-label-sm text-label-sm text-[12px] font-semibold tracking-wider">AI-Powered
+                    Excellence
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
-                    Nâng tầm sự nghiệp với <br/>
-                    <span className="text-primary relative">
-                        CV tối ưu bởi AI
-                        <span className="absolute bottom-1 left-0 w-full h-2 bg-primary-container/30 -z-10 rounded"></span>
+                    ĐỒNG HÀNH CÙNG BẠN XÂY DỰNG <span className="text-primary relative">
+                        SỰ NGHIỆP
                     </span>
                 </h1>
 
                 <p className="text-on-surface-variant text-base sm:text-lg max-w-2xl leading-relaxed">
-                    Áp dụng trí tuệ nhân tạo tiên tiến giúp rà soát lỗi, chấm điểm kỹ năng và đề xuất các từ khóa
-                    chuẩn ATS giúp bạn chinh phục mọi nhà tuyển dụng.
+                    Tất cả các mẫu sơ yếu lý lịch SmartFolio đều đã được kiểm nghiệm với các hệ thống quản lý tuyển dụng (ATS) hàng đầu để đảm bảo khả năng tương thích hoàn toàn. Nhờ bố cục gọn gàng, phông chữ dễ đọc và tiêu đề các mục theo chuẩn, thông tin của bạn sẽ không bị phần mềm bỏ sót.
                 </p>
 
                 <div
@@ -62,11 +60,11 @@ const LandingPage = () => {
         </section>
 
         {/* AI Features Section */}
-        <section className="bg-surface-container-low border-t border-b border-outline-variant py-20 px-6">
+        <section className=" border-t border-b border-outline-variant py-20 px-6">
             <div className="max-w-[1280px] mx-auto flex flex-col space-y-12">
                 <div className="text-center mb-lg space-y-xs">
-                    <h2 className="font-headline-xl text-headline-xl text-primary font-bold">Tính năng đột phá từ
-                        AI</h2>
+                    <h2 className="font-headline-xl text-headline-xl text-primary font-bold">
+                        Tính năng đột phá từ AI</h2>
                     <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
                         Quy trình tạo CV truyền thống đã lỗi thời. Hãy để AI đồng hành cùng bạn trên con đường sự
                         nghiệp với bộ công cụ thông minh nhất.
@@ -74,10 +72,10 @@ const LandingPage = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
                     <div
-                        className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
+                        className="border-2  p-lg rounded-xl border-interview-selection-border hover:bg-on-primary/40 transition-all group">
                         <div
-                            className="w-12 h-12 rounded-lg ai-gradient-bg flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                            <FileText className="w-5 h-5 text-on-primary"/>
+                            className="border-white opacity-60 border-2 w-12 h-12 rounded-lg ai-gradient-bg flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+                            <FileText className="w-5 h-5 text-on-tertiary-container"/>
                         </div>
                         <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Tạo CV Thông
                             minh</h3>
@@ -87,9 +85,9 @@ const LandingPage = () => {
                     </div>
 
                     <div
-                        className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
+                        className="border-2  p-lg rounded-xl border-interview-selection-border hover:bg-on-primary/40 transition-all group">
                         <div
-                            className="w-12 h-12 rounded-lg bg-tertiary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+                            className="w-12 h-12 rounded-lg bg-tertiary-container border-white opacity-60 border-2 flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
                             <Zap className="w-5 h-5 text-on-tertiary-container"/>
                         </div>
                         <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phỏng vấn mô
@@ -100,10 +98,10 @@ const LandingPage = () => {
                     </div>
 
                     <div
-                        className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
+                        className="border-2  p-lg rounded-xl border-interview-selection-border hover:bg-on-primary/40 transition-all group">
                         <div
-                            className="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                            <BarChart2 className="w-5 h-5 text-on-secondary-container"/>
+                            className="border-white opacity-60 border-2 w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+                            <BarChart2 className="w-5 h-5 text-on-tertiary-container"/>
                         </div>
                         <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phân tích CV theo
                             JD</h3>
@@ -113,10 +111,10 @@ const LandingPage = () => {
                     </div>
 
                     <div
-                        className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
+                        className="border-2  p-lg rounded-xl border-interview-selection-border hover:bg-on-primary/40 transition-all group">
                         <div
-                            className="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                            <MessageSquare className="w-5 h-5 text-on-primary-container"/>
+                            className="border-white opacity-60 border-2 w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+                            <MessageSquare className="w-5 h-5 text-on-tertiary-container"/>
                         </div>
                         <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phản hồi & Phân
                             tích</h3>
@@ -147,8 +145,8 @@ const LandingPage = () => {
                     {TEMPLATES_DATA.slice(0, 4).map((template) => (
                         <div key={template.id} className="group cursor-pointer">
                             <div
-                                className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-outline-variant mb-sm transition-transform group-hover:-translate-y-2">
-                                <img className="w-full h-full object-cover" alt={template.title}
+                                className="relative aspect-3/4 rounded-xl overflow-hidden shadow-md border border-outline-variant mb-sm transition-transform group-hover:-translate-y-2">
+                                <img className="border-3 border-primary  rounded-2xl w-full h-full object-cover" alt={template.title}
                                      src={template.image}/>
                                 <div
                                     className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -164,34 +162,24 @@ const LandingPage = () => {
                 </div>
             </div>
         </section>
-        <section className="py-xl w-full">
-            <div className="max-w-7xl mx-auto px-6 pb-20 w-full">
+        <section className="py-xl px-xl lg:px-gutter max-w-[1280px] mx-auto w-full">
+            <div
+                className="ai-gradient-bg rounded-[2rem] p-lg md:p-xl flex flex-col items-center text-center gap-md relative overflow-hidden ai-glow">
                 <div
-                    className="bg-primary text-on-primary rounded-3xl p-10 md:p-14 text-center space-y-8 shadow-xl relative overflow-hidden flex flex-col items-center">
-                    <div
-                        className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
-                    <div
-                        className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-8 -mb-8 pointer-events-none"></div>
-
-                    <div className="space-y-3 max-w-2xl z-10">
-                        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sẵn sàng để sở hữu công việc
-                            mơ
-                            ước?</h2>
-                        <p className="text-on-primary-container text-sm leading-relaxed max-w-2xl mx-auto">
-                            Chỉ mất 5 phút để xây dựng một bản CV thông minh, vượt qua vòng lọc tự động và nhanh
-                            chóng
-                            lọt vào mắt xanh của bộ phận tuyển dụng.
-                        </p>
-                    </div>
-
-                    <button
-                        id="landing-bottom-cta"
-                        onClick={() => navigate(isLoggedIn ? '/builder' : '/register')}
-                        className="z-10 bg-surface-container hover:bg-surface-container-low text-primary font-semibold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] text-sm"
-                    >
-                        Bắt đầu hoàn toàn miễn phí
-                    </button>
-                </div>
+                    className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                <div
+                    className="absolute bottom-0 left-0 w-64 h-64 bg-primary-container/30 rounded-full blur-3xl -ml-32 -mb-32"></div>
+                <h2 className="font-display-lg text-headline-xl text-white/60 max-w-2xl relative z-10 font-bold">
+                    Sẵn sàng để sở hữu công việc mơ ước?
+                </h2>
+                <p className="font-body-lg text-body-lg text-shadow-primary/70 max-w-2xl relative z-10">
+                    Gia nhập cộng đồng 100,000+ chuyên gia đang nâng tầm sự nghiệp cùng Smartfolio AI.
+                </p>
+                <button
+                    onClick={() => navigate("/templates")}
+                    className="bg-surface-container text-primary px-xl py-sm rounded-lg font-title-md text-title-md relative z-10 transition-all hover:bg-surface-container-low hover:shadow-xl active:scale-95 font-semibold cursor-pointer">
+                    Bắt đầu hoàn toàn miễn phí
+                </button>
             </div>
         </section>
 

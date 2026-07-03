@@ -81,16 +81,16 @@ export default function CareerGoal() {
           <div className="flex flex-col gap-3 w-full">
             <button
               onClick={() => navigate('/interview/experience-level')}
-              className="w-full flex items-center justify-center bg-surface-container border border-outline-variant text-on-surface-variant px-6 py-3.5 rounded-xl text-base font-medium hover:bg-surface-container-low transition-colors shadow-sm"
+              className="w-full flex items-center justify-center bg-surface-container border border-on-primary text-outline py-3.5 rounded-xl text-sm font-bold hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" /> Quay lại
+              <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>
             <button
               onClick={handleNext}
-              className="w-full flex items-center justify-center bg-primary text-on-primary px-6 py-3.5 rounded-xl text-base font-medium hover:opacity-90 transition-colors shadow-md"
+              className="hover:text-on-primary hover:opacity-90 w-full flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
             >
-              <Sparkles className="w-5 h-5 mr-2 fill-current" /> Bắt đầu ngay
-              <ArrowRight className="w-5 h-5 ml-2" />
+              Bắt đầu ngay
+              <ArrowRight className="w-4 h-4 ml-2" />
             </button>
             <p className="text-center text-xs text-on-surface-variant mt-2">
               Thông tin này sẽ được sử dụng để tối ưu hồ sơ Smartfolio của bạn.

@@ -4,7 +4,7 @@ import {Footer} from '../components/layout/Footer.jsx';
 import FloatingCVCard from '../features/user/components/FloatingCVCard.jsx';
 import {useAuth} from '../features/auth/contexts/AuthContext.jsx';
 import {useApp} from '../features/auth/contexts/AppContext.jsx';
-import {ArrowRight, FileText, Bot, BarChart2, MessageSquare, ExternalLink} from 'lucide-react';
+import {ArrowRight, FileText, Bot, BarChart2, MessageSquare, ExternalLink, Zap} from 'lucide-react';
 import {useNavigate} from "react-router-dom";
 import { TEMPLATES_DATA } from '../features/cv/constants/templates.js';
 
@@ -36,8 +36,8 @@ export default function Home() {
                             Excellence
                         </div>
                         <h1 className="text-4xl sm:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
-                            Nâng tầm sự nghiệp với <span className="text-primary relative">CV tối ưu bởi AI
-                                <span className="absolute bottom-1 left-0 w-full h-2 bg-primary-container/30 -z-10 rounded"></span>
+                            ĐỒNG HÀNH CÙNG BẠN XÂY DỰNG <span className="text-primary relative">
+                                SỰ NGHIỆP
                             </span>
                         </h1>
                         <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
@@ -66,36 +66,35 @@ export default function Home() {
                 </section>
 
                 {/* Features Section */}
-                <section className="bg-surface-container-low border-t border-b border-outline-variant py-20 px-6">
+                <section className=" border-t border-b border-outline-variant py-20 px-6">
                     <div className="max-w-[1280px] mx-auto flex flex-col space-y-12">
                         <div className="text-center mb-lg space-y-xs">
-                            <h2 className="font-headline-xl text-headline-xl text-primary font-bold">Tính năng đột phá
-                                từ AI</h2>
+                            <h2 className="font-headline-xl text-headline-xl text-primary font-bold">
+                                Tính năng đột phá từ AI</h2>
                             <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-                                Quy trình tạo CV truyền thống đã lỗi thời. Hãy để AI đồng hành cùng bạn trên con đường
-                                sự nghiệp với bộ công cụ thông minh nhất.
+                                Quy trình tạo CV truyền thống đã lỗi thời. Hãy để AI đồng hành cùng bạn trên con đường sự
+                                nghiệp với bộ công cụ thông minh nhất.
                             </p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
                             <div
-                                className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
+                                className="border-2  p-lg rounded-xl border-interview-selection-border hover:bg-on-primary/40 transition-all group">
                                 <div
-                                    className="w-12 h-12 rounded-lg ai-gradient-bg flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                                    <FileText className="w-5 h-5 text-on-primary"/>
+                                    className="border-white opacity-60 border-2 w-12 h-12 rounded-lg ai-gradient-bg flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+                                    <FileText className="w-5 h-5 text-on-tertiary-container"/>
                                 </div>
                                 <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Tạo CV Thông
                                     minh</h3>
                                 <p className="font-body-md text-body-md text-on-surface-variant">
-                                    Xây dựng CV chuyên nghiệp dựa trên thông tin cá nhân, JD và đặc thù của từng công
-                                    ty.
+                                    Xây dựng CV chuyên nghiệp dựa trên thông tin cá nhân, JD và đặc thù của từng công ty.
                                 </p>
                             </div>
 
                             <div
-                                className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
+                                className="border-2  p-lg rounded-xl border-interview-selection-border hover:bg-on-primary/40 transition-all group">
                                 <div
-                                    className="w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                                    <Bot className="w-5 h-5 text-on-secondary-container"/>
+                                    className="w-12 h-12 rounded-lg bg-tertiary-container border-white opacity-60 border-2 flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+                                    <Zap className="w-5 h-5 text-on-tertiary-container"/>
                                 </div>
                                 <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phỏng vấn mô
                                     phỏng</h3>
@@ -105,27 +104,26 @@ export default function Home() {
                             </div>
 
                             <div
-                                className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
+                                className="border-2  p-lg rounded-xl border-interview-selection-border hover:bg-on-primary/40 transition-all group">
                                 <div
-                                    className="w-12 h-12 rounded-lg bg-tertiary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+                                    className="border-white opacity-60 border-2 w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
                                     <BarChart2 className="w-5 h-5 text-on-tertiary-container"/>
                                 </div>
-                                <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phân tích CV
-                                    theo JD</h3>
+                                <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phân tích CV theo
+                                    JD</h3>
                                 <p className="font-body-md text-body-md text-on-surface-variant">
-                                    So sánh chi tiết CV hiện tại với JD để tìm ra những điểm thiếu sót và cơ hội cải
-                                    thiện.
+                                    So sánh chi tiết CV hiện tại với JD để tìm ra những điểm thiếu sót và cơ hội cải thiện.
                                 </p>
                             </div>
 
                             <div
-                                className="bg-surface-container-lowest p-lg rounded-xl border border-outline-variant hover:border-primary transition-all group">
+                                className="border-2  p-lg rounded-xl border-interview-selection-border hover:bg-on-primary/40 transition-all group">
                                 <div
-                                    className="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
-                                    <MessageSquare className="w-5 h-5 text-on-primary-container"/>
+                                    className="border-white opacity-60 border-2 w-12 h-12 rounded-lg bg-secondary-container flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+                                    <MessageSquare className="w-5 h-5 text-on-tertiary-container"/>
                                 </div>
-                                <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phản hồi &
-                                    Phân tích</h3>
+                                <h3 className="font-title-md text-title-md text-primary mb-sm font-bold">Phản hồi & Phân
+                                    tích</h3>
                                 <p className="font-body-md text-body-md text-on-surface-variant">
                                     Nhận đánh giá chi tiết và phân tích kết quả sau mỗi buổi phỏng vấn mô phỏng.
                                 </p>
@@ -134,7 +132,6 @@ export default function Home() {
                     </div>
                 </section>
 
-                {/* CV Templates Section */}
                 <section className="py-xl w-full">
                     <div className="max-w-[1280px] mx-auto px-xl lg:px-gutter">
                         <div className="flex justify-between items-end mb-lg">
@@ -153,10 +150,12 @@ export default function Home() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
                             {TEMPLATES_DATA.slice(0, 4).map((template) => (
                                 <div key={template.id} className="group cursor-pointer">
-                                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md border border-outline-variant mb-sm transition-transform group-hover:-translate-y-2">
-                                        <img className="w-full h-full object-cover" alt={template.title}
+                                    <div
+                                        className="relative aspect-3/4 rounded-xl overflow-hidden shadow-md border border-outline-variant mb-sm transition-transform group-hover:-translate-y-2">
+                                        <img className="border-3 border-primary  rounded-2xl w-full h-full object-cover" alt={template.title}
                                              src={template.image}/>
-                                        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <div
+                                            className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <button
                                                 className="bg-surface-container text-primary px-sm py-xs rounded-lg font-label-md text-label-md shadow-lg cursor-pointer"
                                                 onClick={() => navigate("/templates")}
@@ -165,8 +164,7 @@ export default function Home() {
                                         </div>
                                     </div>
                                     <h4 className="font-label-md text-label-md text-primary text-center">{template.title}</h4>
-                                </div>
-                            ))}
+                                </div>))}
                         </div>
                     </div>
                 </section>
@@ -179,10 +177,10 @@ export default function Home() {
                             className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
                         <div
                             className="absolute bottom-0 left-0 w-64 h-64 bg-primary-container/30 rounded-full blur-3xl -ml-32 -mb-32"></div>
-                        <h2 className="font-display-lg text-headline-xl text-on-primary max-w-2xl relative z-10 font-bold">
+                        <h2 className="font-display-lg text-headline-xl text-white/60 max-w-2xl relative z-10 font-bold">
                             Sẵn sàng để sở hữu công việc mơ ước?
                         </h2>
-                        <p className="font-body-lg text-body-lg text-on-primary-container max-w-2xl relative z-10">
+                        <p className="font-body-lg text-body-lg text-shadow-primary/70 max-w-2xl relative z-10">
                             Gia nhập cộng đồng 100,000+ chuyên gia đang nâng tầm sự nghiệp cùng Smartfolio AI.
                         </p>
                         <button

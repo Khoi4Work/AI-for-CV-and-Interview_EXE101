@@ -133,19 +133,24 @@ export function useMediaDevices() {
         if (!analyserRef.current) return;
 
         analyser.getByteFrequencyData(buf);
-        const sampleBins = Math.min(buf.length, 24);
-        let sum = 0;
-        for (let i = 0; i < sampleBins; i++) sum += buf[i];
-        const avg = sum / sampleBins;
 
-        // Update ref for logic, state for UI
-        volumeRef.current = avg;
+        const levels = new Array(20).fill(4);
+        const binSize = Math.floor(buf.length / 10);
 
-        setAudioLevels((prev) => prev.map((_, i) => {
-          const variation = Math.abs(Math.sin((Date.now() / 200) + i));
-          return avg > 55 ? 8 + (avg / 255) * 56 * variation : 4;
-        }));
+        for (let i = 0; i < 10; i++) {
+          let sum = 0;
+          for (let j = 0; j < binSize; j++) {
+            sum += buf[i * binSize + j];
+          }
+          const avg = sum / binSize;
+          const height = 4 + (avg / 255) * 60;
 
+          // Ánh xạ đối xứng: Tần số thấp (giọng nói) nằm ở giữa, tần số cao ra hai biên
+          levels[9 - i] = height;
+          levels[10 + i] = height;
+        }
+
+        setAudioLevels(levels);
         animationRef.current = requestAnimationFrame(tick);
       };
 
@@ -209,6 +214,14 @@ export function useMediaDevices() {
     audio.onended = () => setIsPlaying(false);
   }, [audioUrl]);
 
+  const stopAudio = useCallback(() => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current = null;
+    }
+    setIsPlaying(false);
+  }, []);
+
   useEffect(() => {
     return () => {
       stopAudioAnalysis();
@@ -235,6 +248,7 @@ export function useMediaDevices() {
     startRecording,
     stopRecording,
     playAudio,
+    stopAudio,
     updateStream,
     stopAllTracks
   };

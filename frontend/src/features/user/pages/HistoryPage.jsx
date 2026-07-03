@@ -1,248 +1,281 @@
-import React, { useState } from 'react';
-import { Clock, Filter, Sparkles, Video, FileEdit, Download, PlusCircle, LogIn, ChevronDown, CheckCheck, BarChart2 } from 'lucide-react';
-import { useApp } from '../../auth/contexts/AppContext.jsx';
-import { useAuth } from '../../auth/contexts/AuthContext.jsx';
+import React, {useState} from 'react';
+import {
+    Clock,
+    Sparkles,
+    Video,
+    FileEdit,
+    Download,
+    PlusCircle,
+    LogIn,
+    ChevronDown,
+    CheckCheck,
+    BarChart2
+} from 'lucide-react';
+import {useApp} from '../../auth/contexts/AppContext.jsx';
+import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
+import {Card, Badge, Button} from '../components/Layout.jsx';
+import {Footer} from "../../../components/layout/Footer.jsx";
 
 const HistoryPage = () => {
-  const { showToast } = useApp();
-  const { activityLogs, addActivityLog } = useAuth();
-  const [filterActive, setFilterActive] = useState('all');
-  const [detailModal, setDetailModal] = useState({ open: false, log: null });
+    const {showToast} = useApp();
+    const {activityLogs, addActivityLog} = useAuth();
+    const [filterActive, setFilterActive] = useState('all');
+    const [detailModal, setDetailModal] = useState({open: false, log: null});
 
-  const handleLoadMore = () => {
-    const extraLogs = [
-      {
-        id: `h-extra-${Date.now()+1}`,
-        type: 'tai_xuong',
-        title: 'Tải xuống PDF',
-        time: '10:00',
-        dateLabel: 'TRƯỚC ĐÓ',
-        details: 'Đã xuất file PDF thành công cho CV Sản phẩm.',
-        meta: '2.1 MB • Hoàn tất',
-      }
+    const handleLoadMore = () => {
+        const extraLogs = [
+            {
+                id: `h-extra-${Date.now() + 1}`,
+                type: 'tai_xuong',
+                title: 'Tải xuống PDF',
+                time: '10:00',
+                dateLabel: 'TRƯỚC ĐÓ',
+                details: 'Đã xuất file PDF thành công cho CV Sản phẩm.',
+                meta: '2.1 MB • Hoàn tất',
+            }
+        ];
+
+        extraLogs.forEach(log => addActivityLog(log));
+        showToast('Đã tải thêm hoạt động bảo mật cũ hơn.', 'info');
+    };
+
+    const getIconForType = (type) => {
+        switch (type) {
+            case 'phong_van':
+                return <Video size={18}/>;
+            case 'ai_toi_uu':
+                return <Sparkles size={18}/>;
+            case 'tai_xuong':
+                return <Download size={18}/>;
+            case 'chinh_sua_cv':
+                return <FileEdit size={18}/>;
+            case 'tao_cv':
+                return <PlusCircle size={18}/>;
+            case 'dang_nhap':
+                return <LogIn size={18}/>;
+            default:
+                return <Clock size={18}/>;
+        }
+    };
+
+    const getIconStyle = (type) => {
+        switch (type) {
+            case 'phong_van':
+                return 'bg-[#D1FAE5] text-[#10B981]';
+            case 'ai_toi_uu':
+                return 'bg-[#4F46E5] text-white';
+            case 'tai_xuong':
+                return 'bg-[#10B981] text-white';
+            default:
+                return 'bg-white text-[#64748B]';
+        }
+    };
+
+    const renderSectionLogs = (title, sectionLogs) => {
+        if (sectionLogs.length === 0) return null;
+        return (
+            <div className="mb-8">
+                <div
+                    className="text-center text-[#475569] font-semibold text-sm my-4 uppercase tracking-wide relative z-10">
+                    {title}
+                </div>
+
+                <div className="relative pt-">
+                    <div className="absolute top-0 bottom-0 left-[19px] w-[2px] bg-white z-0 hidden sm:block"></div>
+
+                    <div className="space-y-6 relative z-10">
+                        {sectionLogs.map((log) => (
+                            <div key={log.id} className="flex flex-col sm:flex-row items-start gap-4">
+                                <div
+                                    className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center shadow-sm ${getIconStyle(log.type)}`}>
+                                    {getIconForType(log.type)}
+                                </div>
+
+                                <Card className="flex-1 p-4 bg-[#F1F5F9] border-none shadow-sm rounded-xl">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="text-lg font-semibold text-[#10B981]">{log.title}</h3>
+                                        <span className="text-[#64748B] text-sm font-medium">{log.time}</span>
+                                    </div>
+
+                                    {log.score && (
+                                        <div
+                                            className="bg-white rounded-lg p-3 mt-2 mb-4 border border-gray-100 shadow-sm">
+                                            <p className="text-sm text-[#0F172A]">
+                                                <span className="font-bold text-[#10B981]">Điểm: {log.score}</span> - AI
+                                                nhận xét: {log.aiComment}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {log.details && (
+                                        <p className="text-[#475569] text-sm mb-4">{log.details}</p>
+                                    )}
+
+                                    {log.meta && (
+                                        <div className="flex items-center gap-2 text-xs text-[#64748B] mb-4">
+                                            <FileEdit size={14}/> <span>{log.meta}</span>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center gap-3">
+                                        <Badge
+                                            className={`text-xs px-2 py-1 rounded-full border-none ${
+                                                log.type === 'phong_van'
+                                                    ? 'bg-[#10B981] text-white'
+                                                    : log.type === 'ai_toi_uu'
+                                                        ? 'bg-[#F3E8FF] text-[#9333EA]'
+                                                        : 'bg-slate-200 text-slate-600'
+                                            }`}
+                                        >
+                                            {log.type.replace('_', ' ').toUpperCase()}
+                                        </Badge>
+                                        <button
+                                            onClick={() => setDetailModal({open: true, log})}
+                                            className="text-xs text-[#10B981] hover:underline transition-colors"
+                                        >
+                                            Xem chi tiết ›
+                                        </button>
+                                    </div>
+                                </Card>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const filterChips = [
+        {label: 'Tất cả', id: 'all'},
+        {label: 'Tạo CV', id: 'tao_cv'},
+        {label: 'Tải xuống', id: 'tai_xuong'},
+        {label: 'Phỏng vấn', id: 'phong_van'},
     ];
 
-    extraLogs.forEach(log => addActivityLog(log));
-    showToast('Đã tải thêm hoạt động bảo mật cũ hơn.', 'info');
-  };
+    const filteredLogs = activityLogs.filter((log) => {
+        if (filterActive === 'all') return true;
+        if (filterActive === 'tao_cv') return log.type === 'tao_cv' || log.type === 'chinh_sua_cv';
+        return log.type === filterActive;
+    });
 
-  const getIconForType = (type) => {
-    switch (type) {
-      case 'phong_van':
-        return <Video className="w-4 h-4 text-primary" />;
-      case 'ai_toi_uu':
-        return <Sparkles className="w-4 h-4 text-primary animate-pulse" />;
-      case 'chinh_sua_cv':
-        return <FileEdit className="w-4 h-4 text-on-surface-variant" />;
-      case 'tai_xuong':
-        return <Download className="w-4 h-4 text-primary" />;
-      case 'tao_cv':
-        return <PlusCircle className="w-4 h-4 text-primary" />;
-      case 'dang_nhap':
-        return <LogIn className="w-4 h-4 text-primary" />;
-      default:
-        return <Clock className="w-4 h-4 text-on-surface-variant" />;
-    }
-  };
+    const todayLogs = filteredLogs.filter(log => log.dateLabel === 'HÔM NAY');
+    const yesterdayLogs = filteredLogs.filter(log => log.dateLabel === 'HÔM QUA');
+    const olderLogs = filteredLogs.filter(log => log.dateLabel === 'TRƯỚC ĐÓ');
 
-  const getIconBg = (type) => {
-    switch (type) {
-      case 'phong_van':
-      case 'dang_nhap':
-        return 'bg-primary-container border-primary-container';
-      case 'ai_toi_uu':
-        return 'bg-primary-container border-primary-container';
-      case 'chinh_sua_cv':
-        return 'bg-surface-container border-outline-variant';
-      case 'tai_xuong':
-        return 'bg-primary-container border-primary-container';
-      case 'tao_cv':
-        return 'bg-primary-container border-primary-container';
-      default:
-        return 'bg-surface-container-low border-outline-variant';
-    }
-  };
-
-  const renderSectionLogs = (title, sectionLogs) => {
-    if (sectionLogs.length === 0) return null;
     return (
-      <div className="space-y-4">
-        <div className="flex items-center space-x-4 select-none">
-          <span className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">{title}</span>
-          <div className="flex-1 h-px bg-outline-variant"></div>
-        </div>
-
-        <div className="space-y-6 relative pl-8 border-l border-outline-variant/80 ml-4 pb-2">
-          {sectionLogs.map((log) => (
-            <div key={log.id} className="relative group">
-              <span className={`absolute -left-[41px] top-1 w-6 h-6 rounded-full border flex items-center justify-center shadow-sm shrink-0 z-10 bg-surface-container ${getIconBg(log.type)}`}>
-                {getIconForType(log.type)}
-              </span>
-
-              <div className="glass-panel rounded-2xl border border-outline-variant p-5 shadow-sm space-y-4 relative hover:border-primary hover:shadow-md transition-all">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-sm font-bold text-on-surface leading-snug">{log.title}</h3>
-                  <span className="text-[10px] text-on-surface-variant font-medium font-mono whitespace-nowrap pt-0.5">{log.time}</span>
-                </div>
-
-                {log.score && (
-                  <div className="bg-primary-container/50 rounded-xl p-4 border border-primary-container/40 space-y-2">
-                    <p className="text-xs font-bold text-on-surface">
-                      Điểm: <span className="text-primary bg-primary-container/60 px-2 py-0.5 rounded-md font-extrabold">{log.score}</span>
-                    </p>
-                    <p className="text-xs text-on-surface-variant leading-relaxed font-medium">
-                      {log.aiComment}
-                    </p>
-                  </div>
-                )}
-
-                {log.details && (
-                  <p className="text-xs text-on-surface-variant leading-relaxed font-medium max-w-2xl">{log.details}</p>
-                )}
-
-                {log.meta && (
-                  <div className="flex items-center space-x-2 text-[10px] text-on-surface-variant border-t border-outline-variant pt-3 select-none">
-                    <span>{log.meta}</span>
-                    <CheckCheck className="w-3.5 h-3.5 text-primary" />
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between border-t border-outline-variant hover:border-primary pt-3.5 text-[10px] font-bold text-primary">
-                  <span className="uppercase tracking-wide font-mono text-[8px] text-on-surface-variant">Smartfolio trace</span>
-                  <button
-                    id={`hist-view-detail-${log.id}`}
-                    onClick={() => setDetailModal({ open: true, log })}
-                    className="hover:underline flex items-center space-x-0.5 cursor-pointer pb-0.5"
-                  >
-                    <span>Xem chi tiết</span>
-                    <span className="text-[8px]">▶</span>
-                  </button>
-                </div>
-              </div>
+        <div className="max-w-4xl mx-auto pb-12">
+            <div className="flex items-center justify-between mb-8">
+                <h1 className="text-2xl font-bold text-[#10B981]">Lịch sử hoạt động</h1>
             </div>
-          ))}
+
+            <div className="flex items-center justify-between gap-4 mb-8">
+                <div
+                    className="flex items-center gap-2 bg-white p-2 px-4 rounded-xl shadow-sm border border-slate-100 w-fit">
+                    <span className="text-sm text-[#0F172A] font-medium ml-1">Lọc theo:</span>
+                    <div className="flex flex-wrap gap-2">
+                        {filterChips.map((chip) => (
+                            <button
+                                key={chip.id}
+                                onClick={() => setFilterActive(chip.id)}
+                                className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                                    filterActive === chip.id
+                                        ? 'bg-[#10B981] text-white shadow-sm'
+                                        : 'text-[#475569] hover:bg-slate-100'
+                                }`}
+                            >
+                                {chip.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div
+                    className="bg-white p-2 px-4 rounded-xl flex items-center justify-between gap-8 h-12 shadow-sm border border-slate-100">
+                    <span className="text-xs text-[#475569]">Tổng hoạt động</span>
+                    <div
+                        className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-[#10B981] border border-slate-100">
+                        <BarChart2 size={16}/>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-[#9BA9AF] rounded-2xl p-6 sm:p-8 relative">
+                {renderSectionLogs('HÔM NAY', todayLogs)}
+                {renderSectionLogs('HÔM QUA', yesterdayLogs)}
+                {renderSectionLogs('TRƯỚC ĐÓ', olderLogs)}
+
+                {filteredLogs.length === 0 && (
+                    <div
+                        className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-[#64748B] space-y-2">
+                        <Clock className="w-8 h-8 mx-auto text-[#64748B] shrink-0"/>
+                        <p className="text-sm">Không tìm thấy hoạt động nào phù hợp với bộ lọc đã chọn.</p>
+                    </div>
+                )}
+
+                <div className="mt-8 flex justify-center pb-4">
+                    <button
+                        onClick={handleLoadMore}
+                        className="flex items-center justify-center gap-2 bg-white text-[#10B981] font-medium px-6 py-2.5 rounded-full shadow-sm border border-transparent hover:bg-slate-50 hover:border-slate-200 transition-all cursor-pointer"
+                    >
+                        <span>Tải thêm hoạt động</span>
+                        <ChevronDown size={18} className="text-[#10B981]"/>
+                    </button>
+                </div>
+            </div>
+
+            <Modal
+                isOpen={detailModal.open}
+                onClose={() => setDetailModal({open: false, log: null})}
+                title={`Chi tiết hoạt động: ${detailModal.log?.title}`}
+            >
+                <div className="space-y-6">
+                    <div
+                        className="grid grid-cols-2 gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
+                        <div className="text-sm">
+                            <span
+                                className="text-[10px] font-bold text-on-surface-variant uppercase block">Thời gian</span>
+                            <span className="text-sm font-semibold text-on-surface">{detailModal.log?.time}</span>
+                        </div>
+                        <div className="text-sm">
+                            <span
+                                className="text-[10px] font-bold text-on-surface-variant uppercase block">Loại sự kiện</span>
+                            <span className="text-sm font-semibold text-on-surface">{detailModal.log?.type}</span>
+                        </div>
+                    </div>
+
+                    <div className="text-sm">
+                        <span className="text-[10px] font-bold text-on-surface-variant uppercase block mb-2">Nội dung chi tiết</span>
+                        <p className="text-sm text-on-surface-variant leading-relaxed">
+                            {detailModal.log?.details || "Không có thông tin chi tiết cho sự kiện này."}
+                        </p>
+                    </div>
+
+                    {detailModal.log?.score && (
+                        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2">
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs font-bold text-[#10B981]">Kết quả đánh giá AI</span>
+                                <span className="text-sm font-extrabold text-[#10B981]">{detailModal.log.score}</span>
+                            </div>
+                            <p className="text-xs text-[#10B981] leading-relaxed italic">
+                                "{detailModal.log.aiComment}"
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="pt-4 flex justify-end">
+                        <button
+                            onClick={() => setDetailModal({open: false, log: null})}
+                            className="px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:opacity-90 transition-colors"
+                        >
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
         </div>
-      </div>
     );
-  };
-
-  const filterChips = [
-    { label: 'Tất cả', id: 'all' },
-    { label: 'Tạo CV', id: 'tao_cv' },
-    { label: 'Tải xuống', id: 'tai_xuong' },
-    { label: 'Phỏng vấn', id: 'phong_van' },
-  ];
-
-  const filteredLogs = activityLogs.filter((log) => {
-    if (filterActive === 'all') return true;
-    if (filterActive === 'tao_cv') return log.type === 'tao_cv' || log.type === 'chinh_sua_cv';
-    return log.type === filterActive;
-  });
-
-  const todayLogs = filteredLogs.filter(log => log.dateLabel === 'HÔM NAY');
-  const yesterdayLogs = filteredLogs.filter(log => log.dateLabel === 'HÔM QUA');
-  const olderLogs = filteredLogs.filter(log => log.dateLabel === 'TRƯỚC ĐÓ');
-
-  return (
-    <div className="space-y-8 pb-16 text-on-surface">
-      <div className="glass-panel rounded-2xl border border-outline-variant p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-[10px] font-bold text-on-surface-variant block mr-2 uppercase tracking-wide">Lọc theo:</span>
-          {filterChips.map((chip) => (
-            <button
-              key={chip.id}
-              id={`history-filter-${chip.id}`}
-              onClick={() => setFilterActive(chip.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors border ${
-                filterActive === chip.id
-                  ? 'bg-primary text-on-primary border-transparent shadow shadow-primary/10'
-                  : 'bg-surface-container hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface border-outline-variant'
-              }`}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center space-x-2 bg-surface-container-low border border-outline-variant px-3 py-1.5 rounded-xl self-start md:self-auto text-on-surface-variant">
-          <BarChart2 className="w-4.5 h-4.5 text-primary" />
-          <span className="text-[10px] font-extrabold uppercase tracking-wide">Tổng hoạt động</span>
-        </div>
-      </div>
-
-      <div className="space-y-10">
-        {renderSectionLogs('HÔM NAY', todayLogs)}
-        {renderSectionLogs('HÔM QUA', yesterdayLogs)}
-        {renderSectionLogs('TRƯỚC ĐÓ', olderLogs)}
-
-        {filteredLogs.length === 0 && (
-          <div className="text-center py-12 glass-panel rounded-2xl border border-outline-variant shadow-sm text-on-surface-variant space-y-2">
-            <Clock className="w-8 h-8 mx-auto text-on-surface-variant shrink-0" />
-            <p className="text-xs">Không tìm thấy hoạt động nào phù hợp với bộ lọc đã chọn.</p>
-          </div>
-        )}
-      </div>
-
-      <div className="pt-4 flex justify-center">
-        <button
-          id="history-load-more"
-          onClick={handleLoadMore}
-          className="bg-surface-container hover:bg-surface-container-low border border-outline-variant hover:border-primary text-on-surface-variant text-xs font-bold px-6 py-3 rounded-2xl flex items-center justify-center space-x-2 transition-all active:scale-[0.98] cursor-pointer"
-        >
-          <span>Tải thêm hoạt động</span>
-          <ChevronDown className="w-4 h-4 shrink-0" />
-        </button>
-      </div>
-
-      <Modal
-        isOpen={detailModal.open}
-        onClose={() => setDetailModal({ open: false, log: null })}
-        title={`Chi tiết hoạt động: ${detailModal.log?.title}`}
-      >
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
-            <div>
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase block">Thời gian</span>
-              <span className="text-sm font-semibold text-on-surface">{detailModal.log?.time}</span>
-            </div>
-            <div>
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase block">Loại sự kiện</span>
-              <span className="text-sm font-semibold text-on-surface">{detailModal.log?.type}</span>
-            </div>
-          </div>
-
-          <div>
-            <span className="text-[10px] font-bold text-on-surface-variant uppercase block mb-2">Nội dung chi tiết</span>
-            <p className="text-sm text-on-surface-variant leading-relaxed">
-              {detailModal.log?.details || "Không có thông tin chi tiết cho sự kiện này."}
-            </p>
-          </div>
-
-          {detailModal.log?.score && (
-            <div className="p-4 rounded-xl bg-primary-container border border-primary-container space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-primary">Kết quả đánh giá AI</span>
-                <span className="text-sm font-extrabold text-primary">{detailModal.log.score}</span>
-              </div>
-              <p className="text-xs text-primary leading-relaxed italic">
-                "{detailModal.log.aiComment}"
-              </p>
-            </div>
-          )}
-
-          <div className="pt-4 flex justify-end">
-            <button
-              onClick={() => setDetailModal({ open: false, log: null })}
-              className="px-4 py-2 rounded-lg bg-on-surface text-on-primary text-xs font-bold hover:opacity-90 transition-colors"
-            >
-              Đóng
-            </button>
-          </div>
-        </div>
-      </Modal>
-    </div>
-  );
 };
 
 export default HistoryPage;

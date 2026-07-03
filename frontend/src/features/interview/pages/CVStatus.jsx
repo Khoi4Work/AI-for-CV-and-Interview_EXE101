@@ -51,11 +51,11 @@ export default function CvStatus() {
               </div>
               <h3 className="text-xl font-bold text-black mb-3">Tôi đã có CV</h3>
               <p className="text-black text-sm mb-8 flex-grow leading-relaxed">
-                Tải lên file PDF hoặc Word hiện có. AI sẽ phân tích và gợi ý các cải thiện ngay lập tức.
+                Chúng tôi sẽ đánh giá bạn như là nguời đã từng tìm hiểu về công việc của mình, và sẽ có những câu hỏi đi sâu về chuyên môn hơn.
               </p>
-              <div className="flex items-center text-primary font-semibold text-sm">
-                Tải lên ngay <ArrowRight className="w-4 h-4 ml-1" />
-              </div>
+              {/*<div className="flex items-center text-primary font-semibold text-sm">*/}
+              {/*  Tải lên ngay <ArrowRight className="w-4 h-4 ml-1" />*/}
+              {/*</div>*/}
             </div>
 
             <div
@@ -69,11 +69,11 @@ export default function CvStatus() {
               </div>
               <h3 className="text-xl font-bold text-black mb-3">Tôi chưa có CV</h3>
               <p className="text-black text-sm mb-8 flex-grow leading-relaxed">
-                Tạo mới bằng AI. Chỉ cần trả lời vài câu hỏi, chúng tôi sẽ viết nội dung chuyên nghiệp cho bạn.
+                Chúng tôi sẽ đánh giá bạn là người chưa từng đi xin việc, và sẽ có những câu hỏi gợi ý cho bạn nêu những gì mình thực sự có.
               </p>
-              <div className="flex items-center text-on-surface font-semibold text-sm">
-                Tạo mới bằng Smartfolio
-              </div>
+              {/*<div className="flex items-center text-black font-semibold text-sm">*/}
+              {/*  Tạo mới bằng Smartfolio*/}
+              {/*</div>*/}
             </div>
           </div>
 
@@ -99,17 +99,17 @@ export default function CvStatus() {
           </div>
         </div>
 
-        <div className="fixed bottom-24 right-8 glass-panel p-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant max-w-3xl z-10 animate-fade-in-up">
-          <div className="flex gap-4 items-start">
-            <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 mt-1">
-              <Sparkles className="w-5 h-5 fill-current" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-on-surface mb-1">Gợi ý từ AI</p>
-              <p className="text-sm text-on-surface-variant leading-tight">Nên chọn "Tạo mới" nếu bạn muốn thay đổi định hướng nghề nghiệp!</p>
-            </div>
-          </div>
-        </div>
+        {/*<div className="fixed bottom-24 right-8 glass-panel p-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant max-w-3xl z-10 animate-fade-in-up">*/}
+        {/*  <div className="flex gap-4 items-start">*/}
+        {/*    <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 mt-1">*/}
+        {/*      <Sparkles className="w-5 h-5 fill-current" />*/}
+        {/*    </div>*/}
+        {/*    <div>*/}
+        {/*      <p className="text-xs font-bold text-on-surface mb-1">Gợi ý từ AI</p>*/}
+        {/*      <p className="text-sm text-on-surface-variant leading-tight">Nên chọn "Tạo mới" nếu bạn muốn thay đổi định hướng nghề nghiệp!</p>*/}
+        {/*    </div>*/}
+        {/*  </div>*/}
+        {/*</div>*/}
       </main>
 
       <Footer />

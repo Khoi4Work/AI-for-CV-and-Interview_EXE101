@@ -50,17 +50,14 @@ export default function CVEditor() {
     const templateData = mapCVDataToTemplate(cvData);
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden editor-body bg-slate-200">
+        <div className="flex flex-col h-screen overflow-hidden" style={{ background: 'radial-gradient(circle at center, var(--color-bg-radial-start) 0%, var(--color-bg-radial-end) 100%)' }}>
             <TopNagivationToolBar
                 onExport={handleExport}
                 zoom={zoom}
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}
             />
-            <main className="flex-1 overflow-y-auto flex justify-center p-12 relative bg-gradient-to-br from-slate-200 via-slate-300 to-slate-200">
-                <div className="absolute inset-0 opacity-30 pointer-events-none"
-                     style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '30px 30px' }}>
-                </div>
+            <main className="flex-1 overflow-y-auto flex justify-center p-12 relative">
                 <div
                     className="cv-page-container flex shrink-0 transition-transform duration-200 ease-in-out relative z-10"
                     style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}

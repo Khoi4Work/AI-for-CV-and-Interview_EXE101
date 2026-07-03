@@ -6,41 +6,46 @@ export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, o
 
     return (
         <>
-            <header className="bg-white border-b px-6 py-3 flex items-center justify-between z-10 w-full shrink-0">
+            <header className="glass-panel border-b border-white/10 px-6 py-3 flex items-center justify-between z-10 w-full shrink-0">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/home')}
-                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                        className="text-on-surface-variant hover:text-on-surface transition-colors"
                     >
                         <X className="h-6 w-6"/>
                     </button>
-                    <div>
-                        <h1 className="font-bold text-lg text-cv-text-dark leading-tight">Executive Pro</h1>
-                        <p className="text-xs text-gray-500 italic">Mẫu CV chuyên nghiệp cho quản lý cấp cao</p>
+                    <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-on-primary font-bold text-xs select-none">
+                            S
+                        </div>
+                        <div>
+                            <h1 className="font-bold text-lg text-primary leading-tight">Executive Pro</h1>
+                            <p className="text-xs text-on-surface-variant italic">Mẫu CV chuyên nghiệp cho quản lý cấp cao</p>
+                        </div>
                     </div>
                 </div>
 
                 {/* Zoom Controls */}
-                <div className="flex items-center bg-gray-100 rounded-full px-4 py-1 gap-4">
+                <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full px-4 py-1 gap-4 border border-white/10">
                     <button
                         onClick={onZoomOut}
-                        className="text-gray-500 font-bold hover:text-black transition-colors">−</button>
-                    <span className="text-sm font-medium text-cv-sidebar-blue">{zoom}%</span>
+                        className="text-on-surface-variant font-bold hover:text-on-surface transition-colors">−</button>
+                    <span className="text-sm font-medium text-primary">{zoom}%</span>
                     <button
                         onClick={onZoomIn}
-                        className="text-gray-500 font-bold hover:text-black transition-colors">+</button>
+                        className="text-on-surface-variant font-bold hover:text-on-surface transition-colors">+</button>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-3">
                     <button
                         onClick={onExport}
-                        className="flex items-center gap-2 border border-cv-sidebar-blue text-cv-sidebar-blue px-6 py-2.5 rounded-md hover:bg-blue-50 transition-colors">
+                        className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-6 py-2.5 rounded-lg transition-all active:scale-[0.98] shadow-sm">
                         <FileDown className="h-5 w-5"/>
                         <span className="font-medium text-sm">Xuất PDF</span>
                     </button>
                 </div>
             </header>
         </>
-    );
+    );;
 }

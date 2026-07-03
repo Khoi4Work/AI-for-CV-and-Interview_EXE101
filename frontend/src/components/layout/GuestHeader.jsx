@@ -1,5 +1,6 @@
 import React from 'react';
 import {Link, useNavigate, useLocation} from 'react-router-dom';
+import logo from '../../assets/logo.jpg';
 
 const GuestHeader = () => {
     const navigate = useNavigate();
@@ -14,10 +15,7 @@ const GuestHeader = () => {
         <header
             className={`flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop lg:px-gutter h-[72px] sticky top-0 z-50 ${maxW} mx-auto ${bgClass}`}>
             <div className="flex items-center space-x-2">
-                <div
-                    className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold text-lg select-none">
-                    S
-                </div>
+                <img src={logo} alt="Smartfolio Logo" className="w-8 h-8 rounded-lg object-cover select-none" />
                 <Link to="/" className="text-xl font-bold text-primary tracking-tight font-sans">Smartfolio</Link>
             </div>
 
