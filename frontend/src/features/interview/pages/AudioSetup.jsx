@@ -1,7 +1,7 @@
 // /src/pages/interview/AudioSetup.jsx
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Mic, AudioLines, ArrowLeft, Square } from 'lucide-react';
+import { Play, Mic, AudioLines, ArrowLeft, Square, ArrowRight} from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
@@ -124,18 +124,18 @@ export function AudioSetup() {
             <Mic size={14} className="text-black/40" /> Chúng tôi cam kết không lưu trữ bản ghi âm của bạn.
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-3 pt-2">
             <button
                 onClick={handleBack}
-                className="flex-1 py-3 bg-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-400 transition-colors flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center bg-surface-container border border-on-primary text-outline py-3.5 rounded-xl text-sm font-bold hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
             >
-              <ArrowLeft size={18} /> Quay lại
+              <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>
             <button
                 onClick={handleContinue}
-                className="flex-1 py-3 bg-primary text-on-primary font-medium rounded-lg hover:opacity-90 transition-colors"
+                className="hover:text-on-primary hover:opacity-90 w-full flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
             >
-              Tiếp tục
+              Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
             </button>
           </div>
         </div>

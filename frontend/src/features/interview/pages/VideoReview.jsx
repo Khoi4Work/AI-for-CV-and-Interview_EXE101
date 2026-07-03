@@ -68,20 +68,14 @@ export function VideoReview() {
                 <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => navigate('/interview/room')}
-                            className="px-6 py-2.5 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg font-medium transition-colors flex items-center gap-2"
-                        >
-                            <ArrowLeft size={18}/> Ghi hình lại
-                        </button>
-                        <button
                             onClick={handleSendFeedback}
-                            className="px-6 py-2.5 bg-[#1a56db] hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm"
+                            className="px-6 py-2.5 bg-primary text-on-primary/60 rounded-xl font-bold transition-colors shadow-md hover:text-on-primary hover:opacity-90"
                         >
                             Nhận kết quả phản hồi
                         </button>
                     </div>
 
-                    <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium">
+                    <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors">
                         <Download size={18}/>
                         Tải video về máy
                     </button>
