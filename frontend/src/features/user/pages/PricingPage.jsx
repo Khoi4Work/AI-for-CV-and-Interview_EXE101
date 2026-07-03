@@ -14,7 +14,7 @@ import {Card, Button, Badge} from '../components/Layout.jsx';
 
 const PricingPage = () => {
     const [activeFaq, setActiveFaq] = useState(null);
-    const [showComparison, setShowComparison] = useState(false);
+    const [comparisonType, setComparisonType] = useState(null); // 'cv' | 'interview' | null
     const {showToast} = useApp();
     const navigate = useNavigate();
 
@@ -52,8 +52,10 @@ const PricingPage = () => {
                                 <p className="text-[#334155] text-sm font-medium">Gói CV x5 lần</p>
                             </div>
                             <div className="text-right">
-                                <span className="text-xs font-semibold text-[#1E293B] block">Ngày gia hạn tiếp theo</span>
-                                <span className="text-xs font-semibold text-[#475569] block mt-0.5">31 Tháng 12, 2026</span>
+                                <span
+                                    className="text-xs font-semibold text-[#1E293B] block">Ngày gia hạn tiếp theo</span>
+                                <span
+                                    className="text-xs font-semibold text-[#475569] block mt-0.5">31 Tháng 12, 2026</span>
                             </div>
                         </div>
 
@@ -138,11 +140,11 @@ const PricingPage = () => {
                     <Card className="mb-8 p-6 bg-[#DFE6E2] border-none shadow-sm flex flex-col h-full">
                         <h4 className="text-lg font-bold text-[#0F172A] mb-1">Middle All</h4>
                         <div className="flex items-end gap-2 mb-4">
-                            <span className="text-2xl font-bold text-[#9333EA]">99.000 VNĐ</span>
-                            <span className="text-[#94A3B8] text-sm line-through mb-1">108.000 VNĐ</span>
+                            <span className="text-2xl font-bold text-[#9333EA]">89.000 VNĐ</span>
+                            <span className="text-[#94A3B8] text-sm line-through mb-1">98.000 VNĐ</span>
                         </div>
                         <ul className="space-y-2 mb-6 text-sm text-[#475569]">
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#8B5CF6]"/> CV Middle</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#8B5CF6]"/> CV Middle (All)</li>
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#8B5CF6]"/> Interview Middle</li>
                         </ul>
                         <Button
@@ -157,11 +159,11 @@ const PricingPage = () => {
                     <Card className="mb-8 p-6 bg-[#DFE6E2] border-none shadow-sm flex flex-col h-full">
                         <h4 className="text-lg font-bold text-[#0F172A] mb-1">Enhance All</h4>
                         <div className="flex items-end gap-2 mb-4">
-                            <span className="text-2xl font-bold text-[#10B981]">169.000 VNĐ</span>
+                            <span className="text-2xl font-bold text-[#10B981]">167.000 VNĐ</span>
                             <span className="text-[#94A3B8] text-sm line-through mb-1">188.000 VNĐ</span>
                         </div>
                         <ul className="space-y-2 mb-6 text-sm text-[#475569]">
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="text-[#10B981]"/> CV Enhance</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="text-[#10B981]"/> CV Enhance (All)</li>
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="text-[#10B981]"/> Interview Enhance</li>
                         </ul>
                         <Button
@@ -208,8 +210,9 @@ const PricingPage = () => {
                         </div>
                     </div>
                     <Button variant="outline"
-                            className="!bg-transparent !border-[#065F46] !text-[#065F46] text-xs h-8 rounded flex items-center gap-2 hover:!bg-[#065F46] hover:!text-white transition-colors">×
-                        Xem so sánh tính năng</Button>
+                            className="!bg-transparent !border-[#065F46] !text-[#065F46] text-xs h-8 rounded flex items-center gap-2 hover:!bg-[#065F46] hover:!text-white transition-colors"
+                            onClick={() => setComparisonType(prev => prev === 'cv' ? null : 'cv')}>
+                        × Xem so sánh tính năng</Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -220,11 +223,17 @@ const PricingPage = () => {
                             className="text-sm font-normal text-[#475569]">/ vĩnh viễn</span></div>
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
                             <li className="flex items-center gap-2"><CheckCircle size={16}
-                                                                                 className="!text-[#065F46] shrink-0 mt-0.5"/> 1 CV</li>
+                                                                                 className="!text-[#065F46] shrink-0 mt-0.5"/> Tạo
+                                1 bản CV
+                            </li>
                             <li className="flex items-center gap-2"><CheckCircle size={16}
-                                                                                 className="!text-[#065F46] shrink-0 mt-0.5"/> Template cơ bản</li>
+                                                                                 className="!text-[#065F46] shrink-0 mt-0.5"/> Truy
+                                cập Template cơ bản
+                            </li>
                             <li className="flex items-center gap-2"><CheckCircle size={16}
-                                                                                 className="!text-[#065F46] shrink-0 mt-0.5"/> Phân tích CV 1 lần (Thấy score, không sửa)</li>
+                                                                                 className="!text-[#065F46] shrink-0 mt-0.5"/> Phân
+                                tích CV 1 lần (Chấm điểm tổng quan)
+                            </li>
                         </ul>
                         <Button variant="outline"
                                 className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">
@@ -243,13 +252,25 @@ const PricingPage = () => {
                             className="text-sm font-normal text-[#475569]">/ tháng</span></div>
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
                             <li className="flex items-center gap-2"><CheckCircle size={14}
-                                                                                 className="!text-[#7C3AED]"/> Tạo CV x5 lần / tháng</li>
+                                                                                 className="shrink-0 !text-[#7C3AED]"/> Tạo
+                                tối
+                                đa 5 CV / tháng
+                            </li>
                             <li className="flex items-center gap-2"><CheckCircle size={14}
-                                                                                 className="!text-[#7C3AED]"/> Template cao cấp</li>
+                                                                                 className="shrink-0 !text-[#7C3AED]"/> Mở
+                                khóa
+                                kho Template cao cấp
+                            </li>
                             <li className="flex items-center gap-2"><CheckCircle size={14}
-                                                                                 className="!text-[#7C3AED]"/> Phân tích CV x5 lần (Thấy score, gợi ý kỹ năng, ngữ nghĩa)</li>
+                                                                                 className="shrink-0 !text-[#7C3AED]"/> 5
+                                lượt
+                                Phân tích AI (Chấm điểm, gợi ý kỹ năng & tối ưu ngữ nghĩa)
+                            </li>
                             <li className="flex items-center gap-2"><CheckCircle size={14}
-                                                                                 className="!text-[#7C3AED]"/> Hỗ trợ 2 ngôn ngữ</li>
+                                                                                 className="shrink-0 !text-[#7C3AED]"/> Hỗ
+                                trợ CV
+                                song ngữ (2 ngôn ngữ)
+                            </li>
                         </ul>
                         <Button
                             className="w-full mt-auto bg-[#9333EA]  hover:bg-[#7E22CE] text-white"
@@ -266,13 +287,21 @@ const PricingPage = () => {
                             className="text-sm font-normal text-[#475569]">/ tháng</span></div>
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
                             <li className="flex items-center gap-2"><CheckCircle size={14}
-                                                                                 className="!text-[#2563EB]"/> Tạo CV x10 lần / tháng</li>
+                                                                                 className="shrink-0 !text-[#2563EB]"/>Toàn
+                                bộ tính năng của gói Middle
+                            </li>
                             <li className="flex items-center gap-2"><CheckCircle size={14}
-                                                                                 className="!text-[#2563EB]"/> Template cao cấp - % đậu của từng template</li>
+                                                                                 className="shrink-0 !text-[#2563EB]"/>Nâng
+                                cấp: Tạo tối đa 10 CV / tháng
+                            </li>
                             <li className="flex items-center gap-2"><CheckCircle size={14}
-                                                                                 className="!text-[#2563EB]"/> Phân tích CV x10 lần (Thấy score, gợi ý kỹ năng, chỉnh sửa)</li>
+                                                                                 className="shrink-0 !text-[#2563EB]"/>Tính
+                                năng đặc quyền: Hiển thị dự báo tỉ lệ đậu của từng Template
+                            </li>
                             <li className="flex items-center gap-2"><CheckCircle size={14}
-                                                                                 className="!text-[#2563EB]"/> AI tối ưu theo Job JD</li>
+                                                                                 className="shrink-0 !text-[#2563EB]"/>Nâng
+                                cấp: 10 lượt Phân tích AI & Mở khóa quyền Chỉnh sửa nội dung
+                            </li>
                         </ul>
                         <Button
                             variant="primary"
@@ -284,6 +313,55 @@ const PricingPage = () => {
                     </div>
                 </div>
             </Card>
+
+            {comparisonType === 'cv' && (
+                <Card className="bg-[#B5C2BC] rounded-xl overflow-hidden mb-8 border-none">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm text-[#475569]">
+                            <thead className="bg-[#0F172A] text-white">
+                            <tr>
+                                <th className="py-4 px-6 font-semibold min-w-[200px] border-r border-slate-700">TÍNH
+                                    NĂNG
+                                </th>
+                                <th colSpan={3}
+                                    className="py-4 px-6 text-center bg-white/5 font-bold text-[#10B981]">GÓI CV
+                                </th>
+                            </tr>
+                            <tr className="bg-[#CBD5E1] text-[#0F172A] text-center font-bold">
+                                <th className="py-3 px-6 text-left border-r border-slate-300"></th>
+                                <th className="py-3 px-4 w-28 border-b border-slate-300">Cơ bản</th>
+                                <th className="py-3 px-4 w-28 text-[#9333EA] border-b border-slate-300">Middle</th>
+                                <th className="py-3 px-4 w-28 text-[#2563EB] border-b border-slate-300">Enhance</th>
+                            </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-300 text-center bg-[#E2E8F0]">
+                            <tr>
+                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Số
+                                    lượng CV
+                                </td>
+                                <td>1 CV</td>
+                                <td>5 CV</td>
+                                <td>10 CV</td>
+                            </tr>
+                            <tr>
+                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Template</td>
+                                <td>Cơ bản</td>
+                                <td>Cao cấp</td>
+                                <td>Cao cấp (% đậu)</td>
+                            </tr>
+                            <tr>
+                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Phân
+                                    tích CV
+                                </td>
+                                <td>1 lần (không sửa)</td>
+                                <td>5 lần (Chấm điểm, kỹ năng, ngữ nghĩa)</td>
+                                <td>10 lần (Chấm điểm, kỹ năng, chỉnh sửa)</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </Card>
+            )}
 
             {/* Interview Plans */}
             <Card className="mb-8 p-6 bg-[#B5C2BC] border-none shadow-sm">
@@ -298,7 +376,8 @@ const PricingPage = () => {
                         </div>
                     </div>
                     <Button variant="outline"
-                            className="!bg-transparent !border-[#065F46] !text-[#065F46] text-xs h-8 rounded flex items-center gap-2 hover:!bg-[#065F46] hover:!text-white transition-colors">
+                            className="!bg-transparent !border-[#065F46] !text-[#065F46] text-xs h-8 rounded flex items-center gap-2 hover:!bg-[#065F46] hover:!text-white transition-colors"
+                            onClick={() => setComparisonType(prev => prev === 'interview' ? null : 'interview')}>
                         × Xem so sánh tính năng
                     </Button>
                 </div>
@@ -311,14 +390,21 @@ const PricingPage = () => {
                             className="text-sm font-normal text-[#475569]">/ vĩnh viễn</span></div>
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Bộ câu hỏi mẫu (Unlimited/Intern)</li>
+                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/>Truy
+                                cập bộ câu hỏi mẫu không giới hạn (Cấp độ Intern)
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Không có feedback</li>
+                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Chưa
+                                hỗ trợ nhận xét (Feedback)
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Không có ghi hình</li>
+                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Chưa
+                                hỗ trợ ghi hình phỏng vấn
+                            </li>
                         </ul>
                         <Button variant="outline"
-                                className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">Dùng thử miễn phí</Button>
+                                className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">Dùng
+                            thử miễn phí</Button>
                     </div>
 
                     {/* Middle */}
@@ -332,15 +418,21 @@ const PricingPage = () => {
                             className="text-sm font-normal text-[#475569]">/ tháng</span></div>
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> Mở khóa 10 phút</li>
+                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> Bộ
+                                câu hỏi chuyên sâu theo ngành nghề (Cấp độ Fresher)
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> Bộ câu hỏi cơ bản</li>
+                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> Thời
+                                lượng phỏng vấn: 10 phút/lần
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> Fresher, chuyên hóa theo ngành nghề</li>
+                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> Chưa
+                                hỗ trợ nhận xét (Feedback) chung
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> Không có feedback chung</li>
-                            <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> Ghi hình + 3 lần</li>
+                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/>Hỗ
+                                trợ Ghi hình (3 lượt)
+                            </li>
                         </ul>
                         <Button
                             className="w-full mt-auto !bg-[#7C3AED] hover:!bg-[#7E22CE]  !text-white"
@@ -357,15 +449,25 @@ const PricingPage = () => {
                             className="text-sm font-normal text-[#475569]">/ tháng</span></div>
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Toàn bộ chức năng gói Middle</li>
+                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Kế
+                                thừa toàn bộ tính năng của gói Middle
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Văn hóa doanh nghiệp đang ứng tuyển</li>
+                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Nâng
+                                cấp thời lượng phỏng vấn lên 15 phút/lần
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Feedback chuyên sâu</li>
+                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Tùy
+                                chỉnh câu hỏi bám sát Văn hóa doanh nghiệp ứng tuyển
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Mở khóa 15 phút</li>
+                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/>Báo
+                                cáo nhận xét (Feedback) chuyên sâu
+                            </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Ghi hình + 6 lần</li>
+                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> Hỗ
+                                trợ Ghi hình đánh giá (6 lượt)
+                            </li>
                         </ul>
                         <Button
                             className="w-full mt-auto bg-[#10B981] hover:bg-[#059669] text-white"
@@ -377,113 +479,67 @@ const PricingPage = () => {
                 </div>
             </Card>
 
-            {/* Comparison Header */}
-            <div className="flex justify-center mb-6">
-                <Card className="bg-[#DFE6E2] p-6 text-center max-w-3xl rounded-xl border-none">
-                    <h3 className="text-[#0F172A] font-bold text-lg mb-1">So sánh chi tiết tính năng</h3>
-                    <p className="text-[#475569] text-xs mb-3">Xem và so sánh tất cả tính năng của các gói</p>
-                    <Button
-                        className="bg-[#0F172A] hover:bg-[#334155] text-white text-xs h-8 rounded-full px-4 flex items-center justify-center mx-auto gap-2"
-                        onClick={() => setShowComparison(!showComparison)}
-                    >
-                        {showComparison ? '× Đóng bảng so sánh' : '× Xem bảng so sánh'}
-                    </Button>
-                </Card>
-            </div>
-
-            {showComparison && (
-                <Card className="bg-[#B5C2BC] rounded-xl overflow-hidden mb-12 border-none">
+            {comparisonType === 'interview' && (
+                <Card className="bg-[#B5C2BC] rounded-xl overflow-hidden mb-8 border-none">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-[#475569]">
                             <thead className="bg-[#0F172A] text-white">
                             <tr>
-                                <th className="py-4 px-6 font-semibold min-w-[200px] border-r border-slate-700">TÍNH NĂNG</th>
-                                <th colSpan={3} className="py-4 px-6 text-center bg-white/5 font-bold text-[#10B981] border-r border-slate-700">GÓI CV</th>
-                                <th colSpan={3} className="py-4 px-6 text-center bg-white/5 font-bold text-[#10B981]">GÓI INTERVIEW</th>
+                                <th className="py-4 px-6 font-semibold min-w-[200px] border-r border-slate-700">TÍNH
+                                    NĂNG
+                                </th>
+                                <th colSpan={3}
+                                    className="py-4 px-6 text-center bg-white/5 font-bold text-[#10B981]">GÓI INTERVIEW
+                                </th>
                             </tr>
                             <tr className="bg-[#CBD5E1] text-[#0F172A] text-center font-bold">
                                 <th className="py-3 px-6 text-left border-r border-slate-300"></th>
-                                <th className="py-3 px-4 w-28 border-b border-slate-300">Cơ bản</th>
-                                <th className="py-3 px-4 w-28 text-[#9333EA] border-b border-slate-300">Middle</th>
-                                <th className="py-3 px-4 w-28 text-[#2563EB] border-r border-slate-300 border-b border-slate-300">Enhance</th>
                                 <th className="py-3 px-4 w-28 border-b border-slate-300">Cơ bản</th>
                                 <th className="py-3 px-4 w-28 text-[#9333EA] border-b border-slate-300">Middle</th>
                                 <th className="py-3 px-4 w-28 text-[#2563EB] border-b border-slate-300">Enhance</th>
                             </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-300 text-center bg-[#E2E8F0]">
-                                <tr>
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Số lượng CV</td>
-                                    <td>1 CV</td>
-                                    <td>5 CV</td>
-                                    <td className="border-r border-slate-300">10 CV</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Template</td>
-                                    <td>Cơ bản</td>
-                                    <td>Cao cấp</td>
-                                    <td className="border-r border-slate-300">Cao cấp (% đậu)</td>
-                                    <td>–</td>
-                                    <td>Cơ bản</td>
-                                    <td>Nâng cao</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Phân tích CV</td>
-                                    <td>1 lần (không sửa)</td>
-                                    <td>5 lần (Score, kỹ năng, ngữ nghĩa)</td>
-                                    <td className="border-r border-slate-300">10 lần (Score, kỹ năng, chỉnh sửa)</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Số phút phỏng vấn</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td className="border-r border-slate-300">–</td>
-                                    <td>–</td>
-                                    <td>10 phút</td>
-                                    <td>15 phút</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Câu hỏi mẫu</td>
-                                    <td>Unlimited/Intern</td>
-                                    <td>Cơ bản (Vị trí/Fresher)</td>
-                                    <td className="border-r border-slate-300">Nâng cao</td>
-                                    <td>Unlimited/Intern</td>
-                                    <td>Cơ bản (Vị trí/Fresher)</td>
-                                    <td>Nâng cao</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Văn hóa doanh nghiệp</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td className="border-r border-slate-300">–</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td className="text-[#10B981]"><CheckCircle size={18} className="mx-auto" /></td>
-                                </tr>
-                                <tr>
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Feedback chuyên sâu</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td className="border-r border-slate-300">–</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td className="text-[#10B981]"><CheckCircle size={18} className="mx-auto" /></td>
-                                </tr>
-                                <tr>
-                                    <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Ghi hình</td>
-                                    <td>–</td>
-                                    <td>–</td>
-                                    <td className="border-r border-slate-300">–</td>
-                                    <td>–</td>
-                                    <td>3 lần</td>
-                                    <td>6 lần</td>
-                                </tr>
+                            <tr>
+                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Số
+                                    phút phỏng vấn
+                                </td>
+                                <td>–</td>
+                                <td>10 phút</td>
+                                <td>15 phút</td>
+                            </tr>
+                            <tr>
+                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Câu
+                                    hỏi mẫu
+                                </td>
+                                <td>Unlimited/Intern</td>
+                                <td>Cơ bản (Vị trí/Fresher)</td>
+                                <td>Nâng cao (Vị trí/Junior</td>
+                            </tr>
+                            <tr>
+                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Văn
+                                    hóa doanh nghiệp
+                                </td>
+                                <td>–</td>
+                                <td>–</td>
+                                <td className="text-[#10B981]"><CheckCircle size={18} className="mx-auto"/></td>
+                            </tr>
+                            <tr>
+                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Feedback
+                                    chuyên sâu
+                                </td>
+                                <td>–</td>
+                                <td>–</td>
+                                <td className="text-[#10B981]"><CheckCircle size={18} className="mx-auto"/></td>
+                            </tr>
+                            <tr>
+                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Ghi
+                                    hình
+                                </td>
+                                <td>–</td>
+                                <td>3 lần</td>
+                                <td>6 lần</td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -492,64 +548,72 @@ const PricingPage = () => {
 
             <Card className="bg-[#DFE6E2] rounded-2xl p-6 space-y-4 shadow-sm border-none mb-8">
                 <div className="flex items-center space-x-2 pb-3 border-b border-slate-200">
-                    <HelpCircle size={20} className="text-[#10B981]"/>
-                    <h3 className="font-bold text-[#0F172A]">Câu hỏi thường gặp</h3>
-                </div>
-                <div className="space-y-3">
-                    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                        <button
-                            onClick={() => toggleFaq(1)}
-                            className="w-full px-4 py-3 text-left font-bold text-sm text-[#475569] flex items-center justify-between hover:bg-slate-50 transition-colors"
-                        >
-                            <span>Tôi có thể hủy gói dịch vụ bất cứ lúc nào không?</span>
-                            <span className="transition-transform duration-200"
-                                  style={{transform: activeFaq === 1 ? 'rotate(180deg)' : 'none'}}>▼</span>
-                        </button>
-                        {activeFaq === 1 && (
-                            <p className="px-4 pb-4 text-xs text-[#64748B] leading-relaxed border-t border-slate-100 pt-3">
-                                Bạn hoàn toàn có thể tự hủy đăng ký hoặc hạ cấp bất kỳ thời gian nào từ bảng đăng ký tài khoản. Quyền hạn của gói hiện có sẽ tiếp tục duy trì hoạt động đến hạn kế tiếp của bạn.
-                            </p>
-                        )}
+                        <HelpCircle size={20} className="text-[#10B981]"/>
+                        <h3 className="font-bold text-[#0F172A]">Câu hỏi thường gặp</h3>
                     </div>
-                    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                        <button
-                            onClick={() => toggleFaq(2)}
-                            className="w-full px-4 py-3 text-left font-bold text-sm text-[#475569] flex items-center justify-between hover:bg-slate-50 transition-colors"
-                        >
-                            <span>Hóa đơn của tôi sẽ được gửi như thế nào?</span>
-                            <span className="transition-transform duration-200"
-                                  style={{transform: activeFaq === 2 ? 'rotate(180deg)' : 'none'}}>▼</span>
-                        </button>
-                        {activeFaq === 2 && (
-                            <p className="px-4 pb-4 text-xs text-[#64748B] leading-relaxed border-t border-slate-100 pt-3">
-                                Hệ thống Smartfolio sẽ xuất hóa đơn PDF điện tử VAT tự động gửi thẳng vào địa chỉ hòm thư điện tử cá nhân của bạn ngay sau mỗi chu kỳ giao dịch thành công.
-                            </p>
-                        )}
+                    <div className="space-y-3">
+                        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                            <button
+                                onClick={() => toggleFaq(1)}
+                                className="w-full px-4 py-3 text-left font-bold text-sm text-[#475569] flex items-center justify-between hover:bg-slate-50 transition-colors"
+                            >
+                                <span>Tôi có thể hủy gói dịch vụ bất cứ lúc nào không?</span>
+                                <span className="transition-transform duration-200"
+                                      style={{transform: activeFaq === 1 ? 'rotate(180deg)' : 'none'}}>▼</span>
+                            </button>
+                            {activeFaq === 1 && (
+                                <p className="px-4 pb-4 text-xs text-[#64748B] leading-relaxed border-t border-slate-100 pt-3">
+                                    Bạn hoàn toàn có thể tự hủy đăng ký hoặc hạ cấp bất kỳ thời gian nào từ bảng đăng ký
+                                    tài
+                                    khoản. Quyền hạn của gói hiện có sẽ tiếp tục duy trì hoạt động đến hạn kế tiếp của
+                                    bạn.
+                                </p>
+                            )}
+                        </div>
+                        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                            <button
+                                onClick={() => toggleFaq(2)}
+                                className="w-full px-4 py-3 text-left font-bold text-sm text-[#475569] flex items-center justify-between hover:bg-slate-50 transition-colors"
+                            >
+                                <span>Hóa đơn của tôi sẽ được gửi như thế nào?</span>
+                                <span className="transition-transform duration-200"
+                                      style={{transform: activeFaq === 2 ? 'rotate(180deg)' : 'none'}}>▼</span>
+                            </button>
+                            {activeFaq === 2 && (
+                                <p className="px-4 pb-4 text-xs text-[#64748B] leading-relaxed border-t border-slate-100 pt-3">
+                                    Hệ thống Smartfolio sẽ xuất hóa đơn PDF điện tử VAT tự động gửi thẳng vào địa chỉ
+                                    hòm
+                                    thư điện tử cá nhân của bạn ngay sau mỗi chu kỳ giao dịch thành công.
+                                </p>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </Card>
+                </Card>
 
-            <Card
-                className="bg-gradient-to-r from-[#34D399] to-[#10B981] p-6 flex flex-col md:flex-row items-center justify-between gap-5 shadow-sm border-none text-white">
-                <div className="flex items-start space-x-3">
-                    <HeartHandshake size={32} className="shrink-0 mt-0.5"/>
-                    <div className="space-y-1">
-                        <h4 className="text-base font-bold">Cần hỗ trợ thêm?</h4>
-                        <p className="text-xs opacity-90 max-w-3xl leading-relaxed">
-                            Bạn có câu hỏi doanh nghiệp hoặc cần thiết kế layout mẫu CV cá nhân hóa biệt lập? Bộ phận hỗ trợ 24/7 của Smartfolio luôn sẵn sàng giúp bạn.
-                        </p>
+                <Card
+                    className="bg-gradient-to-r from-[#34D399] to-[#10B981] p-6 flex flex-col md:flex-row items-center justify-between gap-5 shadow-sm border-none text-white">
+                    <div className="flex items-start space-x-3">
+                        <HeartHandshake size={32} className="shrink-0 mt-0.5"/>
+                        <div className="space-y-1">
+                            <h4 className="text-base font-bold">Cần hỗ trợ thêm?</h4>
+                            <p className="text-xs opacity-90 max-w-3xl leading-relaxed">
+                                Bạn có câu hỏi doanh nghiệp hoặc cần thiết kế layout mẫu CV cá nhân hóa biệt lập? Bộ
+                                phận hỗ
+                                trợ 24/7 của Smartfolio luôn sẵn sàng giúp bạn.
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <Button
-                    variant="dark"
-                    onClick={() => showToast('Đã mở hộp thoại trò chuyện cùng tư vấn viên!', 'success')}
-                    className="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-bold px-5 py-3 rounded-xl transition-all whitespace-nowrap"
-                >
-                    Liên hệ tư vấn
-                </Button>
-            </Card>
+                    <Button
+                        variant="dark"
+                        onClick={() => showToast('Đã mở hộp thoại trò chuyện cùng tư vấn viên!', 'success')}
+                        className="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-bold px-5 py-3 rounded-xl transition-all whitespace-nowrap"
+                    >
+                        Liên hệ tư vấn
+                    </Button>
+                </Card>
+
         </div>
-    );
+);
 };
 
 export default PricingPage;
