@@ -71,6 +71,33 @@
     --color-cream: #1B263B;
     --color-cream-deep: #0D1B2A;
 
+    /* CV Result Page Specials */
+    --color-cv-result-card-bg: rgba(255, 255, 255, 0.8);
+    --color-cv-result-card-text: #0D774B;
+    --color-cv-result-inner-bg: #F3F4F5;
+    --color-cv-result-inner-text: #434653;
+    --color-cv-result-text-black: #000000;
+    --color-cv-result-skill-name: #191C1D;
+    --color-cv-result-matched-bg: #F0FDF4;
+    --color-cv-result-matched-badge-bg: #BBF7D0;
+    --color-cv-result-matched-text: #16A34A;
+    --color-cv-result-missing-bg: #FEF2F2;
+    --color-cv-result-missing-text: #DC2626;
+    --color-cv-result-add-bg: #7B7B7B;
+    --color-cv-result-add-text: #FFFFFF;
+    --color-cv-result-added-text: #7B7B7B;
+    --color-cv-result-added-skill: #191C1D;
+    --color-cv-result-added-icon: #434653;
+    --color-cv-result-ats-tag-border: #0D774B;
+    --color-cv-result-ats-tag-bg: rgba(130, 131, 132, 0.1);
+    --color-cv-result-ats-tag-text: #0D774B;
+    --color-cv-result-ai-desc: #434653;
+    --color-cv-result-score-gradient-start: #FFFFFF;
+    --color-cv-result-score-gradient-end: #239C7C;
+    --color-cv-result-score-border-bg: #C7FEF1;
+    --color-cv-result-score-btn-ai-bg: #AFDAD2;
+    --color-cv-result-score-btn-int-bg: #075F4E;
+
     /*Home LandingPage*/
     --color-bg-card-home-1: #2A8B75;
     --color-bg-card-home-2: #305D66;
