@@ -138,11 +138,11 @@ const PricingPage = () => {
                     <Card className="mb-8 p-6 bg-[#DFE6E2] border-none shadow-sm flex flex-col h-full">
                         <h4 className="text-lg font-bold text-[#0F172A] mb-1">Middle All</h4>
                         <div className="flex items-end gap-2 mb-4">
-                            <span className="text-2xl font-bold text-[#9333EA]">89.000 VNĐ</span>
-                            <span className="text-[#94A3B8] text-sm line-through mb-1">98.000 VNĐ</span>
+                            <span className="text-2xl font-bold text-[#9333EA]">99.000 VNĐ</span>
+                            <span className="text-[#94A3B8] text-sm line-through mb-1">108.000 VNĐ</span>
                         </div>
                         <ul className="space-y-2 mb-6 text-sm text-[#475569]">
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#8B5CF6]"/> CV Middle (All)</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#8B5CF6]"/> CV Middle</li>
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#8B5CF6]"/> Interview Middle</li>
                         </ul>
                         <Button
@@ -157,11 +157,11 @@ const PricingPage = () => {
                     <Card className="mb-8 p-6 bg-[#DFE6E2] border-none shadow-sm flex flex-col h-full">
                         <h4 className="text-lg font-bold text-[#0F172A] mb-1">Enhance All</h4>
                         <div className="flex items-end gap-2 mb-4">
-                            <span className="text-2xl font-bold text-[#10B981]">167.000 VNĐ</span>
+                            <span className="text-2xl font-bold text-[#10B981]">169.000 VNĐ</span>
                             <span className="text-[#94A3B8] text-sm line-through mb-1">188.000 VNĐ</span>
                         </div>
                         <ul className="space-y-2 mb-6 text-sm text-[#475569]">
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="text-[#10B981]"/> CV Enhance (All)</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="text-[#10B981]"/> CV Enhance</li>
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="text-[#10B981]"/> Interview Enhance</li>
                         </ul>
                         <Button
@@ -177,10 +177,11 @@ const PricingPage = () => {
                     <Card className="mb-8 p-6 bg-[#DFE6E2] border-none shadow-sm flex flex-col h-full">
                         <h4 className="text-lg font-bold text-[#0F172A] mb-1">Thực chiến</h4>
                         <div className="flex items-end gap-2 mb-4">
-                            <span className="text-2xl font-bold text-[#EF4444]">149.000 VNĐ</span>
+                            <span className="text-2xl font-bold text-[#EF4444]">145.000 VNĐ</span>
+                            <span className="text-[#94A3B8] text-sm line-through mb-1">168.000 VNĐ</span>
                         </div>
                         <ul className="space-y-2 mb-6 text-sm text-[#475569]">
-                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#EF4444]"/> CV Middle (All)</li>
+                            <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#EF4444]"/> CV Middle</li>
                             <li className="flex items-center gap-2"><CheckCircle size={14} className="!text-[#EF4444]"/> Interview Enhance</li>
                             <li className="text-xs text-[#94A3B8] mt-2 italic">Dành cho ứng viên tự tin vào CV của mình, cần tập dượt phỏng vấn kỹ.</li>
                         </ul>
