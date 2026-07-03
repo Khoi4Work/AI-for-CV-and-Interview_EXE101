@@ -19,6 +19,7 @@ export function AudioSetup() {
     startRecording,
     stopRecording,
     playAudio,
+    stopAudio,
     stopAllTracks
   } = useMediaDevices();
 
@@ -57,12 +58,13 @@ export function AudioSetup() {
           </div>
 
           <div className="flex justify-center mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">
-              <span className={`w-2 h-2 rounded-full bg-primary ${isRecording ? 'animate-pulse' : ''}`}></span>
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary text-on-primary rounded-full text-sm font-medium">
+              <span className={`w-2 h-2 rounded-full bg-on-primary ${isRecording ? 'animate-pulse' : ''}`}></span>
               {isRecording ? 'Đang ghi âm...' : 'Microphone detected'}
             </span>
           </div>
 
+          {/*Audio Pulse*/}
           <div className="bg-black/10 rounded-lg p-8 py-12 flex items-center justify-center relative overflow-hidden mb-6 h-40">
             <div className="absolute inset-0 flex items-center justify-center opacity-30 text-black/40">
               <AudioLines size={120} strokeWidth={1} />
@@ -71,7 +73,7 @@ export function AudioSetup() {
               {audioLevels.map((level, i) => (
                 <div
                     key={i}
-                    className="w-1.5 bg-primary rounded-full transition-all"
+                    className="w-1.5 bg-primary rounded-full transition-[height] duration-75"
                     style={{ height: `${level}px` }}
                 />
               ))}
@@ -97,7 +99,7 @@ export function AudioSetup() {
             </button>
             <button
                 disabled={!isRecorded || !audioUrl}
-                onClick={playAudio}
+                onClick={isPlaying ? stopAudio : playAudio}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium ${
                     isRecorded && audioUrl
                       ? 'bg-primary text-on-primary hover:bg-primary-container'
@@ -106,8 +108,8 @@ export function AudioSetup() {
             >
               {isPlaying ? (
                 <>
-                  <span className="w-2 h-2 rounded-full bg-on-primary animate-pulse"></span>
-                  Đang phát...
+                  <Square size={18} fill="currentColor" />
+                  Dừng phát
                 </>
               ) : (
                 <>
