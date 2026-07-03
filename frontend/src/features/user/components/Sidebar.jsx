@@ -2,6 +2,7 @@ import React from 'react';
 import {NavLink, useNavigate} from 'react-router-dom';
 import {User, Shield, CreditCard, Clock, FileText, Settings, LogOut, HelpCircle} from 'lucide-react';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
+import logo from '../../../assets/logo.jpg';
 
 const Sidebar = () => {
     const {handleLogout, is2faEnabled} = useAuth();
@@ -29,10 +30,7 @@ const Sidebar = () => {
                     className="flex items-center space-x-2 cursor-pointer"
                     onClick={handleBackHome}
                 >
-                    <div
-                        className="w-8 h-8 rounded-lg bg-[#10B981] flex items-center justify-center text-white font-bold text-lg">
-                        S
-                    </div>
+                    <img src={logo} alt="Smartfolio Logo" className="w-8 h-8 rounded-lg object-cover select-none" />
                     <span className="text-xl font-extrabold text-white tracking-tight">Smartfolio</span>
                 </div>
             </div>

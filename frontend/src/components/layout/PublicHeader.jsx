@@ -2,6 +2,7 @@ import {useState, useEffect, useRef} from 'react';
 import {Link, useLocation, useNavigate} from 'react-router-dom';
 import {User, Shield, CreditCard, Clock, FileText, LogOut} from 'lucide-react';
 import {useAuth} from "../../features/auth/contexts/AuthContext.jsx";
+import logo from '../../assets/logo.jpg';
 
 export function Header() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -43,10 +44,7 @@ export function Header() {
         <header
             className={`flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop lg:px-gutter h-[72px] sticky top-0 z-50 ${maxW} mx-auto ${bgClass}`}>
             <div className="flex items-center space-x-2">
-                <div
-                    className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold text-lg select-none">
-                    S
-                </div>
+                <img src={logo} alt="Smartfolio Logo" className="w-8 h-8 rounded-lg object-cover select-none" />
                 <Link to="/" className="text-xl font-bold text-primary tracking-tight font-sans">Smartfolio</Link>
             </div>
 
