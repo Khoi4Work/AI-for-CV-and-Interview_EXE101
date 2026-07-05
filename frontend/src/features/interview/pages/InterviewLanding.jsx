@@ -231,11 +231,6 @@ export default function InterviewLanding() {
                                     </div>
                                 </div>
                             </div>
-
-                            <button
-                                className="text-primary font-bold inline-flex items-center hover:text-primary-container transition-colors pt-4 cursor-pointer">
-                                Khám phá thêm các tính năng khác <ArrowRight className="w-4 h-4 ml-2"/>
-                            </button>
                         </div>
                     </div>
                 </section>
