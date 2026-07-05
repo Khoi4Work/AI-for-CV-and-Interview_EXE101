@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, useNavigate, useLocation} from 'react-router-dom';
 import {Footer} from '../../../components/layout/Footer.jsx';
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Mail, Lock, Eye, EyeOff, ArrowRight} from 'lucide-react';
@@ -8,13 +8,15 @@ import {useAuth} from "../contexts/AuthContext.jsx";
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
     const {handleLogin} = useAuth();
 
     const handleIsLoggedIn = (e) => {
         e.preventDefault();
         handleLogin();
-        navigate('/home');
 
+        const origin = location.state?.from?.pathname || '/home';
+        navigate(origin);
     };
 
     return (
