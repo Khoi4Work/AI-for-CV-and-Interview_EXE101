@@ -42,7 +42,7 @@ export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, o
                         onClick={onExport}
                         className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-6 py-2.5 rounded-lg transition-all active:scale-[0.98] shadow-sm">
                         <FileDown className="h-5 w-5"/>
-                        <span className="font-medium text-sm">Xuất PDF</span>
+                        <span className="font-medium text-sm">Lưu CV</span>
                     </button>
                 </div>
             </header>

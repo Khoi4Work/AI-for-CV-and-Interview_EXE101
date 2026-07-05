@@ -25,6 +25,7 @@ export default function CVBuilder() {
     const location = useLocation();
     const {
         cvData,
+        setHasCV,
         updatePersonalInfo,
         updateSummary,
         addExperience,

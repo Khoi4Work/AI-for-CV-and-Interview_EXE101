@@ -135,11 +135,6 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
 - FE check `res.status 2xx` $\rightarrow$ `setStatus("success")` $\rightarrow$ `clearDraft()` (xoá localStorage + reset state) $\rightarrow$ `setTimeout(close, 1400ms)` (note: code hiện tại là 3000ms — đã align với cảm giác "Hoàn tất" từ mockup).
 - Lỗi (validation 400, Cloudinary down 500, network) $\rightarrow$ `setStatus("error")`, hiển thị `errorMsg` từ `err.response?.data?.message` nếu có, fallback `"Lỗi"`.
 
-**8. Read API (sẵn sàng cho admin/list)**
-- `GET /api/feedbacks` $\rightarrow$ `getAllFeedbacks()` $\rightarrow$ `findAll()`.
-- `GET /api/feedbacks/{id}` $\rightarrow$ `getFeedbackById()` $\rightarrow$ 404 nếu không tồn tại.
-- `GET /api/feedbacks/category/{category}` $\rightarrow$ `getFeed la-backsByCategory()` $\rightarrow$ `findByCategoryOrderByCreatedAtDesc`.
-
 ### ✅ Completed
 - [x] `entity/Feedback.java` — JPA entity, table `feedbacks`, `@PrePersist` set `createdAt`.
 - [x] `dto/FeedbackRequest.java` — Bean Validation whitelist cho `category`, giới hạn 1000 ký tự content.
@@ -154,8 +149,8 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
 2. **`pageUrl`**: FE gửi kèm nhưng `FeedbackRequest` chưa có field này. Spring sẽ bỏ qua các multipart key lạ (không ăn nhằm entity) — nếu muốn lưu để biết user đang ở trang nào khi góp ý, cần thêm cột `page_url` vào entity + DTO.
 3. **Tên field ảnh**:
    - FE gửi `fd.append("image", file)`.
-   - Controller nhận `MultipartFile imageFile` (Spring map theo tên, không khớp `image`) — có thể BE không bind được file. Cần đổi tên một bên cho khớp (đề xuất: thống nhất `image`).
-4. **Auto-close timeout**: `setTimeout(close, 3000)` ở FE đang chậm so với thông điệp "Hoàn tất" — có thể chỉnh về 1400–1800ms.
+   - Controller nhận `MultipartFile imageFile` (Spring map theo tên, không khớp `image`) $\rightarrow$ cần thống nhất `image`.
+4. **Auto-close timeout**: `setTimeout(close, 3000)` ở FE đang chậm so với thông điệp "Hoàn tất" từ mockup $\rightarrow$ có thể chỉnh về 1400–1800ms.
 5. **Nhãn "Ẩn danh"**: BE chấp nhận `userName` rỗng qua `@NotBlank`; FE đang fallback `"Ẩn danh"` trước khi gửi, nên thực tế BE hiếm khi nhận rỗng. Có thể bỏ `@NotBlank` ở DTO hoặc bỏ fallback ở FE để đơn giản hoá.
 
 ### 🚩 Current State & Checkpoint
@@ -165,7 +160,7 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
   1. Thống nhất tên field ảnh (`image` $\leftrightarrow$ `imageFile`) để multipart bind đúng.
   2. (Tuỳ chọn) thêm `pageUrl` vào entity + DTO nếu muốn phân tích theo trang.
   3. Smoke test `POST /api/feedbacks` kèm và không kèm ảnh, kiểm tra Cloudinary URL trả về.
-  4. (Tuỳ chọn) xây trang Admin/Listing tiêu thụ `GET /api/feed feedbacks` + filter theo category.
+  4. (Tuỳ chọn) xây trang Admin/Listing tiêu thụ `GET /api/feed backs` + filter theo category.
 
 ## [2026-06-13] Session 6: Add @Slf4j Logging to Feedback Pipeline
 ### 🎯 Goals
@@ -197,7 +192,7 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
    ```
    - Nếu `hasImage=false` $\rightarrow$ Spring không bind được file vì tên field lệch. Sửa FE gửi `imageFile` hoặc BE đổi tên tham số về `image`.
    - Nếu `hasImage=true` $\rightarrow$ log tiếp theo ở Service sẽ in `name='...', size=... bytes, contentType='...'` để xác nhận file hợp lệ.
-3. Nếu Cloudinary throw $\rightarrow$ `ERROR` kèm stacktrace nguyên nhân (sai API key, network, content-type…).
+3. Nếu Cloudinary throw `ERROR` kèm stacktrace nguyên nhân.
 
 ### 🚩 Current State & Checkpoint
 - **Current Branch**: `dev`
@@ -240,7 +235,7 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
   - `/interview/result` không có `session.feedback` $\rightarrow$ redirect `/interview/job-selection`
 - [x] **InterviewRoom** (8) — viết lại hoàn toàn:
   - 5 state: `asking` (2.5s, ẩn text) $\rightarrow$ `recording` (hiện text + mic + VAD) $\rightarrow$ `processing` (1.2s) $\rightarrow$ `between` (5s) $\rightarrow$ `asking` (câu kế)
-  - Mic thật: `getUserMedia` + `AnalyserNode` (fftSize=512), threshold 12, RMS 0-2000Hz
+  - Mic thật: `getUserMedia` + `AnalyserNode` (fftBsize=512), threshold 12, RMS 0-2000Hz
   - End phrase regex: `xin hết|hết rồi|xong rồi|hết câu|that's it|i'm done`
   - 10s in-question silence $\rightarrow$ skip; 5s between-question silence $\rightarrow$ skip
   - 2 skip liên tiếp (bất kỳ loại) $\rightarrow$ `endInterview()` $\rightarrow$ sinh feedback $\rightarrow$ navigate review
@@ -254,7 +249,7 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
   - Closer quote cuối transcript
 
 - [x] **Build verified**: `npx vite build` pass, 2255 modules transform, 0 error.
-- [x] **Dev server**: `npx vite` chạy thành công (port 5174 vì 5173 bận).
+  - **Dev server**: `npx vite` chạy thành công (port 5174 vì 5173 bận).
 
 ### 🚩 Current State & Checkpoint
 - **Current Branch**: `dev`
@@ -282,3 +277,22 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
 - **Current Branch**: `dev`
 - **Latest Commit**: `63fe2ab` — "[UI] Align interview flow pages and cards with updated design system tokens"
 - **Next Step**: Continue refining remaining interview flow pages or move towards the final review of the setup phase.
+
+## [2026-07-05] Session 10: CV Evaluation Modal Persistence
+### 🎯 Goals
+- Implement persistence for the "Do you have a CV?" onboarding modal in `CVEvaluation` page.
+- Ensure the modal only suppresses when the user explicitly confirms they have a CV.
+- Use `localStorage` to remember user context across sessions.
+- Update `hasCV` to `true` when user starts creating a CV in the Builder flow.
+
+### ✅ Completed
+- [x] Updated `CVContext.jsx`:
+    - Initialized `hasCV` from `localStorage`.
+    - Implemented `setHasCVWithPersistence` to synchronize state with `localStorage`.
+    - Exposed the persistent setter in the `CVProvider`.
+- [x] Updated `CVEvaluation.jsx`:
+    - Modified the modal trigger to run only on mount (`useEffect` with empty dependency array).
+    - Modal now displays if `hasCV !== true`, matching the user's requirement to persist the "No" answer as a state that still triggers the check on return.
+- [x] Updated `CVBuilder.jsx`:
+    - Set `hasCV(true)` on mount. This ensures that once a user enters the builder (regardless of how they got there: template selection or file upload), they are marked as having a CV, suppressing the onboarding modal in `CVEvaluation`.
+- [x] Verified that `hasCV === true` suppresses the modal permanently, while `hasCV === false` (or `null`) triggers it on page load.

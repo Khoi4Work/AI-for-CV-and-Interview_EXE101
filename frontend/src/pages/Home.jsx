@@ -41,8 +41,7 @@ export default function Home() {
                             </span>
                         </h1>
                         <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-                            Biến kinh nghiệm của bạn thành một bản CV chuyên nghiệp, thu hút nhà tuyển dụng chỉ
-                            trong vài phút với trí tuệ nhân tạo.
+                            Tất cả các mẫu sơ yếu lý lịch SmartFolio đều đã được kiểm nghiệm với các hệ thống quản lý tuyển dụng (ATS) hàng đầu để đảm bảo khả năng tương thích hoàn toàn. Nhờ bố cục gọn gàng, phông chữ dễ đọc và tiêu đề các mục theo chuẩn, thông tin của bạn sẽ không bị phần mềm bỏ sót.
                         </p>
                         <div className="flex flex-wrap gap-sm mt-sm">
                             <button
