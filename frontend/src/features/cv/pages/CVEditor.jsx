@@ -13,6 +13,7 @@ export default function CVEditor() {
     const { showToast } = useApp();
     const {
         cvData,
+        setHasCV,
         updatePersonalInfo,
         updateSummary,
         updateExperience,
@@ -30,8 +31,9 @@ export default function CVEditor() {
     }, [setFullCVData]);
 
 
-    const handleExport = () => {
-        showToast('Đang tối ưu hóa định dạng PDF... Tệp của bạn sẽ được tải xuống trong giây lát.', 'success');
+    const handleSave = () => {
+        setHasCV(true);
+        showToast('CV của bạn đã được lưu thành công!', 'success');
     };
 
     const handleZoomIn = () => setZoom(prev => Math.min(prev + 10, 200));
@@ -52,7 +54,7 @@ export default function CVEditor() {
     return (
         <div className="flex flex-col h-screen overflow-hidden" style={{ background: 'radial-gradient(circle at center, var(--color-bg-radial-start) 0%, var(--color-bg-radial-end) 100%)' }}>
             <TopNagivationToolBar
-                onExport={handleExport}
+                onExport={handleSave}
                 zoom={zoom}
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}

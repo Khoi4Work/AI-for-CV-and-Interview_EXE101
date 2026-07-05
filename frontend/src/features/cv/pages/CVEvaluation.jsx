@@ -1,12 +1,22 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileText, Trash2, Link, TextCursor, CheckCircle2, X, Sparkles } from 'lucide-react';
+import { Upload, FileText, Trash2, Link, TextCursor, CheckCircle2, X, Sparkles, FileQuestion } from 'lucide-react';
 import { goodResumeData, badResumeData } from '../constants/cv-mock-data.js';
 import { mockJobDescriptions } from '../../../constants/jobDescription.js';
+import { useCV } from '../contexts/CVContext.jsx';
+import Modal from '../../../components/ui/Modal.jsx';
 
 const CVEvaluation = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const { hasCV, setHasCV } = useCV();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (hasCV !== true) {
+      setIsModalOpen(true);
+    }
+  }, []); // Only check on mount to avoid re-triggering during navigation
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [demoCv, setDemoCv] = useState(null); // 'good' or 'bad'
@@ -291,6 +301,46 @@ const CVEvaluation = () => {
           </button>
         </div>
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Kiểm tra thông tin CV"
+      >
+        <div className="flex flex-col items-center text-center gap-6 py-4">
+          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+            <FileQuestion className="w-10 h-10" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-on-surface">Bạn đã có CV chưa?</h3>
+            <p className="text-on-surface-variant text-sm">
+              Nếu bạn đã có CV, hãy tải lên để AI đánh giá. <br />
+              Nếu chưa, chúng tôi sẽ giúp bạn tạo một CV chuyên nghiệp.
+            </p>
+          </div>
+          <div className="flex gap-4 w-full ">
+            <button
+              onClick={() => {
+                setHasCV(true);
+                setIsModalOpen(false);
+              }}
+              className="flex-1 px-6 py-3 bg-surface-container text-on-surface font-semibold rounded-2xl hover:bg-surface-container-low transition-colors border border-outline-variant"
+            >
+              Rồi, tôi có rồi
+            </button>
+            <button
+              onClick={() => {
+                setHasCV(false);
+                setIsModalOpen(false);
+                navigate('/templates');
+              }}
+              className="flex-1 px-6 py-3 bg-primary text-on-primary font-semibold rounded-2xl hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+            >
+              Chưa, tôi muốn tạo mới
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
