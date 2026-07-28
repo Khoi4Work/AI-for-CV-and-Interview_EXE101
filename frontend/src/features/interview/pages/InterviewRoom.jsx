@@ -1,7 +1,8 @@
 // /src/pages/interview/InterviewRoom.jsx
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {Clock, Mic, MicOff, Volume2, Sparkles, SettingsIcon} from 'lucide-react';
+import { Clock, Mic, MicOff, Volume2, Sparkles, SettingsIcon } from 'lucide-react';
+import { RecruiterAvatar } from '../components/RecruiterAvatar';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
 import { END_PHRASES_VN, END_PHRASES_EN } from '../constants/questionBank.js';
@@ -436,12 +437,7 @@ export function InterviewRoom() {
                 </div>
             </header>
             <main className="flex-1 relative flex flex-col items-center justify-center p-6 text-on-surface">
-                <div
-                    className={`w-28 h-28 rounded-full mb-6 border-4 border-background shadow-sm flex items-center justify-center overflow-hidden transition-all ${phase === 'asking' ? 'bg-primary/20 ring-4 ring-primary/30 animate-pulse' : 'bg-surface-container'}`}>
-                    {phase === 'asking' ? <Volume2 className="w-12 h-12 text-primary"/> : <div
-                        className="w-full h-full bg-primary flex items-center justify-center text-on-primary">
-                        <Sparkles className="w-12 h-12"/></div>}
-                </div>
+                <RecruiterAvatar phase={phase} />
                 <div className="text-sm text-on-surface-variant mb-4 font-medium">
                     {data.interviewConfig?.type === 'HR' ? 'Anh Minh — HR FPT' : data.interviewConfig?.type === 'Technical' ? 'Anh Hùng — Tech Lead FPT' : 'Chị Lan — HR Manager FPT'}
                 </div>
