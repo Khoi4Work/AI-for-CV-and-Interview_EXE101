@@ -84,7 +84,7 @@ export function Header() {
 
                     {dropdownOpen && (
                         <div
-                            className="absolute right-0 mt-2 w-64 glass-panel rounded-2xl shadow-2xl border border-outline-variant py-2 z-[60] animate-fade-in">
+                            className="absolute right-0 mt-2 w-64 bg-surface-container/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-outline-variant py-2 z-[60] animate-fade-in">
                             <div className="px-4 py-2 mb-2 border-b border-outline-variant/50">
                                 <p className="text-xs font-bold text-primary uppercase tracking-wider">Tài khoản của
                                     tôi</p>

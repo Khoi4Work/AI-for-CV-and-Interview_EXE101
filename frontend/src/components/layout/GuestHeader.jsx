@@ -37,12 +37,14 @@ const GuestHeader = () => {
 
             {/* Auth Actions */}
             <div className="flex items-center space-x-4">
-                <button
-                    onClick={() => navigate('/register')}
-                    className="text-sm font-semibold text-on-surface-variant hover:text-on-surface px-3 py-1.5 transition-colors"
-                >
-                    Đăng ký
-                </button>
+                {location.pathname !== '/register' && (
+                    <button
+                        onClick={() => navigate('/register')}
+                        className="text-sm font-semibold text-on-surface-variant hover:text-on-surface px-3 py-1.5 transition-colors"
+                    >
+                        Đăng ký
+                    </button>
+                )}
                 <button
                     onClick={() => navigate('/login')}
                     className="bg-primary hover:bg-primary-container text-on-primary text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-all active:scale-[0.98]"
