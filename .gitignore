@@ -35,4 +35,4 @@ target/
 
 # Project specific
 importedCode/
-.claude/
+.claude/settings.local.json

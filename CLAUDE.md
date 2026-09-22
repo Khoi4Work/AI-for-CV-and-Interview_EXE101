@@ -7,6 +7,8 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 **Goal**: A comprehensive platform for AI-driven CV optimization and interview preparation.
 **Current Stage**: Initial codebase established. Core directory structures and basic UI shells are implemented.
 
+**Note for Contributors**: Please read [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and the AI Agent workflow.
+
 ## 🛠 Technical Architecture
 
 ### 🎨 Frontend (Client Side)
@@ -27,16 +29,10 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 - **Architecture Pattern**: Layered Architecture (`Controller` $\rightarrow$ `Service` $\rightarrow$ `Repository`)
 - **Directory**: `backend/`
 
-### 📚 Reference Material
-- **Directory**: `importedCode/`
-- **Status**: Explicitly ignored by Git (`.gitignore`).
-- **Usage**: Treat as read-only reference. Do not move or modify these files unless explicitly instructed.
-
 ## 📂 Directory Map
 - `frontend/`: Complete frontend source, assets, and config.
 - `backend/`: Complete Java backend source and Maven config.
-- `importedCode/`: Reference implementations for logic/UI (Local only).
-- `.gitignore`: Configured to ignore `node_modules/`, `target/`, `.idea/`, `.claude/`, and `importedCode/`.
+- `.gitignore`: Configured to ignore `node_modules/`, `target/`, `.idea/`, `.claude/`.
 
 ## ⚠️ Critical Rules & Constraints
 - **Git Commits**: Must strictly use prefixes like `[FEAT]`, `[FIX]`, `[REFACTOR]`.
@@ -59,6 +55,7 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 
 ### 🗒 Session & Progress Tracking
 - **SESSIONS.md Autonomy**: Claude has full standing authorization to modify `SESSIONS.md` to record progress, task completions, and session summaries. Do not ask for permission to update this file. All session records must be kept exclusively within `SESSIONS.md`; do not create separate markdown files for sessions (e.g., avoid formats like `[absolute path]+[date]`).
+- **End-of-Session Clean-up**: Before ending a session or switching tasks, Claude MUST check for uncommitted changes using `git status` and `git log`. If "stale" code (code modified but not committed) is found, Claude must explicitly remind the user to commit these changes to avoid "code rotting" or lost work.
 
 ### 🚀 Git & Version Control
 - **Commit Title**: Must start with a prefix in brackets (e.g., `[FEAT]`, `[FIX]`, `[REFACTOR]`), followed by a concise and imperative description (e.g., `[FEAT] Add logout button`).
