@@ -20,7 +20,8 @@ Instead of implementing features manually, you can use the custom `/code` comman
 1. Install [Claude Code CLI](https://claude.ai/code).
 2. Pull the latest changes (including the `.claude/` directory).
 3. Use the `/code` command for new features or fixes to ensure they pass through the automated review pipeline.
-
+4. Plugins using: 
+![img.png](img.png)
 ## 🛠 Development Standards
 
 ### Git Commit Convention
@@ -34,3 +35,4 @@ All commits must use the following prefixes:
 - **Frontend**: React 19, Tailwind CSS 4.0. Follow the professional, rounded-2xl design system.
 - **Backend**: Java, Spring Boot. Strictly adhere to the Controller $\rightarrow$ Service $\rightarrow$ Repository pattern.
 - **Documentation**: All session progress must be recorded in `SESSIONS.md`.
+
