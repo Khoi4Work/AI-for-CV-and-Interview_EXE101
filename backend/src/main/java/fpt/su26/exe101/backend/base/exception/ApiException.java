@@ -1,6 +1,5 @@
 package fpt.su26.exe101.backend.base.exception;
 
-
 import lombok.Getter;
 
 /**

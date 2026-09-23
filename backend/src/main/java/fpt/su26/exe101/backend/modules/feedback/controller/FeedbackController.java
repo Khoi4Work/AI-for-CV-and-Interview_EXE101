@@ -1,8 +1,8 @@
-package fpt.su26.exe101.backend.controller;
+package fpt.su26.exe101.backend.modules.feedback.controller;
 
-import fpt.su26.exe101.backend.dto.FeedbackRequest;
-import fpt.su26.exe101.backend.entity.Feedback;
-import fpt.su26.exe101.backend.service.FeedbackService;
+import fpt.su26.exe101.backend.modules.feedback.dto.request.FeedbackRequest;
+import fpt.su26.exe101.backend.modules.feedback.entity.Feedback;
+import fpt.su26.exe101.backend.modules.feedback.service.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

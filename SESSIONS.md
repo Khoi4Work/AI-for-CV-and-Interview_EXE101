@@ -296,3 +296,27 @@ Override at the call site: `<FeedbackWidget onSubmit={async (payload, file) => {
 - [x] Updated `CVBuilder.jsx`:
     - Set `hasCV(true)` on mount. This ensures that once a user enters the builder (regardless of how they got there: template selection or file upload), they are marked as having a CV, suppressing the onboarding modal in `CVEvaluation`.
 - [x] Verified that `hasCV === true` suppresses the modal permanently, while `hasCV === false` (or `null`) triggers it on page load.
+## [2026-09-23] Session: Backend Architecture Standardization & Recovery
+### 🎯 Goals
+- Recover lost code from previous session errors.
+- Transition from Layered Architecture to Module-based Architecture.
+- Synchronize backend structure with api.md and db.md specifications.
+- Fix all package and import errors resulting from directory restructuring.
+
+### ✅ Completed
+- [x] **Data Recovery**: Used `git restore` to revert to a stable state and recovered critical files (`HealthController`, `CloudinaryService`).
+- [x] **Structural Refactoring**:
+    - Removed root-level `controller/`, `service/`, `repository/`, `entity/`, `dto/` folders.
+    - Implemented Module-based structure: `modules/auth`, `modules/payment`, `modules/interview`, `modules/gallery`, `modules/cv_pipeline`, `modules/feedback`.
+    - Created a dedicated `modules/ai` module to centralize AI logic for both CV and Interview flows.
+- [x] **DTO Standardization**: Standardized all modules to use `dto/request` and `dto/response` subfolders.
+- [x] **Package Synchronization**: Automated the update of all `package` declarations and `import` statements across the entire backend to match the new folder hierarchy.
+- [x] **Foundation Setup**: 
+    - Implemented `BaseEntity` with audit fields (`id`, `createdAt`, `updatedAt`, `createdBy`).
+    - Fixed `ApiException` and `ErrorCode` relationship to resolve compilation errors.
+- [x] **Spec Validation**: Verified that the new architecture perfectly aligns with the endpoints in `api.md` and the schema in `db.md`.
+
+### 🚩 Current State & Checkpoint
+- **Architecture**: Unified Module-based Architecture established.
+- **Code State**: All existing Java files have correct package declarations; no more "root-level" layer folders.
+- **Next Step**: Start implementing the `base` and `auth` modules following the API spec.

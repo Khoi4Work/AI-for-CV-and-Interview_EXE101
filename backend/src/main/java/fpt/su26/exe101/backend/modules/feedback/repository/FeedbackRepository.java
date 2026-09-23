@@ -1,6 +1,6 @@
-package fpt.su26.exe101.backend.repository;
+package fpt.su26.exe101.backend.modules.feedback.repository;
 
-import fpt.su26.exe101.backend.entity.Feedback;
+import fpt.su26.exe101.backend.modules.feedback.entity.Feedback;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

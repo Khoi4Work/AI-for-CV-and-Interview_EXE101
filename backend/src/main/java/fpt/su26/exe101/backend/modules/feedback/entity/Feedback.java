@@ -1,5 +1,6 @@
-package fpt.su26.exe101.backend.entity;
+package fpt.su26.exe101.backend.modules.feedback.entity;
 
+import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -8,31 +9,21 @@ import java.time.LocalDateTime;
 @Table(name = "feedbacks")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Feedback {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class Feedback extends BaseEntity {
     @Column(nullable = false)
     private String userName;
 
     @Column(nullable = false)
     private String category;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     private String imageUrl;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

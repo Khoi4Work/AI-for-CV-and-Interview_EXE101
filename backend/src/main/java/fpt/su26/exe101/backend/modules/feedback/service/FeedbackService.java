@@ -1,8 +1,9 @@
-package fpt.su26.exe101.backend.service;
+package fpt.su26.exe101.backend.modules.feedback.service;
+import fpt.su26.exe101.backend.base.service.CloudinaryService;
 
-import fpt.su26.exe101.backend.dto.FeedbackRequest;
-import fpt.su26.exe101.backend.entity.Feedback;
-import fpt.su26.exe101.backend.repository.FeedbackRepository;
+import fpt.su26.exe101.backend.modules.feedback.dto.request.FeedbackRequest;
+import fpt.su26.exe101.backend.modules.feedback.entity.Feedback;
+import fpt.su26.exe101.backend.modules.feedback.repository.FeedbackRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,13 +34,8 @@ public class FeedbackService {
         if (imageFile != null && !imageFile.isEmpty()) {
             log.info("Uploading attached image: name='{}', size={} bytes, contentType='{}'",
                     imageFile.getOriginalFilename(), imageFile.getSize(), imageFile.getContentType());
-            try {
-                imageUrl = cloudinaryService.uploadImage(imageFile);
-                log.info("Image uploaded successfully: {}", imageUrl);
-            } catch (IOException ex) {
-                log.error("Failed to upload image to Cloudinary: {}", ex.getMessage(), ex);
-                throw ex;
-            }
+            imageUrl = cloudinaryService.uploadImage(imageFile);
+            log.info("Image uploaded successfully: {}", imageUrl);
         } else {
             log.debug("No image attached to feedback");
         }
