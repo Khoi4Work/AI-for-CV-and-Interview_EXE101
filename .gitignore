@@ -11,6 +11,8 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+.submission/
+.spec/
 
 # Node.js / Frontend
 node_modules/
