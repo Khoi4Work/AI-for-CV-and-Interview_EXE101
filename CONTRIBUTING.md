@@ -1,38 +1,56 @@
 # Contributing to AI for CV and Interview
 
-Welcome! To maintain high quality and consistency, this project uses a set of AI Agents to automate the development lifecycle.
+Welcome! To maintain high quality and consistency, this project uses a strict AI Agent orchestration system to automate the development lifecycle.
 
-## 🤖 AI Agent Workflow
+## 🤖 AI Agent Workflow (The Pipeline)
 
-We use Claude Code with a specialized multi-agent orchestration system. If you are using Claude Code, you have access to a powerful automated pipeline.
+We use a specialized multi-agent pipeline to ensure every feature is planned, implemented, tested, and audited before it reaches the codebase.
 
 ### The `/code` Command
-Instead of implementing features manually, you can use the custom `/code` command:
+To implement a new feature or fix a bug, use the custom `/code` command:
 ` /code <your feature request or bug fix description>`
 
-**What happens under the hood?**
-1. **Orchestrator**: Analyzes the request and plans the implementation.
-2. **Coder**: Writes the actual code following our Layered Architecture.
-3. **Tester**: Creates and runs tests to verify the implementation.
-4. **Reviewer**: Audits the code for Clean Code and SOLID principles.
+### How the Pipeline Works (Sequential Flow)
+The process follows a strict sequential chain. A step only begins when the previous one has successfully produced a handover document in `.submission/`.
+
+1.  **Step 0: Safety & Clean-up**: The system verifies the git branch (blocks `main`/`master`) and clears the `.submission/` directory.
+2.  **Step 1: Planning (Orchestrator)**:
+    - Analyzes requirements and specs in `.spec/`.
+    - Creates a detailed plan in `.submission/ke-hoach.md`.
+    - **Decision Gate**: If there are "CÂU HỎI CÒN BỎ NGỎ", the process stops for user clarification.
+3.  **Step 2: Implementation (Coder)**:
+    - Implements the feature strictly based on `ke-hoach.md`.
+    - Writes a summary of changes to `.submission/thay-doi.md`.
+4.  **Step 3: Verification (Tester)**:
+    - Writes and executes integration tests.
+    - Writes results to `.submission/ket-qua-test.md`.
+    - **Decision Gate**: If any test fails, the process stops for fixing.
+5.  **Step 4: Audit (Reviewer)**:
+    - Performs a final technical audit.
+    - Writes the final verdict to `.submission/danh-gia.md` (`CHOT` / `CAN SUA` / `CHAN`).
 
 ### Setup for Collaborators
 1. Install [Claude Code CLI](https://claude.ai/code).
 2. Pull the latest changes (including the `.claude/` directory).
-3. Use the `/code` command for new features or fixes to ensure they pass through the automated review pipeline.
-4. Plugins using: 
-![img.png](img.png)
+3. Ensure your specifications are placed in the `.spec/` folder.
+4. Use the `/code` command for all development to ensure it passes through the automated review pipeline.
+
 ## 🛠 Development Standards
 
-### Git Commit Convention
+### Git Workflow & Custom Commands
+We use custom commands to maintain a clean git history:
+- `/add`: Stages changes after checking for "strange" files that don't fit the project structure.
+- `/commit`: Commits changes with a structured message (filtering out internal agent/config logs).
+
+**Commit Convention**:
 All commits must use the following prefixes:
 - `[FEAT]`: New features.
 - `[FIX]`: Bug fixes.
 - `[REFACTOR]`: Code changes that neither fix a bug nor add a feature.
 - `[UI]`: UI/UX improvements.
+- `[DOCS]`: Documentation updates.
 
 ### Coding Standards
-- **Frontend**: React 19, Tailwind CSS 4.0. Follow the professional, rounded-2xl design system.
-- **Backend**: Java, Spring Boot. Strictly adhere to the Controller $\rightarrow$ Service $\rightarrow$ Repository pattern.
+- **Frontend**: React 19, Tailwind CSS 4.0. Professional, rounded-2xl design system.
+- **Backend**: Java, Spring Boot. Strictly follow the Layered Architecture: `Controller` $\rightarrow$ `Service` $\rightarrow$ `Repository`.
 - **Documentation**: All session progress must be recorded in `SESSIONS.md`.
-
