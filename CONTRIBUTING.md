@@ -27,20 +27,36 @@ The process follows a strict sequential chain. A step only begins when the previ
     - **Decision Gate**: If any test fails, the process stops for fixing.
 5.  **Step 4: Audit (Reviewer)**:
     - Performs a final technical audit.
-    - Writes the final verdict to `.submission/danh-gia.md` (`CHOT` / `CAN SUA` / `CHAN`).
+    - Writes the final verdict to `.submission/danh-gia.md` (`VERIFIED` / `REQUEST CHANGES`).
+
+### Pipeline Artifacts Summary
+| File | Agent | Purpose |
+| :--- | :--- | :--- |
+| `.spec/*` | User | Source of truth / Requirements |
+| `.submission/ke-hoach.md` | Orchestrator | Execution plan & decision gate |
+| `.submission/thay-doi.md` | Coder | Detailed report of implemented changes |
+| `.submission/ket-qua-test.md` | Tester | Test evidence & quality gate |
+| `.submission/danh-gia.md` | Reviewer | Final technical audit & verdict |
 
 ### Setup for Collaborators
 1. Install [Claude Code CLI](https://claude.ai/code).
 2. Pull the latest changes (including the `.claude/` directory).
-3. Ensure your specifications are placed in the `.spec/` folder.
-4. Use the `/code` command for all development to ensure it passes through the automated review pipeline.
+3. **Initialize Required Directories**: Since these folders are often ignored by git, you must create them manually if they don't exist:
+   `mkdir .spec .submission`
+4. Place your specifications in the `.spec/` folder.
+5. Use the `/code` command for all development to ensure it passes through the automated review pipeline.
 
 ## 🛠 Development Standards
 
 ### Git Workflow & Custom Commands
-We use custom commands to maintain a clean git history:
-- `/add`: Stages changes after checking for "strange" files that don't fit the project structure.
-- `/commit`: Commits changes with a structured message (filtering out internal agent/config logs).
+We use custom commands to maintain a clean git history and structural integrity:
+- `/code <request>`: Triggers the full AI SDLC pipeline described above.
+- `/add`: Stages all current changes after checking for "strange" files that don't fit the project structure.
+- `/commit`: Commits staged changes with a structured message (filtering out internal agent/config logs).
+- `/done`: Combines `/add` and `/commit` into one step. Useful for quickly finalizing verified changes.
+
+**Typical Development Loop**:
+`Place spec in .spec/` $\rightarrow$ `/code "Feature name"` $\rightarrow$ `Review .submission/` $\rightarrow$ `/done` (or `/add` $\rightarrow$ `/commit`)
 
 **Commit Convention**:
 All commits must use the following prefixes:
