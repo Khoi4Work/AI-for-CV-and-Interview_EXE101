@@ -63,11 +63,17 @@ export function OrderSummary() {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 mb-6">
                 <h3 className="text-gray-900 font-bold text-sm mb-1">Bạn sẽ nhận được</h3>
                 {benefits.map((benefit, i) => (
                     <BenefitItem key={i} text={benefit} />
                 ))}
+            </div>
+
+            <div className="flex flex-col gap-2 mt-2">
+                <button className="w-full py-3 bg-[#1c8c54] text-white font-bold rounded-xl min-h-[44px] hover:bg-[#167345] transition-colors">
+                    Thanh toán ngay
+                </button>
             </div>
         </div>
     );

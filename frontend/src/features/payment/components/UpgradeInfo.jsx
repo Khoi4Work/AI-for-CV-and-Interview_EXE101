@@ -4,7 +4,7 @@ export function UpgradeInfo() {
     return (
         <div className="flex flex-col gap-3">
             <h2 className="text-white text-sm font-medium">1. Bạn đang nâng cấp</h2>
-            <div className="bg-[#CBE4D6] rounded-xl p-5 flex justify-between items-center shadow-sm">
+            <div className="bg-[#CBE4D6] rounded-xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="bg-white/60 p-2.5 rounded-lg shadow-sm">
                         <FileText className="w-6 h-6 text-[#1c8c54]" />

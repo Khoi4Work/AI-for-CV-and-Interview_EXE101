@@ -42,7 +42,8 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 ## 📜 Development Guidelines
 
 ### 🖋 Coding Standards
-- **Surgical Changes**: Modify only what is necessary. Avoid sweeping changes that risk regressions.
+- **Token Efficiency**: Stop immediately and ask for feedback if a tool call (especially `Edit`) fails more than 3 times. Do not blindly retry; analyze the failure, read the file again, and propose a new approach.
+- **Explicit File Access**: Do not use wildcards (`*`) or broad globs to "guess" or "sweep" files when a specific target is unknown. If a file is not found or its location is unclear, ask the user for the exact path or request further guidance.
 - **Simplicity**: Prefer clear, explicit logic over "clever" abstractions.
 - **Boring Code**: Prioritize stability and predictability over innovative but fragile patterns.
 

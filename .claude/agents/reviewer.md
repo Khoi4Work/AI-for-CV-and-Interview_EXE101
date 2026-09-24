@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Quality auditor who performs final verification and documents the verdict.
-tools: [Read, Glob, Grep]
+tools: [Read, Glob, Grep, Bash]
 ---
 
 # Role: Reviewer Agent

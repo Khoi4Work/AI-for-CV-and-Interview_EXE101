@@ -317,48 +317,48 @@ const PricingPage = () => {
             {comparisonType === 'cv' && (
                 <Card className="bg-[#B5C2BC] rounded-xl overflow-hidden mb-8 border-none">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-[#475569]">
-                            <thead className="bg-[#0F172A] text-white">
-                            <tr>
-                                <th className="py-4 px-6 font-semibold min-w-[200px] border-r border-slate-700">TÍNH
+                        <div className="grid grid-cols-1 md:table w-full text-left text-sm text-[#475569]">
+                            <div className="bg-[#0F172A] text-white md:table-header-group">
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 font-semibold md:min-w-[200px] border-r border-slate-700 md:table-cell bg-[#0F172A]">TÍNH
                                     NĂNG
-                                </th>
-                                <th colSpan={3}
-                                    className="py-4 px-6 text-center bg-white/5 font-bold text-[#10B981]">GÓI CV
-                                </th>
-                            </tr>
-                            <tr className="bg-[#CBD5E1] text-[#0F172A] text-center font-bold">
-                                <th className="py-3 px-6 text-left border-r border-slate-300"></th>
-                                <th className="py-3 px-4 w-28 border-b border-slate-300">Cơ bản</th>
-                                <th className="py-3 px-4 w-28 text-[#9333EA] border-b border-slate-300">Middle</th>
-                                <th className="py-3 px-4 w-28 text-[#2563EB] border-b border-slate-300">Enhance</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-300 text-center bg-[#E2E8F0]">
-                            <tr>
-                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Số
+                                </div>
+                                <div colSpan={3}
+                                    className="py-4 px-6 text-center bg-white/5 font-bold text-[#10B981] md:table-cell">GÓI CV
+                                </div>
+                            </div>
+                            <div className="bg-[#CBD5E1] text-[#0F172A] text-center font-bold grid grid-cols-1 md:table-row">
+                                <div className="py-3 px-6 text-left border-r border-slate-300 md:table-cell"></div>
+                                <div className="py-3 px-4 w-28 border-b border-slate-300 md:table-cell">Cơ bản</div>
+                                <div className="py-3 px-4 w-28 text-[#9333EA] border-b border-slate-300 md:table-cell">Middle</div>
+                                <div className="py-3 px-4 w-28 text-[#2563EB] border-b border-slate-300 md:table-cell">Enhance</div>
+                            </div>
+                            </div>
+                            <div className="divide-y divide-slate-300 text-center bg-[#E2E8F0] md:table-tbody">
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Số
                                     lượng CV
-                                </td>
-                                <td>1 CV</td>
-                                <td>5 CV</td>
-                                <td>10 CV</td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Template</td>
-                                <td>Cơ bản</td>
-                                <td>Cao cấp</td>
-                                <td>Cao cấp (% đậu)</td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Phân
+                                </div>
+                                <div className="md:table-cell">1 CV</div>
+                                <div className="md:table-cell">5 CV</div>
+                                <div className="md:table-cell">10 CV</div>
+                            </div>
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Template</div>
+                                <div className="md:table-cell">Cơ bản</div>
+                                <div className="md:table-cell">Cao cấp</div>
+                                <div className="md:table-cell">Cao cấp (% đậu)</div>
+                            </div>
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Phân
                                     tích CV
-                                </td>
-                                <td>1 lần (không sửa)</td>
-                                <td>5 lần (Chấm điểm, kỹ năng, ngữ nghĩa)</td>
-                                <td>10 lần (Chấm điểm, kỹ năng, chỉnh sửa)</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                </div>
+                                <div className="md:table-cell">1 lần (không sửa)</div>
+                                <div className="md:table-cell">5 lần (Chấm điểm, kỹ năng, ngữ nghĩa)</div>
+                                <div className="md:table-cell">10 lần (Chấm điểm, kỹ năng, chỉnh sửa)</div>
+                            </div>
+                            </div>
+                        </div>
                     </div>
                 </Card>
             )}
@@ -482,66 +482,66 @@ const PricingPage = () => {
             {comparisonType === 'interview' && (
                 <Card className="bg-[#B5C2BC] rounded-xl overflow-hidden mb-8 border-none">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-[#475569]">
-                            <thead className="bg-[#0F172A] text-white">
-                            <tr>
-                                <th className="py-4 px-6 font-semibold min-w-[200px] border-r border-slate-700">TÍNH
+                        <div className="grid grid-cols-1 md:table w-full text-left text-sm text-[#475569]">
+                            <div className="bg-[#0F172A] text-white md:table-header-group">
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 font-semibold md:min-w-[200px] border-r border-slate-700 md:table-cell bg-[#0F172A]">TÍNH
                                     NĂNG
-                                </th>
-                                <th colSpan={3}
-                                    className="py-4 px-6 text-center bg-white/5 font-bold text-[#10B981]">GÓI INTERVIEW
-                                </th>
-                            </tr>
-                            <tr className="bg-[#CBD5E1] text-[#0F172A] text-center font-bold">
-                                <th className="py-3 px-6 text-left border-r border-slate-300"></th>
-                                <th className="py-3 px-4 w-28 border-b border-slate-300">Cơ bản</th>
-                                <th className="py-3 px-4 w-28 text-[#9333EA] border-b border-slate-300">Middle</th>
-                                <th className="py-3 px-4 w-28 text-[#2563EB] border-b border-slate-300">Enhance</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-300 text-center bg-[#E2E8F0]">
-                            <tr>
-                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Số
+                                </div>
+                                <div colSpan={3}
+                                    className="py-4 px-6 text-center bg-white/5 font-bold text-[#10B981] md:table-cell">GÓI INTERVIEW
+                                </div>
+                            </div>
+                            <div className="bg-[#CBD5E1] text-[#0F172A] text-center font-bold grid grid-cols-1 md:table-row">
+                                <div className="py-3 px-6 text-left border-r border-slate-300 md:table-cell"></div>
+                                <div className="py-3 px-4 w-28 border-b border-slate-300 md:table-cell">Cơ bản</div>
+                                <div className="py-3 px-4 w-28 text-[#9333EA] border-b border-slate-300 md:table-cell">Middle</div>
+                                <div className="py-3 px-4 w-28 text-[#2563EB] border-b border-slate-300 md:table-cell">Enhance</div>
+                            </div>
+                            </div>
+                            <div className="divide-y divide-slate-300 text-center bg-[#E2E8F0] md:table-tbody">
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Số
                                     phút phỏng vấn
-                                </td>
-                                <td>–</td>
-                                <td>10 phút</td>
-                                <td>15 phút</td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Câu
+                                </div>
+                                <div className="md:table-cell">–</div>
+                                <div className="md:table-cell">10 phút</div>
+                                <div className="md:table-cell">15 phút</div>
+                            </div>
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Câu
                                     hỏi mẫu
-                                </td>
-                                <td>Unlimited/Intern</td>
-                                <td>Cơ bản (Vị trí/Fresher)</td>
-                                <td>Nâng cao (Vị trí/Junior</td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Văn
+                                </div>
+                                <div className="md:table-cell">Unlimited/Intern</div>
+                                <div className="md:table-cell">Cơ bản (Vị trí/Fresher)</div>
+                                <div className="md:table-cell">Nâng cao (Vị trí/Junior</div>
+                            </div>
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Văn
                                     hóa doanh nghiệp
-                                </td>
-                                <td>–</td>
-                                <td>–</td>
-                                <td className="text-[#10B981]"><CheckCircle size={18} className="mx-auto"/></td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Feedback
+                                </div>
+                                <div className="md:table-cell">–</div>
+                                <div className="md:table-cell">–</div>
+                                <div className="text-[#10B981] md:table-cell"><CheckCircle size={18} className="mx-auto"/></div>
+                            </div>
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Feedback
                                     chuyên sâu
-                                </td>
-                                <td>–</td>
-                                <td>–</td>
-                                <td className="text-[#10B981]"><CheckCircle size={18} className="mx-auto"/></td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A]">Ghi
+                                </div>
+                                <div className="md:table-cell">–</div>
+                                <div className="md:table-cell">–</div>
+                                <div className="text-[#10B981] md:table-cell"><CheckCircle size={18} className="mx-auto"/></div>
+                            </div>
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Ghi
                                     hình
-                                </td>
-                                <td>–</td>
-                                <td>3 lần</td>
-                                <td>6 lần</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                </div>
+                                <div className="md:table-cell">–</div>
+                                <div className="md:table-cell">3 lần</div>
+                                <div className="md:table-cell">6 lần</div>
+                            </div>
+                            </div>
+                        </div>
                     </div>
                 </Card>
             )}

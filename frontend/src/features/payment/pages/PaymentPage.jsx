@@ -9,7 +9,7 @@ export function PaymentPage() {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen py-12 px-6 font-sans flex justify-center relative">
+        <div className="min-h-screen py-12 px-4 md:px-6 font-sans flex justify-center relative">
             <button
                 onClick={() => navigate('/pricing')}
                 className="absolute top-6 right-6 p-2 text-slate-400 hover:text-white transition-colors"
