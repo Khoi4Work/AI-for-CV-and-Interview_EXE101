@@ -25,4 +25,10 @@ public class Account extends BaseEntity {
 
     @Column(name = "status", nullable = false)
     private String status;
+
+    @Column(name = "verification_token")
+    private String verificationToken;
+
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
 }

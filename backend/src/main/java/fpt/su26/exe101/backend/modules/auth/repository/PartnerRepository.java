@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface PartnerRepository extends JpaRepository<Partner, UUID> {
+    Partner findByAccount(fpt.su26.exe101.backend.modules.auth.entity.Account account);
 }

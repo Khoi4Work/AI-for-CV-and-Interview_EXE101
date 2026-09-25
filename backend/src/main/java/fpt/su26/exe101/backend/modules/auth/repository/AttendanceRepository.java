@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, UUID> {
+    Attendance findByAccount(fpt.su26.exe101.backend.modules.auth.entity.Account account);
 }

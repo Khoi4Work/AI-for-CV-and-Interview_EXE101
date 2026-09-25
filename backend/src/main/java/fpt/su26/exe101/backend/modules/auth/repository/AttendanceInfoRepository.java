@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface AttendanceInfoRepository extends JpaRepository<AttendanceInfo, UUID> {
+    AttendanceInfo findByAttendance(fpt.su26.exe101.backend.modules.auth.entity.Attendance attendance);
 }

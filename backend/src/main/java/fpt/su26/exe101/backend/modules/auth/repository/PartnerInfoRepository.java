@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface PartnerInfoRepository extends JpaRepository<PartnerInfo, UUID> {
+    PartnerInfo findByPartner(fpt.su26.exe101.backend.modules.auth.entity.Partner partner);
 }
