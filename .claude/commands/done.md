@@ -1,26 +1,29 @@
 # Done Command
-This command automates the process of staging and committing changes, grouped by their respective tags to maintain a clean git history.
+This command automates the process of staging and committing changes by grouping them based on their purpose (tags), ensuring that changes belonging to the same task/category are committed together.
 
 ## Arguments
-- `$ARGUMENT`: Optional overarching commit message. If provided, this will be used for the final combined commit or as a guide. If NOT provided, Claude will analyze changes and generate specific messages.
+- `$ARGUMENT`: Optional overarching commit message. If provided, it will be used as a guide for the generated commits.
 
 ## Execution
-Instead of a single `git add .`, the process must be granular:
+The process focuses on grouping changes by their functional tag:
 
 1. **Change Analysis**:
    - Run `git status` and `git diff` to identify all modified files.
-   - Categorize each file/change based on the project's tags (`[FEAT]`, `[FIX]`, `[REFACTOR]`, `[UI]`, `[DOCS]`, etc.).
+   - Group files that belong to the same logical change or tag (e.g., all `[UI]` changes for a specific feature together, all `[DOCS]` changes together).
 
 2. **Grouped Staging & Committing**:
-   - For each unique tag identified (e.g., `[DOCS]`, `[REFACTOR]`):
-     - Stage only the files belonging to that tag: `git add <file1> <file2> ...`
-     - Generate a concise commit message starting with that tag.
-     - Execute: `git commit -m "[TAG] <message>"`
-   - Repeat this process until all changed files are committed.
+   - If all changes share the same tag (e.g., everything is `[UI]`):
+     - Stage all: `git add .`
+     - Commit once: `git commit -m "[UI] <comprehensive_message>"`
+   - If changes belong to different tags (e.g., some are `[UI]`, some are `[REFACTOR]`):
+     - For each unique tag:
+       - Stage only the files for that specific tag.
+       - Commit with that tag: `git commit -m "[TAG] <message>"`
+   - This ensures that changes for the same task (sharing the same tag) are NOT split up, but different tasks (different tags) ARE separated.
 
 3. **Verification**:
    - Run `git status` to ensure the working tree is clean.
 
 ## Post-condition
-All changes are recorded in the git history, separated into logical, tag-based commits rather than one monolithic commit.
+Changes are recorded in the git history. Files with the same tag are kept in a single commit, while changes with different tags are separated into distinct commits.
 `
