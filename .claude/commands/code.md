@@ -6,8 +6,8 @@ This command triggers a strict sequential AI SDLC flow to implement a feature ba
     - Check the current git branch. If it is `main` or `master`, STOP immediately and notify the user.
     - Clear the `.submission/` directory (remove `ke-hoach.md`, `thay-doi.md`, `ket-qua-test.md`, and `danh-gia.md`) to prevent reading stale data.
 
-2. **Step 1: Planning (Orchestrator)**:
-    - Invoke the `orchestrator` agent to create a plan based on requirements and `.spec/` files.
+2. **Step 1: Planning (Planner)**:
+    - Invoke the `planner` agent to create a plan based on requirements and `.spec/` files.
     - Wait until `.submission/ke-hoach.md` is created.
     - **Decision Gate**: If `ke-hoach.md` contains a "CÂU HỎI CÒN BỎ NGỎ" (Open Questions) section, STOP and present these questions to the user. Only proceed if there are no open questions or they have been resolved.
 
