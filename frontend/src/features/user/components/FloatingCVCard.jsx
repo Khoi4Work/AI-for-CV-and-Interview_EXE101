@@ -37,12 +37,12 @@ export default function FloatingCVCard() {
   return (
     <div className="relative flex justify-center items-center w-full h-full min-h-[500px]">
       {/* Ambient Glow background */}
-      <div className="absolute -z-10 w-[500px] h-[500px] bg-primary-fixed opacity-20 blur-[100px] rounded-full"></div>
+      <div className="absolute -z-10 w-full max-w-[500px] h-full max-h-[500px] bg-primary-fixed opacity-20 blur-[100px] rounded-full"></div>
 
       {/* The Card */}
       <div
         ref={cardRef}
-        className="relative w-full max-w-[480px] aspect-[3/4] bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden border border-outline-variant flex flex-col gap-sm transition-transform duration-200 ease-out will-change-transform"
+        className="relative w-full max-w-full md:max-w-[480px] aspect-[3/4] bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden border border-outline-variant flex flex-col gap-sm transition-transform duration-200 ease-out will-change-transform"
       >
         <img
           src="https://i.postimg.cc/GtchNc1m/polished.png"
@@ -52,7 +52,7 @@ export default function FloatingCVCard() {
 
         {/* Floating AI Suggestion Bubble */}
         <div
-          className="absolute bottom-1/4 right-0 transform translate-x-4 glass-effect p-sm rounded-xl shadow-lg border border-white/20 ai-glow w-fit max-w-[300px] flex flex-col gap-xs animate-bounce"
+          className="absolute bottom-1/4 right-0 transform translate-x-2 md:translate-x-4 glass-effect p-sm rounded-xl shadow-lg border border-white/20 ai-glow w-fit max-w-[200px] md:max-w-[300px] flex flex-col gap-xs animate-bounce"
           style={{ animationDuration: '4s' }}
         >
           <div className="flex items-center gap-xs">

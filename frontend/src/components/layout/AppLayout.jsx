@@ -44,7 +44,7 @@ import {useInterviewSession} from "../../features/interview/hooks/useInterviewSe
 /**
  * Guard cho InterviewRoom: cần interviewConfig (đã setup xong) + questions.
  * - Nếu thiếu interviewConfig → redirect về step 1.
- * - Nếu có config nhưng chưa có questions → tự generate rồi cho vào.
+ * - Nếu có config nhưng không có questions → tự generate rồi cho vào.
  */
 function RoomGuard({children}) {
     const {data, generateQuestions} = useInterviewSession();
@@ -89,9 +89,16 @@ function AppLayout() {
     const {isLoggedIn, profile} = useAuth();
     const {notificationsCount, showToast, toast} = useApp();
     const location = useLocation();
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        if (location.pathname === '/home') {
+            setIsSidebarOpen(false);
+        }
+    }, [location.pathname]);
 
     return (
-        <div className="relative">
+        <div className="relative overflow-x-hidden">
             <ScrollToTop/>
             <RouteProgressBar/>
 
@@ -164,23 +171,23 @@ function AppLayout() {
                             <Route path="interview/career-goal"
                                    element={<PageTransition key={location.pathname}><CareerGoal/></PageTransition>}/>
                             <Route path="interview/setup"
-                                   element={<PageTransition
-                                       key={location.pathname}><InterviewSetup/></PageTransition>}/>
+                                   element={<PageTransition key={location.pathname}><InterviewSetup/></PageTransition>}/>
 
                             {/* ZONE B shell: Sidebar + Header stay mounted */}
                             <Route path="*" element={
                                 <ProtectedRoute isLoggedIn={isLoggedIn}>
                                     <div className="flex flex-col min-h-screen">
                                         <div className="flex bg-background text-on-surface font-sans antialiased flex-1">
-                                            <Sidebar/>
+                                            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}/>
                                             <div className="flex-1 flex flex-col min-w-0">
                                                 <Header
                                                     profile={profile}
                                                     notificationsCount={notificationsCount}
                                                     onHelpClick={() => showToast('Trung tâm trợ giúp Smartfolio đang tải dữ liệu.', 'info')}
+                                                    onMenuClick={() => setIsSidebarOpen(true)}
                                                 />
                                                 <main
-                                                    className="flex-1 p-8 overflow-y-auto max-w-5xl w-full mx-auto">
+                                                    className="flex-1 p-4 md:p-8 overflow-y-auto max-w-5xl w-full mx-auto">
                                                     <AnimatePresence mode="wait">
                                                         <PageTransition key={location.pathname}>
                                                             <Routes location={location}>

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
-import { Bell, HelpCircle, BrainCircuit } from 'lucide-react';
+import { Bell, HelpCircle, BrainCircuit, Menu } from 'lucide-react';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 
-const Header = ({ onHelpClick }) => {
+const Header = ({ onHelpClick, onMenuClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile } = useAuth();
@@ -38,14 +38,21 @@ const Header = ({ onHelpClick }) => {
   };
 
   return (
-    <header className="h-16 border-b border-outline-variant glass-panel px-8 flex items-center justify-between sticky top-0 z-10 w-full select-none">
-      <div className="flex items-center space-x-8">
-        <h1 className="text-xl font-bold text-on-surface tracking-tight">{getTabTitle(location.pathname)}</h1>
+    <header className="h-16 border-b border-outline-variant glass-panel px-4 md:px-8 flex items-center justify-between sticky top-0 z-10 w-full select-none">
+      <div className="flex items-center gap-4 md:space-x-8">
+        <button
+          onClick={onMenuClick}
+          className="md:hidden p-2 text-on-surface-variant hover:text-on-surface rounded-lg hover:bg-surface-container transition-colors"
+          aria-label="Toggle menu"
+        >
+          <Menu size={24} />
+        </button>
+        <h1 className="text-lg md:text-xl font-bold text-on-surface tracking-tight">{getTabTitle(location.pathname)}</h1>
         <nav className="hidden md:flex items-center gap-4">
         </nav>
       </div>
 
-      <div className="flex items-center space-x-6">
+      <div className="flex items-center space-x-4 md:space-x-6">
         {/* Notifications Icon with Red Dot */}
         <button
           className="relative text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-lg hover:bg-surface-container"

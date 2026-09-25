@@ -2,6 +2,14 @@
 
 This file serves as the "Source of Truth" for Claude Code. It defines the project's identity, technical constraints, and behavioral expectations to ensure consistency across all sessions and as the project scales.
 
+## 🤖 Agentic Principles (Andrej Karpathy)
+When acting as an agent in this repository, adhere to these four pillars:
+
+1. **Iterative Loop**: Never expect a perfect one-shot solution. Always cycle through: **Plan $\rightarrow$ Execute $\rightarrow$ Observe $\rightarrow$ Reflect**.
+2. **Tool-Centric Action**: Use the provided shell and filesystem tools to verify state. Do not assume; check the actual code.
+3. **Explicit Reasoning**: maintain a clear "thought trace" before executing commands to ensure the path to the goal is logical.
+4. **Verification-Driven**: A task is NOT complete until it is verified. Every change must be checked against the objective before marking as resolved.
+
 ## 🎯 Project Overview
 **Name**: AI for CV and Interview
 **Goal**: A comprehensive platform for AI-driven CV optimization and interview preparation.
@@ -56,20 +64,12 @@ This file serves as the "Source of Truth" for Claude Code. It defines the projec
 
 ### 🗒 Session & Progress Tracking
 - **SESSIONS.md Autonomy**: Claude has full standing authorization to modify `SESSIONS.md` to record progress, task completions, and session summaries. Do not ask for permission to update this file. All session records must be kept exclusively within `SESSIONS.md`; do not create separate markdown files for sessions (e.g., avoid formats like `[absolute path]+[date]`).
-- **End-of-Session Clean-up**: Before ending a session or switching tasks, Claude MUST check for uncommitted changes using `git status` and `git log`. If "stale" code (code modified but not committed) is found, Claude must explicitly remind the user to commit these changes to avoid "code rotting" or lost work.
+- **End-of-Session Clean-up**: Before ending a session or switching tasks, Claude MUST check for uncommitted changes using `git status` and `git log`. This is a HIGH PRIORITY step. If "stale" code (code modified but not committed) is found, Claude must explicitly remind the user to commit these changes to avoid "code rotting" or lost work. Do NOT end the session without this check.
 
 ### 🚀 Git & Version Control
 - **Commit Title**: Must start with a prefix in brackets (e.g., `[FEAT]`, `[FIX]`, `[REFACTOR]`), followed by a concise and imperative description (e.g., `[FEAT] Add logout button`).
 - **Commit Description**: Detailed list of what was changed and why.
 - **No Co-authoring**: Standard commits without external attribution.
-
-## 🤖 Agentic Principles (Andrej Karpathy)
-When acting as an agent in this repository, adhere to these four pillars:
-
-1. **Iterative Loop**: Never expect a perfect one-shot solution. Always cycle through: **Plan $\rightarrow$ Execute $\rightarrow$ Observe $\rightarrow$ Reflect**.
-2. **Tool-Centric Action**: Use the provided shell and filesystem tools to verify state. Do not assume; check the actual code.
-3. **Explicit Reasoning**: maintain a clear "thought trace" before executing commands to ensure the path to the goal is logical.
-4. **Verification-Driven**: A task is NOT complete until it is verified. Every change must be checked against the objective before marking as resolved.
 
 ## 📊 Mock Data Standards (CV Evaluation)
 Mock CV data in `frontend/src/constants/cv/cv-mock-data.js` is built based on professional HR standards:
