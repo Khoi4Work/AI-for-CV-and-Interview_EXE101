@@ -1,52 +1,49 @@
 package fpt.su26.exe101.backend.modules.gallery.entity;
 
-import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-
-import java.util.UUID;
+import fpt.su26.exe101.backend.base.persistence.BaseEntity;
+import fpt.su26.exe101.backend.modules.gallery.entity.enums.OptimizationState;
+import java.util.Map;
 
 @Entity
-@Table(name = "cvs")
+@Table(name = "CVs")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CV extends BaseEntity {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gallery_id", nullable = false)
+    private Gallery gallery;
 
-    public enum OptimizationState {
-        DRAFT, ANALYZING, OPTIMIZING, OPTIMIZED
-    }
-
-    @Column(name = "gallery_id", nullable = false)
-    private UUID galleryId;
-
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String name;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
-    private String content;
+    private Map<String, Object> content;
 
-    @Column
     private Integer score;
 
     @Column(name = "ats_score")
     private Integer atsScore;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "optimization_state")
     private OptimizationState optimizationState = OptimizationState.DRAFT;
 
-    @Column(name = "template_id")
+    @Column(name = "template_id", length = 50)
     private String templateId;
 
-    @Column
+    @Builder.Default
+    @Column(length = 20)
     private String status = "DRAFT";
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String image;
 }

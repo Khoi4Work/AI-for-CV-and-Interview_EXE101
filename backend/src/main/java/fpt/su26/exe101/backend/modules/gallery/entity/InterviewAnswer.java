@@ -1,21 +1,21 @@
 package fpt.su26.exe101.backend.modules.gallery.entity;
 
-import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
+import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 import java.util.UUID;
 
 @Entity
-@Table(name = "interview_answers")
+@Table(name = "Interview_Answers")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class InterviewAnswer extends BaseEntity {
-    @Column(name = "session_id", nullable = false)
-    private UUID sessionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id", nullable = false)
+    private InterviewSession session;
 
     @Column(name = "question_id", nullable = false)
     private UUID questionId;
@@ -26,6 +26,7 @@ public class InterviewAnswer extends BaseEntity {
     @Column(name = "audio_url", columnDefinition = "TEXT")
     private String audioUrl;
 
+    @Builder.Default
     @Column(name = "is_skipped")
     private Boolean isSkipped = false;
 }

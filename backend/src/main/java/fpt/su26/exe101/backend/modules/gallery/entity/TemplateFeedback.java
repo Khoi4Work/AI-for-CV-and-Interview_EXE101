@@ -1,29 +1,27 @@
 package fpt.su26.exe101.backend.modules.gallery.entity;
 
-import fpt.su26.exe101.backend.base.persistence.BaseEntity;
-import fpt.su26.exe101.backend.modules.auth.entity.Account;
 import jakarta.persistence.*;
 import lombok.*;
+import fpt.su26.exe101.backend.base.persistence.BaseEntity;
+import java.util.UUID;
 
 @Entity
-@Table(name = "template_feedback")
+@Table(name = "Template_Feedback")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class TemplateFeedback extends BaseEntity {
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "template_id", nullable = false)
-    private CVTemplates template;
+    @Column(name = "template_id", nullable = false, length = 50)
+    private String templateId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+    @Column(name = "account_id", nullable = false)
+    private UUID accountId;
 
     @Column(nullable = false)
     private Integer rating;
 
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "TEXT")
     private String comment;
 }

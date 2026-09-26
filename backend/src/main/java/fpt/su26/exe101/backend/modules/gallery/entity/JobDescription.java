@@ -1,28 +1,27 @@
 package fpt.su26.exe101.backend.modules.gallery.entity;
 
-import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.UUID;
+import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 
 @Entity
-@Table(name = "job_descriptions")
+@Table(name = "Job_Descriptions")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class JobDescription extends BaseEntity {
-    @Column(name = "gallery_id", nullable = false)
-    private UUID galleryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gallery_id", nullable = false)
+    private Gallery gallery;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String title;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @Column(name = "company_name")
+    @Column(name = "company_name", length = 255)
     private String companyName;
 }
