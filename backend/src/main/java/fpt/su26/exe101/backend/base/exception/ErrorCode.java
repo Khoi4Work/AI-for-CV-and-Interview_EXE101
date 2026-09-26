@@ -46,6 +46,7 @@ public enum ErrorCode {
     REQUEST_FAILED(4999, "Request failed", HttpStatus.BAD_REQUEST),
 
     // Engagement errors
+    QUOTA_EXCEEDED(402, "Quota exceeded. Please upgrade your plan", HttpStatus.PAYMENT_REQUIRED),
     COUPON_USAGE_LIMIT_REACHED(4200, "Coupon usage limit reached", HttpStatus.BAD_REQUEST),
     COUPON_EXPIRED(4201, "Coupon has expired", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_POINTS(4202, "Insufficient reward points", HttpStatus.BAD_REQUEST),
