@@ -13,8 +13,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class TemplateFeedback extends BaseEntity {
-    @Column(name = "template_id", nullable = false, length = 50)
-    private String templateId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "template_id", nullable = false, foreignKey = @ForeignKey(name = "FK_TEMPLATE_FEEDBACK_TEMPLATE"))
+    private CVTemplate template;
 
     @Column(name = "account_id", nullable = false)
     private UUID accountId;

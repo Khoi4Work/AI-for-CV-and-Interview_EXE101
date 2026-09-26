@@ -37,8 +37,9 @@ public class CV extends BaseEntity {
     @Column(name = "optimization_state")
     private OptimizationState optimizationState = OptimizationState.DRAFT;
 
-    @Column(name = "template_id", length = 50)
-    private String templateId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "template_id", foreignKey = @ForeignKey(name = "FK_CV_TEMPLATE"))
+    private CVTemplate template;
 
     @Builder.Default
     @Column(length = 20)
