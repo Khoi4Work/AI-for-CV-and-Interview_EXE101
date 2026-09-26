@@ -2,6 +2,7 @@ package fpt.su26.exe101.backend.modules.auth.controller;
 
 import fpt.su26.exe101.backend.modules.auth.dto.request.*;
 import fpt.su26.exe101.backend.modules.auth.dto.response.*;
+import fpt.su26.exe101.backend.modules.auth.entity.Account;
 import fpt.su26.exe101.backend.modules.auth.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -61,23 +62,14 @@ public class AuthController {
 
     @PatchMapping("/profile/info")
     public ResponseEntity<GenericResponse> updateProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UpdateProfileRequest request) {
-        // In a real app, you'd fetch the UUID from the UserDetails or a custom Principal
-        // For this implementation, we assume the accountService can handle lookup by email
-        // However, the current accountService.updateProfile takes a UUID.
-        // We will update accountService to support update by email or use a repository lookup.
-
-        // For now, let's assume we have a way to get UUID from email.
-        // But wait, I should probably update AccountService to accept email.
-
-        // Let's just mock the UUID for now to avoid breaking the signature,
-        // but the task is to replace UUID.randomUUID().
-        // I will modify AccountService to handle this properly in a moment.
-
+        Account account = accountService.getAccountByEmail(userDetails.getUsername());
+        accountService.updateProfile(account.getId(), request);
         return ResponseEntity.ok(GenericResponse.builder().message("Profile updated successfully").build());
     }
 
     @PatchMapping("/password")
     public ResponseEntity<GenericResponse> changePassword(@AuthenticationPrincipal UserDetails userDetails, @RequestBody ChangePasswordRequest request) {
+        accountService.changePassword(userDetails.getUsername(), request);
         return ResponseEntity.ok(GenericResponse.builder().message("Password changed successfully").build());
     }
 
@@ -89,7 +81,7 @@ public class AuthController {
 
     @PostMapping("/invite")
     public ResponseEntity<GenericResponse> invitePartner(@AuthenticationPrincipal UserDetails userDetails, @RequestBody InvitePartnerRequest request) {
-        // Simplified: inviterId should come from security context
-        return ResponseEntity.ok(invitationService.invitePartner(UUID.randomUUID(), request));
+        Account account = accountService.getAccountByEmail(userDetails.getUsername());
+        return ResponseEntity.ok(invitationService.invitePartner(account.getId(), request));
     }
 }

@@ -1,11 +1,18 @@
 package fpt.su26.exe101.backend.modules.auth.service;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import fpt.su26.exe101.backend.base.exception.ApiException;
+import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.base.security.JwtTokenProvider;
 import fpt.su26.exe101.backend.modules.auth.dto.request.*;
 import fpt.su26.exe101.backend.modules.auth.dto.response.*;
 import fpt.su26.exe101.backend.modules.auth.entity.*;
 import fpt.su26.exe101.backend.modules.auth.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.UUID;
 
 @Service
@@ -25,6 +33,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final AccountService accountService;
+
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String googleClientId;
 
     public AuthResponse login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
@@ -67,7 +78,7 @@ public class AuthService {
         Account account = token.getAccount();
         String accessToken = tokenProvider.createToken(
                 account.getEmail(),
-                java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
+                Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
         );
 
         return TokenRefreshResponse.builder()
@@ -76,11 +87,14 @@ public class AuthService {
     }
 
     public AuthResponse socialLogin(String provider, OAuthRequest request) {
-        // In production, we would validate the provider token here using Google/GitHub API.
-        // For this implementation, we assume the token is validated or we rely on the email.
+        if (!"google".equalsIgnoreCase(provider)) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Only Google login is currently supported");
+        }
 
-        Account account = accountRepository.findByEmail(request.getEmail())
-                .orElseGet(() -> accountService.createOAuthAccount(request.getEmail(), "OAuth User"));
+        String email = verifyGoogleToken(request.getToken());
+
+        Account account = accountRepository.findByEmail(email)
+                .orElseGet(() -> accountService.createOAuthAccount(email, "OAuth User"));
 
         if ("SUSPENDED".equals(account.getStatus())) {
             throw new RuntimeException("Account is suspended");
@@ -88,7 +102,7 @@ public class AuthService {
 
         String accessToken = tokenProvider.createToken(
                 account.getEmail(),
-                java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
+                Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
         );
         String refreshToken = tokenProvider.createRefreshToken(account.getEmail());
 
@@ -105,6 +119,26 @@ public class AuthService {
                 .role(account.getRole().name())
                 .status(account.getStatus())
                 .build();
+    }
+
+    private String verifyGoogleToken(String idTokenString) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            if (idToken != null) {
+                return idToken.getPayload().getEmail();
+            } else {
+                throw new ApiException(ErrorCode.INVALID_INPUT, "Invalid Google ID token");
+            }
+        } catch (Exception e) {
+            if (e instanceof ApiException) {
+                throw (ApiException) e;
+            }
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Error verifying Google token: " + e.getMessage());
+        }
     }
 
     @Transactional

@@ -42,7 +42,7 @@ public class DevSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/auth/accounts", "/api/auth/verify-email", "/api/auth/tokens", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/accounts", "/api/auth/verify-email", "/api/auth/tokens", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/oauth/**").permitAll()
                         .requestMatchers("/login/oauth2/code/google").permitAll()
                         .requestMatchers("/api/auth/**").authenticated()
                         .anyRequest().authenticated()

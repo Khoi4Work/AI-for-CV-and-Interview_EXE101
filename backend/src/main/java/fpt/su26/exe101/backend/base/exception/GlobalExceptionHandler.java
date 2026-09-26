@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -82,6 +83,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorCode ec = ErrorCode.FORBIDDEN_ACTION;
         return ResponseEntity.status(ec.getStatus())
                 .body(buildError(ec.getCode(), ec.getDefaultMessage(), request.getRequestURI(), null));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
+        ErrorCode ec = ErrorCode.UNAUTHENTICATED;
+        String message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại hoặc sử dụng Login with Google nếu bạn đăng ký qua Google.";
+        return ResponseEntity.status(ec.getStatus())
+                .body(buildError(ec.getCode(), message, request.getRequestURI(), null));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

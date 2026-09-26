@@ -13,7 +13,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(java.util.List.of(
-                "http://localhost:5173",
+                "http://localhost:*",
                 "https://*.vercel.app",
                 "https://philoverse-lxsa.onrender.com/"
         ));

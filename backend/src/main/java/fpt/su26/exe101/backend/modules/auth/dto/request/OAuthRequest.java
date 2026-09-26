@@ -8,5 +8,4 @@ import lombok.*;
 @AllArgsConstructor
 public class OAuthRequest {
     private String token;
-    private String email;
 }

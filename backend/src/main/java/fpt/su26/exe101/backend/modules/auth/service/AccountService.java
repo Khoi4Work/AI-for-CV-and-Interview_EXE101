@@ -134,4 +134,18 @@ public class AccountService {
             partnerInfoRepository.save(info);
         }
     }
+
+    public Account getAccountByEmail(String email) {
+        return accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+    }
+
+    @Transactional
+    public void changePassword(String email, ChangePasswordRequest request) {
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        accountRepository.save(account);
+    }
 }
