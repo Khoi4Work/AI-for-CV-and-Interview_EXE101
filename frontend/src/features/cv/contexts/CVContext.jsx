@@ -24,6 +24,7 @@ const INITIAL_CV_STATE = {
 
 export function CVProvider({children}) {
     const [cvData, setCvData] = useState(INITIAL_CV_STATE);
+    const [currentCvId, setCurrentCvId] = useState(() => localStorage.getItem('currentCvId'));
     const [hasCV, setHasCV] = useState(() => {
         const saved = localStorage.getItem('hasCV');
         return saved !== null ? saved === 'true' : null;
@@ -32,6 +33,12 @@ export function CVProvider({children}) {
     const setHasCVWithPersistence = useCallback((value) => {
         setHasCV(value);
         localStorage.setItem('hasCV', String(value));
+    }, []);
+
+    const setCurrentCvIdWithPersistence = useCallback((id) => {
+        setCurrentCvId(id || null);
+        if (id) localStorage.setItem('currentCvId', id);
+        else localStorage.removeItem('currentCvId');
     }, []);
 
     const setFullCVData = useCallback((newData) => {
@@ -138,6 +145,8 @@ export function CVProvider({children}) {
     return (
         <CVContext.Provider value={{
             cvData,
+            currentCvId,
+            setCurrentCvId: setCurrentCvIdWithPersistence,
             hasCV,
             setHasCV: setHasCVWithPersistence,
             updatePersonalInfo,

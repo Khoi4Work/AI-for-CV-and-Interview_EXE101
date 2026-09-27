@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Link, useLocation} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {
     Sparkles,
     Trash2,
@@ -20,12 +20,16 @@ import {mapImportedCVData, mapMockDataToCVContext} from '../mapper/cv-data-mappe
 import {mockJobDescriptions} from '../../../constants/jobDescription.js';
 import {Footer} from "../../../components/layout/Footer.jsx";
 import {importCV} from '../services/cvImportService.js';
+import {cvPipelineService} from '../services/cvPipelineService.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
     const location = useLocation();
+    const navigate = useNavigate();
     const {
         cvData,
+        currentCvId,
+        setCurrentCvId,
         setHasCV,
         updatePersonalInfo,
         updateSummary,
@@ -55,18 +59,44 @@ export default function CVBuilder() {
 
     useEffect(() => {
         resetCV();
+        setCurrentCvId(null);
         if (location.state?.loadBadCV) {
             handleLoadDemoBadCV();
         }
-    }, [resetCV, location.state]);
+    }, [resetCV, setCurrentCvId, location.state]);
 
     const [step, setStep] = useState(1);
     const [jdText, setJdText] = useState('');
     const [isImporting, setIsImporting] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const totalSteps = 5;
 
     const handleFileUpload = () => {
         document.getElementById('cv-upload-input').click();
+    };
+
+    const handleSaveAndEdit = async () => {
+        setIsSaving(true);
+        try {
+            const payload = {
+                name: `${cvData.personalInfo.name || 'My'} CV`,
+                content: cvData,
+            };
+            const savedCV = currentCvId
+                ? await cvPipelineService.updateCV(currentCvId, payload)
+                : await cvPipelineService.createCV(payload);
+            if (!savedCV?.id) throw new Error('API không trả về mã CV.');
+            setCurrentCvId(savedCV.id);
+            setHasCV(true);
+            const job = await cvPipelineService.startOptimization(savedCV.id, {jdText});
+            navigate('/cv-analyzing', {
+                state: {target: '/optimizer', jobId: job?.jobId, cvName: payload.name},
+            });
+        } catch (error) {
+            showToast(error.response?.data?.message || error.message || 'Không thể lưu CV.', 'error');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const onFileChange = async (e) => {
@@ -74,8 +104,8 @@ export default function CVBuilder() {
         if (!file) return;
 
         const extension = file.name.split('.').pop()?.toLowerCase();
-        if (!['pdf', 'docx'].includes(extension)) {
-            showToast('Vui lòng chọn tệp PDF hoặc DOCX.', 'error');
+        if (!['pdf', 'doc', 'docx'].includes(extension)) {
+            showToast('Vui lòng chọn tệp PDF, DOC hoặc DOCX.', 'error');
             e.target.value = '';
             return;
         }
@@ -158,7 +188,7 @@ export default function CVBuilder() {
                                     className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
                                     <Download className="h-4 w-4"/>
                                     {isImporting ? 'Đang trích xuất...' : 'Tải CV cũ'}
-                                    <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.docx"
+                                    <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.doc,.docx"
                                         onChange={onFileChange}
                                     />
                                 </button>
@@ -594,11 +624,12 @@ export default function CVBuilder() {
                                         Chúng tôi đã thu thập đủ thông tin. Bây giờ hãy chọn một mẫu thiết kế và tinh
                                         chỉnh nó trong trình chỉnh sửa chuyên nghiệp.
                                     </p>
-                                    <Link to="/cv-analyzing"
-                                          state={{target: '/editor'}}
-                                          className="px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105">
-                                        Vào Trình Chỉnh Sửa <ChevronRight className="w-5 h-5"/>
-                                    </Link>
+                                    <button
+                                        onClick={handleSaveAndEdit}
+                                        disabled={isSaving}
+                                        className="px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105 disabled:opacity-50">
+                                        {isSaving ? 'Đang lưu và tối ưu...' : 'Lưu CV & phân tích với AI'} <ChevronRight className="w-5 h-5"/>
+                                    </button>
                                 </div>
                             )}
                         </div>

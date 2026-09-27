@@ -11,6 +11,7 @@ import fpt.su26.exe101.backend.modules.gallery.service.AIProviderService;
 import fpt.su26.exe101.backend.modules.gallery.service.CVPipelineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private final UserUsageQuotaRepository quotaRepository;
     private final AIProviderService aiProvider;
     private final GalleryMapper galleryMapper;
+    private final ObjectProvider<CVPipelineServiceImpl> selfProvider;
 
     @Transactional
     @Override
@@ -95,7 +97,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         quota.setRemainingCvCnt(quota.getRemainingCvCnt() - 1);
         quotaRepository.save(quota);
 
-        this.processOptimization(jobId, cv, request);
+        selfProvider.getObject().processOptimization(jobId, cv, request);
 
         return CVOptimizationJobResponseDTO.builder()
                 .jobId(jobId)

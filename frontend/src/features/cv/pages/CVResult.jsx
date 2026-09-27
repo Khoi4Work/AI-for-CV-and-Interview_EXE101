@@ -12,6 +12,42 @@ export function CVResult() {
     const [activeSkillIndex, setActiveSkillIndex] = useState(null);
     const [addedSkills, setAddedSkills] = useState([]);
     const [inputValue, setInputValue] = useState('');
+    const optimizationResult = location.state?.optimizationResult;
+
+    if (optimizationResult) {
+        return (
+            <MainLayout>
+                <div className="max-w-4xl mx-auto px-6 py-12 text-on-surface">
+                    <div className="flex items-center gap-3 mb-6">
+                        <CheckCircle2 className="text-primary" size={32}/>
+                        <div>
+                            <h1 className="text-3xl font-bold">CV đã được phân tích</h1>
+                            <p className="text-on-surface-variant">{location.state?.cvName || 'CV của bạn'}</p>
+                        </div>
+                    </div>
+                    <div className="grid gap-5 md:grid-cols-[180px_1fr] mb-6">
+                        <div className="rounded-2xl border border-outline-variant p-6 text-center">
+                            <p className="text-sm text-on-surface-variant">Điểm dự kiến</p>
+                            <p className="text-4xl font-bold text-primary">{optimizationResult.predictedScore ?? '—'}</p>
+                        </div>
+                        <div className="rounded-2xl border border-outline-variant p-6">
+                            <h2 className="font-bold mb-2">Tóm tắt cải thiện</h2>
+                            <p>{optimizationResult.improvementSummary || 'Chưa có tóm tắt.'}</p>
+                        </div>
+                    </div>
+                    <div className="rounded-2xl border border-outline-variant p-6 mb-8">
+                        <h2 className="font-bold mb-3">Nội dung tối ưu</h2>
+                        <pre className="whitespace-pre-wrap break-words text-sm">{typeof optimizationResult.optimizedContent === 'string'
+                            ? optimizationResult.optimizedContent
+                            : JSON.stringify(optimizationResult.optimizedContent, null, 2)}</pre>
+                    </div>
+                    <button onClick={() => navigate('/editor')} className="px-6 py-3 rounded-xl bg-primary text-on-primary font-bold">
+                        Mở trình chỉnh sửa
+                    </button>
+                </div>
+            </MainLayout>
+        );
+    }
 
     const scenario = location.state?.scenario || 'default';
     const cvNameFromState = location.state?.cvName || 'My_CV.pdf';

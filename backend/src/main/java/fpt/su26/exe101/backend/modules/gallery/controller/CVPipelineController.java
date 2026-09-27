@@ -1,5 +1,7 @@
 package fpt.su26.exe101.backend.modules.gallery.controller;
 
+import fpt.su26.exe101.backend.base.exception.ApiException;
+import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.base.response.ApiResponse;
 import fpt.su26.exe101.backend.modules.gallery.dto.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -17,11 +21,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CVPipelineController {
 
+    private static final long MAX_CV_FILE_SIZE = 5L * 1024 * 1024;
     private final CVPipelineServiceImpl cvPipelineServiceImpl;
 
     // --- Import ---
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<CVImportResponseDTO> importCV(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "CV file must not be empty.");
+        }
+        if (file.getSize() > MAX_CV_FILE_SIZE) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "CV file must not exceed 5 MB.");
+        }
+
+        String filename = file.getOriginalFilename();
+        int extensionStart = filename == null ? -1 : filename.lastIndexOf('.') + 1;
+        String extension = extensionStart <= 0 ? "" : filename.substring(extensionStart).toLowerCase(Locale.ROOT);
+        if (!Set.of("pdf", "doc", "docx").contains(extension)) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Only PDF, DOC, and DOCX CV files are supported.");
+        }
+
         return ApiResponse
                 .success(cvPipelineServiceImpl.importCV(file.getBytes(), file.getContentType()),
                         "IMPORT SUCCESS"
