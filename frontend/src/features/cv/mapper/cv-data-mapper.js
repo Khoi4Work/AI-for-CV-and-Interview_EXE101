@@ -164,3 +164,52 @@ export function mapMockDataToCVContext(mockData) {
         })),
     };
 }
+
+export function mapImportedCVData(data) {
+    const personal = data.personal_info || data.personalInfo || {};
+    const list = (value) => Array.isArray(value) ? value : [];
+    const read = (item, ...keys) => keys.map(key => item?.[key]).find(value => value != null) || '';
+
+    return {
+        personalInfo: {
+            name: read(personal, 'name', 'full_name', 'fullName'),
+            email: read(personal, 'email'),
+            phone: read(personal, 'phone', 'phone_number', 'phoneNumber'),
+            dob: read(personal, 'dob', 'date_of_birth', 'dateOfBirth'),
+            address: read(personal, 'address', 'location'),
+            linkedin: read(personal, 'linkedin', 'linkedin_url', 'linkedinUrl'),
+        },
+        summary: read(data, 'summary', 'professional_summary', 'professionalSummary'),
+        experiences: list(data.experience || data.experiences).map((item, index) => ({
+            id: Date.now() + index,
+            company: read(item, 'company', 'organization'),
+            role: read(item, 'role', 'title', 'position'),
+            period: read(item, 'period', 'dates', 'duration'),
+            details: list(item.details || item.bullets || item.responsibilities),
+        })),
+        skills: list(data.skills).map(skill => typeof skill === 'string'
+            ? {name: skill, level: 80, category: 'soft'}
+            : {name: read(skill, 'name', 'skill'), level: Number(skill.level) || 80, category: skill.category || 'soft'}),
+        education: list(data.education).map(item => ({
+            degree: read(item, 'degree', 'field'),
+            school: read(item, 'school', 'university', 'institution'),
+            year: read(item, 'year', 'period', 'dates', 'graduation_year'),
+            gpa: read(item, 'gpa'),
+        })),
+        projects: list(data.projects || data.projectsList).map(item => ({
+            name: read(item, 'name', 'title'),
+            period: read(item, 'period', 'dates', 'duration'),
+            details: list(item.details || item.bullets || item.description),
+            url: read(item, 'url'),
+        })),
+        certificates: list(data.certificates).map(item => ({
+            name: read(item, 'name', 'title'), issuer: read(item, 'issuer'), date: read(item, 'date'), url: read(item, 'url'),
+        })),
+        languages: list(data.languages).map(item => typeof item === 'string'
+            ? {name: item, level: ''}
+            : {name: read(item, 'name', 'language'), level: read(item, 'level', 'proficiency')}),
+        awards: list(data.awards).map(item => ({
+            name: read(item, 'name', 'title'), issuer: read(item, 'issuer'), date: read(item, 'date'),
+        })),
+    };
+}

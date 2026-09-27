@@ -16,9 +16,10 @@ import {Header} from "../../../components/layout/PublicHeader.jsx";
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
 import {badResumeData} from '../constants/cv-mock-data.js';
-import {mapMockDataToCVContext} from '../mapper/cv-data-mapper.js';
+import {mapImportedCVData, mapMockDataToCVContext} from '../mapper/cv-data-mapper.js';
 import {mockJobDescriptions} from '../../../constants/jobDescription.js';
 import {Footer} from "../../../components/layout/Footer.jsx";
+import {importCV} from '../services/cvImportService.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
@@ -61,19 +62,40 @@ export default function CVBuilder() {
 
     const [step, setStep] = useState(1);
     const [jdText, setJdText] = useState('');
+    const [isImporting, setIsImporting] = useState(false);
     const totalSteps = 5;
 
     const handleFileUpload = () => {
         document.getElementById('cv-upload-input').click();
     };
 
-    const onFileChange = (e) => {
+    const onFileChange = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            showToast(`Đã tải lên tệp ${file.name} thành công! AI đang trích xuất dữ liệu...`, 'success');
+        if (!file) return;
 
-            const mappedData = mapMockDataToCVContext(badResumeData);
-            setFullCVData(mappedData);
+        const extension = file.name.split('.').pop()?.toLowerCase();
+        if (!['pdf', 'docx'].includes(extension)) {
+            showToast('Vui lòng chọn tệp PDF hoặc DOCX.', 'error');
+            e.target.value = '';
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Kích thước tệp tối đa là 5 MB.', 'error');
+            e.target.value = '';
+            return;
+        }
+
+        setIsImporting(true);
+        try {
+            const extractedData = await importCV(file);
+            setFullCVData(mapImportedCVData(extractedData));
+            showToast(`Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
+        } catch (error) {
+            const message = error.response?.data?.message || error.message || 'Không thể nhập CV. Vui lòng thử lại.';
+            showToast(message, 'error');
+        } finally {
+            setIsImporting(false);
+            e.target.value = '';
         }
     };
 
@@ -132,11 +154,12 @@ export default function CVBuilder() {
                                 </div>
                                 <button
                                     onClick={handleFileUpload}
-                                    className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors">
+                                    disabled={isImporting}
+                                    className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
                                     <Download className="h-4 w-4"/>
-                                    Tải CV cũ
+                                    {isImporting ? 'Đang trích xuất...' : 'Tải CV cũ'}
                                     <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.docx"
-                                        // onChange={onFileChange}
+                                        onChange={onFileChange}
                                     />
                                 </button>
                                 <button
