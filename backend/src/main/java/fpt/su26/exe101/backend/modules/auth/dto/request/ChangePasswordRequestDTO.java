@@ -6,6 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefreshTokenRequest {
-    private String refreshToken;
+public class ChangePasswordRequestDTO {
+    private String oldPassword;
+    private String newPassword;
 }

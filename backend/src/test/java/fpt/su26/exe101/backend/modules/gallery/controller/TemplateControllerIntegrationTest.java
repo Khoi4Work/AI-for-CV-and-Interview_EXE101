@@ -1,0 +1,79 @@
+package fpt.su26.exe101.backend.modules.gallery.controller;
+
+import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.*;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class TemplateControllerIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private fpt.su26.exe101.backend.modules.gallery.service.TemplateService templateService;
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void getAllTemplates_HappyPath_ShouldReturnTemplates() throws Exception {
+        CVTemplateResponseDTO template = CVTemplateResponseDTO.builder()
+                .id(UUID.randomUUID())
+                .name("Modern Professional")
+                .description("A clean and modern template")
+                .build();
+
+        when(templateService.getAllTemplates()).thenReturn(Collections.singletonList(template));
+
+        mockMvc.perform(get("/api/templates"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Modern Professional"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void submitFeedback_HappyPath_ShouldReturnOk() throws Exception {
+        TemplateFeedbackRequestDTO request = TemplateFeedbackRequestDTO.builder()
+                .templateId(UUID.randomUUID())
+                .rating(5)
+                .comment("Great template!")
+                .build();
+
+        doNothing().when(templateService).submitFeedback(any(TemplateFeedbackRequestDTO.class));
+
+        mockMvc.perform(post("/api/templates/feedback")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"templateId\":\"" + request.getTemplateId() + "\",\"rating\":5,\"comment\":\"Great template!\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void getFeedback_HappyPath_ShouldReturnFeedback() throws Exception {
+        UUID templateId = UUID.randomUUID();
+        TemplateFeedbackResponseDTO feedback = TemplateFeedbackResponseDTO.builder()
+                .id(UUID.randomUUID())
+                .rating(5)
+                .comment("Great template!")
+                .build();
+
+        when(templateService.getFeedbackForTemplate(templateId)).thenReturn(Collections.singletonList(feedback));
+
+        mockMvc.perform(get("/api/templates/" + templateId + "/feedback"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].comment").value("Great template!"));
+    }
+}

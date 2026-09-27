@@ -18,7 +18,7 @@ public class RecoveryService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public void forgotPassword(ForgotPasswordRequest request) {
+    public void forgotPassword(ForgotPasswordRequestDTO request) {
         accountRepository.findByEmail(request.getEmail()).ifPresent(account -> {
             String resetToken = UUID.randomUUID().toString();
             account.setResetPasswordToken(resetToken);
@@ -29,7 +29,7 @@ public class RecoveryService {
     }
 
     @Transactional
-    public void resetPassword(ResetPasswordRequest request) {
+    public void resetPassword(ResetPasswordRequestDTO request) {
         Account account = accountRepository.findByResetPasswordToken(request.getToken())
                 .orElseThrow(() -> new RuntimeException("Invalid or expired reset token"));
 

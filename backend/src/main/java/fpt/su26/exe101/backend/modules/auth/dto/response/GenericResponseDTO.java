@@ -6,8 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterResponse {
+public class GenericResponseDTO {
     private String message;
     private String id;
-    private String verificationToken;
 }

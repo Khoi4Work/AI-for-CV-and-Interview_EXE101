@@ -6,6 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ForgotPasswordRequest {
-    private String email;
+public class ResetPasswordRequestDTO {
+    private String token;
+    private String newPassword;
 }
