@@ -20,6 +20,13 @@ export default function Template3_SecurityAnalyst({ data }) {
     // Use a mix of passed data and context to maintain the template's specific layout logic
     const { title, skillsGrouped } = data || {};
     const { personalInfo, summary, experiences, education, projects, certificates } = cvData;
+    const skillLevels = [
+        ['Expert', skillsGrouped?.expert],
+        ['Advanced', skillsGrouped?.advanced],
+        ['Intermediate', skillsGrouped?.intermediate],
+        ['Beginner', skillsGrouped?.beginner],
+        ['Level not specified', skillsGrouped?.unspecified],
+    ].filter(([, skills]) => skills?.length);
 
     return (
         <div className="overflow-x-auto w-full">
@@ -112,12 +119,14 @@ export default function Template3_SecurityAnalyst({ data }) {
                     <div className="mb-10">
                         <h3 className="text-[#dc2626] font-bold text la-[16px] uppercase mb-4 tracking-wider">SKILL</h3>
 
-                        <div className="mb-4">
-                            <div className="font-bold text-[14px] mb-2">Excellent</div>
-                            <div className="flex flex-wrap gap-1.5">
-                                {skillsGrouped?.excellent?.map(s => <span key={s} className="border border-slate-300 px-2 py-0.5 rounded text-[12px] bg-white">{s}</span>)}
+                        {skillLevels.map(([label, skills]) => (
+                            <div className="mb-4" key={label}>
+                                <div className="font-bold text-[14px] mb-2">{label}</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {skills.map(skill => <span key={skill} className="border border-slate-300 px-2 py-0.5 rounded text-[12px] bg-white">{skill}</span>)}
+                                </div>
                             </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
 

@@ -1,7 +1,6 @@
 package fpt.su26.exe101.backend.modules.gallery.dto;
 
 import lombok.*;
-import java.util.Map;
 
 @Data
 @Builder
@@ -9,6 +8,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class CVCreateRequestDTO {
     private String name;
-    private Map<String, Object> content;
+    private CVContent content;
     private Long templateId;
 }

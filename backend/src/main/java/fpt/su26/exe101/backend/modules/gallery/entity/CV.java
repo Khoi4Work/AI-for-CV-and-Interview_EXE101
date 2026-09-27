@@ -5,8 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import fpt.su26.exe101.backend.base.persistence.BaseEntity;
+import fpt.su26.exe101.backend.modules.gallery.dto.CVContent;
 import fpt.su26.exe101.backend.modules.gallery.entity.enums.OptimizationState;
-import java.util.Map;
 
 @Entity
 @Table(name = "CVs", uniqueConstraints = @UniqueConstraint(name = "uk_cv_gallery_source_hash", columnNames = {"gallery_id", "source_hash"}))
@@ -25,7 +25,7 @@ public class CV extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
-    private Map<String, Object> content;
+    private CVContent content;
 
     private Integer score;
 

@@ -8,6 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 public class CVUpdateRequestDTO {
     private String name;
-    private java.util.Map<String, Object> content;
+    private CVContent content;
     private Long templateId;
 }

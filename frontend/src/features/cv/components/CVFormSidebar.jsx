@@ -70,7 +70,7 @@ export default function CVFormSidebar({ isOpen, onClose }) {
     };
 
     const addSkill = () => {
-        const newSkills = [...cvData.skills, { name: '', level: 50 }];
+        const newSkills = [...cvData.skills, { name: '', level: null }];
         updateSkills(newSkills);
     };
 
@@ -253,13 +253,17 @@ export default function CVFormSidebar({ isOpen, onClose }) {
                                         className="flex-1 px-2 py-1 text-xs border border-gray-200 rounded-md"
                                         placeholder="Kỹ năng..."
                                     />
-                                    <input
-                                        type="number"
-                                        value={skill.level}
-                                        onChange={(val) => handleSkillChange(index, 'level', parseInt(val) || 0)}
-                                        className="w-12 px-1 py-1 text-xs border border-gray-200 rounded-md text-center"
-                                        placeholder="%"
-                                    />
+                                    <select
+                                        value={skill.level || ''}
+                                        onChange={(event) => handleSkillChange(index, 'level', event.target.value || null)}
+                                        className="px-1 py-1 text-xs border border-gray-200 rounded-md"
+                                    >
+                                        <option value="">Chưa xác định mức</option>
+                                        <option value="BEGINNER">Beginner</option>
+                                        <option value="INTERMEDIATE">Intermediate</option>
+                                        <option value="ADVANCED">Advanced</option>
+                                        <option value="EXPERT">Expert</option>
+                                    </select>
                                     <button
                                         onClick={() => removeSkill(index)}
                                         className="p-1 text-gray-400 hover:text-red-500 transition-colors"

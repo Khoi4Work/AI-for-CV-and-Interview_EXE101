@@ -75,15 +75,11 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             return CVImportResponseDTO.builder().cvId(cv.getId()).sourceHash(sourceHash).duplicate(true)
                     .extractedData(cv.getContent()).build();
         }
-        Map<String, Object> parsed = aiProvider.parseCVFile(fileContent, contentType);
-        Object extracted = parsed.get("extractedData");
-        if (!Boolean.TRUE.equals(parsed.get("isCV")) || !(extracted instanceof Map<?, ?> rawData)) {
+        CVImportModelResponseDTO parsed = aiProvider.parseCVFile(fileContent, contentType);
+        CVContent extractedData = parsed == null ? null : parsed.getExtractedData();
+        if (parsed == null || !Boolean.TRUE.equals(parsed.getIsCV()) || extractedData == null) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Tệp tải lên không được nhận diện là CV hợp lệ.");
         }
-        Map<String, Object> extractedData = new HashMap<>();
-        rawData.forEach((key, value) -> {
-            if (key instanceof String stringKey) extractedData.put(stringKey, value);
-        });
         if (!hasCVContent(extractedData)) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV không có đủ thông tin cá nhân, học vấn hoặc kinh nghiệm để nhập.");
         }
@@ -100,21 +96,42 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .build();
     }
 
-    private boolean hasCVContent(Map<String, Object> data) {
-        List<String> sections = List.of("personalInfo", "summary", "experiences", "education", "skills", "projects", "certificates");
-        long populatedSections = sections.stream().filter(section -> hasMeaningfulValue(data.get(section))).count();
-        boolean hasResumeSection = hasMeaningfulValue(data.get("personalInfo"))
-                || hasMeaningfulValue(data.get("summary"))
-                || hasMeaningfulValue(data.get("experiences"))
-                || hasMeaningfulValue(data.get("education"));
+    private boolean hasCVContent(CVContent data) {
+        long populatedSections = List.of(
+                data.getPersonalInfo() != null && hasPersonalInfo(data.getPersonalInfo()),
+                hasText(data.getSummary()),
+                data.getExperiences() != null && data.getExperiences().stream().anyMatch(this::hasExperience),
+                data.getEducation() != null && data.getEducation().stream().anyMatch(this::hasEducation),
+                data.getSkills() != null && data.getSkills().stream().anyMatch(skill -> skill != null && hasText(skill.getName())),
+                data.getProjects() != null && data.getProjects().stream().anyMatch(this::hasProject),
+                data.getCertificates() != null && data.getCertificates().stream().anyMatch(certificate -> certificate != null && hasText(certificate.getName()))
+        ).stream().filter(Boolean::booleanValue).count();
+        boolean hasResumeSection = (data.getPersonalInfo() != null && hasPersonalInfo(data.getPersonalInfo()))
+                || hasText(data.getSummary())
+                || (data.getExperiences() != null && data.getExperiences().stream().anyMatch(this::hasExperience))
+                || (data.getEducation() != null && data.getEducation().stream().anyMatch(this::hasEducation));
         return populatedSections >= 2 && hasResumeSection;
     }
 
-    private boolean hasMeaningfulValue(Object value) {
-        if (value instanceof String text) return !text.isBlank();
-        if (value instanceof Map<?, ?> map) return map.values().stream().anyMatch(this::hasMeaningfulValue);
-        if (value instanceof Collection<?> collection) return collection.stream().anyMatch(this::hasMeaningfulValue);
-        return value instanceof Number;
+    private boolean hasPersonalInfo(CVContent.PersonalInfo info) {
+        return hasText(info.getName()) || hasText(info.getEmail()) || hasText(info.getPhone());
+    }
+
+    private boolean hasExperience(CVContent.Experience experience) {
+        return experience != null && (hasText(experience.getCompany()) || hasText(experience.getRole())
+                || (experience.getDetails() != null && experience.getDetails().stream().anyMatch(this::hasText)));
+    }
+
+    private boolean hasEducation(CVContent.Education education) {
+        return education != null && (hasText(education.getSchool()) || hasText(education.getDegree()) || hasText(education.getYear()));
+    }
+
+    private boolean hasProject(CVContent.Project project) {
+        return project != null && (hasText(project.getName()) || (project.getDetails() != null && project.getDetails().stream().anyMatch(this::hasText)));
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private String sha256(byte[] content) {
@@ -298,7 +315,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .cv(cv)
                 .jobDescription(jd)
                 .overallScore(feedbackResponse.getOverallScore())
-                .feedbackJson(feedbackMapper.toFeedbackJson(feedbackResponse.getFeedback()))
+                .feedbackJson(feedbackResponse.getFeedback())
                 .build();
         feedbackRepository.save(feedback);
         feedbackResponse.setId(feedback.getId());

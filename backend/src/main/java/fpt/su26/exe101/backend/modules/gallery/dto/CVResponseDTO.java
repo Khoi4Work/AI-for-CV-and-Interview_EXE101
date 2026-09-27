@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -19,7 +18,7 @@ public class CVResponseDTO {
     private UUID id;
     private Gallery gallery;
     private String name;
-    private Map<String, Object> content;
+    private CVContent content;
     private Integer score;
     private Integer atsScore;
     private OptimizationState optimizationState = OptimizationState.DRAFT;

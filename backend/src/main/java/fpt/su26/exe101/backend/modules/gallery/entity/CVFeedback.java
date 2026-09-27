@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import fpt.su26.exe101.backend.base.persistence.BaseEntity;
-import java.util.Map;
+import fpt.su26.exe101.backend.modules.gallery.dto.CVFeedbackContent;
 
 @Entity
 @Table(name = "CV_Feedback")
@@ -28,5 +28,5 @@ public class CVFeedback extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "feedback_json", columnDefinition = "jsonb", nullable = false)
-    private Map<String, Object> feedbackJson;
+    private CVFeedbackContent feedbackJson;
 }

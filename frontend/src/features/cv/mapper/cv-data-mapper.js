@@ -21,9 +21,11 @@ export function mapCVDataToTemplate(cvData) {
             soft: cvData.skills?.filter(s => s.category === 'soft').map(s => s.name) || [],
         },
         skillsGrouped: {
-            excellent: cvData.skills?.filter(s => s.level >= 80).map(s => s.name) || [],
-            intermediate: cvData.skills?.filter(s => s.level >= 40 && s.level < 80).map(s => s.name) || [],
-            beginner: cvData.skills?.filter(s => s.level < 40).map(s => s.name) || [],
+            beginner: cvData.skills?.filter(s => s.level === 'BEGINNER').map(s => s.name) || [],
+            intermediate: cvData.skills?.filter(s => s.level === 'INTERMEDIATE').map(s => s.name) || [],
+            advanced: cvData.skills?.filter(s => s.level === 'ADVANCED').map(s => s.name) || [],
+            expert: cvData.skills?.filter(s => s.level === 'EXPERT').map(s => s.name) || [],
+            unspecified: cvData.skills?.filter(s => !s.level).map(s => s.name) || [],
         },
         experience: experiences.map(exp => ({
             title: exp.role,
@@ -113,6 +115,15 @@ export function mapMockDataToCVContext(mockData) {
         details: exp.bullets || [],
     });
 
+    const proficiencyGroups = mockData.skillsGrouped || {};
+    const getProficiencyLevel = (name) => {
+        const normalize = value => value.replace(/\s*\(.*\)/, '').trim().toLowerCase();
+        if ((proficiencyGroups.excellent || []).some(item => normalize(item) === normalize(name))) return 'EXPERT';
+        if ((proficiencyGroups.intermediate || []).some(item => normalize(item) === normalize(name))) return 'INTERMEDIATE';
+        if ((proficiencyGroups.beginner || []).some(item => normalize(item) === normalize(name))) return 'BEGINNER';
+        return null;
+    };
+
     return {
         personalInfo: {
             name: mockData.name || '',
@@ -131,7 +142,7 @@ export function mapMockDataToCVContext(mockData) {
         skills: Object.entries(mockData.skills || {}).flatMap(([category, skills]) =>
             skills.map(skill => ({
                 name: skill.replace(/\s*\(.*\)/, '').trim(),
-                level: 80,
+                level: getProficiencyLevel(skill),
                 category: category === 'backend' ? 'backend' : category === 'frontend' ? 'frontend' : 'soft'
             }))
         ),
@@ -166,50 +177,21 @@ export function mapMockDataToCVContext(mockData) {
 }
 
 export function mapImportedCVData(data) {
-    const personal = data.personal_info || data.personalInfo || {};
-    const list = (value) => Array.isArray(value) ? value : [];
-    const read = (item, ...keys) => keys.map(key => item?.[key]).find(value => value != null) || '';
-
     return {
-        personalInfo: {
-            name: read(personal, 'name', 'full_name', 'fullName'),
-            email: read(personal, 'email'),
-            phone: read(personal, 'phone', 'phone_number', 'phoneNumber'),
-            dob: read(personal, 'dob', 'date_of_birth', 'dateOfBirth'),
-            address: read(personal, 'address', 'location'),
-            linkedin: read(personal, 'linkedin', 'linkedin_url', 'linkedinUrl'),
-        },
-        summary: read(data, 'summary', 'professional_summary', 'professionalSummary'),
-        experiences: list(data.experience || data.experiences).map((item, index) => ({
+        personalInfo: data.personalInfo,
+        summary: data.summary,
+        experiences: data.experiences.map((item, index) => ({
             id: Date.now() + index,
-            company: read(item, 'company', 'organization'),
-            role: read(item, 'role', 'title', 'position'),
-            period: read(item, 'period', 'dates', 'duration'),
-            details: list(item.details || item.bullets || item.responsibilities),
+            company: item.company,
+            role: item.role,
+            period: item.period,
+            details: item.details,
         })),
-        skills: list(data.skills).map(skill => typeof skill === 'string'
-            ? {name: skill, level: 80, category: 'soft'}
-            : {name: read(skill, 'name', 'skill'), level: Number(skill.level) || 80, category: skill.category || 'soft'}),
-        education: list(data.education).map(item => ({
-            degree: read(item, 'degree', 'field'),
-            school: read(item, 'school', 'university', 'institution'),
-            year: read(item, 'year', 'period', 'dates', 'graduation_year'),
-            gpa: read(item, 'gpa'),
-        })),
-        projects: list(data.projects || data.projectsList).map(item => ({
-            name: read(item, 'name', 'title'),
-            period: read(item, 'period', 'dates', 'duration'),
-            details: list(item.details || item.bullets || item.description),
-            url: read(item, 'url'),
-        })),
-        certificates: list(data.certificates).map(item => ({
-            name: read(item, 'name', 'title'), issuer: read(item, 'issuer'), date: read(item, 'date'), url: read(item, 'url'),
-        })),
-        languages: list(data.languages).map(item => typeof item === 'string'
-            ? {name: item, level: ''}
-            : {name: read(item, 'name', 'language'), level: read(item, 'level', 'proficiency')}),
-        awards: list(data.awards).map(item => ({
-            name: read(item, 'name', 'title'), issuer: read(item, 'issuer'), date: read(item, 'date'),
-        })),
+        skills: data.skills.map(skill => ({name: skill.name, level: skill.level, category: skill.category})),
+        education: data.education,
+        projects: data.projects,
+        certificates: data.certificates,
+        languages: data.languages,
+        awards: data.awards,
     };
 }

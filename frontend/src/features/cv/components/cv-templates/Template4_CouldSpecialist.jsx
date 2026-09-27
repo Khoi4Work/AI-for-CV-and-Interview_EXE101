@@ -18,6 +18,13 @@ export default function Template4({ data }) {
     if (!cvData) return null;
     const { title, skillsGrouped } = data || {};
     const { personalInfo, summary, education, experiences, certificates, projects } = cvData;
+    const skillLevels = [
+        ['Expert', skillsGrouped?.expert],
+        ['Advanced', skillsGrouped?.advanced],
+        ['Intermediate', skillsGrouped?.intermediate],
+        ['Beginner', skillsGrouped?.beginner],
+        ['Level not specified', skillsGrouped?.unspecified],
+    ].filter(([, skills]) => skills?.length);
 
     return (
         <div className="overflow-x-auto w-full">
@@ -73,11 +80,12 @@ export default function Template4({ data }) {
                         <div className="pt-4">
                             <h3 className="font-bold text-sm tracking-wider uppercase mb-4 text-[#A2CAEA]">Skill</h3>
                             <div className="flex flex-col gap-3 text-[12px]">
-                                <div className="flex flex-wrap gap-1.5">
-                                    {skillsGrouped?.excellent?.map(s => <span key={s} className="border border-white/30 px-2 py-0.5 rounded-full">{s}</span>)}
-                                    {skillsGrouped?.intermediate?.map(s => <span key={s} className="border border-white/30 px-2 py-0.5 rounded-full">{s}</span>)}
-                                    {skillsGrouped?.beginner?.map(s => <span key={s} className="border border-white/30 px-2 py-0.5 rounded-full">{s}</span>)}
-                                </div>
+                                {skillLevels.map(([label, skills]) => <div key={label}>
+                                    <div className="font-semibold mb-1">{label}</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {skills.map(skill => <span key={skill} className="border border-white/30 px-2 py-0.5 rounded-full">{skill}</span>)}
+                                    </div>
+                                </div>)}
                             </div>
                         </div>
 

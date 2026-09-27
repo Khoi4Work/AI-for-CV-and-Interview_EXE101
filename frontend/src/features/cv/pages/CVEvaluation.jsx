@@ -7,8 +7,9 @@ import { useCV } from '../contexts/CVContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
 import { importCV } from '../services/cvImportService.js';
 import { cvPipelineService } from '../services/cvPipelineService.js';
-import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
+import { mapImportedCVData, mapMockDataToCVContext } from '../mapper/cv-data-mapper.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
+import { getApiErrorMessage } from '../../../service/apiClient.js';
 
 const CVEvaluation = () => {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ const CVEvaluation = () => {
       alert('Vui lòng tải lên CV của bạn hoặc chọn CV demo.');
       return;
     }
-    if (jdTab === 'text' && !jdText.trim()) {
+    if (!jdText.trim()) {
       alert('Vui lòng nhập nội dung mô tả công việc (JD).');
       return;
     }
@@ -96,11 +97,15 @@ const CVEvaluation = () => {
         setCurrentCvId(cvId);
         setFullCVData(mapImportedCVData(imported.extractedData));
       } else if (demoCv) {
-        const demo = demoCv === 'good' ? goodResumeData : badResumeData;
+        const demo = mapMockDataToCVContext(demoCv === 'good' ? goodResumeData : badResumeData);
         const saved = await cvPipelineService.createCV({name: cvName, content: demo});
         cvId = saved?.id;
         setCurrentCvId(cvId);
         setFullCVData(demo);
+      }
+      if (selectedFile && selectedFile.size > 5 * 1024 * 1024) {
+        showToast('CV vượt quá giới hạn 5 MB. Hãy chọn tệp nhỏ hơn.', 'error');
+        return;
       }
       if (!cvId) throw new Error('Không xác định được CV đã lưu để đánh giá.');
       const evaluationResult = await cvPipelineService.evaluateCVText(cvId, jdText.trim());
@@ -111,7 +116,7 @@ const CVEvaluation = () => {
       ]);
       navigate('/optimizer', {state: {cvId, cvName, jdId: evaluationResult.jdId, jdText: jdText.trim(), evaluationResult, skillGap, feedback}});
     } catch (error) {
-      showToast(error.response?.data?.message || error.message || 'Không thể đánh giá CV.', 'error');
+      showToast(getApiErrorMessage(error, 'Không thể hoàn tất đánh giá CV.'), 'error');
     } finally {
       setIsEvaluating(false);
     }
