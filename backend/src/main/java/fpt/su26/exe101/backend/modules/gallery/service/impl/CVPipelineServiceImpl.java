@@ -42,7 +42,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .optimizationState(OptimizationState.DRAFT)
                 .status("DRAFT")
                 .build();
-        return galleryMapper.cvToCVResponse(cvRepository.save(cv));
+        cvRepository.save(cv);
+        return galleryMapper.cvToCVResponse(cv);
     }
 
     @Transactional
@@ -54,7 +55,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
         cv.setName(request.getName());
         cv.setContent(request.getContent());
-        return galleryMapper.cvToCVResponse(cvRepository.save(cv));
+        cvRepository.save(cv);
+        return galleryMapper.cvToCVResponse(cv);
     }
 
     @Override

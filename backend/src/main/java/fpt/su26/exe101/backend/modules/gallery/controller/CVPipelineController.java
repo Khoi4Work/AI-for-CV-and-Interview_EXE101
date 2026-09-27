@@ -5,6 +5,7 @@ import fpt.su26.exe101.backend.modules.gallery.dto.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.service.impl.CVPipelineServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,7 +20,7 @@ public class CVPipelineController {
     private final CVPipelineServiceImpl cvPipelineServiceImpl;
 
     // --- Import ---
-    @PostMapping("/import")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<CVImportResponseDTO> importCV(@RequestParam("file") MultipartFile file) throws IOException {
         return ApiResponse
                 .success(cvPipelineServiceImpl.importCV(file.getBytes(), file.getContentType()),
