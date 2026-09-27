@@ -1,13 +1,14 @@
 package fpt.su26.exe101.backend.modules.gallery.dto;
 
 import lombok.*;
+import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CVUpdateRequest {
+public class CVCreateRequestDTO {
     private String name;
-    private java.util.Map<String, Object> content;
+    private Map<String, Object> content;
     private Long templateId;
 }

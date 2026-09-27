@@ -1,10 +1,10 @@
 package fpt.su26.exe101.backend.modules.gallery.controller;
 
+import fpt.su26.exe101.backend.base.response.ApiResponse;
 import fpt.su26.exe101.backend.modules.gallery.dto.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
-import fpt.su26.exe101.backend.modules.gallery.service.CVPipelineService;
+import fpt.su26.exe101.backend.modules.gallery.service.impl.CVPipelineServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,78 +16,81 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CVPipelineController {
 
-    private final CVPipelineService cvPipelineService;
+    private final CVPipelineServiceImpl cvPipelineServiceImpl;
 
     // --- Import ---
-    @PostMapping("/imports")
-    public ResponseEntity<CVImportResponse> importCV(@RequestParam("file") MultipartFile file) throws IOException {
-        return ResponseEntity.ok(cvPipelineService.importCV(file.getBytes(), file.getContentType()));
+    @PostMapping("/import")
+    public ApiResponse<CVImportResponseDTO> importCV(@RequestParam("file") MultipartFile file) throws IOException {
+        return ApiResponse
+                .success(cvPipelineServiceImpl.importCV(file.getBytes(), file.getContentType()),
+                        "IMPORT SUCCESS"
+                );
     }
 
     // --- Lifecycle ---
     @PostMapping
-    public ResponseEntity<fpt.su26.exe101.backend.modules.gallery.entity.CV> createCV(
-            @RequestBody CVCreateRequest request,
+    public ApiResponse<CVResponseDTO> createCV(
+            @RequestBody CVCreateRequestDTO request,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ResponseEntity.ok(cvPipelineService.createCV(request, gallery));
+        return ApiResponse.success(cvPipelineServiceImpl.createCV(request, gallery));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<fpt.su26.exe101.backend.modules.gallery.entity.CV> updateCV(
+    public ApiResponse<CVResponseDTO> updateCV(
             @PathVariable UUID id,
-            @RequestBody CVUpdateRequest request,
+            @RequestBody CVUpdateRequestDTO request,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ResponseEntity.ok(cvPipelineService.updateCV(id, request, gallery));
+        return ApiResponse.success(cvPipelineServiceImpl.updateCV(id, request, gallery));
     }
 
     // --- Optimization ---
     @PostMapping("/{id}/optimizations")
-    public ResponseEntity<CVOptimizationJobResponse> optimizeCV(
+    public ApiResponse<CVOptimizationJobResponseDTO> optimizeCV(
             @PathVariable UUID id,
-            @RequestBody CVOptimizationRequest request,
+            @RequestBody CVOptimizationRequestDTO request,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ResponseEntity.ok(cvPipelineService.startOptimization(id, request, gallery));
+        return ApiResponse.success(cvPipelineServiceImpl.startOptimization(id, request, gallery));
     }
 
     @GetMapping("/optimizations/{jobId}")
-    public ResponseEntity<CVOptimizationStatusResponse> getOptimizationStatus(@PathVariable String jobId) {
-        return ResponseEntity.ok(cvPipelineService.getOptimizationStatus(jobId));
+    public ApiResponse<CVOptimizationStatusResponseDTO> getOptimizationStatus(@PathVariable String jobId) {
+        return ApiResponse.success(cvPipelineServiceImpl.getOptimizationStatus(jobId));
     }
 
     @GetMapping("/optimizations/{jobId}/result")
-    public ResponseEntity<CVOptimizationResultResponse> getOptimizationResult(@PathVariable String jobId) {
-        return ResponseEntity.ok(cvPipelineService.getOptimizationResult(jobId));
+    public ApiResponse<CVOptimizationResultResponseDTO> getOptimizationResult(@PathVariable String jobId) {
+        return ApiResponse.success(cvPipelineServiceImpl.getOptimizationResult(jobId));
     }
 
     // --- Evaluation & Feedback ---
     @GetMapping("/{id}/evaluations")
-    public ResponseEntity<CVEvaluationResponse> evaluateCV(
+    public ApiResponse<CVEvaluationResponseDTO> evaluateCV(
             @PathVariable UUID id,
             @RequestParam UUID jdId,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ResponseEntity.ok(cvPipelineService.evaluateCV(id, jdId, gallery));
+        return ApiResponse.success(cvPipelineServiceImpl.evaluateCV(id, jdId, gallery));
     }
 
     @PostMapping("/{id}/feedback")
-    public ResponseEntity<CVFeedbackResponse> requestFeedback(
+    public ApiResponse<CVFeedbackResponseDTO> requestFeedback(
             @PathVariable UUID id,
             @RequestParam UUID jdId,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ResponseEntity.ok(cvPipelineService.requestFeedback(id, jdId, gallery));
+        return ApiResponse.success(cvPipelineServiceImpl.requestFeedback(id, jdId, gallery));
     }
 
     @GetMapping("/{id}/feedback")
-    public ResponseEntity<CVFeedbackResponse> getFeedback(
+    public ApiResponse<CVFeedbackResponseDTO> getFeedback(
             @PathVariable UUID id,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ResponseEntity.ok(cvPipelineService.getFeedback(id, gallery));
+        return ApiResponse.success(cvPipelineServiceImpl.getFeedback(id, gallery));
     }
 
     @GetMapping("/{id}/skill-gap")
-    public ResponseEntity<CVSkillGapResponse> analyzeSkillGap(
+    public ApiResponse<CVSkillGapResponseDTO> analyzeSkillGap(
             @PathVariable UUID id,
             @RequestParam UUID jdId,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ResponseEntity.ok(cvPipelineService.analyzeSkillGap(id, jdId, gallery));
+        return ApiResponse.success(cvPipelineServiceImpl.analyzeSkillGap(id, jdId, gallery));
     }
 }

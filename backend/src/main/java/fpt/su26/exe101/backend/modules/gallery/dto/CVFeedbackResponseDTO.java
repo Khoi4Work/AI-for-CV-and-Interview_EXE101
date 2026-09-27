@@ -8,7 +8,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CVFeedbackResponse {
+public class CVFeedbackResponseDTO {
     private Long id;
     private Integer overallScore;
     private Feedback feedback;

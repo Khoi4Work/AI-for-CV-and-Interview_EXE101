@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CVOptimizationResultResponse {
+public class CVOptimizationResultResponseDTO {
     private java.util.Map<String, Object> optimizedContent;
     private String improvementSummary;
     private Integer predictedScore;

@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CVCreateRequest {
+public class CVUpdateRequestDTO {
     private String name;
     private java.util.Map<String, Object> content;
     private Long templateId;

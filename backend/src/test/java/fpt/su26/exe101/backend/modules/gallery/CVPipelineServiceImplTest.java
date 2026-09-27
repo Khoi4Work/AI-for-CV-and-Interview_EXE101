@@ -6,6 +6,7 @@ import fpt.su26.exe101.backend.modules.gallery.dto.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
 import fpt.su26.exe101.backend.modules.gallery.repository.*;
 import fpt.su26.exe101.backend.modules.gallery.service.*;
+import fpt.su26.exe101.backend.modules.gallery.service.impl.CVPipelineServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CVPipelineServiceTest {
+public class CVPipelineServiceImplTest {
 
     @Mock
     private CVRepository cvRepository;
@@ -38,7 +39,7 @@ public class CVPipelineServiceTest {
     private AIProviderService aiProvider;
 
     @InjectMocks
-    private CVPipelineService cvPipelineService;
+    private CVPipelineServiceImpl cvPipelineServiceImpl;
 
     private Gallery mockGallery;
     private CV mockCv;
@@ -72,7 +73,7 @@ public class CVPipelineServiceTest {
     @Test
     void startOptimization_HappyPath_ShouldDeductQuotaAndReturnJob() {
         UUID cvId = mockCv.getId();
-        CVOptimizationRequest request = CVOptimizationRequest.builder()
+        CVOptimizationRequestDTO request = CVOptimizationRequestDTO.builder()
                 .jdId(mockJd.getId())
                 .build();
 
@@ -85,14 +86,14 @@ public class CVPipelineServiceTest {
         });
         lenient().when(jdRepository.findById(mockJd.getId())).thenReturn(Optional.of(mockJd));
         lenient().when(aiProvider.optimizeCV(any(), anyString())).thenReturn(CompletableFuture.completedFuture(
-                CVOptimizationResultResponse.builder()
+                CVOptimizationResultResponseDTO.builder()
                         .optimizedContent(Map.of("text", "optimized"))
                         .improvementSummary("Summary")
                         .predictedScore(90)
                         .build()
         ));
 
-        CVOptimizationJobResponse response = cvPipelineService.startOptimization(cvId, request, mockGallery);
+        CVOptimizationJobResponseDTO response = cvPipelineServiceImpl.startOptimization(cvId, request, mockGallery);
 
         assertNotNull(response);
         assertEquals("PENDING", response.getStatus());
@@ -104,7 +105,7 @@ public class CVPipelineServiceTest {
     @Test
     void startOptimization_NoQuota_ShouldThrowQuotaExceededException() {
         UUID cvId = mockCv.getId();
-        CVOptimizationRequest request = CVOptimizationRequest.builder()
+        CVOptimizationRequestDTO request = CVOptimizationRequestDTO.builder()
                 .jdId(mockJd.getId())
                 .build();
 
@@ -114,7 +115,7 @@ public class CVPipelineServiceTest {
         when(quotaRepository.findByAccountId(mockGallery.getAccountId())).thenReturn(Optional.of(mockQuota));
 
         ApiException exception = assertThrows(ApiException.class,
-            () -> cvPipelineService.startOptimization(cvId, request, mockGallery));
+            () -> cvPipelineServiceImpl.startOptimization(cvId, request, mockGallery));
 
         assertEquals(ErrorCode.QUOTA_EXCEEDED, exception.getErrorCode());
         verify(jobRepository, never()).save(any());
@@ -131,7 +132,7 @@ public class CVPipelineServiceTest {
                 .build();
 
         // Test Case: jdId is provided, jdText is null
-        CVOptimizationRequest request = CVOptimizationRequest.builder()
+        CVOptimizationRequestDTO request = CVOptimizationRequestDTO.builder()
                 .jdId(mockJd.getId())
                 .jdText(null)
                 .build();
@@ -139,14 +140,14 @@ public class CVPipelineServiceTest {
         when(jobRepository.findByJobId(jobId)).thenReturn(Optional.of(job));
         when(jdRepository.findById(mockJd.getId())).thenReturn(Optional.of(mockJd));
 
-        CVOptimizationResultResponse aiResult = CVOptimizationResultResponse.builder()
+        CVOptimizationResultResponseDTO aiResult = CVOptimizationResultResponseDTO.builder()
                 .optimizedContent(Map.of("text", "optimized content"))
                 .improvementSummary("Summary")
                 .predictedScore(90)
                 .build();
         when(aiProvider.optimizeCV(any(), anyString())).thenReturn(CompletableFuture.completedFuture(aiResult));
 
-        cvPipelineService.processOptimization(jobId, mockCv, request);
+        cvPipelineServiceImpl.processOptimization(jobId, mockCv, request);
 
         assertEquals("COMPLETED", job.getStatus());
         verify(jdRepository).findById(mockJd.getId());
@@ -161,7 +162,7 @@ public class CVPipelineServiceTest {
                 .status("PENDING")
                 .build();
 
-        CVOptimizationRequest request = CVOptimizationRequest.builder()
+        CVOptimizationRequestDTO request = CVOptimizationRequestDTO.builder()
                 .jdId(UUID.randomUUID()) // Non-existent ID
                 .jdText(null)
                 .build();
@@ -169,7 +170,7 @@ public class CVPipelineServiceTest {
         when(jobRepository.findByJobId(jobId)).thenReturn(Optional.of(job));
         when(jdRepository.findById(any())).thenReturn(Optional.empty());
 
-        cvPipelineService.processOptimization(jobId, mockCv, request);
+        cvPipelineServiceImpl.processOptimization(jobId, mockCv, request);
 
         assertEquals("FAILED", job.getStatus());
         assertTrue(job.getErrorMessage().contains("JD not found"));

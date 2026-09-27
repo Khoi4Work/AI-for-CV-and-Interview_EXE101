@@ -6,8 +6,8 @@ import java.util.concurrent.CompletableFuture;
 
 public interface AIProviderService {
     Map<String, Object> parseCVFile(byte[] fileContent, String contentType);
-    CompletableFuture<CVOptimizationResultResponse> optimizeCV(Map<String, Object> cvContent, String jdText);
-    CVEvaluationResponse evaluateCV(Map<String, Object> cvContent, String jdText);
-    CVFeedbackResponse generateFeedback(Map<String, Object> cvContent, String jdText);
-    CVSkillGapResponse analyzeSkillGap(Map<String, Object> cvContent, String jdText);
+    CompletableFuture<CVOptimizationResultResponseDTO> optimizeCV(Map<String, Object> cvContent, String jdText);
+    CVEvaluationResponseDTO evaluateCV(Map<String, Object> cvContent, String jdText);
+    CVFeedbackResponseDTO generateFeedback(Map<String, Object> cvContent, String jdText);
+    CVSkillGapResponseDTO analyzeSkillGap(Map<String, Object> cvContent, String jdText);
 }

@@ -7,7 +7,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CVSkillGapResponse {
+public class CVSkillGapResponseDTO {
     private List<String> missingSkills;
     private List<String> matchingSkills;
 }

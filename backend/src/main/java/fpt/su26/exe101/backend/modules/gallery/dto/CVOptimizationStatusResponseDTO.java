@@ -6,8 +6,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CVOptimizationJobResponse {
+public class CVOptimizationStatusResponseDTO {
     private String jobId;
     private String status;
-    private Integer estimatedTime;
+    private Integer progress;
 }

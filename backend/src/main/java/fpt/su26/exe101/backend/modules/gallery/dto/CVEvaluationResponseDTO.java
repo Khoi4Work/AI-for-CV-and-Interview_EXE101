@@ -2,13 +2,12 @@ package fpt.su26.exe101.backend.modules.gallery.dto;
 
 import lombok.*;
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CVEvaluationResponse {
+public class CVEvaluationResponseDTO {
     private Integer score;
     private Analysis analysis;
     private Integer atsCompatibility;

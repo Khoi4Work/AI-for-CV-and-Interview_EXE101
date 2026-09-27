@@ -7,7 +7,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CVOptimizationRequest {
+public class CVOptimizationRequestDTO {
     private UUID jdId;
     private String jdText;
 }
