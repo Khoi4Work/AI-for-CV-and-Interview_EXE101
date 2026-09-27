@@ -1,6 +1,11 @@
 package fpt.su26.exe101.backend.modules.gallery.repository;
 
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.CVContent;
+import fpt.su26.exe101.backend.modules.gallery.dto.CVFeedbackContent;
+import fpt.su26.exe101.backend.modules.gallery.dto.SWOTAnalysis;
+import fpt.su26.exe101.backend.modules.gallery.dto.SectionFeedback;
+import fpt.su26.exe101.backend.modules.gallery.entity.enums.SkillLevel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -48,9 +53,23 @@ public class GalleryRepositoryIntegrationTest {
                 .build();
         galleryRepository.save(gallery);
 
-        Map<String, Object> content = new HashMap<>();
-        content.put("fullName", "John Doe");
-        content.put("experience", "5 years");
+        CVContent content = CVContent.builder()
+                .personalInfo(CVContent.PersonalInfo.builder()
+                        .name("John Doe")
+                        .email("john.doe@example.com")
+                        .build())
+                .experiences(List.of(CVContent.Experience.builder()
+                        .company("Example Company")
+                        .role("Software Engineer")
+                        .period("2021-2024")
+                        .details(List.of("Built Java services"))
+                        .build()))
+                .skills(List.of(CVContent.Skill.builder()
+                        .name("Java")
+                        .level(SkillLevel.ADVANCED)
+                        .category("backend")
+                        .build()))
+                .build();
 
         CV cv = CV.builder()
                 .gallery(gallery)
@@ -80,7 +99,12 @@ public class GalleryRepositoryIntegrationTest {
         CV cv = CV.builder()
                 .gallery(gallery)
                 .name("Test CV")
-                .content(Collections.singletonMap("key", "val"))
+                .content(CVContent.builder()
+                        .personalInfo(CVContent.PersonalInfo.builder()
+                                .name("Test Candidate")
+                                .build())
+                        .summary("Test CV summary")
+                        .build())
                 .build();
         cvRepository.save(cv);
 
@@ -91,12 +115,20 @@ public class GalleryRepositoryIntegrationTest {
                 .build();
         jdRepository.save(jd);
 
-        Map<String, Object> feedbackJson = new HashMap<>();
-        Map<String, List<String>> swot = new HashMap<>();
-        swot.put("strengths", Arrays.asList("Strong Java", "Experience with Spring"));
-        swot.put("weaknesses", Arrays.asList("Lack of Cloud experience"));
-        feedbackJson.put("swot", swot);
-        feedbackJson.put("overallScore", 85);
+        CVFeedbackContent feedbackJson = CVFeedbackContent.builder()
+                .swot(SWOTAnalysis.builder()
+                        .strengths(List.of("Strong Java", "Experience with Spring"))
+                        .weaknesses(List.of("Lack of Cloud experience"))
+                        .opportunities(List.of("Add cloud projects"))
+                        .threats(List.of())
+                        .build())
+                .sectionAnalysis(List.of(SectionFeedback.builder()
+                        .sectionName("Experience")
+                        .strengths(List.of("Includes project experience"))
+                        .weaknesses(List.of())
+                        .suggestions(List.of("Quantify impact"))
+                        .build()))
+                .build();
 
         CVFeedback feedback = CVFeedback.builder()
                 .cv(cv)
@@ -112,7 +144,11 @@ public class GalleryRepositoryIntegrationTest {
         // Then
         assertThat(retrieved).isPresent();
         assertThat(retrieved.get().getFeedbackJson()).isEqualTo(feedbackJson);
-        assertThat(((Map)retrieved.get().getFeedbackJson().get("swot")).get("strengths")).asList().contains("Strong Java");
+        assertThat(retrieved.get().getFeedbackJson().getSwot().getStrengths())
+                .contains("Strong Java", "Experience with Spring");
+        assertThat(retrieved.get().getFeedbackJson().getSectionAnalysis())
+                .extracting(SectionFeedback::getSectionName)
+                .containsExactly("Experience");
     }
 
     @Test
@@ -156,7 +192,9 @@ public class GalleryRepositoryIntegrationTest {
         // Given: CV cannot be created without a Gallery (nullable = false)
         CV cv = CV.builder()
                 .name("Invalid CV")
-                .content(Collections.singletonMap("k", "v"))
+                .content(CVContent.builder()
+                        .summary("Test CV")
+                        .build())
                 .build();
 
         // Then

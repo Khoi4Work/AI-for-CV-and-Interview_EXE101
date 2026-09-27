@@ -1,6 +1,8 @@
 package fpt.su26.exe101.backend.modules.gallery.controller;
 
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.TemplateFeedbackRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.CVTemplateResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.TemplateFeedbackResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,7 +35,8 @@ public class TemplateControllerIntegrationTest {
         CVTemplateResponseDTO template = CVTemplateResponseDTO.builder()
                 .id(UUID.randomUUID())
                 .name("Modern Professional")
-                .description("A clean and modern template")
+                .category("Professional")
+                .previewImage("https://example.com/modern-professional.png")
                 .build();
 
         when(templateService.getAllTemplates()).thenReturn(Collections.singletonList(template));

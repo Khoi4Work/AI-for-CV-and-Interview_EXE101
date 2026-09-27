@@ -2,11 +2,20 @@ package fpt.su26.exe101.backend.modules.gallery;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.CVContent;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.CVImportModelResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.CVImportResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.CVOptimizationRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.CVOptimizationJobResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.CVOptimizationResultResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
+import fpt.su26.exe101.backend.modules.gallery.entity.enums.SkillLevel;
+import fpt.su26.exe101.backend.modules.gallery.mapper.CVFeedbackMapper;
+import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
 import fpt.su26.exe101.backend.modules.gallery.repository.*;
 import fpt.su26.exe101.backend.modules.gallery.service.*;
 import fpt.su26.exe101.backend.modules.gallery.service.impl.CVPipelineServiceImpl;
+import org.springframework.beans.factory.ObjectProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +46,12 @@ public class CVPipelineServiceImplTest {
     private UserUsageQuotaRepository quotaRepository;
     @Mock
     private AIProviderService aiProvider;
+    @Mock
+    private GalleryMapper galleryMapper;
+    @Mock
+    private CVFeedbackMapper feedbackMapper;
+    @Mock
+    private ObjectProvider<CVPipelineServiceImpl> selfProvider;
 
     @InjectMocks
     private CVPipelineServiceImpl cvPipelineServiceImpl;
@@ -54,10 +69,12 @@ public class CVPipelineServiceImplTest {
 
         mockCv = CV.builder()
                 .name("Test CV")
-                .content(Map.of("text", "original content"))
+                .content(validCVContent())
                 .gallery(mockGallery)
                 .build();
         mockCv.setId(UUID.randomUUID());
+
+        lenient().when(selfProvider.getObject()).thenReturn(cvPipelineServiceImpl);
 
         mockJd = JobDescription.builder()
                 .content("JD content")
@@ -87,7 +104,7 @@ public class CVPipelineServiceImplTest {
         lenient().when(jdRepository.findById(mockJd.getId())).thenReturn(Optional.of(mockJd));
         lenient().when(aiProvider.optimizeCV(any(), anyString())).thenReturn(CompletableFuture.completedFuture(
                 CVOptimizationResultResponseDTO.builder()
-                        .optimizedContent(Map.of("text", "optimized"))
+                        .optimizedContent(optimizedCVContent())
                         .improvementSummary("Summary")
                         .predictedScore(90)
                         .build()
@@ -141,7 +158,7 @@ public class CVPipelineServiceImplTest {
         when(jdRepository.findById(mockJd.getId())).thenReturn(Optional.of(mockJd));
 
         CVOptimizationResultResponseDTO aiResult = CVOptimizationResultResponseDTO.builder()
-                .optimizedContent(Map.of("text", "optimized content"))
+                .optimizedContent(optimizedCVContent())
                 .improvementSummary("Summary")
                 .predictedScore(90)
                 .build();
@@ -174,5 +191,87 @@ public class CVPipelineServiceImplTest {
 
         assertEquals("FAILED", job.getStatus());
         assertTrue(job.getErrorMessage().contains("JD not found"));
+    }
+
+    @Test
+    void importCV_ValidStructuredCV_ShouldSaveAndReturnTypedContent() {
+        byte[] fileContent = "pdf bytes".getBytes();
+        CVContent extractedData = validCVContent();
+        when(cvRepository.findByGalleryIdAndSourceHash(eq(mockGallery.getId()), anyString()))
+                .thenReturn(Optional.empty());
+        when(aiProvider.parseCVFile(fileContent, "application/pdf"))
+                .thenReturn(CVImportModelResponseDTO.builder()
+                        .isCV(true)
+                        .extractedData(extractedData)
+                        .build());
+
+        CVImportResponseDTO response = cvPipelineServiceImpl.importCV(
+                fileContent, "application/pdf", "resume.pdf", mockGallery);
+
+        assertNotNull(response);
+        assertEquals(extractedData, response.getExtractedData());
+        assertFalse(response.isDuplicate());
+        ArgumentCaptor<CV> savedCV = ArgumentCaptor.forClass(CV.class);
+        verify(cvRepository).save(savedCV.capture());
+        assertEquals(extractedData, savedCV.getValue().getContent());
+        assertEquals("resume.pdf", savedCV.getValue().getName());
+    }
+
+    @Test
+    void importCV_ContentWithoutEnoughCVSections_ShouldRejectAndNotSave() {
+        byte[] fileContent = "not enough CV content".getBytes();
+        CVContent incompleteContent = CVContent.builder()
+                .summary("Only one populated section")
+                .build();
+        when(cvRepository.findByGalleryIdAndSourceHash(eq(mockGallery.getId()), anyString()))
+                .thenReturn(Optional.empty());
+        when(aiProvider.parseCVFile(fileContent, "application/pdf"))
+                .thenReturn(CVImportModelResponseDTO.builder()
+                        .isCV(true)
+                        .extractedData(incompleteContent)
+                        .build());
+
+        ApiException exception = assertThrows(ApiException.class, () ->
+                cvPipelineServiceImpl.importCV(fileContent, "application/pdf", "resume.pdf", mockGallery));
+
+        assertEquals(ErrorCode.INVALID_INPUT, exception.getErrorCode());
+        verify(cvRepository, never()).save(any(CV.class));
+    }
+
+    private CVContent validCVContent() {
+        return CVContent.builder()
+                .personalInfo(CVContent.PersonalInfo.builder()
+                        .name("Test Candidate")
+                        .email("candidate@example.com")
+                        .build())
+                .experiences(List.of(CVContent.Experience.builder()
+                        .company("Example Company")
+                        .role("Backend Developer")
+                        .build()))
+                .skills(List.of(CVContent.Skill.builder()
+                        .name("Java")
+                        .level(SkillLevel.ADVANCED)
+                        .category("backend")
+                        .build()))
+                .build();
+    }
+
+    private CVContent optimizedCVContent() {
+        return CVContent.builder()
+                .personalInfo(CVContent.PersonalInfo.builder()
+                        .name("Test Candidate")
+                        .email("candidate@example.com")
+                        .build())
+                .summary("Optimized backend developer CV")
+                .experiences(List.of(CVContent.Experience.builder()
+                        .company("Example Company")
+                        .role("Backend Developer")
+                        .build()))
+                .skills(List.of(CVContent.Skill.builder()
+                        .name("Java")
+                        .level(SkillLevel.ADVANCED)
+                        .category("backend")
+                        .build()))
+                .build();
     }
 }
