@@ -117,9 +117,10 @@ export default function CVBuilder() {
 
         setIsImporting(true);
         try {
-            const extractedData = await importCV(file);
-            setFullCVData(mapImportedCVData(extractedData));
-            showToast(`Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
+            const imported = await importCV(file);
+            setCurrentCvId(imported.cvId);
+            setFullCVData(mapImportedCVData(imported.extractedData));
+            showToast(imported.duplicate ? 'CV này đã được import trước đó; đã mở bản đã lưu.' : `Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
         } catch (error) {
             const message = error.response?.data?.message || error.message || 'Không thể nhập CV. Vui lòng thử lại.';
             showToast(message, 'error');

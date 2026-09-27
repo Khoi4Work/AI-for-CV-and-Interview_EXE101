@@ -26,7 +26,8 @@ public class CVPipelineController {
 
     // --- Import ---
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<CVImportResponseDTO> importCV(@RequestParam("file") MultipartFile file) throws IOException {
+    public ApiResponse<CVImportResponseDTO> importCV(@RequestParam("file") MultipartFile file,
+            @RequestAttribute("gallery") Gallery gallery) throws IOException {
         if (file.isEmpty()) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV file must not be empty.");
         }
@@ -42,7 +43,7 @@ public class CVPipelineController {
         }
 
         return ApiResponse
-                .success(cvPipelineServiceImpl.importCV(file.getBytes(), file.getContentType()),
+                .success(cvPipelineServiceImpl.importCV(file.getBytes(), file.getContentType(), file.getOriginalFilename(), gallery),
                         "IMPORT SUCCESS"
                 );
     }
@@ -86,24 +87,35 @@ public class CVPipelineController {
     @GetMapping("/{id}/evaluations")
     public ApiResponse<CVEvaluationResponseDTO> evaluateCV(
             @PathVariable UUID id,
-            @RequestParam UUID jdId,
+            @RequestParam(required = false) UUID jdId,
+            @RequestParam(required = false) String jdText,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ApiResponse.success(cvPipelineServiceImpl.evaluateCV(id, jdId, gallery));
+        if (jdId != null) return ApiResponse.success(cvPipelineServiceImpl.evaluateCV(id, jdId, gallery));
+        if (jdText != null && !jdText.isBlank()) return ApiResponse.success(cvPipelineServiceImpl.evaluateCV(id, jdText, gallery));
+        throw new ApiException(ErrorCode.INVALID_INPUT, "jdId or jdText is required.");
     }
 
     @PostMapping("/{id}/feedback")
     public ApiResponse<CVFeedbackResponseDTO> requestFeedback(
             @PathVariable UUID id,
-            @RequestParam UUID jdId,
+            @RequestParam(required = false) UUID jdId,
+            @RequestBody(required = false) CVFeedbackRequestDTO request,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ApiResponse.success(cvPipelineServiceImpl.requestFeedback(id, jdId, gallery));
+        UUID resolvedJdId = jdId != null ? jdId : request == null ? null : request.getJdId();
+        if (resolvedJdId == null && request != null && request.getJdText() != null) {
+            CVEvaluationResponseDTO evaluation = cvPipelineServiceImpl.evaluateCV(id, request.getJdText(), gallery);
+            resolvedJdId = evaluation.getJdId();
+        }
+        if (resolvedJdId == null) throw new ApiException(ErrorCode.INVALID_INPUT, "jdId or jdText is required.");
+        return ApiResponse.success(cvPipelineServiceImpl.requestFeedback(id, resolvedJdId, gallery));
     }
 
     @GetMapping("/{id}/feedback")
     public ApiResponse<CVFeedbackResponseDTO> getFeedback(
             @PathVariable UUID id,
+            @RequestParam UUID jdId,
             @RequestAttribute("gallery") Gallery gallery) {
-        return ApiResponse.success(cvPipelineServiceImpl.getFeedback(id, gallery));
+        return ApiResponse.success(cvPipelineServiceImpl.getFeedback(id, jdId, gallery));
     }
 
     @GetMapping("/{id}/skill-gap")

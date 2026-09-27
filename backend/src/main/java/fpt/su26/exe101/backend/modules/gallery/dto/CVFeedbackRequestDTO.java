@@ -1,11 +1,13 @@
 package fpt.su26.exe101.backend.modules.gallery.dto;
 
 import lombok.*;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CVFeedbackRequestDTO {
-    private Long jdId;
+    private UUID jdId;
+    private String jdText;
 }

@@ -21,6 +21,12 @@ public class GeminiAIProviderImpl implements AIProviderService {
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private String jsonResponse(String prompt) {
+        String response = chatClient.prompt(prompt + " Return only valid JSON without markdown fences.").call().content();
+        if (response == null || response.isBlank()) throw new IllegalStateException("AI returned an empty response.");
+        return response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "");
+    }
+
     public GeminiAIProviderImpl(ChatClient.Builder chatClientBuilder) {
         this.chatClient = chatClientBuilder.build();
     }
@@ -46,7 +52,9 @@ public class GeminiAIProviderImpl implements AIProviderService {
             String json = modelResponse.trim()
                     .replaceFirst("^```(?:json)?\\s*", "")
                     .replaceFirst("\\s*```$", "");
-            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> result = objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+            if (result == null) throw new IllegalArgumentException("AI could not identify valid CV data in the uploaded file.");
+            return result;
         } catch (IOException | TikaException e) {
             throw new IllegalArgumentException("Unable to read the uploaded CV file.", e);
         }
@@ -76,44 +84,19 @@ public class GeminiAIProviderImpl implements AIProviderService {
 
     @Override
     public CVEvaluationResponseDTO evaluateCV(Map<String, Object> cvContent, String jdText) {
-        String prompt = "Evaluate this CV: " + cvContent + " against this JD: " + jdText + ". Return a score (0-100) and analysis.";
-        String result = chatClient.prompt(prompt).call().content();
-
-        return CVEvaluationResponseDTO.builder()
-                .score(75)
-                .atsCompatibility(80)
-                .analysis(CVEvaluationResponseDTO.Analysis.builder()
-                        .strengths(List.of("Strong technical skills"))
-                        .weaknesses(List.of("Lack of quantifiable achievements"))
-                        .suggestions(List.of("Add more metrics to experience"))
-                        .build())
-                .build();
+        try { return objectMapper.readValue(jsonResponse(Prompt.cvEvaluation(cvContent.toString(), jdText)), CVEvaluationResponseDTO.class); }
+        catch (IOException e) { throw new IllegalStateException("AI returned invalid CV evaluation JSON.", e); }
     }
 
     @Override
     public CVFeedbackResponseDTO generateFeedback(Map<String, Object> cvContent, String jdText) {
-        String prompt = "Provide a SWOT analysis and section-by-section feedback for this CV: " + cvContent + " vs JD: " + jdText;
-        String result = chatClient.prompt(prompt).call().content();
-
-        return CVFeedbackResponseDTO.builder()
-                .id(1L)
-                .overallScore(70)
-                .feedback(CVFeedbackResponseDTO.Feedback.builder()
-                        .swot(Map.of("Strengths", "...", "Weaknesses", "...", "Opportunities", "...", "Threats", "..."))
-                        .sectionAnalysis(Map.of("Experience", "Good but needs more impact"))
-                        .build())
-                .createdAt(java.time.LocalDateTime.now())
-                .build();
+        try { return objectMapper.readValue(jsonResponse(Prompt.cvFeedback(cvContent.toString(), jdText)), CVFeedbackResponseDTO.class); }
+        catch (IOException e) { throw new IllegalStateException("AI returned invalid CV feedback JSON.", e); }
     }
 
     @Override
     public CVSkillGapResponseDTO analyzeSkillGap(Map<String, Object> cvContent, String jdText) {
-        String prompt = "Identify skill gaps between this CV: " + cvContent + " and JD: " + jdText;
-        String result = chatClient.prompt(prompt).call().content();
-
-        return CVSkillGapResponseDTO.builder()
-                .matchingSkills(List.of("Java", "Spring Boot"))
-                .missingSkills(List.of("AWS", "Kubernetes"))
-                .build();
+        try { return objectMapper.readValue(jsonResponse(Prompt.cvSkillGap(cvContent.toString(), jdText)), CVSkillGapResponseDTO.class); }
+        catch (IOException e) { throw new IllegalStateException("AI returned invalid skill-gap JSON.", e); }
     }
 }

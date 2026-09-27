@@ -5,7 +5,7 @@ import lombok.*;
 import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 
 @Entity
-@Table(name = "Job_Descriptions")
+@Table(name = "Job_Descriptions", uniqueConstraints = @UniqueConstraint(name = "uk_jd_gallery_content_hash", columnNames = {"gallery_id", "content_hash"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,4 +24,7 @@ public class JobDescription extends BaseEntity {
 
     @Column(name = "company_name", length = 255)
     private String companyName;
+
+    @Column(name = "content_hash", length = 64)
+    private String contentHash;
 }

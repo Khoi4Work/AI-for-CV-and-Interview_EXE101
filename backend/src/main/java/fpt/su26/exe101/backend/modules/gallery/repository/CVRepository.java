@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface CVRepository extends JpaRepository<CV, UUID> {
     List<CV> findByGalleryId(UUID galleryId);
     List<CV> findByTemplateId(UUID templateId);
+    java.util.Optional<CV> findByGalleryIdAndSourceHash(UUID galleryId, String sourceHash);
 }

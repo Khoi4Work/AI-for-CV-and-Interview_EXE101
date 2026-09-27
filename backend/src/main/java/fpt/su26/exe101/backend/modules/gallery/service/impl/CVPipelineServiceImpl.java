@@ -6,6 +6,7 @@ import fpt.su26.exe101.backend.modules.gallery.dto.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.enums.OptimizationState;
 import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
+import fpt.su26.exe101.backend.modules.gallery.mapper.CVFeedbackMapper;
 import fpt.su26.exe101.backend.modules.gallery.repository.*;
 import fpt.su26.exe101.backend.modules.gallery.service.AIProviderService;
 import fpt.su26.exe101.backend.modules.gallery.service.CVPipelineService;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.*;
 
 @Service
@@ -32,6 +35,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private final UserUsageQuotaRepository quotaRepository;
     private final AIProviderService aiProvider;
     private final GalleryMapper galleryMapper;
+    private final CVFeedbackMapper feedbackMapper;
     private final ObjectProvider<CVPipelineServiceImpl> selfProvider;
 
     @Transactional
@@ -62,11 +66,74 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     @Override
-    public CVImportResponseDTO importCV(byte[] fileContent, String contentType) {
-        Map<String, Object> extractedData = aiProvider.parseCVFile(fileContent, contentType);
+    @Transactional
+    public CVImportResponseDTO importCV(byte[] fileContent, String contentType, String filename, Gallery gallery) {
+        String sourceHash = sha256(fileContent);
+        Optional<CV> existing = cvRepository.findByGalleryIdAndSourceHash(gallery.getId(), sourceHash);
+        if (existing.isPresent()) {
+            CV cv = existing.get();
+            return CVImportResponseDTO.builder().cvId(cv.getId()).sourceHash(sourceHash).duplicate(true)
+                    .extractedData(cv.getContent()).build();
+        }
+        Map<String, Object> parsed = aiProvider.parseCVFile(fileContent, contentType);
+        Object extracted = parsed.get("extractedData");
+        if (!Boolean.TRUE.equals(parsed.get("isCV")) || !(extracted instanceof Map<?, ?> rawData)) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Tệp tải lên không được nhận diện là CV hợp lệ.");
+        }
+        Map<String, Object> extractedData = new HashMap<>();
+        rawData.forEach((key, value) -> {
+            if (key instanceof String stringKey) extractedData.put(stringKey, value);
+        });
+        if (!hasCVContent(extractedData)) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "CV không có đủ thông tin cá nhân, học vấn hoặc kinh nghiệm để nhập.");
+        }
+        String cvName = filename == null || filename.isBlank() ? "Imported CV" : filename;
+        if (cvName.length() > 100) cvName = cvName.substring(0, 100);
+        CV draft = CV.builder().name(cvName).content(extractedData).gallery(gallery)
+                .sourceHash(sourceHash).optimizationState(OptimizationState.DRAFT).status("DRAFT").build();
+        cvRepository.save(draft);
         return CVImportResponseDTO.builder()
                 .extractedData(extractedData)
+                .cvId(draft.getId())
+                .sourceHash(sourceHash)
+                .duplicate(false)
                 .build();
+    }
+
+    private boolean hasCVContent(Map<String, Object> data) {
+        List<String> sections = List.of("personalInfo", "summary", "experiences", "education", "skills", "projects", "certificates");
+        long populatedSections = sections.stream().filter(section -> hasMeaningfulValue(data.get(section))).count();
+        boolean hasResumeSection = hasMeaningfulValue(data.get("personalInfo"))
+                || hasMeaningfulValue(data.get("summary"))
+                || hasMeaningfulValue(data.get("experiences"))
+                || hasMeaningfulValue(data.get("education"));
+        return populatedSections >= 2 && hasResumeSection;
+    }
+
+    private boolean hasMeaningfulValue(Object value) {
+        if (value instanceof String text) return !text.isBlank();
+        if (value instanceof Map<?, ?> map) return map.values().stream().anyMatch(this::hasMeaningfulValue);
+        if (value instanceof Collection<?> collection) return collection.stream().anyMatch(this::hasMeaningfulValue);
+        return value instanceof Number;
+    }
+
+    private String sha256(byte[] content) {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is unavailable", e);
+        }
+    }
+
+    private JobDescription findOrCreateJD(String jdText, Gallery gallery) {
+        if (jdText == null || jdText.isBlank()) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "JD text must not be blank.");
+        }
+        String normalized = jdText.trim().replaceAll("\\s+", " ");
+        String hash = sha256(normalized.getBytes(StandardCharsets.UTF_8));
+        return jdRepository.findByGalleryIdAndContentHash(gallery.getId(), hash).orElseGet(() ->
+                jdRepository.save(JobDescription.builder().gallery(gallery).title("User provided JD")
+                        .content(jdText.trim()).contentHash(hash).build()));
     }
 
     @Transactional
@@ -194,11 +261,23 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
 
-        String jdText = jdRepository.findById(jdId)
-                .map(JobDescription::getContent)
+        JobDescription jd = jdRepository.findById(jdId)
+                .filter(description -> description.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new RuntimeException("JD not found"));
+        CVEvaluationResponseDTO result = aiProvider.evaluateCV(cv.getContent(), jd.getContent());
+        result.setJdId(jd.getId());
+        return result;
+    }
 
-        return aiProvider.evaluateCV(cv.getContent(), jdText);
+    @Transactional
+    @Override
+    public CVEvaluationResponseDTO evaluateCV(UUID cvId, String jdText, Gallery gallery) {
+        CV cv = cvRepository.findById(cvId).filter(c -> c.getGallery().getId().equals(gallery.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        JobDescription jd = findOrCreateJD(jdText, gallery);
+        CVEvaluationResponseDTO result = aiProvider.evaluateCV(cv.getContent(), jd.getContent());
+        result.setJdId(jd.getId());
+        return result;
     }
 
     @Override
@@ -207,35 +286,36 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
 
-        String jdText = jdRepository.findById(jdId)
-                .map(JobDescription::getContent)
+        JobDescription jd = jdRepository.findById(jdId)
+                .filter(description -> description.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new RuntimeException("JD not found"));
 
-        CVFeedbackResponseDTO feedbackResponse = aiProvider.generateFeedback(cv.getContent(), jdText);
+        Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jdId);
+        if (prior.isPresent()) return toFeedbackResponse(prior.get());
+        CVFeedbackResponseDTO feedbackResponse = aiProvider.generateFeedback(cv.getContent(), jd.getContent());
 
         CVFeedback feedback = CVFeedback.builder()
                 .cv(cv)
-                .jobDescription(jdRepository.findById(jdId).orElseThrow())
+                .jobDescription(jd)
                 .overallScore(feedbackResponse.getOverallScore())
-                .feedbackJson(Map.of("summary", feedbackResponse.getFeedback().toString()))
+                .feedbackJson(feedbackMapper.toFeedbackJson(feedbackResponse.getFeedback()))
                 .build();
         feedbackRepository.save(feedback);
-
+        feedbackResponse.setId(feedback.getId());
         return feedbackResponse;
     }
 
+    private CVFeedbackResponseDTO toFeedbackResponse(CVFeedback f) {
+        return feedbackMapper.toResponse(f);
+    }
+
     @Override
-    public CVFeedbackResponseDTO getFeedback(UUID cvId, Gallery gallery) {
-        CV cv = cvRepository.findById(cvId).orElseThrow(() -> new RuntimeException("CV not found"));
-        return feedbackRepository.findByCv(cv)
-                .map(f -> CVFeedbackResponseDTO.builder()
-                        .id(f.getId().hashCode() != 0 ? (long) f.getId().hashCode() : 1L)
-                        .overallScore(f.getOverallScore())
-                        .feedback(CVFeedbackResponseDTO.Feedback.builder()
-                                .swot(Map.of("Summary", f.getFeedbackJson().get("summary")))
-                                .build())
-                        .createdAt(f.getCreatedAt())
-                        .build())
+    public CVFeedbackResponseDTO getFeedback(UUID cvId, UUID jdId, Gallery gallery) {
+        cvRepository.findById(cvId).filter(cv -> cv.getGallery().getId().equals(gallery.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        jdRepository.findById(jdId).filter(jd -> jd.getGallery().getId().equals(gallery.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        return feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jdId).map(this::toFeedbackResponse)
                 .orElseThrow(() -> new RuntimeException("No feedback available"));
     }
 
@@ -246,6 +326,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
 
         String jdText = jdRepository.findById(jdId)
+                .filter(jd -> jd.getGallery().getId().equals(gallery.getId()))
                 .map(JobDescription::getContent)
                 .orElseThrow(() -> new RuntimeException("JD not found"));
 

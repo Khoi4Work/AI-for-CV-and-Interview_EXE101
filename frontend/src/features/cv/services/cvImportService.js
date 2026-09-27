@@ -5,10 +5,11 @@ export const importCV = async (file) => {
     formData.append('file', file);
 
     const response = await apiClient.post('/cv/import', formData);
-    const extractedData = response.data?.result?.extractedData;
+    const result = response.data?.result;
+    const extractedData = result?.extractedData;
     if (!extractedData || typeof extractedData !== 'object') {
         throw new Error('API không trả về dữ liệu CV hợp lệ.');
     }
 
-    return extractedData;
+    return result;
 };

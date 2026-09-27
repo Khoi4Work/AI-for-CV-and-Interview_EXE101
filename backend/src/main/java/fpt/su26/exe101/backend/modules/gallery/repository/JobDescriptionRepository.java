@@ -9,4 +9,5 @@ import java.util.UUID;
 @Repository
 public interface JobDescriptionRepository extends JpaRepository<JobDescription, UUID> {
     List<JobDescription> findByGalleryId(UUID galleryId);
+    java.util.Optional<JobDescription> findByGalleryIdAndContentHash(UUID galleryId, String contentHash);
 }

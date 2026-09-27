@@ -9,7 +9,7 @@ import fpt.su26.exe101.backend.modules.gallery.entity.enums.OptimizationState;
 import java.util.Map;
 
 @Entity
-@Table(name = "CVs")
+@Table(name = "CVs", uniqueConstraints = @UniqueConstraint(name = "uk_cv_gallery_source_hash", columnNames = {"gallery_id", "source_hash"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -47,4 +47,7 @@ public class CV extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String image;
+
+    @Column(name = "source_hash", length = 64)
+    private String sourceHash;
 }

@@ -13,6 +13,29 @@ export function CVResult() {
     const [addedSkills, setAddedSkills] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const optimizationResult = location.state?.optimizationResult;
+    const evaluationResult = location.state?.evaluationResult;
+
+    if (evaluationResult) {
+        const analysis = evaluationResult.analysis || {};
+        const skillGap = location.state?.skillGap || {};
+        const feedback = location.state?.feedback?.feedback || {};
+        const sections = [
+            ['Strengths', analysis.strengths], ['Weaknesses', analysis.weaknesses], ['Suggestions', analysis.suggestions],
+            ['Matching skills', skillGap.matchingSkills], ['Missing skills', skillGap.missingSkills],
+        ];
+        return (
+            <MainLayout>
+                <div className="max-w-4xl mx-auto px-6 py-12 text-on-surface">
+                    <div className="flex items-center gap-3 mb-6"><CheckCircle2 className="text-primary" size={32}/><div><h1 className="text-3xl font-bold">Kết quả đánh giá CV</h1><p className="text-on-surface-variant">{location.state?.cvName || 'CV của bạn'}</p></div></div>
+                    <div className="grid gap-5 md:grid-cols-2 mb-6">
+                        <div className="rounded-2xl border border-outline-variant p-6 text-center"><p className="text-sm text-on-surface-variant">Điểm đánh giá</p><p className="text-4xl font-bold text-primary">{evaluationResult.score ?? '—'}</p><p className="mt-2">Tương thích ATS: {evaluationResult.atsCompatibility ?? '—'}%</p></div>
+                        <div className="rounded-2xl border border-outline-variant p-6"><h2 className="font-bold mb-2">Feedback</h2><pre className="whitespace-pre-wrap break-words text-sm">{JSON.stringify(feedback, null, 2) || 'Chưa có feedback.'}</pre></div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">{sections.map(([title, values]) => <section key={title} className="rounded-2xl border border-outline-variant p-5"><h2 className="font-bold mb-3">{title}</h2>{Array.isArray(values) && values.length ? <ul className="list-disc pl-5 space-y-1">{values.map((item, index) => <li key={index}>{item}</li>)}</ul> : <p className="text-on-surface-variant">Chưa có dữ liệu.</p>}</section>)}</div>
+                </div>
+            </MainLayout>
+        );
+    }
 
     if (optimizationResult) {
         return (
