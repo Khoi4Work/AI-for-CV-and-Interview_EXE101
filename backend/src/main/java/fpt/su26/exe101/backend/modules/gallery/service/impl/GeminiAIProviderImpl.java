@@ -1,9 +1,17 @@
 package fpt.su26.exe101.backend.modules.gallery.service.impl;
 
+import fpt.su26.exe101.backend.base.persistence.Prompt;
 import fpt.su26.exe101.backend.modules.gallery.dto.*;
 import fpt.su26.exe101.backend.modules.gallery.service.AIProviderService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
+import org.apache.tika.Tika;
+import org.apache.tika.exception.TikaException;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -11,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class GeminiAIProviderImpl implements AIProviderService {
 
     private final ChatClient chatClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public GeminiAIProviderImpl(ChatClient.Builder chatClientBuilder) {
         this.chatClient = chatClientBuilder.build();
@@ -18,14 +27,29 @@ public class GeminiAIProviderImpl implements AIProviderService {
 
     @Override
     public Map<String, Object> parseCVFile(byte[] fileContent, String contentType) {
-        // In a real scenario, we would use PDFBox/POI to extract text and then pass it to Gemini
-        // For now, we mock the extraction and the AI formatting.
-        return Map.of(
-            "personal_info", Map.of("name", "John Doe", "email", "john@example.com"),
-            "experience", List.of(Map.of("company", "Tech Corp", "role", "Software Engineer")),
-            "education", List.of(Map.of("degree", "CS", "university", "Example Uni")),
-            "skills", List.of("Java", "Spring Boot", "React")
-        );
+        if (fileContent == null || fileContent.length == 0) {
+            throw new IllegalArgumentException("CV file is empty.");
+        }
+
+        try {
+            String extractedText = new Tika().parseToString(new ByteArrayInputStream(fileContent)).trim();
+            if (extractedText.isEmpty()) {
+                throw new IllegalArgumentException("No readable text was found in the CV file.");
+            }
+
+            String limitedText = extractedText.substring(0, Math.min(extractedText.length(), 30000));
+            String modelResponse = chatClient.prompt(Prompt.cvImport(limitedText)).call().content();
+            if (modelResponse == null || modelResponse.isBlank()) {
+                throw new IllegalStateException("AI returned an empty response while importing the CV.");
+            }
+
+            String json = modelResponse.trim()
+                    .replaceFirst("^```(?:json)?\\s*", "")
+                    .replaceFirst("\\s*```$", "");
+            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+        } catch (IOException | TikaException e) {
+            throw new IllegalArgumentException("Unable to read the uploaded CV file.", e);
+        }
     }
 
     @Override
