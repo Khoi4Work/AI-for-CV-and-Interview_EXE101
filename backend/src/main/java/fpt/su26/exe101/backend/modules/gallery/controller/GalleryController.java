@@ -1,6 +1,11 @@
 package fpt.su26.exe101.backend.modules.gallery.controller;
 
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.JDCreateRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.JDUpdateRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.GalleryAssetsResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewAnswerResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewSessionResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.JDResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

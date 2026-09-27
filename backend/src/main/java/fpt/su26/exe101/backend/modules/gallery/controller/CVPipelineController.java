@@ -3,7 +3,11 @@ package fpt.su26.exe101.backend.modules.gallery.controller;
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.base.response.ApiResponse;
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.CVCreateRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.CVFeedbackRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.CVOptimizationRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.CVUpdateRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.service.impl.CVPipelineServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +31,7 @@ public class CVPipelineController {
     // --- Import ---
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<CVImportResponseDTO> importCV(@RequestParam("file") MultipartFile file,
-            @RequestAttribute("gallery") Gallery gallery) throws IOException {
+                                                     @RequestAttribute("gallery") Gallery gallery) throws IOException {
         if (file.isEmpty()) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV file must not be empty.");
         }

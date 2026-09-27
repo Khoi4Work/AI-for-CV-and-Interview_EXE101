@@ -1,6 +1,9 @@
 package fpt.su26.exe101.backend.modules.gallery.service;
 
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.CVCreateRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.CVOptimizationRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.CVUpdateRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 
 import java.util.UUID;

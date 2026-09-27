@@ -1,5 +1,6 @@
-package fpt.su26.exe101.backend.modules.gallery.dto;
+package fpt.su26.exe101.backend.modules.gallery.dto.response;
 
+import fpt.su26.exe101.backend.modules.gallery.dto.CVFeedbackContent;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;

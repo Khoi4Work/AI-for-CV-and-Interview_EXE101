@@ -1,6 +1,6 @@
 package fpt.su26.exe101.backend.modules.gallery.mapper;
 
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;

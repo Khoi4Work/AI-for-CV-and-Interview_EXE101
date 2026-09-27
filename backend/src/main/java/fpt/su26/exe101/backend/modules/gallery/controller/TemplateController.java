@@ -1,6 +1,8 @@
 package fpt.su26.exe101.backend.modules.gallery.controller;
 
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.TemplateFeedbackRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.CVTemplateResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.TemplateFeedbackResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.service.TemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

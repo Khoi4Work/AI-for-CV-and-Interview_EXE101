@@ -1,5 +1,6 @@
-package fpt.su26.exe101.backend.modules.gallery.dto;
+package fpt.su26.exe101.backend.modules.gallery.dto.response;
 
+import fpt.su26.exe101.backend.modules.gallery.dto.CVContent;
 import fpt.su26.exe101.backend.modules.gallery.entity.CVTemplate;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.entity.enums.OptimizationState;

@@ -2,6 +2,7 @@ package fpt.su26.exe101.backend.modules.gallery.service.impl;
 
 import fpt.su26.exe101.backend.base.persistence.Prompt;
 import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.*;
 import fpt.su26.exe101.backend.modules.gallery.service.AIProviderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.client.ChatClient;

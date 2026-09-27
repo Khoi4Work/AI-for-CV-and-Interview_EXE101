@@ -1,4 +1,4 @@
-package fpt.su26.exe101.backend.modules.gallery.dto;
+package fpt.su26.exe101.backend.modules.gallery.dto.response;
 
 import lombok.*;
 import java.util.List;

@@ -1,6 +1,8 @@
 package fpt.su26.exe101.backend.modules.gallery.service;
 
 import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.*;
+
 import java.util.concurrent.CompletableFuture;
 
 public interface AIProviderService {

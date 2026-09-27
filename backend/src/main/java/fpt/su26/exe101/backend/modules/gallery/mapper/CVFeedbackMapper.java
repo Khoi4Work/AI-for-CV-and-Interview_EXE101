@@ -1,6 +1,6 @@
 package fpt.su26.exe101.backend.modules.gallery.mapper;
 
-import fpt.su26.exe101.backend.modules.gallery.dto.CVFeedbackResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.CVFeedbackResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.entity.CVFeedback;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

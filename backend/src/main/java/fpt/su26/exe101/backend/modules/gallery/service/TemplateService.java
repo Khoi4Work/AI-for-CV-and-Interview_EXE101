@@ -1,6 +1,9 @@
 package fpt.su26.exe101.backend.modules.gallery.service;
 
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.TemplateFeedbackRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.CVTemplateResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.TemplateFeedbackResponseDTO;
+
 import java.util.List;
 import java.util.UUID;
 

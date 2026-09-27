@@ -2,33 +2,30 @@ package fpt.su26.exe101.backend.modules.gallery.controller;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
-import fpt.su26.exe101.backend.modules.auth.entity.Account;
 import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
-import fpt.su26.exe101.backend.modules.gallery.dto.*;
-import fpt.su26.exe101.backend.modules.gallery.entity.*;
-import fpt.su26.exe101.backend.modules.gallery.repository.*;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.JDCreateRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.request.JDUpdateRequestDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.GalleryAssetsResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewAnswerResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewSessionResponseDTO;
+import fpt.su26.exe101.backend.modules.gallery.dto.response.JDResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.RequestBuilder;
-import org.springframework.test.web.servlet.ResultActions;
+
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
