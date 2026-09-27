@@ -1,7 +1,7 @@
 package fpt.su26.exe101.backend.modules.auth.service;
 
-import fpt.su26.exe101.backend.modules.auth.dto.request.InvitePartnerRequest;
-import fpt.su26.exe101.backend.modules.auth.dto.response.GenericResponse;
+import fpt.su26.exe101.backend.modules.auth.dto.request.InvitePartnerRequestDTO;
+import fpt.su26.exe101.backend.modules.auth.dto.response.GenericResponseDTO;
 import fpt.su26.exe101.backend.modules.auth.entity.Invitation;
 import fpt.su26.exe101.backend.modules.auth.repository.InvitationRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class InvitationService {
     private final InvitationRepository invitationRepository;
 
     @Transactional
-    public GenericResponse invitePartner(UUID inviterId, InvitePartnerRequest request) {
+    public GenericResponseDTO invitePartner(UUID inviterId, InvitePartnerRequestDTO request) {
         Invitation invitation = Invitation.builder()
                 .email(request.getEmail())
                 .role(fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole.valueOf(request.getRole().toUpperCase()))
@@ -29,7 +29,7 @@ public class InvitationService {
 
         invitation = invitationRepository.save(invitation);
 
-        return GenericResponse.builder()
+        return GenericResponseDTO.builder()
                 .message("Invitation sent successfully")
                 .id(invitation.getId().toString())
                 .build();

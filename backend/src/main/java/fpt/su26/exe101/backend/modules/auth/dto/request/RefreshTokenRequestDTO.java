@@ -6,6 +6,6 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VerifyEmailRequest {
-    private String token;
+public class RefreshTokenRequestDTO {
+    private String refreshToken;
 }

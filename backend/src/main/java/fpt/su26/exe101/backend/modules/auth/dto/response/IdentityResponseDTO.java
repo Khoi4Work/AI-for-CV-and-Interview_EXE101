@@ -8,7 +8,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class IdentityResponse {
+public class IdentityResponseDTO {
     private AccountDetail account;
     private ProfileDetail profile;
     private QuotaDetail quota;

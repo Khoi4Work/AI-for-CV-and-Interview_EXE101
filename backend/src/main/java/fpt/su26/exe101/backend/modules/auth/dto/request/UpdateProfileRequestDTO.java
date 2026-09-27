@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateProfileRequest {
+public class UpdateProfileRequestDTO {
     private String bio;
     private String careerGoal;
     private String experienceLevel;

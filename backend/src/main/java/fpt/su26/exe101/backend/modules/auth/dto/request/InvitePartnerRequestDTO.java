@@ -6,6 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OAuthRequest {
-    private String token;
+public class InvitePartnerRequestDTO {
+    private String email;
+    private String role;
 }
