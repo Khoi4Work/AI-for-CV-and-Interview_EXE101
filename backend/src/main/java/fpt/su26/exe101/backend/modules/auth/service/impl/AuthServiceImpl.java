@@ -57,6 +57,9 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = tokenProvider.createToken(authentication);
         String refreshToken = tokenProvider.createRefreshToken(account.getEmail());
 
+        // Xóa token cũ nếu có để tránh lỗi duplicate account_id
+        tokenRepository.findByAccount(account).ifPresent(tokenRepository::delete);
+
         Token token = Token.builder()
                 .account(account)
                 .refreshToken(refreshToken)
@@ -112,6 +115,9 @@ public class AuthServiceImpl implements AuthService {
                 Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
         );
         String refreshToken = tokenProvider.createRefreshToken(account.getEmail());
+
+        // Xóa token cũ nếu có để tránh lỗi duplicate account_id
+        tokenRepository.findByAccount(account).ifPresent(tokenRepository::delete);
 
         Token token = Token.builder()
                 .account(account)

@@ -7,6 +7,10 @@ import fpt.su26.exe101.backend.modules.auth.dto.request.*;
 import fpt.su26.exe101.backend.modules.auth.dto.response.*;
 import fpt.su26.exe101.backend.modules.auth.entity.*;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
+import fpt.su26.exe101.backend.modules.auth.event.AccountCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
+
+
 import fpt.su26.exe101.backend.modules.auth.repository.*;
 import fpt.su26.exe101.backend.modules.auth.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +33,8 @@ public class AccountServiceImpl implements AccountService {
     private final PartnerInfoRepository partnerInfoRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final ApplicationEventPublisher eventPublisher;
+
 
     @Override
     @Transactional
@@ -48,6 +54,7 @@ public class AccountServiceImpl implements AccountService {
                 .build();
 
         account = accountRepository.save(account);
+        eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
 
         if (account.getRole() == AccountRole.ATTENDANCE) {
             Attendance attendance = Attendance.builder()
@@ -107,6 +114,7 @@ public class AccountServiceImpl implements AccountService {
                 .build();
 
         account = accountRepository.save(account);
+        eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
 
         Attendance attendance = Attendance.builder()
                 .account(account)

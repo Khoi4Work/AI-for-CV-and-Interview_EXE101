@@ -14,6 +14,7 @@ public class OrderResponseDTO {
     private BigDecimal amount;
     private String status;
     private String paymentStatus;
+    private String paymentMethod;
     private LocalDateTime orderedAt;
     private String checkoutUrl;
 }

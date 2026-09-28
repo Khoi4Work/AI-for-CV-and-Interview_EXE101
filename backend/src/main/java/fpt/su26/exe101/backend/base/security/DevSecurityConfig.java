@@ -43,10 +43,26 @@ public class DevSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
+                        // 1. Public APIs - Accessible to everyone
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/auth/accounts", "/api/auth/verify-email", "/api/auth/tokens", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/oauth/**").permitAll()
-                        .requestMatchers("/login/oauth2/code/google").permitAll()
+                        .requestMatchers(
+                                "/api/auth/accounts",
+                                "/api/auth/verify-email",
+                                "/api/auth/tokens",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/api/auth/oauth/**",
+                                "/login/oauth2/code/google"
+                        ).permitAll()
+
+                        // PayOS Webhook must be public as it's called by PayOS server
+                        .requestMatchers("/api/v1/payments/webhook").permitAll()
+
+                        // 2. Authenticated APIs - Require valid JWT Token
+                        .requestMatchers("/api/v1/payments/checkout", "/api/v1/payments/history", "/api/v1/payments/quota").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
+
+                        // Any other request must be authenticated
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

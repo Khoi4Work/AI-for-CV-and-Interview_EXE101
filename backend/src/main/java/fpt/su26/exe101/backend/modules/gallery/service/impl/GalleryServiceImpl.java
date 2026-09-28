@@ -51,6 +51,19 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
         return getGalleryForCurrentUser();
     }
 
+    @Transactional
+    public void createGalleryForAccount(UUID accountId) {
+        if (galleryRepository.findByAccountId(accountId).isPresent()) {
+            log.info("Gallery already exists for account: {}", accountId);
+            return;
+        }
+        Gallery gallery = Gallery.builder()
+                .accountId(accountId)
+                .build();
+        galleryRepository.save(gallery);
+        log.info("Created new gallery for account: {}", accountId);
+    }
+
     @Override
     public JobDescription findJobDescription(UUID id, Gallery gallery) {
         return jdRepository.findById(id)
