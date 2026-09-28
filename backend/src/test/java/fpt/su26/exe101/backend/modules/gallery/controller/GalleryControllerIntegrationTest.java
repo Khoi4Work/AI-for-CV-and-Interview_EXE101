@@ -2,15 +2,16 @@ package fpt.su26.exe101.backend.modules.gallery.controller;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
-import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import fpt.su26.exe101.backend.modules.gallery.dto.request.JDCreateRequestDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.request.JDUpdateRequestDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.response.GalleryAssetsResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewAnswerResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewSessionResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.response.JDResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
-import org.junit.jupiter.api.BeforeEach;
+import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
+import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -38,22 +39,19 @@ public class GalleryControllerIntegrationTest {
     private GalleryService galleryService;
 
     @MockBean
-    private AccountRepository accountRepository;
+    private CVPipelineService cvPipelineService;
 
-    @BeforeEach
-    void setUp() {
-        // Reset mocks if needed
-    }
+    @MockBean
+    private InterviewService interviewService;
 
     @Test
     @WithMockUser(username = "test@example.com")
     void getAssets_HappyPath_ShouldReturnAssets() throws Exception {
-        GalleryAssetsResponseDTO response = GalleryAssetsResponseDTO.builder()
-                .cvs(Collections.emptyList())
-                .jds(Collections.emptyList())
-                .build();
-
-        when(galleryService.getGalleryAssets()).thenReturn(response);
+        Gallery gallery = Gallery.builder().accountId(UUID.randomUUID()).build();
+        gallery.setId(UUID.randomUUID());
+        when(galleryService.getCurrentGallery()).thenReturn(gallery);
+        when(galleryService.getJobDescriptionsForCurrentGallery()).thenReturn(Collections.emptyList());
+        when(cvPipelineService.getCVsForGallery(gallery)).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/gallery/assets"))
                 .andExpect(status().isOk())
@@ -126,7 +124,8 @@ public class GalleryControllerIntegrationTest {
     @WithMockUser(username = "test@example.com")
     void deleteCV_HappyPath_ShouldReturnNoContent() throws Exception {
         UUID cvId = UUID.randomUUID();
-        doNothing().when(galleryService).deleteCV(cvId);
+        when(galleryService.getCurrentGallery()).thenReturn(Gallery.builder().accountId(UUID.randomUUID()).build());
+        doNothing().when(cvPipelineService).deleteCV(eq(cvId), any(Gallery.class));
 
         mockMvc.perform(delete("/api/gallery/cv/" + cvId))
                 .andExpect(status().isNoContent());
@@ -142,7 +141,7 @@ public class GalleryControllerIntegrationTest {
                 .build();
 
         List<InterviewSessionResponseDTO> history = Collections.singletonList(session);
-        when(galleryService.getInterviewHistory()).thenReturn(history);
+        when(interviewService.getInterviewHistory()).thenReturn(history);
 
         mockMvc.perform(get("/api/gallery/interviews"))
                 .andExpect(status().isOk())
@@ -159,7 +158,7 @@ public class GalleryControllerIntegrationTest {
                 .build();
 
         List<InterviewAnswerResponseDTO> answers = Collections.singletonList(answer);
-        when(galleryService.getInterviewAnswers(sessionId)).thenReturn(answers);
+        when(interviewService.getInterviewAnswers(sessionId)).thenReturn(answers);
 
         mockMvc.perform(get("/api/gallery/interviews/" + sessionId + "/answers"))
                 .andExpect(status().isOk())
@@ -170,8 +169,9 @@ public class GalleryControllerIntegrationTest {
     @WithMockUser(username = "test@example.com")
     void deleteCV_NotFound_ShouldThrowResourceNotFound() throws Exception {
         UUID cvId = UUID.randomUUID();
+        when(galleryService.getCurrentGallery()).thenReturn(Gallery.builder().accountId(UUID.randomUUID()).build());
         doThrow(new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"))
-                .when(galleryService).deleteCV(cvId);
+                .when(cvPipelineService).deleteCV(eq(cvId), any(Gallery.class));
 
         mockMvc.perform(delete("/api/gallery/cv/" + cvId))
                 .andExpect(status().isNotFound());
@@ -181,8 +181,11 @@ public class GalleryControllerIntegrationTest {
     @WithMockUser(username = "test@example.com")
     void deleteCV_Forbidden_ShouldThrowForbiddenAction() throws Exception {
         UUID cvId = UUID.randomUUID();
+        Gallery gallery = Gallery.builder().accountId(UUID.randomUUID()).build();
+        gallery.setId(UUID.randomUUID());
+        when(galleryService.getCurrentGallery()).thenReturn(gallery);
         doThrow(new ApiException(ErrorCode.FORBIDDEN_ACTION))
-                .when(galleryService).deleteCV(cvId);
+                .when(cvPipelineService).deleteCV(eq(cvId), any(Gallery.class));
 
         mockMvc.perform(delete("/api/gallery/cv/" + cvId))
                 .andExpect(status().isForbidden());

@@ -1,20 +1,26 @@
-package fpt.su26.exe101.backend.modules.gallery;
+package fpt.su26.exe101.backend.modules.cv;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
-import fpt.su26.exe101.backend.modules.gallery.dto.CVContent;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.CVImportModelResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.CVImportResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.request.CVOptimizationRequestDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.CVOptimizationJobResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.CVOptimizationResultResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.entity.CV;
+import fpt.su26.exe101.backend.modules.cv.entity.CVOptimizationJob;
+import fpt.su26.exe101.backend.modules.cv.repository.CVFeedbackRepository;
+import fpt.su26.exe101.backend.modules.cv.repository.CVOptimizationJobRepository;
+import fpt.su26.exe101.backend.modules.cv.repository.CVOptimizationLogRepository;
+import fpt.su26.exe101.backend.modules.cv.repository.CVRepository;
+import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
+import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
+import fpt.su26.exe101.backend.modules.cv.dto.response.CVImportModelResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.response.CVImportResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.request.CVOptimizationRequestDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.response.CVOptimizationJobResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.response.CVOptimizationResultResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
-import fpt.su26.exe101.backend.modules.gallery.entity.enums.SkillLevel;
-import fpt.su26.exe101.backend.modules.gallery.mapper.CVFeedbackMapper;
-import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
-import fpt.su26.exe101.backend.modules.gallery.repository.*;
-import fpt.su26.exe101.backend.modules.gallery.service.*;
-import fpt.su26.exe101.backend.modules.gallery.service.impl.CVPipelineServiceImpl;
+import fpt.su26.exe101.backend.modules.cv.entity.enums.SkillLevel;
+import fpt.su26.exe101.backend.modules.cv.mapper.CVFeedbackMapper;
+import fpt.su26.exe101.backend.modules.cv.mapper.CVMapper;
+import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
+import fpt.su26.exe101.backend.modules.cv.service.impl.CVPipelineServiceImpl;
 import org.springframework.beans.factory.ObjectProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,19 +41,17 @@ public class CVPipelineServiceImplTest {
     @Mock
     private CVRepository cvRepository;
     @Mock
-    private JobDescriptionRepository jdRepository;
-    @Mock
     private CVFeedbackRepository feedbackRepository;
     @Mock
     private CVOptimizationLogRepository logRepository;
     @Mock
     private CVOptimizationJobRepository jobRepository;
     @Mock
-    private UserUsageQuotaRepository quotaRepository;
-    @Mock
     private AIProviderService aiProvider;
     @Mock
-    private GalleryMapper galleryMapper;
+    private CVMapper cvMapper;
+    @Mock
+    private GalleryService galleryService;
     @Mock
     private CVFeedbackMapper feedbackMapper;
     @Mock
@@ -59,7 +63,6 @@ public class CVPipelineServiceImplTest {
     private Gallery mockGallery;
     private CV mockCv;
     private JobDescription mockJd;
-    private UserUsageQuota mockQuota;
 
     @BeforeEach
     void setUp() {
@@ -81,10 +84,6 @@ public class CVPipelineServiceImplTest {
                 .build();
         mockJd.setId(UUID.randomUUID());
 
-        mockQuota = UserUsageQuota.builder()
-                .accountId(accountId)
-                .remainingCvCnt(5)
-                .build();
     }
 
     @Test
@@ -95,13 +94,12 @@ public class CVPipelineServiceImplTest {
                 .build();
 
         when(cvRepository.findById(cvId)).thenReturn(Optional.of(mockCv));
-        when(quotaRepository.findByAccountId(mockGallery.getAccountId())).thenReturn(Optional.of(mockQuota));
+        when(galleryService.findJobDescription(mockJd.getId(), mockGallery)).thenReturn(mockJd);
         lenient().when(jobRepository.save(any(CVOptimizationJob.class))).thenAnswer(i -> {
             CVOptimizationJob job = i.getArgument(0);
             lenient().when(jobRepository.findByJobId(job.getJobId())).thenReturn(Optional.of(job));
             return job;
         });
-        lenient().when(jdRepository.findById(mockJd.getId())).thenReturn(Optional.of(mockJd));
         lenient().when(aiProvider.optimizeCV(any(), anyString())).thenReturn(CompletableFuture.completedFuture(
                 CVOptimizationResultResponseDTO.builder()
                         .optimizedContent(optimizedCVContent())
@@ -114,8 +112,8 @@ public class CVPipelineServiceImplTest {
 
         assertNotNull(response);
         assertEquals("PENDING", response.getStatus());
-        assertEquals(4, mockQuota.getRemainingCvCnt()); // Verify quota deduction
-        verify(quotaRepository).save(mockQuota);
+        verify(galleryService).consumeCvQuota(mockGallery.getAccountId());
+        verify(galleryService).findJobDescription(mockJd.getId(), mockGallery);
         verify(jobRepository, atLeastOnce()).save(any(CVOptimizationJob.class));
     }
 
@@ -126,17 +124,16 @@ public class CVPipelineServiceImplTest {
                 .jdId(mockJd.getId())
                 .build();
 
-        mockQuota.setRemainingCvCnt(0);
-
         when(cvRepository.findById(cvId)).thenReturn(Optional.of(mockCv));
-        when(quotaRepository.findByAccountId(mockGallery.getAccountId())).thenReturn(Optional.of(mockQuota));
+        doThrow(new ApiException(ErrorCode.QUOTA_EXCEEDED))
+                .when(galleryService).consumeCvQuota(mockGallery.getAccountId());
 
         ApiException exception = assertThrows(ApiException.class,
             () -> cvPipelineServiceImpl.startOptimization(cvId, request, mockGallery));
 
         assertEquals(ErrorCode.QUOTA_EXCEEDED, exception.getErrorCode());
         verify(jobRepository, never()).save(any());
-        verify(quotaRepository, never()).save(any());
+        verify(galleryService).consumeCvQuota(mockGallery.getAccountId());
     }
 
     @Test
@@ -155,7 +152,7 @@ public class CVPipelineServiceImplTest {
                 .build();
 
         when(jobRepository.findByJobId(jobId)).thenReturn(Optional.of(job));
-        when(jdRepository.findById(mockJd.getId())).thenReturn(Optional.of(mockJd));
+        when(galleryService.findJobDescription(mockJd.getId(), mockGallery)).thenReturn(mockJd);
 
         CVOptimizationResultResponseDTO aiResult = CVOptimizationResultResponseDTO.builder()
                 .optimizedContent(optimizedCVContent())
@@ -167,7 +164,7 @@ public class CVPipelineServiceImplTest {
         cvPipelineServiceImpl.processOptimization(jobId, mockCv, request);
 
         assertEquals("COMPLETED", job.getStatus());
-        verify(jdRepository).findById(mockJd.getId());
+        verify(galleryService).findJobDescription(mockJd.getId(), mockGallery);
     }
 
     @Test
@@ -185,7 +182,8 @@ public class CVPipelineServiceImplTest {
                 .build();
 
         when(jobRepository.findByJobId(jobId)).thenReturn(Optional.of(job));
-        when(jdRepository.findById(any())).thenReturn(Optional.empty());
+        when(galleryService.findJobDescription(any(), eq(mockGallery)))
+                .thenThrow(new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "JD not found"));
 
         cvPipelineServiceImpl.processOptimization(jobId, mockCv, request);
 

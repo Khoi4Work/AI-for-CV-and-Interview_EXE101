@@ -1,11 +1,21 @@
-package fpt.su26.exe101.backend.modules.gallery.repository;
+package fpt.su26.exe101.backend.modules.cv.repository;
 
+import fpt.su26.exe101.backend.modules.cv.entity.CV;
+import fpt.su26.exe101.backend.modules.cv.entity.CVFeedback;
+import fpt.su26.exe101.backend.modules.cv.entity.CVTemplate;
+import fpt.su26.exe101.backend.modules.cv.entity.TemplateFeedback;
+import fpt.su26.exe101.backend.modules.cv.repository.CVFeedbackRepository;
+import fpt.su26.exe101.backend.modules.cv.repository.CVRepository;
+import fpt.su26.exe101.backend.modules.cv.repository.CVTemplateRepository;
+import fpt.su26.exe101.backend.modules.cv.repository.TemplateFeedbackRepository;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
-import fpt.su26.exe101.backend.modules.gallery.dto.CVContent;
-import fpt.su26.exe101.backend.modules.gallery.dto.CVFeedbackContent;
-import fpt.su26.exe101.backend.modules.gallery.dto.SWOTAnalysis;
-import fpt.su26.exe101.backend.modules.gallery.dto.SectionFeedback;
-import fpt.su26.exe101.backend.modules.gallery.entity.enums.SkillLevel;
+import fpt.su26.exe101.backend.modules.gallery.repository.GalleryRepository;
+import fpt.su26.exe101.backend.modules.gallery.repository.JobDescriptionRepository;
+import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
+import fpt.su26.exe101.backend.modules.cv.dto.CVFeedbackContent;
+import fpt.su26.exe101.backend.modules.cv.dto.SWOTAnalysis;
+import fpt.su26.exe101.backend.modules.cv.dto.SectionFeedback;
+import fpt.su26.exe101.backend.modules.cv.entity.enums.SkillLevel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -20,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class GalleryRepositoryIntegrationTest {
+public class CVRepositoryIntegrationTest {
 
     @Autowired
     private GalleryRepository galleryRepository;

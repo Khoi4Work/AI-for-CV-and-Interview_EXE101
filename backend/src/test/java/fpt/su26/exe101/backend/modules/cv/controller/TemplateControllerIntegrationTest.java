@@ -1,8 +1,9 @@
-package fpt.su26.exe101.backend.modules.gallery.controller;
+package fpt.su26.exe101.backend.modules.cv.controller;
 
-import fpt.su26.exe101.backend.modules.gallery.dto.request.TemplateFeedbackRequestDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.CVTemplateResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.TemplateFeedbackResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.request.TemplateFeedbackRequestDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.response.CVTemplateResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.response.TemplateFeedbackResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.service.TemplateService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,7 +28,7 @@ public class TemplateControllerIntegrationTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private fpt.su26.exe101.backend.modules.gallery.service.TemplateService templateService;
+    private TemplateService templateService;
 
     @Test
     @WithMockUser(username = "test@example.com")
