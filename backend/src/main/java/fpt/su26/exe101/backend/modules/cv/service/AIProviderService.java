@@ -1,0 +1,14 @@
+package fpt.su26.exe101.backend.modules.cv.service;
+
+import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
+import fpt.su26.exe101.backend.modules.cv.dto.response.*;
+
+import java.util.concurrent.CompletableFuture;
+
+public interface AIProviderService {
+    CVImportModelResponseDTO parseCVFile(byte[] fileContent, String contentType);
+    CompletableFuture<CVOptimizationResultResponseDTO> optimizeCV(CVContent cvContent, String jdText);
+    CVEvaluationResponseDTO evaluateCV(CVContent cvContent, String jdText);
+    CVFeedbackResponseDTO generateFeedback(CVContent cvContent, String jdText);
+    CVSkillGapResponseDTO analyzeSkillGap(CVContent cvContent, String jdText);
+}

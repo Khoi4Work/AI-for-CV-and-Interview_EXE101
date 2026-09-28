@@ -3,10 +3,13 @@ package fpt.su26.exe101.backend.modules.gallery.controller;
 import fpt.su26.exe101.backend.modules.gallery.dto.request.JDCreateRequestDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.request.JDUpdateRequestDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.response.GalleryAssetsResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewAnswerResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.response.JDResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
+import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
+import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +22,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GalleryController {
     private final GalleryService galleryService;
+    private final InterviewService interviewService;
+    private final CVPipelineService cvPipelineService;
 
     @GetMapping("/assets")
     public ResponseEntity<GalleryAssetsResponseDTO> getAssets() {
-        return ResponseEntity.ok(galleryService.getGalleryAssets());
+        Gallery gallery = galleryService.getCurrentGallery();
+        return ResponseEntity.ok(GalleryAssetsResponseDTO.builder()
+                .cvs(cvPipelineService.getCVsForGallery(gallery))
+                .jds(galleryService.getJobDescriptionsForCurrentGallery())
+                .build());
     }
 
     @PostMapping("/jd")
@@ -43,17 +52,17 @@ public class GalleryController {
 
     @DeleteMapping("/cv/{id}")
     public ResponseEntity<Void> deleteCV(@PathVariable UUID id) {
-        galleryService.deleteCV(id);
+        cvPipelineService.deleteCV(id, galleryService.getCurrentGallery());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/interviews")
     public ResponseEntity<List<InterviewSessionResponseDTO>> getInterviewHistory() {
-        return ResponseEntity.ok(galleryService.getInterviewHistory());
+        return ResponseEntity.ok(interviewService.getInterviewHistory());
     }
 
     @GetMapping("/interviews/{sessionId}/answers")
     public ResponseEntity<List<InterviewAnswerResponseDTO>> getInterviewAnswers(@PathVariable UUID sessionId) {
-        return ResponseEntity.ok(galleryService.getInterviewAnswers(sessionId));
+        return ResponseEntity.ok(interviewService.getInterviewAnswers(sessionId));
     }
 }

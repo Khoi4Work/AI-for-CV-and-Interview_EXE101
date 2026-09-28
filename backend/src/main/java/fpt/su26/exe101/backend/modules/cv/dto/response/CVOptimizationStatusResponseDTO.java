@@ -1,0 +1,13 @@
+package fpt.su26.exe101.backend.modules.cv.dto.response;
+
+import lombok.*;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CVOptimizationStatusResponseDTO {
+    private String jobId;
+    private String status;
+    private Integer progress;
+}

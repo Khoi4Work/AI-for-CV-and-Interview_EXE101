@@ -6,9 +6,6 @@ import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import fpt.su26.exe101.backend.modules.auth.entity.Account;
 import fpt.su26.exe101.backend.modules.gallery.dto.request.JDCreateRequestDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.request.JDUpdateRequestDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.GalleryAssetsResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewAnswerResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.dto.response.InterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.response.JDResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
 import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
@@ -21,18 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.gallery.service.GalleryService {
     private final GalleryRepository galleryRepository;
-    private final CVRepository cvRepository;
     private final JobDescriptionRepository jdRepository;
-    private final InterviewSessionRepository interviewSessionRepository;
-    private final InterviewAnswerRepository interviewAnswerRepository;
     private final GalleryMapper galleryMapper;
     private final AccountRepository accountRepository;
+    private final UserUsageQuotaRepository quotaRepository;
 
     private Gallery getGalleryForCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -49,16 +47,53 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
     }
 
     @Override
-    public GalleryAssetsResponseDTO getGalleryAssets() {
+    public Gallery getCurrentGallery() {
+        return getGalleryForCurrentUser();
+    }
+
+    @Override
+    public JobDescription findJobDescription(UUID id, Gallery gallery) {
+        return jdRepository.findById(id)
+                .filter(jd -> jd.getGallery().getId().equals(gallery.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Job Description not found"));
+    }
+
+    @Override
+    @Transactional
+    public JobDescription findOrCreateJobDescription(String jdText, Gallery gallery) {
+        if (jdText == null || jdText.isBlank()) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "JD text must not be blank.");
+        }
+        String normalized = jdText.trim().replaceAll("\\s+", " ");
+        String hash;
+        try {
+            hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(normalized.getBytes(StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is unavailable", e);
+        }
+        return jdRepository.findByGalleryIdAndContentHash(gallery.getId(), hash).orElseGet(() ->
+                jdRepository.save(JobDescription.builder().gallery(gallery).title("User provided JD")
+                        .content(jdText.trim()).contentHash(hash).build()));
+    }
+
+    @Override
+    @Transactional
+    public void consumeCvQuota(UUID accountId) {
+        UserUsageQuota quota = quotaRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        if (quota.getRemainingCvCnt() <= 0) {
+            throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
+        }
+        quota.setRemainingCvCnt(quota.getRemainingCvCnt() - 1);
+        quotaRepository.save(quota);
+    }
+
+    @Override
+    public List<JDResponseDTO> getJobDescriptionsForCurrentGallery() {
         Gallery gallery = getGalleryForCurrentUser();
-
-        List<CV> cvs = cvRepository.findByGalleryId(gallery.getId());
         List<JobDescription> jds = jdRepository.findByGalleryId(gallery.getId());
-
-        return GalleryAssetsResponseDTO.builder()
-                .cvs(galleryMapper.cvsToCVResponses(cvs))
-                .jds(galleryMapper.jdsToJDResponses(jds))
-                .build();
+        return galleryMapper.jdsToJDResponses(jds);
     }
 
     @Override
@@ -109,38 +144,4 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
         jdRepository.delete(jd);
     }
 
-    @Override
-    @Transactional
-    public void deleteCV(UUID cvId) {
-        CV cv = cvRepository.findById(cvId)
-                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
-
-        Gallery gallery = getGalleryForCurrentUser();
-        if (!cv.getGallery().getId().equals(gallery.getId())) {
-            throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
-        }
-
-        cvRepository.delete(cv);
-    }
-
-    @Override
-    public List<InterviewSessionResponseDTO> getInterviewHistory() {
-        Gallery gallery = getGalleryForCurrentUser();
-        List<InterviewSession> sessions = interviewSessionRepository.findByGallery(gallery);
-        return galleryMapper.sessionsToSessionResponses(sessions);
-    }
-
-    @Override
-    public List<InterviewAnswerResponseDTO> getInterviewAnswers(UUID sessionId) {
-        InterviewSession session = interviewSessionRepository.findById(sessionId)
-                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Interview session not found"));
-
-        Gallery gallery = getGalleryForCurrentUser();
-        if (!session.getGallery().getId().equals(gallery.getId())) {
-            throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
-        }
-
-        List<InterviewAnswer> answers = interviewAnswerRepository.findBySession(session);
-        return galleryMapper.answersToAnswerResponses(answers);
-    }
 }
