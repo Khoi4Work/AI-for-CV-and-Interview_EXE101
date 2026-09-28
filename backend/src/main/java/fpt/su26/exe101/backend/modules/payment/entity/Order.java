@@ -20,7 +20,7 @@ public class Order extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    private PaymentServiceEntity service;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;

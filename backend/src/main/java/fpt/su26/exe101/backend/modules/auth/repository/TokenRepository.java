@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface TokenRepository extends JpaRepository<Token, UUID> {
     Optional<Token> findByRefreshToken(String tokenValue);
+    Optional<Token> findByAccount(fpt.su26.exe101.backend.modules.auth.entity.Account account);
+    void deleteByAccount(fpt.su26.exe101.backend.modules.auth.entity.Account account);
 }

@@ -14,7 +14,7 @@ import lombok.*;
 public class CVBenefit extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "service_id", nullable = false, unique = true)
-    private Service service;
+    private PaymentServiceEntity service;
 
     @Column(name = "max_templates", nullable = false)
     private Integer maxTemplates;

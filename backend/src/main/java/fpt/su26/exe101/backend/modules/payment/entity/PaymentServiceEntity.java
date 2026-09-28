@@ -6,13 +6,12 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "services")
-@Getter
-@Setter
+@Table(name = "payment_services")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Service extends BaseEntity {
+@Data
+public class PaymentServiceEntity extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
