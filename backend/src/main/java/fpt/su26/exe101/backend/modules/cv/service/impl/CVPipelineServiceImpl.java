@@ -339,7 +339,9 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
         galleryService.findJobDescription(jdId, gallery);
         return feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jdId).map(this::toFeedbackResponse)
-                .orElseThrow(() -> new RuntimeException("No feedback available"));
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND,
+                        "Feedback has not been generated for this CV and job description yet. "
+                                + "Call POST /api/cv/{id}/feedback first."));
     }
 
     @Override
