@@ -10,8 +10,10 @@ import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
+import fpt.su26.exe101.backend.base.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,22 +28,23 @@ public class GalleryController {
     private final CVPipelineService cvPipelineService;
 
     @GetMapping("/assets")
-    public ResponseEntity<GalleryAssetsResponseDTO> getAssets() {
+    public ResponseEntity<ApiResponse<GalleryAssetsResponseDTO>> getAssets() {
         Gallery gallery = galleryService.getCurrentGallery();
-        return ResponseEntity.ok(GalleryAssetsResponseDTO.builder()
+        return ResponseEntity.ok(ApiResponse.success(GalleryAssetsResponseDTO.builder()
                 .cvs(cvPipelineService.getCVsForGallery(gallery))
                 .jds(galleryService.getJobDescriptionsForCurrentGallery())
-                .build());
+                .build()));
     }
 
     @PostMapping("/jd")
-    public ResponseEntity<JDResponseDTO> createJD(@RequestBody JDCreateRequestDTO request) {
-        return ResponseEntity.ok(galleryService.createJobDescription(request));
+    public ResponseEntity<ApiResponse<JDResponseDTO>> createJD(@RequestBody JDCreateRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(galleryService.createJobDescription(request), "Job description created"));
     }
 
     @PutMapping("/jd/{id}")
-    public ResponseEntity<JDResponseDTO> updateJD(@PathVariable UUID id, @RequestBody JDUpdateRequestDTO request) {
-        return ResponseEntity.ok(galleryService.updateJobDescription(id, request));
+    public ResponseEntity<ApiResponse<JDResponseDTO>> updateJD(@PathVariable UUID id, @RequestBody JDUpdateRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success(galleryService.updateJobDescription(id, request)));
     }
 
     @DeleteMapping("/jd/{id}")
@@ -57,12 +60,12 @@ public class GalleryController {
     }
 
     @GetMapping("/interviews")
-    public ResponseEntity<List<InterviewSessionResponseDTO>> getInterviewHistory() {
-        return ResponseEntity.ok(interviewService.getInterviewHistory());
+    public ResponseEntity<ApiResponse<List<InterviewSessionResponseDTO>>> getInterviewHistory() {
+        return ResponseEntity.ok(ApiResponse.success(interviewService.getInterviewHistory()));
     }
 
     @GetMapping("/interviews/{sessionId}/answers")
-    public ResponseEntity<List<InterviewAnswerResponseDTO>> getInterviewAnswers(@PathVariable UUID sessionId) {
-        return ResponseEntity.ok(interviewService.getInterviewAnswers(sessionId));
+    public ResponseEntity<ApiResponse<List<InterviewAnswerResponseDTO>>> getInterviewAnswers(@PathVariable UUID sessionId) {
+        return ResponseEntity.ok(ApiResponse.success(interviewService.getInterviewAnswers(sessionId)));
     }
 }

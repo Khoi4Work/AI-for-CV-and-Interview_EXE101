@@ -1,5 +1,6 @@
 package fpt.su26.exe101.backend.modules.health;
 
+import fpt.su26.exe101.backend.base.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,11 +14,11 @@ import java.util.Map;
 public class HealthController {
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> checkHealth() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkHealth() {
         Map<String, Object> health = new HashMap<>();
         health.put("status", "UP");
         health.put("timestamp", LocalDateTime.now());
         health.put("message", "Server is running smoothly");
-        return ResponseEntity.ok(health);
+        return ResponseEntity.ok(ApiResponse.success(health));
     }
 }

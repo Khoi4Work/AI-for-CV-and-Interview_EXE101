@@ -57,8 +57,8 @@ public class GalleryControllerIntegrationTest {
 
         mockMvc.perform(get("/api/gallery/assets"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.cvs").isArray())
-                .andExpect(jsonPath("$.jds").isArray());
+                .andExpect(jsonPath("$.result.cvs").isArray())
+                .andExpect(jsonPath("$.result.jds").isArray());
     }
 
     @Test
@@ -82,8 +82,8 @@ public class GalleryControllerIntegrationTest {
         mockMvc.perform(post("/api/gallery/jd")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\":\"Software Engineer\",\"content\":\"Develop awesome things\",\"companyName\":\"Tech Corp\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Software Engineer"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result.title").value("Software Engineer"));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class GalleryControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\":\"Senior Software Engineer\",\"content\":\"Develop even more awesome things\",\"companyName\":\"Tech Corp\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Senior Software Engineer"));
+                .andExpect(jsonPath("$.result.title").value("Senior Software Engineer"));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class GalleryControllerIntegrationTest {
 
         mockMvc.perform(get("/api/gallery/interviews"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].overallScore").value(85));
+                .andExpect(jsonPath("$.result[0].overallScore").value(85));
     }
 
     @Test
@@ -164,7 +164,7 @@ public class GalleryControllerIntegrationTest {
 
         mockMvc.perform(get("/api/gallery/interviews/" + sessionId + "/answers"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].answerText").value("Java is a language"));
+                .andExpect(jsonPath("$.result[0].answerText").value("Java is a language"));
     }
 
     @Test

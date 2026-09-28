@@ -46,7 +46,7 @@ public class TemplateControllerIntegrationTest {
 
         mockMvc.perform(get("/api/templates"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Modern Professional"));
+                .andExpect(jsonPath("$.result[0].name").value("Modern Professional"));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class TemplateControllerIntegrationTest {
         mockMvc.perform(post("/api/templates/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"templateId\":\"" + request.getTemplateId() + "\",\"rating\":5,\"comment\":\"Great template!\"}"))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Test
@@ -80,6 +80,6 @@ public class TemplateControllerIntegrationTest {
 
         mockMvc.perform(get("/api/templates/" + templateId + "/feedback"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].comment").value("Great template!"));
+                .andExpect(jsonPath("$.result[0].comment").value("Great template!"));
     }
 }

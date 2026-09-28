@@ -9,9 +9,12 @@ import fpt.su26.exe101.backend.modules.cv.dto.request.CVOptimizationRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVUpdateRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
+import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,11 +30,11 @@ public class CVPipelineController {
 
     private static final long MAX_CV_FILE_SIZE = 5L * 1024 * 1024;
     private final CVPipelineService cvPipelineService;
+    private final GalleryService galleryService;
 
     // --- Import ---
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<CVImportResponseDTO> importCV(@RequestParam("file") MultipartFile file,
-                                                     @RequestAttribute("gallery") Gallery gallery) throws IOException {
+    public ResponseEntity<ApiResponse<CVImportResponseDTO>> importCV(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV file must not be empty.");
         }
@@ -46,87 +49,87 @@ public class CVPipelineController {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Only PDF, DOC, and DOCX CV files are supported.");
         }
 
-        return ApiResponse
-                .success(cvPipelineService.importCV(file.getBytes(), file.getContentType(), file.getOriginalFilename(), gallery),
-                        "IMPORT SUCCESS"
-                );
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
+                cvPipelineService.importCV(file.getBytes(), file.getContentType(), file.getOriginalFilename(), currentGallery()),
+                "IMPORT SUCCESS"));
     }
 
     // --- Lifecycle ---
     @PostMapping
-    public ApiResponse<CVResponseDTO> createCV(
-            @RequestBody CVCreateRequestDTO request,
-            @RequestAttribute("gallery") Gallery gallery) {
-        return ApiResponse.success(cvPipelineService.createCV(request, gallery));
+    public ResponseEntity<ApiResponse<CVResponseDTO>> createCV(
+            @RequestBody CVCreateRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(cvPipelineService.createCV(request, currentGallery())));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<CVResponseDTO> updateCV(
+    public ResponseEntity<ApiResponse<CVResponseDTO>> updateCV(
             @PathVariable UUID id,
-            @RequestBody CVUpdateRequestDTO request,
-            @RequestAttribute("gallery") Gallery gallery) {
-        return ApiResponse.success(cvPipelineService.updateCV(id, request, gallery));
+            @RequestBody CVUpdateRequestDTO request) {
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.updateCV(id, request, currentGallery())));
     }
 
     // --- Optimization ---
     @PostMapping("/{id}/optimizations")
-    public ApiResponse<CVOptimizationJobResponseDTO> optimizeCV(
+    public ResponseEntity<ApiResponse<CVOptimizationJobResponseDTO>> optimizeCV(
             @PathVariable UUID id,
-            @RequestBody CVOptimizationRequestDTO request,
-            @RequestAttribute("gallery") Gallery gallery) {
-        return ApiResponse.success(cvPipelineService.startOptimization(id, request, gallery));
+            @RequestBody CVOptimizationRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(ApiResponse.success(cvPipelineService.startOptimization(id, request, currentGallery())));
     }
 
     @GetMapping("/optimizations/{jobId}")
-    public ApiResponse<CVOptimizationStatusResponseDTO> getOptimizationStatus(@PathVariable String jobId) {
-        return ApiResponse.success(cvPipelineService.getOptimizationStatus(jobId));
+    public ResponseEntity<ApiResponse<CVOptimizationStatusResponseDTO>> getOptimizationStatus(@PathVariable String jobId) {
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.getOptimizationStatus(jobId)));
     }
 
     @GetMapping("/optimizations/{jobId}/result")
-    public ApiResponse<CVOptimizationResultResponseDTO> getOptimizationResult(@PathVariable String jobId) {
-        return ApiResponse.success(cvPipelineService.getOptimizationResult(jobId));
+    public ResponseEntity<ApiResponse<CVOptimizationResultResponseDTO>> getOptimizationResult(@PathVariable String jobId) {
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.getOptimizationResult(jobId)));
     }
 
     // --- Evaluation & Feedback ---
     @GetMapping("/{id}/evaluations")
-    public ApiResponse<CVEvaluationResponseDTO> evaluateCV(
+    public ResponseEntity<ApiResponse<CVEvaluationResponseDTO>> evaluateCV(
             @PathVariable UUID id,
             @RequestParam(required = false) UUID jdId,
-            @RequestParam(required = false) String jdText,
-            @RequestAttribute("gallery") Gallery gallery) {
-        if (jdId != null) return ApiResponse.success(cvPipelineService.evaluateCV(id, jdId, gallery));
-        if (jdText != null && !jdText.isBlank()) return ApiResponse.success(cvPipelineService.evaluateCV(id, jdText, gallery));
+            @RequestParam(required = false) String jdText) {
+        Gallery gallery = currentGallery();
+        if (jdId != null) return ResponseEntity.ok(ApiResponse.success(cvPipelineService.evaluateCV(id, jdId, gallery)));
+        if (jdText != null && !jdText.isBlank()) return ResponseEntity.ok(ApiResponse.success(cvPipelineService.evaluateCV(id, jdText, gallery)));
         throw new ApiException(ErrorCode.INVALID_INPUT, "jdId or jdText is required.");
     }
 
     @PostMapping("/{id}/feedback")
-    public ApiResponse<CVFeedbackResponseDTO> requestFeedback(
+    public ResponseEntity<ApiResponse<CVFeedbackResponseDTO>> requestFeedback(
             @PathVariable UUID id,
             @RequestParam(required = false) UUID jdId,
-            @RequestBody(required = false) CVFeedbackRequestDTO request,
-            @RequestAttribute("gallery") Gallery gallery) {
+            @RequestBody(required = false) CVFeedbackRequestDTO request) {
+        Gallery gallery = currentGallery();
         UUID resolvedJdId = jdId != null ? jdId : request == null ? null : request.getJdId();
         if (resolvedJdId == null && request != null && request.getJdText() != null) {
             CVEvaluationResponseDTO evaluation = cvPipelineService.evaluateCV(id, request.getJdText(), gallery);
             resolvedJdId = evaluation.getJdId();
         }
         if (resolvedJdId == null) throw new ApiException(ErrorCode.INVALID_INPUT, "jdId or jdText is required.");
-        return ApiResponse.success(cvPipelineService.requestFeedback(id, resolvedJdId, gallery));
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.requestFeedback(id, resolvedJdId, gallery)));
     }
 
     @GetMapping("/{id}/feedback")
-    public ApiResponse<CVFeedbackResponseDTO> getFeedback(
+    public ResponseEntity<ApiResponse<CVFeedbackResponseDTO>> getFeedback(
             @PathVariable UUID id,
-            @RequestParam UUID jdId,
-            @RequestAttribute("gallery") Gallery gallery) {
-        return ApiResponse.success(cvPipelineService.getFeedback(id, jdId, gallery));
+            @RequestParam UUID jdId) {
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.getFeedback(id, jdId, currentGallery())));
     }
 
     @GetMapping("/{id}/skill-gap")
-    public ApiResponse<CVSkillGapResponseDTO> analyzeSkillGap(
+    public ResponseEntity<ApiResponse<CVSkillGapResponseDTO>> analyzeSkillGap(
             @PathVariable UUID id,
-            @RequestParam UUID jdId,
-            @RequestAttribute("gallery") Gallery gallery) {
-        return ApiResponse.success(cvPipelineService.analyzeSkillGap(id, jdId, gallery));
+            @RequestParam UUID jdId) {
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.analyzeSkillGap(id, jdId, currentGallery())));
+    }
+
+    private Gallery currentGallery() {
+        return galleryService.getCurrentGallery();
     }
 }
