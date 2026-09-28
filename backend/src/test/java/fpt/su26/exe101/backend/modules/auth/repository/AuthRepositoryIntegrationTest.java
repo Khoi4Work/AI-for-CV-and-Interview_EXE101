@@ -55,6 +55,7 @@ public class AuthRepositoryIntegrationTest {
                 .email("duplicate@example.com")
                 .passwordHash("hash1")
                 .role(AccountRole.ATTENDANCE)
+                .status("ACTIVE")
                 .build();
         accountRepository.save(account1);
 
@@ -62,6 +63,7 @@ public class AuthRepositoryIntegrationTest {
                 .email("duplicate@example.com")
                 .passwordHash("hash2")
                 .role(AccountRole.ATTENDANCE)
+                .status("ACTIVE")
                 .build();
 
         assertThrows(DataIntegrityViolationException.class, () -> {
@@ -75,6 +77,7 @@ public class AuthRepositoryIntegrationTest {
                 .email("token@example.com")
                 .passwordHash("hash")
                 .role(AccountRole.ATTENDANCE)
+                .status("ACTIVE")
                 .build();
         accountRepository.save(account);
 
@@ -102,6 +105,7 @@ public class AuthRepositoryIntegrationTest {
                 .email("att@example.com")
                 .passwordHash("hash")
                 .role(AccountRole.ATTENDANCE)
+                .status("ACTIVE")
                 .build();
         accountRepository.save(account);
 
@@ -127,6 +131,7 @@ public class AuthRepositoryIntegrationTest {
                 .email("prov@example.com")
                 .passwordHash("hash")
                 .role(AccountRole.ATTENDANCE)
+                .status("ACTIVE")
                 .build();
         accountRepository.save(account);
 
