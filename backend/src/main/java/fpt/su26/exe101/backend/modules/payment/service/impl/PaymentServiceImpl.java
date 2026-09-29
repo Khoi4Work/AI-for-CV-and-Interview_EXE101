@@ -2,8 +2,7 @@ package fpt.su26.exe101.backend.modules.payment.service.impl;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
-import fpt.su26.exe101.backend.modules.gallery.entity.UserUsageQuota;
-import fpt.su26.exe101.backend.modules.gallery.repository.UserUsageQuotaRepository;
+import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.modules.payment.dto.request.CheckoutRequestDTO;
 import fpt.su26.exe101.backend.modules.payment.dto.response.OrderResponseDTO;
 import fpt.su26.exe101.backend.modules.payment.dto.response.QuotaResponseDTO;
@@ -37,7 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepository;
     private final PaymentServiceEntityRepository paymentServiceEntityRepository;
-    private final UserUsageQuotaRepository userUsageQuotaRepository;
+    private final UsageQuotaService usageQuotaService;
     private final PayOSChecksumUtil checksumUtil;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -130,34 +129,32 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public QuotaResponseDTO getCurrentQuota(UUID accountId) {
-        UserUsageQuota quota = userUsageQuotaRepository.findByAccountId(accountId)
+        return usageQuotaService.getQuota(accountId)
+                .map(quota -> QuotaResponseDTO.builder()
+                        .remainingCvCount(quota.getRemainingCvCnt())
+                        .remainingInterviewMinutes(quota.getRemainingIntMin())
+                        .remainingAiCvCnt(quota.getRemainingCvAiCnt())
+                        .plan(quota.getPlan())
+                        .resetAt("Monthly reset") // Simplified for now
+                        .build())
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        return QuotaResponseDTO.builder()
-                .remainingCvCount(quota.getRemainingCvCnt())
-                .remainingInterviewMinutes(quota.getRemainingIntMin())
-                .build();
     }
 
     private void updateUserQuota(Order order) {
-        UserUsageQuota quota = userUsageQuotaRepository.findByAccountId(order.getAccountId())
-                .orElse(UserUsageQuota.builder()
-                .accountId(order.getAccountId())
-                .remainingCvCnt(0)
-                .remainingIntMin(0)
-                .build());
-
         PaymentServiceEntity service = order.getService();
+        UUID accountId = order.getAccountId();
+
+        int cvAdd = 0, aiCvAdd = 0, intMinAdd = 0;
         if (service.getCategory() == PaymentServiceEntity.ServiceCategory.CV) {
-            quota.setRemainingCvCnt(quota.getRemainingCvCnt() + service.getBillingUnits());
+            cvAdd = service.getBillingUnits();
         } else if (service.getCategory() == PaymentServiceEntity.ServiceCategory.INTERVIEW) {
-            quota.setRemainingIntMin(quota.getRemainingIntMin() + service.getBillingUnits());
+            intMinAdd = service.getBillingUnits();
         }
 
-        userUsageQuotaRepository.save(quota);
-        log.info("Updated quota for account: {}. New CV: {}, Interview: {}",
-                order.getAccountId(), quota.getRemainingCvCnt(), quota.getRemainingIntMin());
-        }
+        usageQuotaService.addQuota(accountId, cvAdd, aiCvAdd, intMinAdd);
+        log.info("Updated quota for account: {}. Added CV: {}, Interview: {}",
+                accountId, cvAdd, intMinAdd);
+    }
 
     private String createPayOSPaymentLink(Order order) {
         try {

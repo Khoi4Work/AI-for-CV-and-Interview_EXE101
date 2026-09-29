@@ -5,10 +5,11 @@ import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Input, Toggle, Badge, SectionHeader} from '../components/Layout.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
+import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 
 const PersonalInfoPage = () => {
     const navigate = useNavigate();
-    const {profile, handleProfileUpdate, handle2faToggle, is2faEnabled} = useAuth();
+    const {profile, updateProfile, handle2faToggle, is2faEnabled, isLoading} = useAuth();
     const {cvs, showToast} = useApp();
 
     const [formData, setFormData] = useState({...profile});
@@ -30,10 +31,14 @@ const PersonalInfoPage = () => {
         }));
     };
 
-    const handleSave = () => {
-        handleProfileUpdate(formData);
-        handle2faToggle(local2fa);
-        showToast('Đã lưu các thay đổi thông tin cá nhân thành công!', 'success');
+    const handleSave = async () => {
+        try {
+            await updateProfile(formData);
+            handle2faToggle(local2fa);
+            showToast('Đã lưu các thay đổi thông tin cá nhân thành công!', 'success');
+        } catch (err) {
+            showToast(getApiErrorMessage(err), 'error');
+        }
     };
 
     const handleReset = () => {
@@ -59,8 +64,18 @@ const PersonalInfoPage = () => {
             .toUpperCase();
     };
 
-    return (
+    if (isLoading) {
+        return (
+            <div className="max-w-4xl mx-auto pb-12 flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-[#10B981] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-[#64748B] animate-pulse">Đang tải thông tin cá nhân...</p>
+                </div>
+            </div>
+        );
+    }
 
+    return (
         <div className="max-w-4xl mx-auto pb-12">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-[#10B981] mb-2">Cài đặt tài khoản</h1>
@@ -84,12 +99,12 @@ const PersonalInfoPage = () => {
                         </button>
                     </div>
                     <div className="flex-1 ">
-                        <h2 className="text-xl font-bold text-[#0F172A]">{formData.fullName || 'Người dùng'}</h2>
-                        <p className="text-[#475569] text-sm mb-3">{formData.email}</p>
+                        <h2 className="text-xl font-bold text-[#0F172A]">{formData.fullName || 'Đang tải...'}</h2>
+                        <p className="text-[#475569] text-sm mb-3">{formData.email || '...'}</p>
                         <div className="flex gap-2">
-                            <Badge variant="light" className="bg-white text-[#475569]">{formData.membershipType}</Badge>
+                            <Badge variant="light" className="bg-white text-[#475569]">{formData.membershipType || 'Free'}</Badge>
                             <Badge variant="success" className="bg-emerald-500/20 text-emerald-600">Thành viên
-                                từ {formData.memberSince}</Badge>
+                                từ {formData.memberSince || '...'}</Badge>
                         </div>
                     </div>
                 </div>
@@ -102,7 +117,7 @@ const PersonalInfoPage = () => {
                     <Input
                         label="Họ và tên"
                         name="fullName"
-                        value={formData.fullName}
+                        value={formData.fullName || ''}
                         onChange={handleChange}
                         placeholder="Nhập họ và tên..."
                     />
@@ -110,21 +125,21 @@ const PersonalInfoPage = () => {
                         label="Địa chỉ Email"
                         name="email"
                         type="email"
-                        value={formData.email}
+                        value={formData.email || ''}
                         onChange={handleChange}
                         placeholder="Nhập địa chỉ email..."
                     />
                     <Input
                         label="Số điện thoại"
                         name="phone"
-                        value={formData.phone}
+                        value={formData.phone || ''}
                         onChange={handleChange}
                         placeholder="Nhập số điện thoại..."
                     />
                     <Input
                         label="Vị trí"
                         name="location"
-                        value={formData.location}
+                        value={formData.location || ''}
                         onChange={handleChange}
                         placeholder="Thành phố, Quốc gia..."
                     />
@@ -132,7 +147,7 @@ const PersonalInfoPage = () => {
                         <Input
                             label="Nghề nghiệp"
                             name="profession"
-                            value={formData.profession}
+                            value={formData.profession || ''}
                             onChange={handleChange}
                             placeholder="Nhập ngành nghề của bạn..."
                         />
@@ -148,7 +163,7 @@ const PersonalInfoPage = () => {
                         label="URL LinkedIn"
                         name="linkedin"
                         icon={<Link size={16}/>}
-                        value={formData.linkedin}
+                        value={formData.linkedin || ''}
                         onChange={handleChange}
                         placeholder="https://linkedin.com/in/username"
                     />
@@ -156,7 +171,7 @@ const PersonalInfoPage = () => {
                         label="URL Portfolio"
                         name="portfolio"
                         icon={<Globe size={16}/>}
-                        value={formData.portfolio}
+                        value={formData.portfolio || ''}
                         onChange={handleChange}
                         placeholder="https://myportfolio.com"
                     />
@@ -164,7 +179,7 @@ const PersonalInfoPage = () => {
                         label="URL GitHub"
                         name="github"
                         icon={<Code size={16}/>}
-                        value={formData.github}
+                        value={formData.github || ''}
                         onChange={handleChange}
                         placeholder="https://github.com/username"
                     />
@@ -264,7 +279,7 @@ const PersonalInfoPage = () => {
             <Card className="p-4 bg-gradient-to-r from-[#34D399] to-[#10B981] border-none flex items-center gap-3 mb-8">
                 <Sparkles size={18} className="text-white"/>
                 <span className="text-white font-medium text-sm">
-          "Hồ sơ của bạn đã tối ưu đạt 92%. Hãy bổ sung các dự án về ReactJS/TypeScript bản mới nhất để thu hút hơn 45% các lời mời phỏng vấn tự động từ nhà tuyển dụng."
+          "Hồ sơ của bạn đang được tối ưu hóa. Hãy bổ sung các dự án thực tế để thu hút nhà tuyển dụng."
         </span>
             </Card>
 
@@ -284,7 +299,6 @@ const PersonalInfoPage = () => {
                 </Button>
             </div>
         </div>
-
     );
 };
 

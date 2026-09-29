@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import GuestHeader  from '../../../components/layout/GuestHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { ChartPie, Bot, User, Mail, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useApp } from '../contexts/AppContext.jsx';
+import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function Register() {
   const panelRef = useRef(null);
@@ -11,7 +14,11 @@ export default function Register() {
   const textRef = useRef(null);
   const glassRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { handleLogin } = useAuth();
+  const { showToast } = useApp();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const panel = panelRef.current;
@@ -42,14 +49,51 @@ export default function Register() {
     };
   }, []);
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    navigate('/login');
+    const formData = new FormData(e.target);
+    const data = {
+      displayName: formData.get('fullName'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+      confirmPassword: formData.get('confirmPassword'),
+    };
+
+    try {
+      await apiClient.post('/auth/accounts', data);
+      showToast('Đăng ký tài khoản thành công! Vui lòng kiểm tra email để xác thực.', 'success');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    } catch (err) {
+      const msg = getApiErrorMessage(err);
+      showToast(msg, 'error');
+      setError(msg);
+    }
   };
 
-  const handleSocialLogin = () => {
-    handleLogin();
-    navigate('/home');
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const idToken = credentialResponse.credential;
+      const response = await apiClient.post(`/auth/oauth/google`, {
+        token: idToken
+      });
+      const tokens = response.data?.result || response.data?.data || {};
+      handleLogin(null, tokens);
+
+      const origin = location.state?.from?.pathname || '/home';
+      navigate(origin);
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google login failed. Please try again.');
   };
 
   return (
@@ -103,6 +147,7 @@ export default function Register() {
                     <User className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors" />
                     <input
                       required
+                      name="fullName"
                       className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-on-surface placeholder:text-outline/50 text-body-md"
                       placeholder="Nguyễn Văn A"
                       type="text"
@@ -116,6 +161,7 @@ export default function Register() {
                     <Mail className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors" />
                     <input
                       required
+                      name="email"
                       className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-on-surface placeholder:text-outline/50 text-body-md"
                       placeholder="example@gmail.com"
                       type="email"
@@ -130,6 +176,7 @@ export default function Register() {
                       <Lock className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors" />
                       <input
                         required
+                        name="password"
                         className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-on-surface placeholder:text-outline/50 text-body-md"
                         placeholder="••••••••"
                         type="password"
@@ -143,6 +190,7 @@ export default function Register() {
                       <ShieldCheck className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors" />
                       <input
                         required
+                        name="confirmPassword"
                         className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-on-surface placeholder:text-outline/50 text-body-md"
                         placeholder="••••••••"
                         type="password"
@@ -172,6 +220,12 @@ export default function Register() {
                 </button>
               </form>
 
+              {error && (
+                <div className="mt-md p-sm rounded-lg bg-red-100 text-red-600 text-body-sm font-medium border border-red-200">
+                  {error}
+                </div>
+              )}
+
               <div className="mt-lg text-center">
                 <p className="font-body-sm text-body-sm text-on-surface-variant">
                   Đã có tài khoản? <Link className="text-primary font-bold hover:underline" to="/login">Đăng nhập</Link>
@@ -185,15 +239,19 @@ export default function Register() {
               </div>
 
               <div className="grid grid-cols-2 gap-md">
+                <div className="flex items-center justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    useOneTap={true}
+                    use_fedcm_for_prompt={false}
+                    theme="outline"
+                    width="100%"
+                  />
+                  {loading && <span className="mt-2 text-xs text-on-surface-variant" role="status">Đang đăng nhập...</span>}
+                </div>
                 <button
-                  onClick={handleSocialLogin}
-                  className="flex items-center justify-center gap-xs py-sm border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container transition-all text-on-surface-variant cursor-pointer"
-                >
-                  <img alt="Google Logo" className="w-5 h-5" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" />
-                  Google
-                </button>
-                <button
-                  onClick={handleSocialLogin}
+                  onClick={() => setError('Only Google login is supported at the moment')}
                   className="flex items-center justify-center gap-xs py-sm border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container transition-all text-on-surface-variant cursor-pointer"
                 >
                   <svg className="w-5 h-5 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>

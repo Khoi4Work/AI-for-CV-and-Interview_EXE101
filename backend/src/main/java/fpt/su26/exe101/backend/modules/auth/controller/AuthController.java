@@ -8,16 +8,21 @@ import fpt.su26.exe101.backend.base.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     private final AccountService accountService;
     private final AuthService authService;
     private final RecoveryService recoveryService;
@@ -30,10 +35,11 @@ public class AuthController {
     }
 
     @GetMapping("/verify-email")
-    public ResponseEntity<ApiResponse<GenericResponseDTO>> verifyEmail(@RequestParam String token) {
+    public ResponseEntity<Void> verifyEmail(@RequestParam String token) {
         accountService.verifyEmail(token);
-        return ResponseEntity.ok(ApiResponse.success(
-                GenericResponseDTO.builder().message("Email verified successfully. You can now login.").build()));
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(frontendUrl.replaceAll("/+$", "") + "/login?verified=true"))
+                .build();
     }
 
     @PostMapping("/tokens")
@@ -85,6 +91,12 @@ public class AuthController {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.success(
                 GenericResponseDTO.builder().message("Logged out successfully").build()));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
+        java.util.Map<String, Object> profile = accountService.getFullProfile(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(profile, "Profile retrieved successfully"));
     }
 
     @PostMapping("/invite")

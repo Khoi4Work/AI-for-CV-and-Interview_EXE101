@@ -46,3 +46,4 @@ Khi triển khai Interview, service Interview cần gọi cùng `UsageQuotaServi
 Không cần entity quota mới. `UserUsageQuota` được mở rộng để giữ plan và quota AI CV; các đơn vị vẫn là các cột riêng: lượt tạo CV, lượt phân tích AI CV và phút Interview. Không gộp chúng vào một tổng count vì không thể đổi phút Interview thành lượt AI hoặc lượt tạo CV. Các hàng quota cũ cần migration/backfill plan FREE và giá trị khởi đầu cho cột AI; quy tắc giữ hay cấp bù lượt cho account cũ phải được quyết định trước khi áp dụng migration.
 
 FE không tự trừ quota; FE gọi API nghiệp vụ CV/Interview và cần endpoint đọc quota/entitlements để hiển thị số còn lại. Endpoint đọc đó chưa được thêm trong scope hiện tại.
+

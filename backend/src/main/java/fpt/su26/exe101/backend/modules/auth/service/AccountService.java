@@ -11,4 +11,5 @@ public interface AccountService {
     void updateProfile(java.util.UUID accountId, UpdateProfileRequestDTO request);
     Account getAccountByEmail(String email);
     void changePassword(String email, ChangePasswordRequestDTO request);
+    java.util.Map<String, Object> getFullProfile(String email);
 }

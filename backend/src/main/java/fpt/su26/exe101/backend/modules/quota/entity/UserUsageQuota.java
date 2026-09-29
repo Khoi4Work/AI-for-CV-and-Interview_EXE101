@@ -1,4 +1,4 @@
-package fpt.su26.exe101.backend.modules.gallery.entity;
+package fpt.su26.exe101.backend.modules.quota.entity;
 
 import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 import fpt.su26.exe101.backend.base.enums.UserPlan;

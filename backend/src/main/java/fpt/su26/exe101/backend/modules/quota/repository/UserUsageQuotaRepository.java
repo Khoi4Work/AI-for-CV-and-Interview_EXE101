@@ -1,6 +1,6 @@
-package fpt.su26.exe101.backend.modules.gallery.repository;
+package fpt.su26.exe101.backend.modules.quota.repository;
 
-import fpt.su26.exe101.backend.modules.gallery.entity.UserUsageQuota;
+import fpt.su26.exe101.backend.modules.quota.entity.UserUsageQuota;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
