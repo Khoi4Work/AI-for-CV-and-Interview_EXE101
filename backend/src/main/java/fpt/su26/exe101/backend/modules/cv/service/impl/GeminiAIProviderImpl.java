@@ -24,11 +24,17 @@ public class GeminiAIProviderImpl implements AIProviderService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private String jsonResponse(String prompt) {
-        String response = chatClient.prompt(prompt + " Return only valid JSON without markdown fences.")
-                .options(GoogleGenAiChatOptions.builder()
-                        .responseMimeType("application/json")
-                        .maxOutputTokens(MAX_JSON_OUTPUT_TOKENS)
-                        .build())
+        return jsonResponse(prompt, null);
+    }
+
+    private String jsonResponse(String prompt, String responseSchema) {
+        GoogleGenAiChatOptions.Builder options = GoogleGenAiChatOptions.builder()
+                .responseMimeType("application/json")
+                .maxOutputTokens(MAX_JSON_OUTPUT_TOKENS);
+        if (responseSchema != null) options.responseSchema(responseSchema);
+
+        String response = chatClient.prompt(prompt)
+                .options(options.build())
                 .call()
                 .content();
         if (response == null || response.isBlank()) throw new IllegalStateException("AI returned an empty response.");
@@ -84,7 +90,8 @@ public class GeminiAIProviderImpl implements AIProviderService {
     @Override
     public CVEvaluationResponseDTO evaluateCV(CVContent cvContent, String jdText, UserPlan plan) {
         try {
-            return objectMapper.readValue(jsonResponse(Prompt.cvEvaluation(objectMapper.writeValueAsString(cvContent), jdText, plan)), CVEvaluationResponseDTO.class);
+            String prompt = Prompt.cvEvaluation(objectMapper.writeValueAsString(cvContent), jdText, plan);
+            return objectMapper.readValue(jsonResponse(prompt, Prompt.cvEvaluationResponseSchema()), CVEvaluationResponseDTO.class);
         } catch (IOException e) {
             throw new IllegalStateException("AI returned invalid CV evaluation JSON.", e);
         }
