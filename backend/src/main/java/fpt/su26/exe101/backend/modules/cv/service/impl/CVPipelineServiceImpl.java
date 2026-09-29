@@ -59,6 +59,14 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public CV getCVForInterview(UUID cvId, Gallery gallery) {
+        return cvRepository.findById(cvId)
+                .filter(candidate -> candidate.getGallery().getId().equals(gallery.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
+    }
+
+    @Override
     @Transactional
     public void deleteCV(UUID id, Gallery gallery) {
         CV cv = cvRepository.findById(id)

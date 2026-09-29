@@ -4,6 +4,7 @@ import fpt.su26.exe101.backend.modules.cv.dto.request.CVCreateRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVOptimizationRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVUpdateRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
+import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.UUID;
 
 public interface CVPipelineService {
     List<CVResponseDTO> getCVsForGallery(Gallery gallery);
+    CV getCVForInterview(UUID cvId, Gallery gallery);
     void deleteCV(UUID id, Gallery gallery);
     CVResponseDTO createCV(CVCreateRequestDTO request, Gallery gallery);
     CVResponseDTO updateCV(UUID id, CVUpdateRequestDTO request, Gallery gallery);

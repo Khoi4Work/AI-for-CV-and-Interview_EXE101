@@ -11,4 +11,5 @@ import java.util.UUID;
 @Repository
 public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer, UUID> {
     List<InterviewAnswer> findBySession(InterviewSession session);
+    boolean existsBySessionIdAndQuestionId(UUID sessionId, UUID questionId);
 }
