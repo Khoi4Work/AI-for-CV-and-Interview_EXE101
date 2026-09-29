@@ -42,10 +42,20 @@ public class GeminiInterviewAIProvider implements InterviewAIProvider {
             InterviewEvaluationResponseDTO evaluation = objectMapper.readValue(
                     response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", ""),
                     InterviewEvaluationResponseDTO.class);
+            enforcePlanFields(evaluation, plan);
             validateEvaluation(evaluation, plan);
             return evaluation;
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("AI returned invalid interview evaluation JSON.", exception);
+        }
+    }
+
+    private void enforcePlanFields(InterviewEvaluationResponseDTO evaluation, UserPlan plan) {
+        if (evaluation != null && plan == UserPlan.MIDDLE) {
+            // The plan, not model compliance, controls which feedback fields are exposed.
+            evaluation.setRecommendations(java.util.List.of());
+            evaluation.setCriteria(java.util.List.of());
+            evaluation.setQuestionFeedback(java.util.List.of());
         }
     }
 
