@@ -14,6 +14,7 @@ import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerRes
 import fpt.su26.exe101.backend.modules.interview.dto.response.CreateInterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewQuestionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluationResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionDetailResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestion;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewAnswer;
@@ -245,9 +246,43 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public InterviewSessionDetailResponseDTO getSessionDetail(UUID sessionId) {
+        Gallery gallery = galleryService.getCurrentGallery();
+        InterviewSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Interview session not found"));
+        if (!session.getGallery().getId().equals(gallery.getId())) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
+        }
+
+        InterviewSessionResponseDTO sessionInfo = interviewMapper
+                .sessionsToSessionResponses(List.of(session)).getFirst();
+        List<InterviewAnswerResponseDTO> answers = interviewMapper
+                .answersToAnswerResponses(answerRepository.findBySession(session));
+        UserPlan plan = usageQuotaService.getPlan(gallery.getAccountId());
+        InterviewEvaluationResponseDTO evaluation = null;
+        if (plan == UserPlan.FREE) {
+            sessionInfo.setFeedbackJson(null);
+        } else if (session.getFeedbackJson() != null) {
+            evaluation = objectMapper.convertValue(session.getFeedbackJson(), InterviewEvaluationResponseDTO.class);
+            evaluation.setSessionId(session.getId());
+        }
+        return InterviewSessionDetailResponseDTO.builder()
+                .sessionInfo(sessionInfo)
+                .answers(answers)
+                .evaluation(evaluation)
+                .build();
+    }
+
+    @Override
     public List<InterviewSessionResponseDTO> getInterviewHistory() {
         Gallery gallery = galleryService.getCurrentGallery();
-        return interviewMapper.sessionsToSessionResponses(sessionRepository.findByGallery(gallery));
+        List<InterviewSessionResponseDTO> sessions = interviewMapper
+                .sessionsToSessionResponses(sessionRepository.findByGallery(gallery));
+        if (usageQuotaService.getPlan(gallery.getAccountId()) == UserPlan.FREE) {
+            sessions.forEach(session -> session.setFeedbackJson(null));
+        }
+        return sessions;
     }
 
     private JobDescription resolveJobDescription(CreateInterviewSessionRequestDTO request, Gallery gallery) {

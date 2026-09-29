@@ -1,6 +1,7 @@
 package fpt.su26.exe101.backend.modules.interview.dto.response;
 
 import lombok.*;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSessionStatus;
 import java.util.UUID;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -20,4 +21,6 @@ public class InterviewSessionResponseDTO {
     private Integer cultureFitScore;
     private Map<String, Object> feedbackJson;
     private LocalDateTime sessionDate;
+    private InterviewSessionStatus status;
+    private LocalDateTime completedAt;
 }

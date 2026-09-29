@@ -5,6 +5,7 @@ import fpt.su26.exe101.backend.modules.interview.dto.request.CreateInterviewSess
 import fpt.su26.exe101.backend.modules.interview.dto.request.SubmitInterviewAnswerRequestDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluationResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionDetailResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.CreateInterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
 import jakarta.validation.Valid;
@@ -38,5 +39,11 @@ public class InterviewController {
     public ResponseEntity<ApiResponse<InterviewEvaluationResponseDTO>> evaluateSession(
             @PathVariable UUID sessionId) {
         return ResponseEntity.ok(ApiResponse.success(interviewService.evaluateSession(sessionId), "Interview evaluated"));
+    }
+
+    @GetMapping("/sessions/{sessionId}")
+    public ResponseEntity<ApiResponse<InterviewSessionDetailResponseDTO>> getSessionDetail(
+            @PathVariable UUID sessionId) {
+        return ResponseEntity.ok(ApiResponse.success(interviewService.getSessionDetail(sessionId)));
     }
 }

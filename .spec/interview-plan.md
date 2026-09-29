@@ -131,4 +131,13 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 - Khi đánh giá thành công, lưu overall score/feedback, chuyển session sang `COMPLETED` và ghi `completedAt`. Gọi lại trả feedback đã lưu, không gọi AI lại.
 - Thêm trạng thái session nullable để tương thích các session cũ; session mới luôn bắt đầu `IN_PROGRESS`, Submit Answer từ chối session đã hoàn tất.
 - **Chưa làm:** runtime test với provider Gemini thật; kiểm tra mức feedback theo subscription thực tế; xử lý trường hợp người dùng đổi gói sau khi session hoàn tất; quota quyền truy cập feedback khi đọc detail/history.
-- **Bước tiếp theo:** API Get Session Detail (`GET /api/interview/sessions/{sessionId}`): trả thông tin session, answers và evaluation; kiểm tra quyền sở hữu và quyền đọc feedback theo gói.
+- **Tiếp theo:** đã nối sang API Get Session Detail ở mục dưới.
+
+### API 4 — Get Session Detail (`GET /api/interview/sessions/{sessionId}`)
+
+- **Trạng thái:** Đã triển khai BE; Maven compile thành công với `-DskipTests`.
+- Trả session info, danh sách answers và evaluation nếu đã có; kiểm tra session thuộc gallery hiện tại.
+- Free vẫn đọc được session/answers nhưng không nhận `feedbackJson` hoặc evaluation. Áp dụng cùng nguyên tắc cho endpoint interview history hiện có để không lộ feedback cũ qua route Gallery.
+- Middle/Enhance nhận evaluation nếu đã được tạo; đọc detail không gọi AI hoặc sinh feedback mới.
+- **Chưa làm:** runtime test; chính sách lịch sử sau khi người dùng đổi gói cần xác nhận nếu muốn giữ quyền theo gói lúc session được tạo thay vì gói hiện tại.
+- **Bước tiếp theo:** hoàn thiện API audio/voice ở BE: phát audio câu hỏi và nhận/transcribe câu trả lời để API Submit Answer/Evaluate không phụ thuộc xử lý voice từ FE.
