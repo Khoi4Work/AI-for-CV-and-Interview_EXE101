@@ -120,4 +120,15 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 - Chặn gửi trùng câu trả lời cho cùng một câu hỏi trong cùng session.
 - Endpoint nhận `audioUrl` theo contract hiện tại; upload/transcription giọng nói do BE vẫn là phần riêng chưa triển khai.
 - **Chưa làm:** runtime test, kiểm tra URL audio thuộc user/ứng dụng, giới hạn thời gian/trạng thái session. Cần bổ sung session lifecycle trước hoặc trong API Evaluate để khóa session đã kết thúc.
-- **Bước tiếp theo:** API Evaluate Session (`POST /api/interview/sessions/{sessionId}/evaluate`): chốt số câu trả lời tối thiểu, quyền feedback theo gói (Free không có; Middle/Enhance có độ chi tiết theo bậc), lưu điểm/feedback và trạng thái hoàn tất.
+- **Tiếp theo:** đã nối sang API Evaluate Session ở mục dưới.
+
+### API 3 — Evaluate Session (`POST /api/interview/sessions/{sessionId}/evaluate`)
+
+- **Trạng thái:** Đã triển khai BE; Maven compile thành công với `-DskipTests`.
+- Kiểm tra session thuộc gallery hiện tại; Free bị từ chối feedback, Middle nhận phản hồi tiêu chuẩn, Enhance nhận tiêu chí và đánh giá từng câu chi tiết hơn.
+- Tạo prompt riêng cho interview trong `base/persistence/Prompt`; Gemini trả JSON vào DTO rõ ràng, BE xác thực schema/điểm số trước khi lưu.
+- Đánh giá cần tối thiểu một câu trả lời không bị skip và có transcript. Audio-only bị báo rõ là cần BE voice transcription trước khi đánh giá.
+- Khi đánh giá thành công, lưu overall score/feedback, chuyển session sang `COMPLETED` và ghi `completedAt`. Gọi lại trả feedback đã lưu, không gọi AI lại.
+- Thêm trạng thái session nullable để tương thích các session cũ; session mới luôn bắt đầu `IN_PROGRESS`, Submit Answer từ chối session đã hoàn tất.
+- **Chưa làm:** runtime test với provider Gemini thật; kiểm tra mức feedback theo subscription thực tế; xử lý trường hợp người dùng đổi gói sau khi session hoàn tất; quota quyền truy cập feedback khi đọc detail/history.
+- **Bước tiếp theo:** API Get Session Detail (`GET /api/interview/sessions/{sessionId}`): trả thông tin session, answers và evaluation; kiểm tra quyền sở hữu và quyền đọc feedback theo gói.

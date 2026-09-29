@@ -1,0 +1,66 @@
+package fpt.su26.exe101.backend.modules.interview.service.impl;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fpt.su26.exe101.backend.base.enums.UserPlan;
+import fpt.su26.exe101.backend.base.persistence.Prompt;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluationResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
+import lombok.RequiredArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
+import org.springframework.stereotype.Service;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class GeminiInterviewAIProvider implements InterviewAIProvider {
+    private static final int MAX_JSON_OUTPUT_TOKENS = 8192;
+    private final ChatClient.Builder chatClientBuilder;
+    private final ObjectMapper objectMapper;
+
+    @Override
+    public InterviewEvaluationResponseDTO evaluate(Map<String, Object> transcript, UserPlan plan) {
+        try {
+            ChatClient chatClient = chatClientBuilder.build();
+            String transcriptJson = objectMapper.writeValueAsString(transcript);
+            String response = chatClient.prompt(Prompt.interviewEvaluation(transcriptJson, plan))
+                    .options(GoogleGenAiChatOptions.builder()
+                            .responseMimeType("application/json")
+                            .maxOutputTokens(MAX_JSON_OUTPUT_TOKENS)
+                            .build())
+                    .call()
+                    .content();
+            if (response == null || response.isBlank()) {
+                throw new IllegalStateException("AI returned an empty interview evaluation.");
+            }
+            InterviewEvaluationResponseDTO evaluation = objectMapper.readValue(
+                    response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", ""),
+                    InterviewEvaluationResponseDTO.class);
+            validateEvaluation(evaluation, plan);
+            return evaluation;
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("AI returned invalid interview evaluation JSON.", exception);
+        }
+    }
+
+    private void validateEvaluation(InterviewEvaluationResponseDTO evaluation, UserPlan plan) {
+        if (evaluation == null || evaluation.getOverallScore() == null
+                || evaluation.getOverallScore() < 0 || evaluation.getOverallScore() > 100
+                || evaluation.getSummary() == null || evaluation.getStrengths() == null
+                || evaluation.getImprovementAreas() == null || evaluation.getRecommendations() == null
+                || evaluation.getCriteria() == null || evaluation.getQuestionFeedback() == null) {
+            throw new IllegalStateException("AI returned incomplete interview evaluation data.");
+        }
+        if (plan == UserPlan.MIDDLE && (!evaluation.getCriteria().isEmpty()
+                || !evaluation.getQuestionFeedback().isEmpty()
+                || !evaluation.getRecommendations().isEmpty())) {
+            throw new IllegalStateException("AI returned feedback fields outside the MIDDLE plan tier.");
+        }
+        boolean invalidScore = evaluation.getCriteria().stream().anyMatch(item -> item.getScore() == null
+                || item.getScore() < 0 || item.getScore() > 100)
+                || evaluation.getQuestionFeedback().stream().anyMatch(item -> item.getScore() == null
+                || item.getScore() < 0 || item.getScore() > 100);
+        if (invalidScore) throw new IllegalStateException("AI returned an out-of-range interview score.");
+    }
+}

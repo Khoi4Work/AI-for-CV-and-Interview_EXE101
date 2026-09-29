@@ -9,6 +9,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import fpt.su26.exe101.backend.base.persistence.BaseEntity;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewType;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSessionStatus;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -58,4 +59,12 @@ public class InterviewSession extends BaseEntity {
 
     @Column(name = "session_date")
     private LocalDateTime sessionDate;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private InterviewSessionStatus status = InterviewSessionStatus.IN_PROGRESS;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 }

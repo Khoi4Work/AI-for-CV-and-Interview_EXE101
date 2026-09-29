@@ -13,6 +13,7 @@ import fpt.su26.exe101.backend.modules.interview.dto.request.CreateInterviewSess
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.CreateInterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewQuestionResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluationResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestion;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewAnswer;
@@ -21,11 +22,13 @@ import fpt.su26.exe101.backend.modules.interview.entity.enums.ExperienceLevel;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewType;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.QuestionContextType;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.QuestionRole;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSessionStatus;
 import fpt.su26.exe101.backend.modules.interview.mapper.InterviewMapper;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewAnswerRepository;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewQuestionRepository;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewSessionRepository;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +55,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final CVPipelineService cvPipelineService;
     private final UsageQuotaService usageQuotaService;
     private final ObjectMapper objectMapper;
+    private final InterviewAIProvider interviewAIProvider;
 
     @Override
     @Transactional
@@ -89,7 +94,11 @@ public class InterviewServiceImpl implements InterviewService {
         List<InterviewQuestion> questions = questionRepository
                 .findByBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
                         type, level, QuestionRole.PRIMARY, availableContexts)
-                .stream().limit(requestedQuestionCount).toList();
+                .stream()
+                .sorted(Comparator.comparingInt(question -> contextPriority(
+                        question.getContextType(), cv != null, jd != null)))
+                .limit(requestedQuestionCount)
+                .toList();
         if (questions.size() < requestedQuestionCount) {
             throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND,
                     "Not enough active " + type + " questions for experience level " + level + ".");
@@ -112,6 +121,7 @@ public class InterviewServiceImpl implements InterviewService {
             item.put("text", question.getQuestionText());
             item.put("category", question.getCategory());
             item.put("competency", question.getCompetency());
+            item.put("gradingCriteria", question.getGradingCriteria());
             questionSnapshot.add(item);
         }
         snapshot.put("questions", questionSnapshot);
@@ -125,6 +135,7 @@ public class InterviewServiceImpl implements InterviewService {
                 .candidateExperienceLevel(level.name())
                 .contextSnapshot(snapshot)
                 .sessionDate(LocalDateTime.now())
+                .status(InterviewSessionStatus.IN_PROGRESS)
                 .build();
         InterviewSession saved = sessionRepository.save(session);
 
@@ -156,6 +167,9 @@ public class InterviewServiceImpl implements InterviewService {
         if (!session.getGallery().getId().equals(gallery.getId())) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
+        if (session.getStatus() == InterviewSessionStatus.COMPLETED) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Interview session is already completed.");
+        }
         validateAnswer(request);
         if (!sessionContainsQuestion(session, request.getQuestionId())) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Question does not belong to this interview session.");
@@ -179,6 +193,55 @@ public class InterviewServiceImpl implements InterviewService {
                 .audioUrl(answer.getAudioUrl())
                 .isSkipped(answer.getIsSkipped())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public InterviewEvaluationResponseDTO evaluateSession(UUID sessionId) {
+        Gallery gallery = galleryService.getCurrentGallery();
+        InterviewSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Interview session not found"));
+        if (!session.getGallery().getId().equals(gallery.getId())) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
+        }
+        UserPlan plan = usageQuotaService.getPlan(gallery.getAccountId());
+        if (plan == UserPlan.FREE) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Interview feedback is available on MIDDLE and ENHANCE plans.");
+        }
+        if (session.getFeedbackJson() != null) {
+            InterviewEvaluationResponseDTO saved = objectMapper.convertValue(
+                    session.getFeedbackJson(), InterviewEvaluationResponseDTO.class);
+            saved.setSessionId(session.getId());
+            return saved;
+        }
+
+        List<InterviewAnswer> answers = answerRepository.findBySession(session);
+        if (answers.stream().noneMatch(answer -> !Boolean.TRUE.equals(answer.getIsSkipped())
+                && answer.getAnswerText() != null && !answer.getAnswerText().isBlank())) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "At least one non-skipped transcribed answer is required for evaluation.");
+        }
+        boolean containsAudioOnlyAnswer = answers.stream().anyMatch(answer -> !Boolean.TRUE.equals(answer.getIsSkipped())
+                && (answer.getAnswerText() == null || answer.getAnswerText().isBlank())
+                && answer.getAudioUrl() != null && !answer.getAudioUrl().isBlank());
+        if (containsAudioOnlyAnswer) {
+            throw new ApiException(ErrorCode.INVALID_INPUT,
+                    "Audio-only answers must be transcribed by the BE voice flow before evaluation.");
+        }
+
+        Map<String, Object> transcript = new HashMap<>();
+        transcript.put("interviewType", session.getInterviewType().name());
+        transcript.put("experienceLevel", session.getCandidateExperienceLevel());
+        transcript.put("durationMinutes", session.getDurationMinutes());
+        transcript.put("questionsAndAnswers", buildQuestionsAndAnswers(session, answers));
+        InterviewEvaluationResponseDTO evaluation = interviewAIProvider.evaluate(transcript, plan);
+        evaluation.setSessionId(session.getId());
+        session.setOverallScore(evaluation.getOverallScore());
+        session.setFeedbackJson(objectMapper.convertValue(evaluation,
+                new TypeReference<Map<String, Object>>() {}));
+        session.setStatus(InterviewSessionStatus.COMPLETED);
+        session.setCompletedAt(LocalDateTime.now());
+        sessionRepository.save(session);
+        return evaluation;
     }
 
     @Override
@@ -223,6 +286,40 @@ public class InterviewServiceImpl implements InterviewService {
             }
         }
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> buildQuestionsAndAnswers(InterviewSession session, List<InterviewAnswer> answers) {
+        Map<UUID, InterviewAnswer> answersByQuestion = new HashMap<>();
+        answers.forEach(answer -> answersByQuestion.put(answer.getQuestionId(), answer));
+        Object rawQuestions = session.getContextSnapshot().get("questions");
+        if (!(rawQuestions instanceof List<?> questions)) return List.of();
+        List<Map<String, Object>> transcriptEntries = new ArrayList<>();
+        for (Object rawQuestion : questions) {
+            if (!(rawQuestion instanceof Map<?, ?> rawMap)) continue;
+            Object rawId = rawMap.get("id");
+            if (rawId == null) continue;
+            UUID questionId = UUID.fromString(String.valueOf(rawId));
+            InterviewAnswer answer = answersByQuestion.get(questionId);
+            if (answer == null) continue;
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("questionId", questionId.toString());
+            entry.put("question", rawMap.get("text"));
+            entry.put("category", rawMap.get("category"));
+            entry.put("competency", rawMap.get("competency"));
+            entry.put("gradingCriteria", rawMap.get("gradingCriteria"));
+            entry.put("answer", answer.getAnswerText());
+            entry.put("skipped", Boolean.TRUE.equals(answer.getIsSkipped()));
+            transcriptEntries.add(entry);
+        }
+        return transcriptEntries;
+    }
+
+    private int contextPriority(QuestionContextType questionContext, boolean hasCv, boolean hasJd) {
+        if (hasCv && hasJd && questionContext == QuestionContextType.JD_AND_CV) return 0;
+        if (hasJd && questionContext == QuestionContextType.JD) return 1;
+        if (hasCv && questionContext == QuestionContextType.CV) return 1;
+        return questionContext == QuestionContextType.GENERAL ? 2 : 3;
     }
 
     private void validateSessionOptions(CreateInterviewSessionRequestDTO request) {
