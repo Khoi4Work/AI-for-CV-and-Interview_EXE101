@@ -140,4 +140,12 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 - Free vẫn đọc được session/answers nhưng không nhận `feedbackJson` hoặc evaluation. Áp dụng cùng nguyên tắc cho endpoint interview history hiện có để không lộ feedback cũ qua route Gallery.
 - Middle/Enhance nhận evaluation nếu đã được tạo; đọc detail không gọi AI hoặc sinh feedback mới.
 - **Chưa làm:** runtime test; chính sách lịch sử sau khi người dùng đổi gói cần xác nhận nếu muốn giữ quyền theo gói lúc session được tạo thay vì gói hiện tại.
-- **Bước tiếp theo:** hoàn thiện API audio/voice ở BE: phát audio câu hỏi và nhận/transcribe câu trả lời để API Submit Answer/Evaluate không phụ thuộc xử lý voice từ FE.
+- **Tiếp theo:** API Get Question Audio đã được nối ở mục dưới. Còn lại là nhận/transcribe câu trả lời bằng BE.
+
+### API 5 — Get Question Audio (`GET /api/interview/questions/{questionId}/audio`)
+
+- **Trạng thái:** Đã triển khai BE; Maven compile thành công với `-DskipTests`.
+- Đọc nội dung câu hỏi active trong Question Bank, gọi Spring AI `TextToSpeechModel` (ElevenLabs config hiện có) và trả audio MPEG trực tiếp.
+- Không để FE gọi TTS provider trực tiếp; câu hỏi không tồn tại hoặc inactive trả 404.
+- **Chưa làm:** runtime test khi có ElevenLabs key/voice/model config; cache audio để tránh gọi TTS lặp lại.
+- **Bước tiếp theo:** nhận file audio câu trả lời tại BE, transcribe bằng Speech-to-Text, lưu transcript vào Interview Answer rồi cho Evaluate dùng transcript đó.

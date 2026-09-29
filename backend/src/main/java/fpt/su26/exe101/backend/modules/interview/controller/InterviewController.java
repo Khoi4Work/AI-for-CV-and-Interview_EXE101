@@ -8,10 +8,12 @@ import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluatio
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionDetailResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.CreateInterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
@@ -20,6 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class InterviewController {
     private final InterviewService interviewService;
+    private final InterviewVoiceService interviewVoiceService;
 
     @PostMapping("/sessions")
     public ResponseEntity<ApiResponse<CreateInterviewSessionResponseDTO>> createSession(
@@ -45,5 +48,12 @@ public class InterviewController {
     public ResponseEntity<ApiResponse<InterviewSessionDetailResponseDTO>> getSessionDetail(
             @PathVariable UUID sessionId) {
         return ResponseEntity.ok(ApiResponse.success(interviewService.getSessionDetail(sessionId)));
+    }
+
+    @GetMapping(value = "/questions/{questionId}/audio", produces = "audio/mpeg")
+    public ResponseEntity<byte[]> getQuestionAudio(@PathVariable UUID questionId) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.valueOf("audio/mpeg"))
+                .body(interviewVoiceService.synthesizeQuestionAudio(questionId));
     }
 }
