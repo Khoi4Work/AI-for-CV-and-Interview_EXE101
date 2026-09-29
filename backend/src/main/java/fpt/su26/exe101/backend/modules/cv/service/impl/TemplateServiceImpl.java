@@ -13,6 +13,8 @@ import fpt.su26.exe101.backend.modules.cv.dto.response.CVTemplateResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.response.TemplateFeedbackResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.mapper.CVMapper;
 import fpt.su26.exe101.backend.modules.cv.service.TemplateService;
+import fpt.su26.exe101.backend.base.enums.UserPlan;
+import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,10 +32,14 @@ public class TemplateServiceImpl implements TemplateService {
     private final TemplateFeedbackRepository feedbackRepository;
     private final CVMapper cvMapper;
     private final AccountRepository accountRepository;
+    private final UsageQuotaService quotaService;
 
     @Override
     public List<CVTemplateResponseDTO> getAllTemplates() {
-        return cvMapper.templatesToTemplateResponses(templateRepository.findAll());
+        UUID accountId = getAccountIdFromToken();
+        UserPlan plan = quotaService.getPlan(accountId);
+        return cvMapper.templatesToTemplateResponses(templateRepository.findAll().stream()
+                .filter(template -> plan.ordinal() >= UserPlan.valueOf(template.getMinimumPlan().name()).ordinal()).toList());
     }
 
     @Override

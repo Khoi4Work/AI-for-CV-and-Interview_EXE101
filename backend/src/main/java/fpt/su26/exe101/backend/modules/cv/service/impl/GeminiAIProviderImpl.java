@@ -14,6 +14,7 @@ import org.apache.tika.exception.TikaException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import fpt.su26.exe101.backend.base.enums.UserPlan;
 
 @Service
 public class GeminiAIProviderImpl implements AIProviderService {
@@ -81,9 +82,9 @@ public class GeminiAIProviderImpl implements AIProviderService {
     }
 
     @Override
-    public CVEvaluationResponseDTO evaluateCV(CVContent cvContent, String jdText) {
+    public CVEvaluationResponseDTO evaluateCV(CVContent cvContent, String jdText, UserPlan plan) {
         try {
-            return objectMapper.readValue(jsonResponse(Prompt.cvEvaluation(objectMapper.writeValueAsString(cvContent), jdText)), CVEvaluationResponseDTO.class);
+            return objectMapper.readValue(jsonResponse(Prompt.cvEvaluation(objectMapper.writeValueAsString(cvContent), jdText, plan)), CVEvaluationResponseDTO.class);
         } catch (IOException e) {
             throw new IllegalStateException("AI returned invalid CV evaluation JSON.", e);
         }

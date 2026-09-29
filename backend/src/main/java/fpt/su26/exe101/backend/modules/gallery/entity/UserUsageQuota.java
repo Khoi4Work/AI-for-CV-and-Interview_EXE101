@@ -1,6 +1,7 @@
 package fpt.su26.exe101.backend.modules.gallery.entity;
 
 import fpt.su26.exe101.backend.base.persistence.BaseEntity;
+import fpt.su26.exe101.backend.base.enums.UserPlan;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,4 +21,12 @@ public class UserUsageQuota extends BaseEntity {
 
     @Column(nullable = false)
     private int remainingIntMin;
+
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int remainingCvAiCnt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'FREE'")
+    @Builder.Default
+    private UserPlan plan = UserPlan.FREE;
 }

@@ -3,6 +3,7 @@ package fpt.su26.exe101.backend.modules.cv.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import fpt.su26.exe101.backend.base.persistence.BaseEntity;
+import fpt.su26.exe101.backend.modules.cv.entity.enums.TemplateAccessLevel;
 
 @Entity
 @Table(name = "CV_Templates")
@@ -20,4 +21,9 @@ public class CVTemplate extends BaseEntity {
 
     @Column(name = "preview_image", columnDefinition = "TEXT")
     private String previewImage;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "minimum_plan", nullable = false, length = 20)
+    @Builder.Default
+    private TemplateAccessLevel minimumPlan = TemplateAccessLevel.FREE;
 }

@@ -89,6 +89,15 @@ public class CVPipelineController {
     }
 
     // --- Evaluation & Feedback ---
+    @PostMapping("/{id}/analysis")
+    public ResponseEntity<ApiResponse<CVAnalysisResponseDTO>> analyzeCV(
+            @PathVariable UUID id, @RequestBody CVFeedbackRequestDTO request) {
+        if (request == null || request.getJdText() == null || request.getJdText().isBlank()) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "jdText is required.");
+        }
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.analyzeCV(id, request.getJdText(), currentGallery())));
+    }
+
     @GetMapping("/{id}/evaluations")
     public ResponseEntity<ApiResponse<CVEvaluationResponseDTO>> evaluateCV(
             @PathVariable UUID id,

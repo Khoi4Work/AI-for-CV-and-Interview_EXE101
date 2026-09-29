@@ -22,6 +22,8 @@ import fpt.su26.exe101.backend.modules.cv.mapper.CVFeedbackMapper;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
+import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
+import fpt.su26.exe101.backend.base.enums.UserPlan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -44,6 +46,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private final CVOptimizationLogRepository logRepository;
     private final CVOptimizationJobRepository jobRepository;
     private final GalleryService galleryService;
+    private final UsageQuotaService quotaService;
     private final AIProviderService aiProvider;
     private final CVMapper cvMapper;
     private final CVFeedbackMapper feedbackMapper;
@@ -69,6 +72,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Transactional
     @Override
     public CVResponseDTO createCV(CVCreateRequestDTO request, Gallery gallery) {
+        quotaService.consumeCvCreation(gallery.getAccountId());
         CV cv = CV.builder()
                 .name(request.getName())
                 .content(request.getContent())
@@ -111,6 +115,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         if (!hasCVContent(extractedData)) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV không có đủ thông tin cá nhân, học vấn hoặc kinh nghiệm để nhập.");
         }
+        quotaService.consumeCvCreation(gallery.getAccountId());
         String cvName = filename == null || filename.isBlank() ? "Imported CV" : filename;
         if (cvName.length() > 100) cvName = cvName.substring(0, 100);
         CV draft = CV.builder().name(cvName).content(extractedData).gallery(gallery)
@@ -177,12 +182,12 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Transactional
     @Override
     public CVOptimizationJobResponseDTO startOptimization(UUID cvId, CVOptimizationRequestDTO request, Gallery gallery) {
+        requirePlan(gallery.getAccountId(), UserPlan.ENHANCE);
         CV cv = cvRepository.findById(cvId)
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        // Quota Check
-        galleryService.consumeCvQuota(gallery.getAccountId());
+        quotaService.consumeCvAiAnalysis(gallery.getAccountId());
 
         String jobId = UUID.randomUUID().toString();
         CVOptimizationJob job = CVOptimizationJob.builder()
@@ -206,7 +211,12 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Async
     public void processOptimization(String jobId, CV cv, CVOptimizationRequestDTO request) {
         CVOptimizationJob job = jobRepository.findByJobId(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElse(null);
+        if (job == null) {
+            quotaService.refundCvAiAnalysis(cv.getGallery().getAccountId());
+            log.error("Optimization job {} disappeared before processing; quota refunded", jobId);
+            return;
+        }
 
         try {
             job.setStatus("PROCESSING");
@@ -246,6 +256,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
         } catch (Exception e) {
             log.error("Optimization failed for job {}: {}", jobId, e.getMessage());
+            quotaService.refundCvAiAnalysis(cv.getGallery().getAccountId());
             job.setStatus("FAILED");
             job.setErrorMessage(e.getMessage());
             jobRepository.save(job);
@@ -290,9 +301,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
 
         JobDescription jd = galleryService.findJobDescription(jdId, gallery);
-        CVEvaluationResponseDTO result = aiProvider.evaluateCV(cv.getContent(), jd.getContent());
-        result.setJdId(jd.getId());
-        return result;
+        return evaluateAndConsume(cv, jd, gallery);
     }
 
     @Transactional
@@ -301,13 +310,55 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         CV cv = cvRepository.findById(cvId).filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
         JobDescription jd = findOrCreateJD(jdText, gallery);
-        CVEvaluationResponseDTO result = aiProvider.evaluateCV(cv.getContent(), jd.getContent());
-        result.setJdId(jd.getId());
-        return result;
+        return evaluateAndConsume(cv, jd, gallery);
+    }
+
+    private CVEvaluationResponseDTO evaluateAndConsume(CV cv, JobDescription jd, Gallery gallery) {
+        quotaService.consumeCvAiAnalysis(gallery.getAccountId());
+        try {
+            CVEvaluationResponseDTO result = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), quotaService.getPlan(gallery.getAccountId()));
+            result.setJdId(jd.getId());
+            return result;
+        } catch (RuntimeException e) {
+            quotaService.refundCvAiAnalysis(gallery.getAccountId());
+            throw e;
+        }
+    }
+
+    @Override
+    @Transactional
+    public CVAnalysisResponseDTO analyzeCV(UUID cvId, String jdText, Gallery gallery) {
+        CV cv = cvRepository.findById(cvId)
+                .filter(item -> item.getGallery().getId().equals(gallery.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
+        JobDescription jd = findOrCreateJD(jdText, gallery);
+        quotaService.consumeCvAiAnalysis(gallery.getAccountId());
+        UserPlan plan = quotaService.getPlan(gallery.getAccountId());
+        CVEvaluationResponseDTO evaluation = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), plan);
+        evaluation.setJdId(jd.getId());
+        CVSkillGapResponseDTO skillGap;
+        CVFeedbackResponseDTO feedback;
+        if (plan == UserPlan.FREE) {
+            skillGap = CVSkillGapResponseDTO.builder().matchingSkills(List.of()).missingSkills(List.of()).build();
+            feedback = CVFeedbackResponseDTO.builder().overallScore(evaluation.getScore()).build();
+        } else {
+            skillGap = aiProvider.analyzeSkillGap(cv.getContent(), jd.getContent());
+            Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jd.getId());
+            if (prior.isPresent()) {
+                feedback = toFeedbackResponse(prior.get());
+            } else {
+                feedback = aiProvider.generateFeedback(cv.getContent(), jd.getContent());
+                CVFeedback saved = feedbackRepository.save(CVFeedback.builder().cv(cv).jobDescription(jd)
+                        .overallScore(feedback.getOverallScore()).feedbackJson(feedback.getFeedback()).build());
+                feedback.setId(saved.getId());
+            }
+        }
+        return CVAnalysisResponseDTO.builder().evaluation(evaluation).skillGap(skillGap).feedback(feedback).build();
     }
 
     @Override
     public CVFeedbackResponseDTO requestFeedback(UUID cvId, UUID jdId, Gallery gallery) {
+        requirePlan(gallery.getAccountId(), UserPlan.MIDDLE);
         CV cv = cvRepository.findById(cvId)
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
@@ -316,7 +367,10 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
         Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jdId);
         if (prior.isPresent()) return toFeedbackResponse(prior.get());
-        CVFeedbackResponseDTO feedbackResponse = aiProvider.generateFeedback(cv.getContent(), jd.getContent());
+        quotaService.consumeCvAiAnalysis(gallery.getAccountId());
+        CVFeedbackResponseDTO feedbackResponse;
+        try { feedbackResponse = aiProvider.generateFeedback(cv.getContent(), jd.getContent()); }
+        catch (RuntimeException e) { quotaService.refundCvAiAnalysis(gallery.getAccountId()); throw e; }
 
         CVFeedback feedback = CVFeedback.builder()
                 .cv(cv)
@@ -346,12 +400,21 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
     @Override
     public CVSkillGapResponseDTO analyzeSkillGap(UUID cvId, UUID jdId, Gallery gallery) {
+        requirePlan(gallery.getAccountId(), UserPlan.MIDDLE);
         CV cv = cvRepository.findById(cvId)
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
 
         String jdText = galleryService.findJobDescription(jdId, gallery).getContent();
 
-        return aiProvider.analyzeSkillGap(cv.getContent(), jdText);
+        quotaService.consumeCvAiAnalysis(gallery.getAccountId());
+        try { return aiProvider.analyzeSkillGap(cv.getContent(), jdText); }
+        catch (RuntimeException e) { quotaService.refundCvAiAnalysis(gallery.getAccountId()); throw e; }
+    }
+
+    private void requirePlan(UUID accountId, UserPlan minimumPlan) {
+        if (quotaService.getPlan(accountId).ordinal() < minimumPlan.ordinal()) {
+            throw new ApiException(ErrorCode.QUOTA_EXCEEDED, "This CV feature requires the " + minimumPlan + " plan.");
+        }
     }
 }

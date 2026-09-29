@@ -108,12 +108,10 @@ const CVEvaluation = () => {
         return;
       }
       if (!cvId) throw new Error('Không xác định được CV đã lưu để đánh giá.');
-      const evaluationResult = await cvPipelineService.evaluateCVText(cvId, jdText.trim());
+      const analysis = await cvPipelineService.analyzeCV(cvId, jdText.trim());
+      const evaluationResult = analysis?.evaluation;
       if (!evaluationResult?.jdId) throw new Error('API đánh giá không trả về JD đã lưu.');
-      const [skillGap, feedback] = await Promise.all([
-        cvPipelineService.analyzeSkillGap(cvId, evaluationResult.jdId),
-        cvPipelineService.requestFeedback(cvId, evaluationResult.jdId),
-      ]);
+      const {skillGap, feedback} = analysis;
       navigate('/optimizer', {state: {cvId, cvName, jdId: evaluationResult.jdId, jdText: jdText.trim(), evaluationResult, skillGap, feedback}});
     } catch (error) {
       showToast(getApiErrorMessage(error, 'Không thể hoàn tất đánh giá CV.'), 'error');
