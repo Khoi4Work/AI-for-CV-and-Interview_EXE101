@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Download, Sparkles, FileText, CheckCircle2, AlertCircle, Plus, X } from 'lucide-react';
+import { useState } from 'react';
+import { Sparkles, FileText, CheckCircle2, AlertCircle, Plus, X } from 'lucide-react';
 import { MainLayout } from '../../interview/components/MainLayout.jsx';
 import { useNavigate, useLocation } from "react-router-dom";
 import { cvEvaluations } from '../constants/cv-evaluation.js';
@@ -14,28 +14,6 @@ export function CVResult() {
     const [inputValue, setInputValue] = useState('');
     const optimizationResult = location.state?.optimizationResult;
     const evaluationResult = location.state?.evaluationResult;
-
-    if (evaluationResult) {
-        const analysis = evaluationResult.analysis || {};
-        const skillGap = location.state?.skillGap || {};
-        const feedback = location.state?.feedback?.feedback || {};
-        const sections = [
-            ['Strengths', analysis.strengths], ['Weaknesses', analysis.weaknesses], ['Suggestions', analysis.suggestions],
-            ['Matching skills', skillGap.matchingSkills], ['Missing skills', skillGap.missingSkills],
-        ];
-        return (
-            <MainLayout>
-                <div className="max-w-4xl mx-auto px-6 py-12 text-on-surface">
-                    <div className="flex items-center gap-3 mb-6"><CheckCircle2 className="text-primary" size={32}/><div><h1 className="text-3xl font-bold">Kết quả đánh giá CV</h1><p className="text-on-surface-variant">{location.state?.cvName || 'CV của bạn'}</p></div></div>
-                    <div className="grid gap-5 md:grid-cols-2 mb-6">
-                        <div className="rounded-2xl border border-outline-variant p-6 text-center"><p className="text-sm text-on-surface-variant">Điểm đánh giá</p><p className="text-4xl font-bold text-primary">{evaluationResult.score ?? '—'}</p><p className="mt-2">Tương thích ATS: {evaluationResult.atsCompatibility ?? '—'}%</p></div>
-                        <div className="rounded-2xl border border-outline-variant p-6"><h2 className="font-bold mb-2">Feedback</h2><pre className="whitespace-pre-wrap break-words text-sm">{JSON.stringify(feedback, null, 2) || 'Chưa có feedback.'}</pre></div>
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">{sections.map(([title, values]) => <section key={title} className="rounded-2xl border border-outline-variant p-5"><h2 className="font-bold mb-3">{title}</h2>{Array.isArray(values) && values.length ? <ul className="list-disc pl-5 space-y-1">{values.map((item, index) => <li key={index}>{item}</li>)}</ul> : <p className="text-on-surface-variant">Chưa có dữ liệu.</p>}</section>)}</div>
-                </div>
-            </MainLayout>
-        );
-    }
 
     if (optimizationResult) {
         return (
@@ -74,7 +52,35 @@ export function CVResult() {
 
     const scenario = location.state?.scenario || 'default';
     const cvNameFromState = location.state?.cvName || 'My_CV.pdf';
-    const evalData = cvEvaluations[scenario];
+    const apiAnalysis = evaluationResult?.analysis || {};
+    const apiSkillGap = location.state?.skillGap || {};
+    const apiFeedback = location.state?.feedback?.feedback || {};
+    const apiSections = Array.isArray(apiFeedback.sectionAnalysis) ? apiFeedback.sectionAnalysis : [];
+    const apiData = evaluationResult ? {
+        jd: {
+            title: 'Mô tả công việc',
+            description: {overview: location.state?.jdText || '', details: []},
+        },
+        analysis: {
+            matchingScore: evaluationResult.score ?? 0,
+            status: (evaluationResult.score ?? 0) >= 80 ? 'CV phù hợp với vị trí' : (evaluationResult.score ?? 0) >= 50 ? 'Có một số điểm cần cải thiện' : 'Cần cải thiện',
+            statusLabel: (evaluationResult.score ?? 0) >= 80 ? 'Phù hợp' : (evaluationResult.score ?? 0) >= 50 ? 'Khá phù hợp' : 'Chưa phù hợp',
+            overallFeedback: [
+                ...(apiAnalysis.strengths || []).slice(0, 2),
+                ...(apiAnalysis.weaknesses || []).slice(0, 2),
+            ].join(' '),
+            gapAnalysis: {
+                matchedSkills: (apiSkillGap.matchingSkills || []).map(name => ({name, level: 'Khớp'})),
+                missingSkills: (apiSkillGap.missingSkills || []).map(name => ({name, level: 'Thiếu'})),
+            },
+            atsOptimization: apiAnalysis.suggestions || [],
+            aiSuggestions: {
+                professionalSummary: (apiFeedback.swot?.opportunities || []).join(' ') || (apiAnalysis.strengths || []).join(' '),
+                workExperience: apiSections.map(section => `${section.sectionName}: ${(section.suggestions || []).join(' ')}`).join('\n'),
+            },
+        },
+    } : null;
+    const evalData = apiData || cvEvaluations[scenario];
 
     if (!evalData) {
         return (
@@ -231,9 +237,9 @@ export function CVResult() {
                     {/* ATS Optimization */}
                     <div className="bg-cv-result-card-bg rounded-xl border border-outline-variant shadow-sm p-6">
                         <div className="flex items-center justify-start gap-2 text-cv-result-card-text font-semibold mb-2 text-lg">
-                            <div className="shrink-0"><SettingsIcon /></div><span className="leading-none">Tối ưu hóa ATS</span>
+                            <div className="shrink-0"><SettingsIcon /></div><span className="leading-none">{evaluationResult ? 'Đề xuất cải thiện CV' : 'Tối ưu hóa ATS'}</span>
                         </div>
-                        <p className="text-sm text-black italic mb-4">Thêm các "Power Words" sau vào phần mô tả kinh nghiệm để tăng thứ hạng lọc hồ sơ:</p>
+                        <p className="text-sm text-black italic mb-4">{evaluationResult ? 'Các đề xuất được tạo từ kết quả phân tích CV và JD:' : 'Thêm các "Power Words" sau vào phần mô tả kinh nghiệm để tăng thứ hạng lọc hồ sơ:'}</p>
                         <div className="flex flex-wrap gap-2">
                             {analysis.atsOptimization.map((phrase, idx) => (
                                 <span key={idx} className="px-3 py-1.5 border-[1px] border-cv-result-ats-tag-border bg-cv-result-ats-tag-bg text-cv-result-ats-tag-text rounded-full text-sm font-semibold">
