@@ -108,8 +108,9 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 - Thời lượng hợp lệ là 5/10/15 và bị giới hạn theo gói hiện tại (FREE 5, MIDDLE 10, ENHANCE 15); không trừ quota phút.
 - Adaptive chưa triển khai; API từ chối `adaptiveMode=true`, và response hiện trả `false`.
 - Session lưu snapshot câu hỏi và ngữ cảnh để câu trả lời/feedback sau này dùng đúng dữ liệu ban đầu.
-- **Điều kiện dữ liệu:** cần có đủ câu hỏi `PRIMARY`, active cho từng loại/cấp độ trong DB. Hiện chưa có endpoint quản trị/seed câu hỏi; nếu ngân hàng chưa được nạp đủ, API trả lỗi thiếu câu hỏi thay vì tạo session rỗng.
-- **Chưa làm:** runtime test với DB có seed câu hỏi và kiểm thử quyền theo từng gói.
+- Nếu Question Bank chưa đủ câu hỏi, AI sinh phần còn thiếu cho đúng loại interview/cấp độ dưới dạng câu hỏi chung, kiểm tra schema/trường bắt buộc/trùng lặp rồi lưu vào general Question Bank để tái sử dụng. Không đưa CV/JD cá nhân vào prompt tạo câu hỏi dùng chung.
+- **Điều kiện chạy lần đầu:** khi DB chưa có đủ câu hỏi, cần Gemini provider hoạt động để bổ sung câu hỏi; nếu không, session không được tạo một phần.
+- **Chưa làm:** runtime test với DB trống/thiếu câu hỏi và kiểm thử quyền theo từng gói.
 - **Tiếp theo:** đã nối sang API Submit Answer ở mục dưới.
 
 ### API 2 — Submit Answer (`POST /api/interview/sessions/{sessionId}/answers`)
@@ -157,4 +158,4 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 - Giới hạn file 5 MB, chỉ nhận audio MIME. BE gọi ElevenLabs Speech-to-Text với ngôn ngữ của session, lưu transcript vào answer; Evaluate chỉ nhận transcript.
 - Raw audio không được lưu; `audioUrl` do client gửi không còn là đường nhập câu trả lời có giọng nói.
 - **Chưa làm:** runtime test với ElevenLabs key; xác định có cần lưu recording theo quyền `allowRecording`; kiểm thử audio formats từ browser.
-- **Bước tiếp theo:** APIs chính đã có triển khai cơ bản. Cần nạp Question Bank cho HR/Technical/Behavioral và các cấp độ, rồi kiểm tra runtime toàn luồng; adaptive vẫn để sau.
+- **Bước tiếp theo:** hoàn thiện runtime kiểm tra toàn luồng (DB migration/schema update, Gemini, ElevenLabs, quyền Free/Middle/Enhance, các loại/cấp độ và ngôn ngữ). Adaptive vẫn để sau, tắt mặc định và chỉ nâng cấp sau khi kiểm thử riêng.

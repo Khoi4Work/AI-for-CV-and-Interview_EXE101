@@ -3,6 +3,8 @@ package fpt.su26.exe101.backend.base.persistence;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.ExperienceLevel;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewType;
 
 /**
  * Central repository for AI prompt templates used throughout the application.
@@ -179,5 +181,16 @@ public class Prompt {
                 + "\"improvementAreas\":[],\"recommendations\":[],\"criteria\":[{\"criterion\":\"\",\"score\":0,\"feedback\":\"\"}],"
                 + "\"questionFeedback\":[{\"questionId\":\"uuid\",\"score\":0,\"assessment\":\"\",\"improvementSuggestion\":\"\"}]}\n"
                 + "<interview_transcript>\n" + transcriptJson + "\n</interview_transcript>";
+    }
+
+    public static String interviewQuestionGeneration(InterviewType type, ExperienceLevel level, int count) {
+        return JSON_OUTPUT_RULES + "Create exactly " + count + " reusable interview questions for interview type " + type
+                + " and candidate experience level " + level + ". Questions must be practical and appropriate for entry-level candidates. "
+                + "Do not assume a company, job description, or candidate-specific history. Do not include personal information or refer to a specific candidate. "
+                + "Questions must be distinct, concise, and suitable for a real interviewer to ask. "
+                + "For Behavioral questions, invite a concrete example without judging confidence. For Technical questions, focus on level-appropriate fundamentals. "
+                + "Include a concise sample answer outline and objective grading criteria.\n"
+                + "Required JSON schema: {\"questions\":[{\"text\":\"\",\"category\":\"\",\"competency\":\"\","
+                + "\"sampleAnswer\":\"\",\"gradingCriteria\":{\"keyPoints\":[],\"weight\":1}}]}";
     }
 }

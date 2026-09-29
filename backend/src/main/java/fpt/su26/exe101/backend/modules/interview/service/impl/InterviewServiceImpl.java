@@ -16,7 +16,9 @@ import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewQuestionR
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluationResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionDetailResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.InterviewQuestionGenerationDTO;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestion;
+import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestionBank;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewAnswer;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewSession;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.ExperienceLevel;
@@ -27,6 +29,7 @@ import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSessionSt
 import fpt.su26.exe101.backend.modules.interview.mapper.InterviewMapper;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewAnswerRepository;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewQuestionRepository;
+import fpt.su26.exe101.backend.modules.interview.repository.InterviewQuestionBankRepository;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewSessionRepository;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
@@ -54,6 +57,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final InterviewMapper interviewMapper;
     private final GalleryService galleryService;
     private final InterviewQuestionRepository questionRepository;
+    private final InterviewQuestionBankRepository questionBankRepository;
     private final CVPipelineService cvPipelineService;
     private final UsageQuotaService usageQuotaService;
     private final ObjectMapper objectMapper;
@@ -94,14 +98,35 @@ public class InterviewServiceImpl implements InterviewService {
         if (jd != null) availableContexts.add(QuestionContextType.JD);
         if (cv != null) availableContexts.add(QuestionContextType.CV);
         if (cv != null && jd != null) availableContexts.add(QuestionContextType.JD_AND_CV);
-        List<InterviewQuestion> questions = questionRepository
-                .findByBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
-                        type, level, QuestionRole.PRIMARY, availableContexts)
-                .stream()
-                .sorted(Comparator.comparingInt(question -> contextPriority(
-                        question.getContextType(), cv != null, jd != null)))
-                .limit(requestedQuestionCount)
-                .toList();
+        List<InterviewQuestion> questions = selectQuestions(type, level, availableContexts,
+                cv != null, jd != null, requestedQuestionCount);
+        if (questions.size() < requestedQuestionCount) {
+            int missingCount = requestedQuestionCount - questions.size();
+            InterviewQuestionGenerationDTO generated = interviewAIProvider.generateQuestions(type, level, missingCount);
+            InterviewQuestionBank generalBank = questionBankRepository
+                    .findFirstByCompanyIsNullAndInterviewTypeAndExperienceLevel(type, level)
+                    .orElseGet(() -> questionBankRepository.save(InterviewQuestionBank.builder()
+                            .company(null)
+                            .interviewType(type)
+                            .experienceLevel(level)
+                            .industry(null)
+                            .build()));
+            List<InterviewQuestion> newQuestions = generated.getQuestions().stream()
+                    .map(draft -> InterviewQuestion.builder()
+                            .bank(generalBank)
+                            .questionText(draft.getText().trim())
+                            .sampleAnswer(draft.getSampleAnswer())
+                            .gradingCriteria(draft.getGradingCriteria())
+                            .category(draft.getCategory())
+                            .competency(draft.getCompetency())
+                            .questionRole(QuestionRole.PRIMARY)
+                            .contextType(QuestionContextType.GENERAL)
+                            .active(true)
+                            .build())
+                    .toList();
+            questionRepository.saveAll(newQuestions);
+            questions = selectQuestions(type, level, availableContexts, cv != null, jd != null, requestedQuestionCount);
+        }
         if (questions.size() < requestedQuestionCount) {
             throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND,
                     "Not enough active " + type + " questions for experience level " + level + ".");
@@ -398,6 +423,19 @@ public class InterviewServiceImpl implements InterviewService {
         if (hasJd && questionContext == QuestionContextType.JD) return 1;
         if (hasCv && questionContext == QuestionContextType.CV) return 1;
         return questionContext == QuestionContextType.GENERAL ? 2 : 3;
+    }
+
+    private List<InterviewQuestion> selectQuestions(InterviewType type, ExperienceLevel level,
+                                                    List<QuestionContextType> contexts,
+                                                    boolean hasCv, boolean hasJd, int limit) {
+        return questionRepository
+                .findByBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
+                        type, level, QuestionRole.PRIMARY, contexts)
+                .stream()
+                .sorted(Comparator.comparingInt(question -> contextPriority(
+                        question.getContextType(), hasCv, hasJd)))
+                .limit(limit)
+                .toList();
     }
 
     private void validateSessionOptions(CreateInterviewSessionRequestDTO request) {
