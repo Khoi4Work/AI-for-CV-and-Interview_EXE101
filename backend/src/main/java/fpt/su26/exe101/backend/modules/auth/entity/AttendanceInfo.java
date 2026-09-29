@@ -24,4 +24,22 @@ public class AttendanceInfo extends BaseEntity {
 
     @Column(name = "experience_level")
     private String experienceLevel;
+
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "profession")
+    private String profession;
+
+    @Column(name = "linkedin")
+    private String linkedin;
+
+    @Column(name = "portfolio")
+    private String portfolio;
+
+    @Column(name = "github")
+    private String github;
 }

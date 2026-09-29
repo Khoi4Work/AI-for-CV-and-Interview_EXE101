@@ -19,25 +19,19 @@ import {Footer} from "../../../components/layout/Footer.jsx";
 
 const HistoryPage = () => {
     const {showToast} = useApp();
-    const {activityLogs, addActivityLog} = useAuth();
+    const {activityLogs, addActivityLog, isLoading} = useAuth();
     const [filterActive, setFilterActive] = useState('all');
     const [detailModal, setDetailModal] = useState({open: false, log: null});
 
-    const handleLoadMore = () => {
-        const extraLogs = [
-            {
-                id: `h-extra-${Date.now() + 1}`,
-                type: 'tai_xuong',
-                title: 'Tải xuống PDF',
-                time: '10:00',
-                dateLabel: 'TRƯỚC ĐÓ',
-                details: 'Đã xuất file PDF thành công cho CV Sản phẩm.',
-                meta: '2.1 MB • Hoàn tất',
-            }
-        ];
-
-        extraLogs.forEach(log => addActivityLog(log));
-        showToast('Đã tải thêm hoạt động bảo mật cũ hơn.', 'info');
+    const handleLoadMore = async () => {
+        try {
+            showToast('Đang tải thêm hoạt động...', 'info');
+            // Hiện tại Backend đã có activityLogs trong AuthContext,
+            // tương lai sẽ gọi API /api/auth/activity-logs để load more
+            showToast('Tính năng tải thêm đang được tích hợp với API.', 'info');
+        } catch (error) {
+            showToast('Không thể tải thêm hoạt động.', 'error');
+        }
     };
 
     const getIconForType = (type) => {
@@ -162,6 +156,17 @@ const HistoryPage = () => {
     const todayLogs = filteredLogs.filter(log => log.dateLabel === 'HÔM NAY');
     const yesterdayLogs = filteredLogs.filter(log => log.dateLabel === 'HÔM QUA');
     const olderLogs = filteredLogs.filter(log => log.dateLabel === 'TRƯỚC ĐÓ');
+
+    if (isLoading) {
+        return (
+            <div className="max-w-4xl mx-auto pb-12 flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-[#10B981] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-[#64748B] animate-pulse">Đang tải lịch sử hoạt động...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-4xl mx-auto pb-12">

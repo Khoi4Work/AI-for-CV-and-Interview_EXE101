@@ -21,4 +21,22 @@ public class PartnerInfo extends BaseEntity {
 
     @Column(name = "company_size")
     private String companySize;
+
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "profession")
+    private String profession;
+
+    @Column(name = "linkedin")
+    private String linkedin;
+
+    @Column(name = "portfolio")
+    private String portfolio;
+
+    @Column(name = "github")
+    private String github;
 }

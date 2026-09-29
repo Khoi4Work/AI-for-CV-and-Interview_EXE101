@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
 
 import java.util.UUID;
 
@@ -30,10 +32,11 @@ public class AuthController {
     }
 
     @GetMapping("/verify-email")
-    public ResponseEntity<ApiResponse<GenericResponseDTO>> verifyEmail(@RequestParam String token) {
+    public ResponseEntity<Void> verifyEmail(@RequestParam String token) {
         accountService.verifyEmail(token);
-        return ResponseEntity.ok(ApiResponse.success(
-                GenericResponseDTO.builder().message("Email verified successfully. You can now login.").build()));
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(java.net.URI.create("http://localhost:5173/login?verified=true"))
+                .build();
     }
 
     @PostMapping("/tokens")
@@ -85,6 +88,12 @@ public class AuthController {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.success(
                 GenericResponseDTO.builder().message("Logged out successfully").build()));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
+        java.util.Map<String, Object> profile = accountService.getFullProfile(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(profile, "Profile retrieved successfully"));
     }
 
     @PostMapping("/invite")

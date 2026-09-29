@@ -16,4 +16,5 @@ public interface GalleryService {
     Gallery getCurrentGallery();
     JobDescription findJobDescription(UUID id, Gallery gallery);
     JobDescription findOrCreateJobDescription(String jdText, Gallery gallery);
+    void createGalleryForAccount(UUID accountId);
 }

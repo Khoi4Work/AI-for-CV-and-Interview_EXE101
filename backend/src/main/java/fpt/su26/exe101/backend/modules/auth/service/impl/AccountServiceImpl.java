@@ -9,8 +9,7 @@ import fpt.su26.exe101.backend.modules.auth.entity.*;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
 import fpt.su26.exe101.backend.modules.auth.event.AccountCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
-
-
+import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.modules.auth.repository.*;
 import fpt.su26.exe101.backend.modules.auth.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +35,16 @@ public class AccountServiceImpl implements AccountService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final ApplicationEventPublisher eventPublisher;
-
+    private final UsageQuotaService quotaService;
+    private final fpt.su26.exe101.backend.modules.gallery.service.GalleryService galleryService;
 
     @Override
     @Transactional
     public RegisterResponseDTO register(RegisterRequestDTO request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Mật khẩu xác nhận không khớp");
+        }
+
         if (accountRepository.existsByEmail(request.getEmail())) {
             throw new ApiException(ErrorCode.DUPLICATE_RESOURCE, "Email already exists");
         }
@@ -48,18 +54,18 @@ public class AccountServiceImpl implements AccountService {
         Account account = Account.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(request.getRole() != null ? request.getRole() : AccountRole.ATTENDANCE)
                 .status("PENDING_VERIFICATION")
                 .verificationToken(verificationToken)
                 .build();
 
         account = accountRepository.save(account);
-        eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
+        initializeUserResources(account.getId());
 
         if (account.getRole() == AccountRole.ATTENDANCE) {
             Attendance attendance = Attendance.builder()
                     .account(account)
-                    .displayName(request.getDisplayName())
+                    .displayName(request.getDisplayName() != null ? request.getDisplayName() : "User")
                     .build();
             attendance = attendanceRepository.save(attendance);
 
@@ -114,7 +120,7 @@ public class AccountServiceImpl implements AccountService {
                 .build();
 
         account = accountRepository.save(account);
-        eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
+        initializeUserResources(account.getId());
 
         Attendance attendance = Attendance.builder()
                 .account(account)
@@ -138,16 +144,44 @@ public class AccountServiceImpl implements AccountService {
 
         if (account.getRole() == AccountRole.ATTENDANCE) {
             Attendance attendance = attendanceRepository.findByAccount(account);
+            if (attendance == null) {
+                throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Attendance profile not found");
+            }
             AttendanceInfo info = attendanceInfoRepository.findByAttendance(attendance);
+            if (info == null) {
+                throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Attendance info not found");
+            }
             if (request.getBio() != null) info.setBio(request.getBio());
             if (request.getCareerGoal() != null) info.setCareerGoal(request.getCareerGoal());
             if (request.getExperienceLevel() != null) info.setExperienceLevel(request.getExperienceLevel());
+            if (request.getPhone() != null) info.setPhone(request.getPhone());
+            if (request.getLocation() != null) info.setLocation(request.getLocation());
+            if (request.getProfession() != null) info.setProfession(request.getProfession());
+            if (request.getLinkedin() != null) info.setLinkedin(request.getLinkedin());
+            if (request.getPortfolio() != null) info.setPortfolio(request.getPortfolio());
+            if (request.getGithub() != null) info.setGithub(request.getGithub());
+            if (request.getFullName() != null) attendance.setDisplayName(request.getFullName());
+            attendanceRepository.save(attendance);
             attendanceInfoRepository.save(info);
         } else {
             Partner partner = partnerRepository.findByAccount(account);
+            if (partner == null) {
+                throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Partner profile not found");
+            }
             PartnerInfo info = partnerInfoRepository.findByPartner(partner);
+            if (info == null) {
+                throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Partner info not found");
+            }
             if (request.getIndustry() != null) info.setIndustry(request.getIndustry());
             if (request.getCompanySize() != null) info.setCompanySize(request.getCompanySize());
+            if (request.getPhone() != null) info.setPhone(request.getPhone());
+            if (request.getLocation() != null) info.setLocation(request.getLocation());
+            if (request.getProfession() != null) info.setProfession(request.getProfession());
+            if (request.getLinkedin() != null) info.setLinkedin(request.getLinkedin());
+            if (request.getPortfolio() != null) info.setPortfolio(request.getPortfolio());
+            if (request.getGithub() != null) info.setGithub(request.getGithub());
+            if (request.getFullName() != null) partner.setCompanyName(request.getFullName());
+            partnerRepository.save(partner);
             partnerInfoRepository.save(info);
         }
     }
@@ -164,7 +198,67 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Account not found"));
 
+        if (!passwordEncoder.matches(request.getOldPassword(), account.getPasswordHash())) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Incorrect current password");
+        }
+
         account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         accountRepository.save(account);
+    }
+
+    @Override
+    public Map<String, Object> getFullProfile(String email) {
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Account not found"));
+
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("email", account.getEmail());
+        profile.put("role", account.getRole());
+        profile.put("status", account.getStatus());
+
+        if (account.getRole() == AccountRole.ATTENDANCE) {
+            Attendance attendance = attendanceRepository.findByAccount(account);
+            AttendanceInfo info = (attendance != null) ? attendanceInfoRepository.findByAttendance(attendance) : null;
+            profile.put("fullName", attendance != null ? attendance.getDisplayName() : account.getEmail());
+            if (info != null) {
+                profile.put("bio", info.getBio());
+                profile.put("careerGoal", info.getCareerGoal());
+                profile.put("experienceLevel", info.getExperienceLevel());
+                profile.put("phone", info.getPhone());
+                profile.put("location", info.getLocation());
+                profile.put("profession", info.getProfession());
+                profile.put("linkedin", info.getLinkedin());
+                profile.put("portfolio", info.getPortfolio());
+                profile.put("github", info.getGithub());
+            }
+        } else if (account.getRole() == AccountRole.PARTNER) {
+            Partner partner = partnerRepository.findByAccount(account);
+            PartnerInfo info = (partner != null) ? partnerInfoRepository.findByPartner(partner) : null;
+            profile.put("fullName", partner != null ? partner.getCompanyName() : account.getEmail());
+            if (info != null) {
+                profile.put("industry", info.getIndustry());
+                profile.put("companySize", info.getCompanySize());
+                profile.put("phone", info.getPhone());
+                profile.put("location", info.getLocation());
+                profile.put("profession", info.getProfession());
+                profile.put("linkedin", info.getLinkedin());
+                profile.put("portfolio", info.getPortfolio());
+                profile.put("github", info.getGithub());
+            }
+        } else {
+            profile.put("fullName", account.getEmail());
+        }
+
+        profile.put("membershipType", "Free");
+        profile.put("memberSince", "2026");
+
+        return profile;
+    }
+
+    private void initializeUserResources(UUID accountId) {
+        log.info("Initializing resources for account: {}", accountId);
+        quotaService.initializeDefaultQuota(accountId);
+        galleryService.createGalleryForAccount(accountId);
+        log.info("Resources successfully initialized for account: {}", accountId);
     }
 }

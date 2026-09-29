@@ -1,6 +1,7 @@
 package fpt.su26.exe101.backend.modules.gallery.listener;
 
 import fpt.su26.exe101.backend.modules.auth.event.AccountCreatedEvent;
+import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.gallery.service.impl.GalleryServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 @Slf4j
 public class AccountCreatedListener {
-    private final GalleryServiceImpl galleryService;
+    private final GalleryService galleryService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAccountCreatedEvent(AccountCreatedEvent event) {

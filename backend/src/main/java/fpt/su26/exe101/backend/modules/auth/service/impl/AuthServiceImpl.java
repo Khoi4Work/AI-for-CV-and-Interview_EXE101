@@ -101,6 +101,10 @@ public class AuthServiceImpl implements AuthService {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Only Google login is currently supported");
         }
 
+        if (request == null || request.getToken() == null || request.getToken().isBlank()) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Google ID token is missing");
+        }
+
         String email = verifyGoogleToken(request.getToken());
 
         Account account = accountRepository.findByEmail(email)
@@ -150,7 +154,8 @@ public class AuthServiceImpl implements AuthService {
             if (e instanceof ApiException) {
                 throw (ApiException) e;
             }
-            throw new ApiException(ErrorCode.INVALID_INPUT, "Error verifying Google token: " + e.getMessage());
+            log.error("Google token verification failed: ", e);
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Error verifying Google token: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getName()));
         }
     }
 

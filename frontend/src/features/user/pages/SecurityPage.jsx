@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
+import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import Modal from '../../../components/ui/Modal.jsx';
 import {Card, Button, Input, Toggle, Badge, SectionHeader} from '../components/Layout.jsx';
 
@@ -33,7 +34,9 @@ const SecurityPage = () => {
         removeDevice,
         logoutAllDevices,
         securityLogs,
-        addSecurityLog
+        addSecurityLog,
+        changePassword,
+        isLoading
     } = useAuth();
     const {showToast} = useApp();
     const [state, setState] = useState({
@@ -42,7 +45,7 @@ const SecurityPage = () => {
         confirmPassword: '',
     });
 
-    const handleUpdatePassword = (e) => {
+    const handleUpdatePassword = async (e) => {
         e.preventDefault();
         const {currentPassword, newPassword, confirmPassword} = state;
 
@@ -59,21 +62,30 @@ const SecurityPage = () => {
             return;
         }
 
-        showToast('Cập nhật mật khẩu thành công!', 'success');
+        try {
+            await changePassword({
+                currentPassword,
+                newPassword,
+                confirmPassword
+            });
+            showToast('Cập nhật mật khẩu thành công!', 'success');
 
-        addSecurityLog({
-            id: `log-${Date.now()}`,
-            action: 'thay_doi_mat_khau',
-            title: 'Thay đổi mật khẩu',
-            details: 'Mật khẩu tài khoản vừa mới được cập nhật trên thiết bị này.',
-            timeLabel: 'Hôm nay, vừa mới đây',
-        });
+            addSecurityLog({
+                id: `log-${Date.now()}`,
+                action: 'thay_doi_mat_khau',
+                title: 'Thay đổi mật khẩu',
+                details: 'Mật khẩu tài khoản vừa mới được cập nhật trên thiết bị này.',
+                timeLabel: 'Hôm nay, vừa mới đây',
+            });
 
-        setState({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: '',
-        });
+            setState({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+            });
+        } catch (err) {
+            showToast(getApiErrorMessage(err), 'error');
+        }
     };
 
     const handleLogoutDevice = (id, deviceName) => {
@@ -99,15 +111,26 @@ const SecurityPage = () => {
         }
     };
 
-    return (
-        <div className="max-w-4xl mx-auto pb-12">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-[#10B981] mb-2">Bảo mật tài khoản</h1>
-                <p className="text-[#94A3B8] text-sm">Quản lý mật khẩu, xác thực hai lớp và kiểm soát các thiết bị đang
-                    truy cập.</p>
+    if (isLoading) {
+        return (
+            <div className="max-w-4xl mx-auto pb-12 flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-[#10B981] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-[#64748B] animate-pulse">Đang tải cài đặt bảo mật...</p>
+                </div>
             </div>
+        );
+    }
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    return (
+            <div className="max-w-4xl mx-auto pb-12">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-[#10B981] mb-2">Bảo mật tài khoản</h1>
+                    <p className="text-[#94A3B8] text-sm">Quản lý mật khẩu, xác thực hai lớp và kiểm soát các thiết bị đang
+                        truy cập.</p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 {/* Password Section */}
                 <Card className="p-6 bg-[#C2CFCD] border-none shadow-sm rounded-xl">
                     <SectionHeader title="Đổi mật khẩu" icon={<KeyRound size={18}/>} titleClassName="text-black"/>
@@ -115,7 +138,7 @@ const SecurityPage = () => {
                         <Input
                             label="Mật khẩu hiện tại"
                             type="password"
-                            value={state.currentPassword}
+                            value={state.currentPassword || ''}
                             onChange={(e) => setState({...state, currentPassword: e.target.value})}
                             placeholder="••••••••"
                             className="bg-[#DEE6E5] rounded-md border-none"
@@ -125,7 +148,7 @@ const SecurityPage = () => {
                             <Input
                                 label="Mật khẩu mới"
                                 type="password"
-                                value={state.newPassword}
+                                value={state.newPassword || ''}
                                 onChange={(e) => setState({...state, newPassword: e.target.value})}
                                 placeholder="••••••••"
                                 className="bg-[#DEE6E5] rounded-md border-none"
@@ -134,7 +157,7 @@ const SecurityPage = () => {
                             <Input
                                 label="Xác nhận mật khẩu"
                                 type="password"
-                                value={state.confirmPassword}
+                                value={state.confirmPassword || ''}
                                 onChange={(e) => setState({...state, confirmPassword: e.target.value})}
                                 placeholder="••••••••"
                                 className="bg-[#DEE6E5] rounded-md border-none"
