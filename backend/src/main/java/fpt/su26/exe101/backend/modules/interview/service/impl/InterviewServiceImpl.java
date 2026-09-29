@@ -30,6 +30,7 @@ import fpt.su26.exe101.backend.modules.interview.repository.InterviewQuestionRep
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewSessionRepository;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,6 +58,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final UsageQuotaService usageQuotaService;
     private final ObjectMapper objectMapper;
     private final InterviewAIProvider interviewAIProvider;
+    private final InterviewVoiceService interviewVoiceService;
 
     @Override
     @Transactional
@@ -198,6 +200,43 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     @Transactional
+    public InterviewAnswerResponseDTO submitAudioAnswer(UUID sessionId, UUID questionId, byte[] audio,
+                                                        String filename, String contentType) {
+        Gallery gallery = galleryService.getCurrentGallery();
+        InterviewSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Interview session not found"));
+        if (!session.getGallery().getId().equals(gallery.getId())) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
+        }
+        if (session.getStatus() == InterviewSessionStatus.COMPLETED) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Interview session is already completed.");
+        }
+        if (!sessionContainsQuestion(session, questionId)) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Question does not belong to this interview session.");
+        }
+        if (answerRepository.existsBySessionIdAndQuestionId(sessionId, questionId)) {
+            throw new ApiException(ErrorCode.DUPLICATE_RESOURCE, "An answer for this question already exists.");
+        }
+        String language = String.valueOf(session.getContextSnapshot().getOrDefault("language", "en"));
+        String transcript = interviewVoiceService.transcribeAnswerAudio(audio, filename, contentType, language);
+        InterviewAnswer answer = answerRepository.save(InterviewAnswer.builder()
+                .session(session)
+                .questionId(questionId)
+                .answerText(transcript)
+                .isSkipped(false)
+                .build());
+        return InterviewAnswerResponseDTO.builder()
+                .id(answer.getId())
+                .sessionId(sessionId)
+                .questionId(questionId)
+                .answerText(answer.getAnswerText())
+                .audioUrl(null)
+                .isSkipped(false)
+                .build();
+    }
+
+    @Override
+    @Transactional
     public InterviewEvaluationResponseDTO evaluateSession(UUID sessionId) {
         Gallery gallery = galleryService.getCurrentGallery();
         InterviewSession session = sessionRepository.findById(sessionId)
@@ -304,6 +343,10 @@ public class InterviewServiceImpl implements InterviewService {
                 throw new ApiException(ErrorCode.INVALID_INPUT, "A skipped answer cannot include text or audio.");
             }
             return;
+        }
+        if (hasAudio) {
+            throw new ApiException(ErrorCode.INVALID_INPUT,
+                    "Upload audio to /api/interview/sessions/{sessionId}/answers/audio for BE transcription.");
         }
         if (!hasText && !hasAudio) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Provide answerText or audioUrl, or mark the answer as skipped.");

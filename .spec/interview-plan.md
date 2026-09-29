@@ -84,7 +84,7 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 3. Cập nhật API spec và DB spec: ba loại interview, cấp độ thống nhất, metadata/quan hệ follow-up, session lifecycle, quyền lợi feedback, `adaptiveMode`.
 4. Hoàn thiện entity/repository/service của Question Bank trong module Interview; không truy cập repository module khác trực tiếp.
 5. Triển khai và kiểm thử luồng nền `adaptiveMode=false` cho HR/Technical/Behavioral, có/không có CV/JD, thời lượng từng gói và quyền feedback.
-6. Triển khai voice/transcript ở BE theo contract; kiểm thử lỗi provider và lưu/tiếp tục session.
+6. Voice/TTS/STT endpoint đã triển khai ở BE; còn runtime kiểm tra provider và browser audio formats.
 7. Triển khai adaptive mode sau luồng nền: lựa chọn follow-up từ DB, fallback, giới hạn lượt/thời gian và quyền feedback độc lập.
 8. Chỉ bật adaptive trên FE sau khi kiểm thử BE và xác nhận tương thích API.
 
@@ -116,10 +116,10 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 
 - **Trạng thái:** Đã triển khai BE; Maven compile thành công với `-DskipTests`.
 - Xác thực session thuộc gallery hiện tại; không cho gửi question ID không nằm trong snapshot của session.
-- Lưu transcript, audio URL hoặc câu trả lời bị bỏ qua; yêu cầu nội dung hoặc audio URL khi không skip và từ chối nội dung/audio khi skip.
+- Lưu transcript hoặc câu trả lời bị bỏ qua; yêu cầu nội dung khi không skip và từ chối nội dung khi skip.
 - Chặn gửi trùng câu trả lời cho cùng một câu hỏi trong cùng session.
-- Endpoint nhận `audioUrl` theo contract hiện tại; upload/transcription giọng nói do BE vẫn là phần riêng chưa triển khai.
-- **Chưa làm:** runtime test, kiểm tra URL audio thuộc user/ứng dụng, giới hạn thời gian/trạng thái session. Cần bổ sung session lifecycle trước hoặc trong API Evaluate để khóa session đã kết thúc.
+- JSON endpoint không nhận `audioUrl`; file audio phải đi qua endpoint riêng để BE transcription.
+- **Chưa làm:** runtime test và giới hạn thời gian session.
 - **Tiếp theo:** đã nối sang API Evaluate Session ở mục dưới.
 
 ### API 3 — Evaluate Session (`POST /api/interview/sessions/{sessionId}/evaluate`)
@@ -127,10 +127,10 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 - **Trạng thái:** Đã triển khai BE; Maven compile thành công với `-DskipTests`.
 - Kiểm tra session thuộc gallery hiện tại; Free bị từ chối feedback, Middle nhận phản hồi tiêu chuẩn, Enhance nhận tiêu chí và đánh giá từng câu chi tiết hơn.
 - Tạo prompt riêng cho interview trong `base/persistence/Prompt`; Gemini trả JSON vào DTO rõ ràng, BE xác thực schema/điểm số trước khi lưu.
-- Đánh giá cần tối thiểu một câu trả lời không bị skip và có transcript. Audio-only bị báo rõ là cần BE voice transcription trước khi đánh giá.
+- Đánh giá cần tối thiểu một câu trả lời không bị skip và có transcript; audio upload được transcription ở BE trước khi lưu. Audio-only URL không được đánh giá.
 - Khi đánh giá thành công, lưu overall score/feedback, chuyển session sang `COMPLETED` và ghi `completedAt`. Gọi lại trả feedback đã lưu, không gọi AI lại.
 - Thêm trạng thái session nullable để tương thích các session cũ; session mới luôn bắt đầu `IN_PROGRESS`, Submit Answer từ chối session đã hoàn tất.
-- **Chưa làm:** runtime test với provider Gemini thật; kiểm tra mức feedback theo subscription thực tế; xử lý trường hợp người dùng đổi gói sau khi session hoàn tất; quota quyền truy cập feedback khi đọc detail/history.
+- **Chưa làm:** runtime test với provider Gemini thật; kiểm tra mức feedback theo subscription thực tế; xử lý trường hợp người dùng đổi gói sau khi session hoàn tất.
 - **Tiếp theo:** đã nối sang API Get Session Detail ở mục dưới.
 
 ### API 4 — Get Session Detail (`GET /api/interview/sessions/{sessionId}`)
@@ -140,7 +140,7 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 - Free vẫn đọc được session/answers nhưng không nhận `feedbackJson` hoặc evaluation. Áp dụng cùng nguyên tắc cho endpoint interview history hiện có để không lộ feedback cũ qua route Gallery.
 - Middle/Enhance nhận evaluation nếu đã được tạo; đọc detail không gọi AI hoặc sinh feedback mới.
 - **Chưa làm:** runtime test; chính sách lịch sử sau khi người dùng đổi gói cần xác nhận nếu muốn giữ quyền theo gói lúc session được tạo thay vì gói hiện tại.
-- **Tiếp theo:** API Get Question Audio đã được nối ở mục dưới. Còn lại là nhận/transcribe câu trả lời bằng BE.
+- **Tiếp theo:** API Get Question Audio đã được nối ở mục dưới.
 
 ### API 5 — Get Question Audio (`GET /api/interview/questions/{questionId}/audio`)
 
@@ -148,4 +148,13 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 - Đọc nội dung câu hỏi active trong Question Bank, gọi Spring AI `TextToSpeechModel` (ElevenLabs config hiện có) và trả audio MPEG trực tiếp.
 - Không để FE gọi TTS provider trực tiếp; câu hỏi không tồn tại hoặc inactive trả 404.
 - **Chưa làm:** runtime test khi có ElevenLabs key/voice/model config; cache audio để tránh gọi TTS lặp lại.
-- **Bước tiếp theo:** nhận file audio câu trả lời tại BE, transcribe bằng Speech-to-Text, lưu transcript vào Interview Answer rồi cho Evaluate dùng transcript đó.
+- **Tiếp theo:** đã nối nhận/transcribe audio câu trả lời ở mục dưới.
+
+### API 6 — Submit Audio Answer (`POST /api/interview/sessions/{sessionId}/answers/audio`)
+
+- **Trạng thái:** Đã triển khai BE; Maven compile thành công với `-DskipTests`.
+- Nhận multipart `audio` và `questionId`; kiểm tra session/quyền sở hữu/câu hỏi/trùng answer trước khi gọi provider.
+- Giới hạn file 5 MB, chỉ nhận audio MIME. BE gọi ElevenLabs Speech-to-Text với ngôn ngữ của session, lưu transcript vào answer; Evaluate chỉ nhận transcript.
+- Raw audio không được lưu; `audioUrl` do client gửi không còn là đường nhập câu trả lời có giọng nói.
+- **Chưa làm:** runtime test với ElevenLabs key; xác định có cần lưu recording theo quyền `allowRecording`; kiểm thử audio formats từ browser.
+- **Bước tiếp theo:** APIs chính đã có triển khai cơ bản. Cần nạp Question Bank cho HR/Technical/Behavioral và các cấp độ, rồi kiểm tra runtime toàn luồng; adaptive vẫn để sau.

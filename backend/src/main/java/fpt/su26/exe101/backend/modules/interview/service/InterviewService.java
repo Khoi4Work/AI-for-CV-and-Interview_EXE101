@@ -14,6 +14,8 @@ import java.util.UUID;
 public interface InterviewService {
     CreateInterviewSessionResponseDTO createSession(CreateInterviewSessionRequestDTO request);
     InterviewAnswerResponseDTO submitAnswer(UUID sessionId, SubmitInterviewAnswerRequestDTO request);
+    InterviewAnswerResponseDTO submitAudioAnswer(UUID sessionId, UUID questionId, byte[] audio,
+                                                  String filename, String contentType);
     InterviewEvaluationResponseDTO evaluateSession(UUID sessionId);
     InterviewSessionDetailResponseDTO getSessionDetail(UUID sessionId);
     List<InterviewSessionResponseDTO> getInterviewHistory();
