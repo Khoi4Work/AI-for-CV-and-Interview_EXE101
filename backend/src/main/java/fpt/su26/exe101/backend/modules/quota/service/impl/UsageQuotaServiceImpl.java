@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 import java.util.UUID;
 
 @Service
@@ -19,7 +20,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     private final UserUsageQuotaRepository repository;
     private final ApplicationEventPublisher eventPublisher;
 
-    @Override @Transactional
+    @Override @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void initializeDefaultQuota(UUID accountId) {
         repository.findByAccountId(accountId).orElseGet(() -> repository.save(defaultQuota(accountId)));
     }

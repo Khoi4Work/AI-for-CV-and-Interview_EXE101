@@ -6,6 +6,7 @@ import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.context.event.EventListener;
 import org.springframework.transaction.event.*;
 
 @Component @RequiredArgsConstructor @Slf4j
@@ -16,7 +17,7 @@ public class QuotaAccountCreatedListener {
         initializeQuota(event.accountId());
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    @EventListener
     public void onQuotaInitializationRequested(QuotaInitializationRequestedEvent event) {
         initializeQuota(event.accountId());
     }
