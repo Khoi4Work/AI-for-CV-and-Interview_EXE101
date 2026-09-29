@@ -22,8 +22,10 @@ public class CVResponseDTO {
     private CVContent content;
     private Integer score;
     private Integer atsScore;
+    @Builder.Default
     private OptimizationState optimizationState = OptimizationState.DRAFT;
     private CVTemplate template;
+    @Builder.Default
     private String status = "DRAFT";
     private String image;
 }

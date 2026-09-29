@@ -46,3 +46,33 @@ Khi triển khai Interview, service Interview cần gọi cùng `UsageQuotaServi
 Không cần entity quota mới. `UserUsageQuota` được mở rộng để giữ plan và quota AI CV; các đơn vị vẫn là các cột riêng: lượt tạo CV, lượt phân tích AI CV và phút Interview. Không gộp chúng vào một tổng count vì không thể đổi phút Interview thành lượt AI hoặc lượt tạo CV. Các hàng quota cũ cần migration/backfill plan FREE và giá trị khởi đầu cho cột AI; quy tắc giữ hay cấp bù lượt cho account cũ phải được quyết định trước khi áp dụng migration.
 
 FE không tự trừ quota; FE gọi API nghiệp vụ CV/Interview và cần endpoint đọc quota/entitlements để hiển thị số còn lại. Endpoint đọc đó chưa được thêm trong scope hiện tại.
+
+---
+
+## 🛠 Nhật ký triển khai (Hoàn thành)
+
+Toàn bộ các yêu cầu trên đã được hiện thực hóa vào mã nguồn. Chi tiết như sau:
+
+### 1. Tái cấu trúc và Di chuyển Package
+- **Hành động**: Di chuyển `UserUsageQuota` và `UserUsageQuotaRepository` từ module `gallery` sang module `quota` (`backend.modules.quota`).
+- **Giải thích**: Tách biệt quản lý hạn mức (Quota) ra khỏi quản lý tài sản (Gallery) để đảm bảo tính độc lập của module và tuân thủ kiến trúc Layered.
+
+### 2. Hiện thực hóa Shared Quota Service
+- **`UsageQuotaService`**: Triển khai các phương thức tập trung:
+    - `consumeCvCreation`: Trừ lượt tạo CV.
+    - `consumeCvAiAnalysis`: Trừ lượt phân tích AI.
+    - `activatePlan`: Kích hoạt gói Plan và cấp quyền lợi tương ứng.
+    - `addQuota`: Cộng dồn quota cho các gói top-up.
+- **`QuotaBenefitConfig`**: Tạo class cấu hình tập trung định nghĩa quyền lợi cho 3 gói:
+    - `FREE`: 1 CV, 1 AI CV, 0 phút Int.
+    - `MIDDLE`: 5 CV, 10 AI CV, 30 phút Int.
+    - `ENHANCE`: 20 CV, 50 AI CV, 120 phút Int.
+
+### 3. Đồng bộ hóa Module liên quan
+- **Payment**: Refactor `PaymentServiceImpl` để gọi `UsageQuotaService` thay vì thao tác trực tiếp với Repository.
+- **Gallery**: Xóa hoàn toàn `consumeCvQuota` trong `GalleryService` và `GalleryServiceImpl`, xóa bỏ mọi phụ thuộc vào Repository của Quota.
+- **Auth**: Đảm bảo `QuotaAccountCreatedListener` khởi tạo đúng gói FREE cho mọi user mới.
+
+### 4. Giải quyết vấn đề Dữ liệu và API
+- **Lazy Migration**: Triển khai logic tự động cập nhật `plan = FREE` và cấp quota mặc định cho các bản ghi cũ trong DB ngay khi user truy cập, loại bỏ nhu cầu chạy script SQL thủ công.
+- **API cho Frontend**: Triển khai `QuotaController` với endpoint `GET /api/quota/me`, trả về `QuotaResponseDTO` bao gồm: Plan hiện tại, số lượt AI CV, số lượt CV, phút Interview và ngày reset.

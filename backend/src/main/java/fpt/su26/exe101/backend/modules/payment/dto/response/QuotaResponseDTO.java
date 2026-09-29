@@ -10,4 +10,7 @@ import java.util.UUID;
 public class QuotaResponseDTO {
     private Integer remainingCvCount;
     private Integer remainingInterviewMinutes;
+    private Integer remainingAiCvCnt;
+    private fpt.su26.exe101.backend.base.enums.UserPlan plan;
+    private String resetAt;
 }

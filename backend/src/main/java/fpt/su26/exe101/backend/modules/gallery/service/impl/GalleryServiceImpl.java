@@ -9,7 +9,9 @@ import fpt.su26.exe101.backend.modules.gallery.dto.request.JDUpdateRequestDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.response.JDResponseDTO;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
 import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
-import fpt.su26.exe101.backend.modules.gallery.repository.*;
+import fpt.su26.exe101.backend.modules.gallery.repository.GalleryRepository;
+import fpt.su26.exe101.backend.modules.gallery.repository.JobDescriptionRepository;
+import fpt.su26.exe101.backend.modules.quota.entity.UserUsageQuota;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,7 +32,6 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
     private final JobDescriptionRepository jdRepository;
     private final GalleryMapper galleryMapper;
     private final AccountRepository accountRepository;
-    private final UserUsageQuotaRepository quotaRepository;
 
     private Gallery getGalleryForCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -88,18 +89,6 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
         return jdRepository.findByGalleryIdAndContentHash(gallery.getId(), hash).orElseGet(() ->
                 jdRepository.save(JobDescription.builder().gallery(gallery).title("User provided JD")
                         .content(jdText.trim()).contentHash(hash).build()));
-    }
-
-    @Override
-    @Transactional
-    public void consumeCvQuota(UUID accountId) {
-        UserUsageQuota quota = quotaRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
-        if (quota.getRemainingCvCnt() <= 0) {
-            throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
-        }
-        quota.setRemainingCvCnt(quota.getRemainingCvCnt() - 1);
-        quotaRepository.save(quota);
     }
 
     @Override
