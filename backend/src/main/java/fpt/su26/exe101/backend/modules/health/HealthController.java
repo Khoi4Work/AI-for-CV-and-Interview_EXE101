@@ -1,4 +1,4 @@
-package fpt.su26.exe101.backend.modules.interview.health;
+package fpt.su26.exe101.backend.modules.health;
 
 import fpt.su26.exe101.backend.base.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
