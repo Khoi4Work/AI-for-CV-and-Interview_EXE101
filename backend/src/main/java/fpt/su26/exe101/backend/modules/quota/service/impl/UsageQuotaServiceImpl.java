@@ -6,6 +6,8 @@ import fpt.su26.exe101.backend.modules.gallery.entity.UserUsageQuota;
 import fpt.su26.exe101.backend.modules.gallery.repository.UserUsageQuotaRepository;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
+import fpt.su26.exe101.backend.modules.quota.event.QuotaInitializationRequestedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,25 +17,30 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UsageQuotaServiceImpl implements UsageQuotaService {
     private final UserUsageQuotaRepository repository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override @Transactional
     public void initializeDefaultQuota(UUID accountId) {
-        repository.findByAccountId(accountId).orElseGet(() -> repository.save(UserUsageQuota.builder()
-                .accountId(accountId).plan(UserPlan.FREE).remainingCvCnt(1).remainingCvAiCnt(1)
-                .remainingIntMin(0).build()));
+        repository.findByAccountId(accountId).orElseGet(() -> repository.save(defaultQuota(accountId)));
     }
 
     private UserUsageQuota lockedQuota(UUID accountId) {
         return repository.findByAccountIdForUpdate(accountId).orElseGet(() -> {
-            UserUsageQuota created = UserUsageQuota.builder().accountId(accountId).plan(UserPlan.FREE)
-                    .remainingCvCnt(1).remainingCvAiCnt(1).remainingIntMin(0).build();
-            return repository.save(created);
+            return repository.save(defaultQuota(accountId));
         });
     }
 
     @Override @Transactional(readOnly = true)
     public UserPlan getPlan(UUID accountId) {
-        return repository.findByAccountId(accountId).map(UserUsageQuota::getPlan).orElse(UserPlan.FREE);
+        return repository.findByAccountId(accountId).map(UserUsageQuota::getPlan).orElseGet(() -> {
+            eventPublisher.publishEvent(new QuotaInitializationRequestedEvent(accountId));
+            return UserPlan.FREE;
+        });
+    }
+
+    private UserUsageQuota defaultQuota(UUID accountId) {
+        return UserUsageQuota.builder().accountId(accountId).plan(UserPlan.FREE)
+                .remainingCvCnt(1).remainingCvAiCnt(1).remainingIntMin(0).build();
     }
 
     @Override @Transactional
