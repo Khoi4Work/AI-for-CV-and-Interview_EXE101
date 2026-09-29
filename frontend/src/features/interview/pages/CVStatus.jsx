@@ -1,24 +1,55 @@
 // /src/pages/interview/CVStatus.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowLeft, ArrowRight, Upload, Lock } from 'lucide-react';
+import { Sparkles, ArrowLeft, Upload, Lock } from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
+import { interviewService } from '../services/interviewService.js';
+import { getApiErrorMessage } from '../../../service/apiClient.js';
 
 export default function CvStatus() {
   const navigate = useNavigate();
   const { data, update, setStep } = useInterviewSession();
   const [selected, setSelected] = useState(data.cvStatus || null);
+  const [cvId, setCvId] = useState(data.cvId || '');
+  const [cvs, setCvs] = useState([]);
+  const [loadingCvs, setLoadingCvs] = useState(data.cvStatus === 'have');
+  const [cvError, setCvError] = useState('');
 
   useEffect(() => {
     setStep(2);
   }, [setStep]);
 
+  useEffect(() => {
+    if (selected !== 'have') return undefined;
+    let active = true;
+    interviewService.getGalleryAssets()
+      .then((assets) => {
+        if (!active) return;
+        const availableCvs = assets?.cvs || [];
+        setCvs(availableCvs);
+        setCvId((previous) => (previous && availableCvs.some((cv) => cv.id === previous) ? previous : ''));
+      })
+      .catch((error) => {
+        if (active) setCvError(getApiErrorMessage(error, 'Không thể tải danh sách CV.'));
+      })
+      .finally(() => {
+        if (active) setLoadingCvs(false);
+      });
+    return () => { active = false; };
+  }, [selected]);
+
   const handleNext = () => {
     if (!selected) return;
-    update({ cvStatus: selected });
+    update({ cvStatus: selected, cvId: selected === 'have' ? cvId : null });
     navigate('/interview/experience-level');
+  };
+
+  const handleSelectHaveCv = () => {
+    setSelected('have');
+    setLoadingCvs(true);
+    setCvError('');
   };
 
   return (
@@ -41,7 +72,7 @@ export default function CvStatus() {
 
           <div className="grid md:grid-cols-2 gap-6 mb-16">
             <div
-              onClick={() => setSelected('have')}
+              onClick={handleSelectHaveCv}
               className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-interview-card-bg ${
                 selected === 'have' ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
               }`}
@@ -77,6 +108,21 @@ export default function CvStatus() {
             </div>
           </div>
 
+          {selected === 'have' && (
+            <div className="bg-interview-card-bg rounded-xl border border-outline-variant p-5 mb-8">
+              <label htmlFor="interview-cv" className="block text-sm font-semibold text-black mb-2">Chọn CV đã lưu</label>
+              {loadingCvs ? <p className="text-sm text-black/60">Đang tải CV...</p> : (
+                <select id="interview-cv" value={cvId} onChange={(event) => setCvId(event.target.value)}
+                  className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-sm text-black">
+                  <option value="">-- Chọn CV --</option>
+                  {cvs.map((cv) => <option key={cv.id} value={cv.id}>{cv.name || 'CV chưa đặt tên'}</option>)}
+                </select>
+              )}
+              {cvError && <p role="alert" className="mt-2 text-sm text-red-700">{cvError}</p>}
+              {!loadingCvs && !cvError && cvs.length === 0 && <p className="mt-2 text-sm text-black/60">Bạn chưa có CV được lưu. <button type="button" onClick={() => navigate('/templates')} className="text-primary underline">Tạo CV</button></p>}
+            </div>
+          )}
+
           <div className="flex items-center justify-between w-full mt-4">
             <button
               onClick={() => navigate('/interview/job-selection')}
@@ -89,9 +135,9 @@ export default function CvStatus() {
             </div>
             <button
               onClick={handleNext}
-              disabled={!selected}
+              disabled={!selected || (selected === 'have' && (!cvId || loadingCvs))}
               className={`px-8 py-3 rounded-lg font-medium transition-colors shadow-sm ${
-                selected ? 'bg-primary text-on-primary hover:bg-primary-container' : 'bg-surface-container text-outline cursor-not-allowed'
+                selected && (selected !== 'have' || (cvId && !loadingCvs)) ? 'bg-primary text-on-primary hover:bg-primary-container' : 'bg-surface-container text-outline cursor-not-allowed'
               }`}
             >
               Tiếp tục
