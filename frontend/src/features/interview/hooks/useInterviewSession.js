@@ -153,11 +153,12 @@ export function useInterviewSession() {
   }, [data]);
 
   const generateQuestions = useCallback(() => {
-    if (data.backendSessionId && data.questions.length) return Promise.resolve(data.questions);
+    const currentData = dataRef.current;
+    if (currentData.backendSessionId && currentData.questions.length) return Promise.resolve(currentData.questions);
     if (createPromiseRef.current) return createPromiseRef.current;
 
-    const { interviewConfig } = data;
-    if (!interviewConfig?.type || !interviewConfig?.duration || !data.experienceLevel) {
+    const { interviewConfig } = currentData;
+    if (!interviewConfig?.type || !interviewConfig?.duration || !currentData.experienceLevel) {
       const message = 'Thiếu cấu hình loại phỏng vấn, thời lượng hoặc cấp độ kinh nghiệm.';
       update({ sessionError: message });
       return Promise.reject(new Error(message));
@@ -167,9 +168,9 @@ export function useInterviewSession() {
     createPromiseRef.current = interviewService.createSession({
       interviewType: backendInterviewType(interviewConfig.type),
       durationMinutes: Number(interviewConfig.duration),
-      experienceLevel: data.experienceLevel.toUpperCase(),
+      experienceLevel: currentData.experienceLevel.toUpperCase(),
       language: interviewConfig.language || 'vi',
-      cvId: data.cvId || undefined,
+      cvId: currentData.cvId || undefined,
       jdText: interviewConfig.jd?.trim() || undefined,
       adaptiveMode: false,
     }).then((session) => {
@@ -206,7 +207,7 @@ export function useInterviewSession() {
     });
 
     return createPromiseRef.current;
-  }, [data, update]);
+  }, [update]);
 
   const saveAnswer = useCallback(async (questionId, answer, { audioBlob } = {}) => {
     const sessionId = data.backendSessionId;

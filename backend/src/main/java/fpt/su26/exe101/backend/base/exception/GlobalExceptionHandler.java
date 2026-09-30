@@ -18,6 +18,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -99,6 +100,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorCode ec = ErrorCode.DUPLICATE_RESOURCE;
         return ResponseEntity.status(ec.getStatus())
                 .body(buildError(ec.getCode(), ec.getDefaultMessage(), request.getRequestURI(), null));
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleClientDisconnected(AsyncRequestNotUsableException ex, HttpServletRequest request) {
+        log.debug("Client disconnected while writing response for {}.", request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)

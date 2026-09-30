@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cvPipelineService } from '../services/cvPipelineService.js';
@@ -71,12 +71,14 @@ const CVAnalyzing = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-surface text-on-surface">
-        <p className="text-lg font-semibold">{error}</p>
-        <button className="px-5 py-3 rounded-xl bg-primary text-on-primary font-bold" onClick={() => navigate('/builder')}>
-          Quay lại CV Builder
-        </button>
-      </div>
+        <div className="min-h-screen flex items-center justify-center bg-surface px-4 text-on-surface">
+          <section role="alert" className="error-card rounded-2xl border border-outline-variant bg-surface-container p-6 text-center shadow-lg">
+            <p className="mb-5 text-lg font-semibold">{error}</p>
+            <button className="rounded-xl bg-primary px-5 py-3 font-bold text-on-primary" onClick={() => navigate('/builder')}>
+              Quay lại CV Builder
+            </button>
+          </section>
+        </div>
     );
   }
 

@@ -221,7 +221,7 @@ export default function Register() {
               </form>
 
               {error && (
-                <div className="mt-md p-sm rounded-lg bg-red-100 text-red-600 text-body-sm font-medium border border-red-200">
+                <div role="alert" className="error-alert mt-md p-sm rounded-lg bg-red-100 text-red-600 text-body-sm font-medium border border-red-200">
                   {error}
                 </div>
               )}

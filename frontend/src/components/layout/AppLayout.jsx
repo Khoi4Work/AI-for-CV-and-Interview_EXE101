@@ -84,7 +84,7 @@ function RoomGuard({children}) {
         >
             <section
                 style={{ width: 'min(100%, 32rem)', boxSizing: 'border-box' }}
-                className="rounded-2xl border border-outline-variant bg-interview-card-bg p-5 text-center text-slate-900 shadow-lg sm:p-8"
+                className="error-card rounded-2xl border border-outline-variant bg-interview-card-bg p-5 text-center text-slate-900 shadow-lg sm:p-8"
             >
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl font-bold text-red-700" aria-hidden="true">!</div>
                 <h1 className="mb-2 text-xl font-bold text-slate-900">Không thể tạo buổi phỏng vấn</h1>
@@ -135,7 +135,7 @@ function ResultGuard({children}) {
     if (!hasQuestions) return <Navigate to="/interview/job-selection" replace/>;
     if (!hasFeedback && data.sessionError) return (
         <div className="min-h-screen flex items-center justify-center bg-interview-radial p-6">
-            <div className="max-w-lg rounded-xl bg-interview-card-bg p-6 text-center shadow-lg">
+            <div className="error-card rounded-xl bg-interview-card-bg p-6 text-center shadow-lg">
                 <h1 className="mb-2 text-xl font-bold text-black">Không thể tải kết quả</h1>
                 <p className="mb-5 text-sm text-black/70">{data.sessionError}</p>
                 <div className="flex justify-center gap-3">
@@ -285,7 +285,7 @@ function AppLayout() {
                         className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs shrink-0">
                         {toast.type === 'success' ? '✓' : 'ℹ'}
                     </div>
-                    <span className="text-sm font-medium leading-normal whitespace-normal flex-1">
+                    <span className="min-w-0 break-words text-sm font-medium leading-normal whitespace-normal flex-1">
             {toast.message}
           </span>
                 </div>

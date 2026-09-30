@@ -71,7 +71,7 @@ public class InterviewController {
         return ResponseEntity.ok(ApiResponse.success(interviewService.getSessionDetail(sessionId)));
     }
 
-    @GetMapping(value = "/questions/{questionId}/audio", produces = "audio/mpeg")
+    @GetMapping("/questions/{questionId}/audio")
     public ResponseEntity<byte[]> getQuestionAudio(@PathVariable UUID questionId) {
         return ResponseEntity.ok()
                 .contentType(MediaType.valueOf("audio/mpeg"))

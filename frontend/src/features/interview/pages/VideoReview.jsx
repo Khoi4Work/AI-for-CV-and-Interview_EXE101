@@ -83,7 +83,7 @@ export function VideoReview() {
                         {isEvaluating ? 'Đang đánh giá...' : 'Nhận kết quả phản hồi'}
                     </button>
                 </div>
-                {error && <p role="alert" className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+                {error && <p role="alert" className="error-alert mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
             </div>
         </MainLayout>
     );

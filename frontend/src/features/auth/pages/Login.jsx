@@ -124,7 +124,7 @@ export default function Login() {
                     </div>
 
                     {error && (
-                        <div className="mb-md p-sm rounded-lg bg-red-100 text-red-600 text-body-sm font-medium border border-red-200">
+                        <div role="alert" className="error-alert mb-md p-sm rounded-lg bg-red-100 text-red-600 text-body-sm font-medium border border-red-200">
                             {error}
                         </div>
                     )}

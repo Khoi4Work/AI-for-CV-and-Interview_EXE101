@@ -5,8 +5,11 @@ import { fetchElevenLabsAudio } from '../services/elevenLabsService';
 export function useElevenLabsTTS(onAudioEnd) {
     const audioRef = useRef(null);
     const audioUrlRef = useRef(null);
+    const requestControllerRef = useRef(null);
 
     const stopAudio = useCallback(() => {
+        requestControllerRef.current?.abort();
+        requestControllerRef.current = null;
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current = null;
@@ -20,10 +23,16 @@ export function useElevenLabsTTS(onAudioEnd) {
 
     const playTTS = useCallback(async (text, questionId, language = 'vi') => {
         stopAudio(); // Dừng âm thanh cũ (nếu có) trước khi phát cái mới
+        const requestController = new AbortController();
+        requestControllerRef.current = requestController;
 
         try {
             if (!questionId) throw new Error('Question audio requires a backend question ID.');
-            const url = await fetchElevenLabsAudio(questionId);
+            const url = await fetchElevenLabsAudio(questionId, requestController.signal);
+            if (requestController.signal.aborted || requestControllerRef.current !== requestController) {
+                URL.revokeObjectURL(url);
+                return;
+            }
             audioUrlRef.current = url;
             const audio = new Audio(url);
             audioRef.current = audio;
@@ -35,6 +44,7 @@ export function useElevenLabsTTS(onAudioEnd) {
 
             await audio.play();
         } catch (error) {
+            if (requestController.signal.aborted || error?.code === 'ERR_CANCELED') return;
             console.error("Backend TTS lỗi, dùng giọng mặc định:", error);
             stopAudio();
 

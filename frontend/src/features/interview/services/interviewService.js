@@ -23,9 +23,10 @@ export const interviewService = {
     await apiClient.post(`/interview/sessions/${sessionId}/evaluate`),
   ),
 
-  getQuestionAudio: async (questionId) => {
+  getQuestionAudio: async (questionId, signal) => {
     const response = await apiClient.get(`/interview/questions/${questionId}/audio`, {
       responseType: 'blob',
+      signal,
     });
     return response.data;
   },
