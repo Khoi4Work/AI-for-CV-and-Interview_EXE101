@@ -36,7 +36,7 @@ public class TemplateControllerIntegrationTest {
     @WithMockUser(username = "test@example.com")
     void getAllTemplates_HappyPath_ShouldReturnTemplates() throws Exception {
         CVTemplateResponseDTO template = CVTemplateResponseDTO.builder()
-                .id(UUID.randomUUID())
+                .id("template-1")
                 .name("Modern Professional")
                 .category("Professional")
                 .previewImage("https://example.com/modern-professional.png")
@@ -53,7 +53,7 @@ public class TemplateControllerIntegrationTest {
     @WithMockUser(username = "test@example.com")
     void submitFeedback_HappyPath_ShouldReturnOk() throws Exception {
         TemplateFeedbackRequestDTO request = TemplateFeedbackRequestDTO.builder()
-                .templateId(UUID.randomUUID())
+                .templateId("template-1")
                 .rating(5)
                 .comment("Great template!")
                 .build();
@@ -69,7 +69,7 @@ public class TemplateControllerIntegrationTest {
     @Test
     @WithMockUser(username = "test@example.com")
     void getFeedback_HappyPath_ShouldReturnFeedback() throws Exception {
-        UUID templateId = UUID.randomUUID();
+        String templateId = "template-1";
         TemplateFeedbackResponseDTO feedback = TemplateFeedbackResponseDTO.builder()
                 .id(UUID.randomUUID())
                 .rating(5)

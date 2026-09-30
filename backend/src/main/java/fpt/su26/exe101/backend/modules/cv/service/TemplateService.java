@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface TemplateService {
     List<CVTemplateResponseDTO> getAllTemplates();
     void submitFeedback(TemplateFeedbackRequestDTO request);
-    List<TemplateFeedbackResponseDTO> getFeedbackForTemplate(UUID templateId);
+    List<TemplateFeedbackResponseDTO> getFeedbackForTemplate(String templateId);
 }

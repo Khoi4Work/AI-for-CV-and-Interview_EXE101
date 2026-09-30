@@ -38,8 +38,13 @@ public class TemplateServiceImpl implements TemplateService {
     public List<CVTemplateResponseDTO> getAllTemplates() {
         UUID accountId = getAccountIdFromToken();
         UserPlan plan = quotaService.getPlan(accountId);
+        int userPlanLevel = plan.ordinal();
+
         return cvMapper.templatesToTemplateResponses(templateRepository.findAll().stream()
-                .filter(template -> plan.ordinal() >= UserPlan.valueOf(template.getMinimumPlan().name()).ordinal()).toList());
+                .filter(template -> {
+                    if (template.getMinimumPlan() == null) return true;
+                    return userPlanLevel >= template.getMinimumPlan().ordinal();
+                }).toList());
     }
 
     @Override
@@ -61,7 +66,7 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
-    public List<TemplateFeedbackResponseDTO> getFeedbackForTemplate(UUID templateId) {
+    public List<TemplateFeedbackResponseDTO> getFeedbackForTemplate(String templateId) {
         List<TemplateFeedback> feedbacks = feedbackRepository.findByTemplateId(templateId);
         return cvMapper.feedbacksToFeedbackResponses(feedbacks);
     }

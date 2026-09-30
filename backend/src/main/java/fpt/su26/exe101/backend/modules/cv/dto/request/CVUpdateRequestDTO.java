@@ -10,5 +10,5 @@ import lombok.*;
 public class CVUpdateRequestDTO {
     private String name;
     private CVContent content;
-    private Long templateId;
+    private String templateId;
 }

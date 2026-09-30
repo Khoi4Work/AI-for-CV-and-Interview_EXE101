@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface TemplateFeedbackRepository extends JpaRepository<TemplateFeedback, UUID> {
-    List<TemplateFeedback> findByTemplateId(UUID templateId);
+    List<TemplateFeedback> findByTemplateId(String templateId);
     List<TemplateFeedback> findByAccountId(UUID accountId);
 }

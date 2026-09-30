@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, useNavigate, NavLink } from 'react-router-dom';
+import { useLocation, useNavigate, NavLink, Link } from 'react-router-dom';
 import { Bell, HelpCircle, BrainCircuit, Menu } from 'lucide-react';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
@@ -47,7 +47,9 @@ const Header = ({ onHelpClick, onMenuClick }) => {
         >
           <Menu size={24} />
         </button>
-        <h1 className="text-lg md:text-xl font-bold text-on-surface tracking-tight">{getTabTitle(location.pathname)}</h1>
+        <Link to="/" className="text-lg md:text-xl font-bold text-on-surface tracking-tight hover:text-primary transition-colors">
+          {getTabTitle(location.pathname)}
+        </Link>
         <nav className="hidden md:flex items-center gap-4">
         </nav>
       </div>
