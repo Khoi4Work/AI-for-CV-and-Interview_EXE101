@@ -39,6 +39,7 @@ import PageTransition from "../transitions/PageTransition.jsx";
 import ScrollToTop from "../transitions/ScrollToTop.jsx";
 import RouteProgressBar from "../transitions/RouteProgressBar.jsx";
 import {useInterviewSession} from "../../features/interview/hooks/useInterviewSession.js";
+import InterviewSessionLoading from '../../features/interview/components/InterviewSessionLoading.jsx';
 
 /**
  * Guard cho InterviewRoom: cần interviewConfig (đã setup xong) + questions.
@@ -104,7 +105,7 @@ function RoomGuard({children}) {
             </section>
         </main>
     );
-    if (configOk && !questionsOk) return null; // đợi API tạo session xong
+    if (configOk && !questionsOk) return <InterviewSessionLoading config={data.interviewConfig}/>;
     return children;
 }
 

@@ -245,14 +245,21 @@ export function InterviewRoom() {
 
     useEffect(() => {
         let recordingTimeout;
+        let questionAudioTimeout;
 
         if (questions.length === 0) return;
         if (phase === 'asking') {
             setTimeout(() => setShowCurrent(true), 0);
             if (currentQ?.text) {
                 if (audioQuestionIdRef.current !== currentQ.id) {
-                    audioQuestionIdRef.current = currentQ.id;
-                    playTTS(currentQ.text, currentQ.id, data.interviewConfig?.language);
+                    // Defer the request until after commit. React StrictMode replays effects
+                    // in development; starting the request synchronously here lets the first
+                    // pass cleanup abort it before the replay can start playback.
+                    questionAudioTimeout = setTimeout(() => {
+                        if (audioQuestionIdRef.current === currentQ.id) return;
+                        audioQuestionIdRef.current = currentQ.id;
+                        playTTS(currentQ.text, currentQ.id, data.interviewConfig?.language);
+                    }, 0);
                 }
             } else {
                 setTimeout(() => {
@@ -272,6 +279,7 @@ export function InterviewRoom() {
 
         return () => {
             if (recordingTimeout) clearTimeout(recordingTimeout);
+            if (questionAudioTimeout) clearTimeout(questionAudioTimeout);
         };
     }, [phase, questions, currentQ, startListening, playTTS, data.interviewConfig?.language]);
 
