@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface CVTemplateRepository extends JpaRepository<CVTemplate, UUID> {
+public interface CVTemplateRepository extends JpaRepository<CVTemplate, String> {
 }

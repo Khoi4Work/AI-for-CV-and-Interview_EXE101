@@ -231,7 +231,7 @@ const PersonalInfoPage = () => {
                     </button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {cvs.slice(0, 2).map((cv) => (
+                    {(cvs || []).slice(0, 2).map((cv) => (
                         <Card key={cv.id }
                               className="p-4 flex items-center justify-between bg-[#CBD5E1]  border-none shadow-sm">
                             <div>

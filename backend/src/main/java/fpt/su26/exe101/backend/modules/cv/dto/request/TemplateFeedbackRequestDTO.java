@@ -8,7 +8,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TemplateFeedbackRequestDTO {
-    private UUID templateId;
+    private String templateId;
     private Integer rating;
     private String comment;
 }

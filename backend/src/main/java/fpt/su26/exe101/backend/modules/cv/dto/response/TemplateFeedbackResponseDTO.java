@@ -9,7 +9,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class TemplateFeedbackResponseDTO {
     private UUID id;
-    private UUID templateId;
+    private String templateId;
     private Integer rating;
     private String comment;
 }

@@ -32,7 +32,7 @@ public class TemplateController {
     }
 
     @GetMapping("/{templateId}/feedback")
-    public ResponseEntity<ApiResponse<List<TemplateFeedbackResponseDTO>>> getFeedback(@PathVariable UUID templateId) {
+    public ResponseEntity<ApiResponse<List<TemplateFeedbackResponseDTO>>> getFeedback(@PathVariable String templateId) {
         return ResponseEntity.ok(ApiResponse.success(templateService.getFeedbackForTemplate(templateId)));
     }
 }

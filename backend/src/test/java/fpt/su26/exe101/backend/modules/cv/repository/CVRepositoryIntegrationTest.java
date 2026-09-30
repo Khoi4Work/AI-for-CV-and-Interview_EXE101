@@ -179,7 +179,7 @@ public class CVRepositoryIntegrationTest {
         templateFeedbackRepository.save(feedback);
 
         // When
-        List<TemplateFeedback> byTemplate = templateFeedbackRepository.findByTemplateId(template.getId());
+        List<TemplateFeedback> byTemplate = templateFeedbackRepository.findByTemplateId(String.valueOf(UUID.fromString(template.getId())));
         List<TemplateFeedback> byAccount = templateFeedbackRepository.findByAccountId(accountId);
 
         // Then
