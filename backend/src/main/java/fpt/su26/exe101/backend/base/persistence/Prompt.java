@@ -198,15 +198,23 @@ public class Prompt {
     public static String interviewEvaluation(String transcriptJson, UserPlan plan) {
         String tierInstructions = switch (plan) {
             case FREE -> throw new IllegalArgumentException("Free plan is not entitled to interview feedback.");
-            case MIDDLE -> "Provide a standard evaluation: overall score, concise summary, strengths, and improvement areas. "
-                    + "The recommendations, criteria, and questionFeedback arrays MUST each be empty. Do not include any objects in those arrays.";
-            case ENHANCE -> "Provide a detailed evaluation: include criterion-level scores and feedback, per-question assessment, "
-                    + "strengths, improvement areas, and actionable recommendations.";
+            case MIDDLE -> "Provide a standard evaluation: overall score, concise summary, strengths, improvement areas, "
+                    + "and one concise assessment for each answered question. For each questionFeedback item, use the exact questionId "
+                    + "from the transcript, give a score based only on that answer, summarize what was effective or missing in assessment, "
+                    + "and give one practical improvementSuggestion. Omit skipped or unanswered questions from questionFeedback. "
+                    + "The recommendations and criteria arrays MUST be empty.";
+            case ENHANCE -> "Include every MIDDLE benefit: overall score, concise summary, strengths, improvement areas, "
+                    + "and a concise assessment with score and practical improvementSuggestion for each answered question. "
+                    + "Use the exact questionId from the transcript and omit skipped or unanswered questions. "
+                    + "Then add the ENHANCE benefits: criterion-level competency scores and feedback, plus actionable practice recommendations. "
+                    + "Do not replace or omit any MIDDLE fields when adding ENHANCE detail.";
         };
         String schema = switch (plan) {
             case FREE -> throw new IllegalArgumentException("Free plan is not entitled to interview feedback.");
             case MIDDLE -> "{\"overallScore\":0,\"summary\":\"\",\"strengths\":[\"\"],"
-                    + "\"improvementAreas\":[\"\"],\"recommendations\":[],\"criteria\":[],\"questionFeedback\":[]}";
+                    + "\"improvementAreas\":[\"\"],\"recommendations\":[],\"criteria\":[],"
+                    + "\"questionFeedback\":[{\"questionId\":\"uuid from transcript\",\"score\":0,\"assessment\":\"\","
+                    + "\"improvementSuggestion\":\"\"}]}";
             case ENHANCE -> "{\"overallScore\":0,\"summary\":\"\",\"strengths\":[\"\"],"
                     + "\"improvementAreas\":[\"\"],\"recommendations\":[\"\"],"
                     + "\"criteria\":[{\"criterion\":\"\",\"score\":0,\"feedback\":\"\"}],"

@@ -99,10 +99,10 @@ export function InterviewResults() {
                     </div>
 
                     {/* Detail Scores */}
-                    <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm">
+                    {criteria.length > 0 && <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm">
                         <h3 className="text-xs font-bold text-outline mb-5 tracking-wider uppercase">Chi Tiết Năng Lực</h3>
 
-                        {criteria.length > 0 ? <div className="space-y-4">
+                        <div className="space-y-4">
                             {criteria.map((item, idx) => (
                                 <div key={idx}>
                                     <div className="flex justify-between text-sm mb-1.5">
@@ -117,8 +117,8 @@ export function InterviewResults() {
                                     </div>
                                 </div>
                             ))}
-                        </div> : <p className="text-sm text-black/60">Gói hiện tại cung cấp đánh giá tổng quan cho buổi phỏng vấn.</p>}
-                    </div>
+                        </div>
+                    </div>}
 
                     <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm space-y-5">
                         <section>

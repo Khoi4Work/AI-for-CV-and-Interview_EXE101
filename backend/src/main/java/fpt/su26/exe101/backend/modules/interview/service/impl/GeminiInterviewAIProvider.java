@@ -55,7 +55,6 @@ public class GeminiInterviewAIProvider implements InterviewAIProvider {
             // The plan, not model compliance, controls which feedback fields are exposed.
             evaluation.setRecommendations(java.util.List.of());
             evaluation.setCriteria(java.util.List.of());
-            evaluation.setQuestionFeedback(java.util.List.of());
         }
     }
 
@@ -110,7 +109,6 @@ public class GeminiInterviewAIProvider implements InterviewAIProvider {
             throw new IllegalStateException("AI returned incomplete interview evaluation data.");
         }
         if (plan == UserPlan.MIDDLE && (!evaluation.getCriteria().isEmpty()
-                || !evaluation.getQuestionFeedback().isEmpty()
                 || !evaluation.getRecommendations().isEmpty())) {
             throw new IllegalStateException("AI returned feedback fields outside the MIDDLE plan tier.");
         }

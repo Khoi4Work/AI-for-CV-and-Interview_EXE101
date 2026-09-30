@@ -14,7 +14,7 @@
 - Thời lượng là giới hạn tối đa của **mỗi buổi**, không phải số phút quota tiêu hao. Mốc dự kiến: Free 5 phút, Middle 10 phút, Enhance 15 phút.
 - Không trừ `UserUsageQuota.remainingIntMin` theo thời lượng phiên.
 - Theo phương án B, chỉ gói Middle và Enhance được nhận feedback sau buổi; Free không có feedback.
-- Độ chi tiết feedback tăng theo bậc gói: Middle nhận đánh giá mức cơ bản/tiêu chuẩn; Enhance nhận đánh giá chi tiết hơn. Nội dung khác biệt cụ thể phải được định nghĩa trong DTO/prompt và response, không chỉ khác câu mô tả trên UI.
+- Quyền lợi feedback tích lũy theo bậc: Middle nhận đánh giá tổng quan và nhận xét ngắn gắn với từng câu đã trả lời; Enhance nhận toàn bộ quyền lợi Middle, cộng thêm điểm năng lực và đề xuất luyện tập chi tiết. Nội dung khác biệt cụ thể phải được định nghĩa trong DTO/prompt và response, không chỉ khác câu mô tả trên UI.
 - Đối chiếu entitlement với `InterviewBenefit` (hiện có `maxDurationMin`, `allowDeepFeedbk`, `allowCompCulture`, `allowRecording`). Xác định mapping gói thực tế sang Free/Middle/Enhance từ dữ liệu Payment đang có; không hard-code theo tên hiển thị nếu service ID là nguồn quyền lợi.
 
 ### Loại interview
@@ -53,7 +53,7 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 4. Luồng mặc định (adaptive tắt) chọn một bộ câu hỏi hữu hạn đã có trong DB, lưu snapshot/thứ tự câu hỏi vào session để kết quả không đổi khi ngân hàng được cập nhật.
 5. BE nhận câu trả lời và transcript/voice theo API đã thống nhất; xử lý voice ở BE, không để FE gọi trực tiếp nhà cung cấp voice.
 6. Kết thúc session khi hết giới hạn thời lượng hoặc người dùng kết thúc. Không tính thời lượng buổi vào quota phút.
-7. Áp dụng quyền feedback: Free không được tạo/lấy feedback; Middle nhận mức tiêu chuẩn; Enhance nhận mức chi tiết. Kiểm tra quyền ở BE cho cả endpoint tạo và đọc feedback.
+7. Áp dụng quyền feedback: Free không được tạo/lấy feedback; Middle nhận mức tổng quan và phản hồi theo từng câu; Enhance nhận tất cả quyền lợi Middle, đồng thời có thêm điểm năng lực và đề xuất luyện tập chi tiết. Kiểm tra quyền ở BE cho cả endpoint tạo và đọc feedback.
 
 ## 5. Adaptive mode: thiết kế, cờ và điều kiện bật
 
@@ -92,7 +92,7 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 
 - Loại interview và cấp độ lọc đúng ngân hàng câu hỏi; không lẫn HR, Technical và Behavioral.
 - Duration được BE giới hạn theo entitlement; không trừ quota phút.
-- Free không thể gọi API để nhận feedback; Middle/Enhance nhận đúng mức chi tiết đã định nghĩa.
+- Free không thể gọi API để nhận feedback; Middle nhận feedback tổng quan và theo từng câu; Enhance nhận thêm mức chi tiết năng lực đã định nghĩa.
 - Thiếu CV/JD vẫn chạy được bằng câu hỏi chung phù hợp.
 - Adaptive mặc định tắt, có fallback về luồng cố định và không vượt giới hạn phiên.
 - Voice được xử lý qua BE; session, câu trả lời, câu hỏi đã chọn và feedback được lưu/đọc nhất quán.
@@ -126,7 +126,7 @@ Ngân hàng câu hỏi DB là nguồn chuẩn. RAG (nếu triển khai) chỉ h�
 ### API 3 — Evaluate Session (`POST /api/interview/sessions/{sessionId}/evaluate`)
 
 - **Trạng thái:** Đã triển khai BE; Maven compile thành công với `-DskipTests`.
-- Kiểm tra session thuộc gallery hiện tại; Free bị từ chối feedback, Middle nhận phản hồi tiêu chuẩn, Enhance nhận tiêu chí và đánh giá từng câu chi tiết hơn.
+- Kiểm tra session thuộc gallery hiện tại; Free bị từ chối feedback, Middle nhận phản hồi tổng quan và theo từng câu, Enhance nhận thêm tiêu chí năng lực và đề xuất luyện tập chi tiết.
 - Tạo prompt riêng cho interview trong `base/persistence/Prompt`; Gemini trả JSON vào DTO rõ ràng, BE xác thực schema/điểm số trước khi lưu.
 - Đánh giá cần tối thiểu một câu trả lời không bị skip và có transcript; audio upload được transcription ở BE trước khi lưu. Audio-only URL không được đánh giá.
 - Khi đánh giá thành công, lưu overall score/feedback, chuyển session sang `COMPLETED` và ghi `completedAt`. Gọi lại trả feedback đã lưu, không gọi AI lại.
