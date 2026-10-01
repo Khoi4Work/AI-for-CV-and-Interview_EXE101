@@ -6,7 +6,7 @@ import { mapCVDataToTemplate } from '../mapper/cv-data-mapper.js';
 import { TEMPLATES_DATA } from '../constants/templates.js';
 
 export default function CVEditor() {
-    const { cvData } = useCV();
+    const { cvData, setTemplate } = useCV();
     const [zoom, setZoom] = useState(100);
     const selectedTemplate = cvData.selectedTemplateId;
     const templateName = TEMPLATES_DATA.find(template => template.id === selectedTemplate)?.title || 'CV';
@@ -20,6 +20,9 @@ export default function CVEditor() {
                 zoom={zoom}
                 onZoomIn={() => setZoom(prev => Math.min(prev + 10, 200))}
                 onZoomOut={() => setZoom(prev => Math.max(prev - 10, 50))}
+                templateOptions={TEMPLATES_DATA}
+                onTemplateChange={setTemplate}
+                selectedTemplateId={selectedTemplate}
             />
             <main className="cv-editor-preview flex-1 overflow-y-auto flex justify-center p-12 relative">
                 <div

@@ -69,6 +69,12 @@ export default function Template6_TheStandard({ data }) {
                                 <ul className="list-disc ml-4 flex flex-col gap-1.5">
                                     {skills?.soft?.map((s,i) => <li key={i}>{s}</li>)}
                                 </ul>
+                                {skills?.other?.length > 0 && <>
+                                    <div className="font-bold pt-1 text-slate-700">Other skills</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {skills.other.map((s, i) => <span key={i} className="bg-slate-100 px-3 py-1 rounded-full text-xs font-semibold">{s}</span>)}
+                                    </div>
+                                </>}
                             </div>
                         </div>
 

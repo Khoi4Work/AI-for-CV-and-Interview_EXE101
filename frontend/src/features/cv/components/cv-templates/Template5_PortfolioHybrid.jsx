@@ -62,6 +62,12 @@ export default function Template5_PortfolioHybrid({ data }) {
                                 {skills?.soft?.map((s,i) => <li key={i}>{s}</li>)}
                             </ul>
                         </div>
+                        {skills?.other?.length > 0 && <div className="mt-6">
+                            <div className="font-bold text-teal-100 mb-2 text-[13px]">Other skills</div>
+                            <div className="flex flex-wrap gap-1.5">
+                                {skills.other.map((s, i) => <span key={i} className="border border-teal-600 px-2 py-1 rounded text-[11px] font-medium bg-teal-800/50">{s}</span>)}
+                            </div>
+                        </div>}
                     </div>
 
                     <div className="border-t border-teal-700 pt-8 mt-auto">

@@ -7,12 +7,14 @@ import { cvPipelineService } from '../services/cvPipelineService.js';
 import { useCV } from '../contexts/CVContext.jsx';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
-import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
+import { mapCVDataToTemplate, mapImportedCVData } from '../mapper/cv-data-mapper.js';
+import TemplateRenderer from '../components/TemplateRenderer.jsx';
+import { TEMPLATES_DATA } from '../constants/templates.js';
 
 export function CVResult() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { setFullCVData, setCurrentCvId } = useCV();
+    const { cvData, setFullCVData, setCurrentCvId, setTemplate } = useCV();
     const { showToast } = useApp();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,7 +60,7 @@ export function CVResult() {
                     <div className="flex items-center gap-3 mb-6">
                         <CheckCircle2 className="text-primary" size={32}/>
                         <div>
-                            <h1 className="text-3xl font-bold">CV đã được phân tích</h1>
+                            <h1 className="text-3xl font-bold">Đề xuất cải thiện CV</h1>
                             <p className="text-on-surface-variant">{location.state?.cvName || 'CV của bạn'}</p>
                         </div>
                     </div>
@@ -73,14 +75,53 @@ export function CVResult() {
                         </div>
                     </div>
                     <div className="rounded-2xl border border-outline-variant p-6 mb-8">
-                        <h2 className="font-bold mb-3">Nội dung tối ưu</h2>
-                        <pre className="whitespace-pre-wrap break-words text-sm">{typeof optimizationResult.optimizedContent === 'string'
-                            ? optimizationResult.optimizedContent
-                            : JSON.stringify(optimizationResult.optimizedContent, null, 2)}</pre>
+                        <h2 className="font-bold mb-3">Các chỉnh sửa đã thực hiện</h2>
+                        {optimizationResult.improvements?.length ? (
+                            <div className="space-y-4">
+                                {optimizationResult.improvements.map((item, index) => (
+                                    <article key={`${index}-${item.sectionName}`} className="rounded-xl border border-outline-variant p-4">
+                                        <h3 className="mb-3 font-bold">{item.sectionName || `Chỉnh sửa ${index + 1}`}</h3>
+                                        <div className="grid gap-3 md:grid-cols-2">
+                                            <div className="rounded-lg bg-surface-container p-3">
+                                                <p className="mb-1 text-xs font-bold uppercase text-on-surface-variant">Trước</p>
+                                                <p className="whitespace-pre-wrap break-words">{item.originalText || '—'}</p>
+                                            </div>
+                                            <div className="rounded-lg bg-primary-container/30 p-3">
+                                                <p className="mb-1 text-xs font-bold uppercase text-on-surface-variant">Sau</p>
+                                                <p className="whitespace-pre-wrap break-words">{item.suggestedText || '—'}</p>
+                                            </div>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        ) : <p className="text-on-surface-variant">Không có danh sách chỉnh sửa chi tiết từ phiên tối ưu này.</p>}
                     </div>
-                    <button onClick={() => navigate('/editor')} className="px-6 py-3 rounded-xl bg-primary text-on-primary font-bold">
-                        Mở trình chỉnh sửa
-                    </button>
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+                        <label className="flex items-center gap-3 font-semibold">
+                            <span>Chọn template xem trước</span>
+                            <select
+                                aria-label="Chọn template xem trước"
+                                value={cvData.selectedTemplateId || 'boardroom-ready'}
+                                onChange={(event) => setTemplate(event.target.value)}
+                                className="rounded-lg border border-outline-variant bg-surface px-3 py-2"
+                            >
+                                {TEMPLATES_DATA.map((template) => <option key={template.id} value={template.id}>{template.title}</option>)}
+                            </select>
+                        </label>
+                        <button onClick={() => navigate('/editor')} className="px-6 py-3 rounded-xl bg-primary text-on-primary font-bold">
+                            Mở trình chỉnh sửa
+                        </button>
+                    </div>
+                    {optimizationResult.optimizedContent && typeof optimizationResult.optimizedContent === 'object' ? (
+                        <div className="overflow-auto rounded-2xl border border-outline-variant bg-white p-3">
+                            <div className="mx-auto min-w-[700px] max-w-[1000px]">
+                                <TemplateRenderer
+                                    templateId={cvData.selectedTemplateId || 'boardroom-ready'}
+                                    userData={mapCVDataToTemplate(cvData)}
+                                />
+                            </div>
+                        </div>
+                    ) : <p role="alert" className="text-error">Kết quả tối ưu không đúng định dạng CV để xem trước.</p>}
                 </div>
             </MainLayout>
         );
@@ -92,6 +133,16 @@ export function CVResult() {
     const apiSkillGap = location.state?.skillGap || {};
     const apiFeedback = location.state?.feedback?.feedback || {};
     const apiSections = Array.isArray(apiFeedback.sectionAnalysis) ? apiFeedback.sectionAnalysis : [];
+    const sectionNameVi = (name) => {
+        const normalized = String(name || '').trim().toLowerCase();
+        if (normalized.includes('professional summary') || normalized.includes('summary')) return 'Tóm tắt chuyên môn';
+        if (normalized.includes('work experience') || normalized.includes('experience')) return 'Kinh nghiệm làm việc';
+        if (normalized.includes('skill')) return 'Kỹ năng';
+        if (normalized.includes('education')) return 'Học vấn';
+        if (normalized.includes('project')) return 'Dự án';
+        if (normalized.includes('certificate')) return 'Chứng chỉ';
+        return name || 'Gợi ý khác';
+    };
     const apiData = evaluationResult ? {
         jd: {
             title: 'Mô tả công việc',
@@ -112,7 +163,7 @@ export function CVResult() {
             atsOptimization: apiAnalysis.suggestions || [],
             aiSuggestions: {
                 professionalSummary: (apiFeedback.swot?.opportunities || []).join(' ') || (apiAnalysis.strengths || []).join(' '),
-                workExperience: apiSections.map(section => `${section.sectionName}: ${(section.suggestions || []).join(' ')}`).join('\n'),
+                workExperience: apiSections.map(section => `${sectionNameVi(section.sectionName)}: ${(section.suggestions || []).join(' ')}`).join('\n'),
             },
         },
     } : null;
@@ -347,13 +398,13 @@ export function CVResult() {
 
                         <div className="space-y-4 relative z-10">
                             <div>
-                                <h5 className="text-sm font-semibold text-cv-result-card-text mb-1">Professional Summary</h5>
+                                <h5 className="text-sm font-semibold text-cv-result-card-text mb-1">Tóm tắt chuyên môn</h5>
                                 <p className="text-sm text-cv-result-ai-desc leading-relaxed">
                                     {analysis.aiSuggestions.professionalSummary}
                                 </p>
                             </div>
                             <div>
-                                <h5 className="text-sm font-semibold text-cv-result-card-text mb-1">Work Experience</h5>
+                                <h5 className="text-sm font-semibold text-cv-result-card-text mb-1">Kinh nghiệm làm việc</h5>
                                 <p className="text-sm text-cv-result-ai-desc leading-relaxed">
                                     {analysis.aiSuggestions.workExperience}
                                 </p>

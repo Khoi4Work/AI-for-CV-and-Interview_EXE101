@@ -74,6 +74,12 @@ export default function Template2_BoardroomReady({ data }) {
                         <ul className="list-disc ml-5 flex flex-col gap-1.5">
                             {skills?.soft?.map((s, i) => <li key={i}>{s}</li>)}
                         </ul>
+                        {skills?.other?.length > 0 && <>
+                            <div className="font-bold pt-1">Other skills</div>
+                            <div className="flex flex-wrap gap-2">
+                                {skills.other.map((s, i) => <span key={i} className="bg-slate-200 px-3 py-1 rounded-sm text-[13px] font-medium text-slate-800">{s}</span>)}
+                            </div>
+                        </>}
                     </div>
                 </div>
 

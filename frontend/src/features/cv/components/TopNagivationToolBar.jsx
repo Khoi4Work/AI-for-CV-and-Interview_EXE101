@@ -1,7 +1,7 @@
 import { X, FileDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, onZoomOut, templateName }) {
+export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, onZoomOut, templateName, templateOptions = [], selectedTemplateId, onTemplateChange }) {
     const navigate = useNavigate();
 
     return (
@@ -24,6 +24,23 @@ export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, o
                         </div>
                     </div>
                 </div>
+
+                {/* Zoom Controls */}
+                {templateOptions.length > 0 && onTemplateChange && (
+                    <label className="flex items-center gap-2 text-sm text-on-surface-variant">
+                        <span className="hidden sm:inline">Mẫu CV</span>
+                        <select
+                            aria-label="Chọn mẫu CV"
+                            value={selectedTemplateId || ''}
+                            onChange={(event) => onTemplateChange(event.target.value)}
+                            className="max-w-52 rounded-lg border border-outline-variant bg-surface px-3 py-2 text-on-surface"
+                        >
+                            {templateOptions.map((template) => (
+                                <option key={template.id} value={template.id}>{template.title}</option>
+                            ))}
+                        </select>
+                    </label>
+                )}
 
                 {/* Zoom Controls */}
                 <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full px-4 py-1 gap-4 border border-white/10">

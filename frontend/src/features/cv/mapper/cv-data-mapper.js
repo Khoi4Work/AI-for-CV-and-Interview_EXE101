@@ -2,23 +2,32 @@ export function mapCVDataToTemplate(cvData) {
     if (!cvData) return {};
 
     const experiences = cvData.experiences || [];
+    const skills = cvData.skills || [];
+    const skillCategory = (skill) => {
+        const category = String(skill?.category || '').trim().toLowerCase().replace(/[\s_-]/g, '');
+        if (category === 'backend') return 'backend';
+        if (category === 'frontend') return 'frontend';
+        if (['soft', 'softskill', 'softskills'].includes(category)) return 'soft';
+        return 'other';
+    };
 
     return {
-        name: cvData.personalInfo?.name || "Full Name",
-        title: "Professional Title", // Not explicitly in cvData, maybe add to context later
+        name: cvData.personalInfo?.name || "",
+        title: cvData.professionalTitle || "",
         contact: {
-            phone: cvData.personalInfo?.phone || "--",
-            email: cvData.personalInfo?.email || "--",
-            dob: cvData.personalInfo?.dob || "--",
-            location: cvData.personalInfo?.address || "--",
-            linkedin: cvData.personalInfo?.linkedin || "linkedin.com/in/yourprofile",
+            phone: cvData.personalInfo?.phone || "",
+            email: cvData.personalInfo?.email || "",
+            dob: cvData.personalInfo?.dob || "",
+            location: cvData.personalInfo?.address || "",
+            linkedin: cvData.personalInfo?.linkedin || "",
         },
-        summary: cvData.summary || "Professional summary...",
-        summaryAlt: cvData.summary || "Professional summary...",
+        summary: cvData.summary || "",
+        summaryAlt: cvData.summary || "",
         skills: {
-            backend: cvData.skills?.filter(s => s.category === 'backend').map(s => s.name) || [],
-            frontend: cvData.skills?.filter(s => s.category === 'frontend').map(s => s.name) || [],
-            soft: cvData.skills?.filter(s => s.category === 'soft').map(s => s.name) || [],
+            backend: skills.filter(s => skillCategory(s) === 'backend').map(s => s.name).filter(Boolean),
+            frontend: skills.filter(s => skillCategory(s) === 'frontend').map(s => s.name).filter(Boolean),
+            soft: skills.filter(s => skillCategory(s) === 'soft').map(s => s.name).filter(Boolean),
+            other: skills.filter(s => skillCategory(s) === 'other').map(s => s.name).filter(Boolean),
         },
         skillsGrouped: {
             beginner: cvData.skills?.filter(s => s.level === 'BEGINNER').map(s => s.name) || [],
@@ -50,16 +59,16 @@ export function mapCVDataToTemplate(cvData) {
                 dates: cvData.projects[index].period,
                 description: cvData.projects[index].details?.[0] || '',
                 responsibilities: cvData.projects[index].details?.slice(1).join(', ') || '',
-                techStack: 'React, Node.js, AWS', // Placeholder or derived
-                teamSize: '5 members' // Placeholder
+                techStack: '',
+                teamSize: ''
             } : null,
             project2: cvData.projects?.[index + 1] ? {
                 name: cvData.projects[index + 1].name,
                 dates: cvData.projects[index + 1].period,
                 description: cvData.projects[index + 1].details?.[0] || '',
                 responsibilitiesList: cvData.projects[index + 1].details?.slice(1) || [],
-                techStack: 'React, Node.js, AWS', // Placeholder
-                teamSize: '3 members' // Placeholder
+                techStack: '',
+                teamSize: ''
             } : null,
         })) || [],
         experience3: experiences.map(exp => ({
@@ -71,7 +80,7 @@ export function mapCVDataToTemplate(cvData) {
         education: cvData.education?.map(edu => ({
             school: edu.school,
             degree: edu.degree,
-            dates: edu.period,
+            dates: edu.year || edu.period,
             gpa: edu.gpa,
         })) || [],
         projectsList: cvData.projects?.map(proj => ({
@@ -206,5 +215,6 @@ export function mapImportedCVData(data) {
         certificates: Array.isArray(source.certificates) ? source.certificates : [],
         languages: Array.isArray(source.languages) ? source.languages : [],
         awards: Array.isArray(source.awards) ? source.awards : [],
+        selectedTemplateId: source.selectedTemplateId || undefined,
     };
 }

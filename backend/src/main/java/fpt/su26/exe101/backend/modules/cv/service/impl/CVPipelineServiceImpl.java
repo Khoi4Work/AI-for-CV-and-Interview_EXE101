@@ -3,6 +3,7 @@ package fpt.su26.exe101.backend.modules.cv.service.impl;
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
+import fpt.su26.exe101.backend.modules.cv.dto.CVFeedbackContent;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.cv.entity.CVFeedback;
@@ -30,16 +31,21 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CVPipelineServiceImpl implements CVPipelineService {
+
+    private static final Pattern VIETNAMESE_DIACRITICS = Pattern.compile("[\\u0102\\u0103\\u0110\\u0111\\u0128-\\u0129\\u0168-\\u0169\\u01A0-\\u01A1\\u01AF-\\u01B0\\u1EA0-\\u1EF9]");
 
     private final CVRepository cvRepository;
     private final CVFeedbackRepository feedbackRepository;
@@ -220,7 +226,14 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .build();
         jobRepository.save(job);
 
-        selfProvider.getObject().processOptimization(jobId, cv, request);
+        UUID galleryId = gallery.getId();
+        UUID accountId = gallery.getAccountId();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                selfProvider.getObject().processOptimization(jobId, cvId, galleryId, accountId, request);
+            }
+        });
 
         return CVOptimizationJobResponseDTO.builder()
                 .jobId(jobId)
@@ -230,16 +243,19 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     @Async
-    public void processOptimization(String jobId, CV cv, CVOptimizationRequestDTO request) {
+    public void processOptimization(String jobId, UUID cvId, UUID galleryId, UUID accountId, CVOptimizationRequestDTO request) {
         CVOptimizationJob job = jobRepository.findByJobId(jobId)
                 .orElse(null);
         if (job == null) {
-            quotaService.refundCvAiAnalysis(cv.getGallery().getAccountId());
+            quotaService.refundCvAiAnalysis(accountId);
             log.error("Optimization job {} disappeared before processing; quota refunded", jobId);
             return;
         }
 
         try {
+            CV cv = cvRepository.findWithGalleryById(cvId)
+                    .filter(candidate -> candidate.getGallery().getId().equals(galleryId))
+                    .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found for optimization job"));
             job.setStatus("PROCESSING");
             job.setProgress(10);
             jobRepository.save(job);
@@ -261,14 +277,26 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             cv.setScore(result.getPredictedScore());
             cvRepository.save(cv);
 
-            CVOptimizationLog log = CVOptimizationLog.builder()
+            CVOptimizationLog summaryLog = CVOptimizationLog.builder()
                     .cv(cv)
                     .sectionName("OVERALL")
                     .originalText("N/A")
                     .suggestedText(result.getImprovementSummary())
                     .isAccepted(true)
                     .build();
-            logRepository.save(log);
+            logRepository.save(summaryLog);
+            if (result.getImprovements() != null) {
+                result.getImprovements().stream()
+                        .filter(item -> item != null && item.getSuggestedText() != null && !item.getSuggestedText().isBlank())
+                        .limit(8)
+                        .forEach(item -> logRepository.save(CVOptimizationLog.builder()
+                                .cv(cv)
+                                .sectionName(item.getSectionName() == null || item.getSectionName().isBlank() ? "OTHER" : item.getSectionName())
+                                .originalText(item.getOriginalText() == null ? "" : item.getOriginalText())
+                                .suggestedText(item.getSuggestedText())
+                                .isAccepted(true)
+                                .build()));
+            }
 
             job.setStatus("COMPLETED");
             job.setProgress(100);
@@ -277,7 +305,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
         } catch (Exception e) {
             log.error("Optimization failed for job {}: {}", jobId, e.getMessage());
-            quotaService.refundCvAiAnalysis(cv.getGallery().getAccountId());
+            quotaService.refundCvAiAnalysis(accountId);
             job.setStatus("FAILED");
             job.setErrorMessage(e.getMessage());
             jobRepository.save(job);
@@ -307,10 +335,25 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
         CV cv = cvRepository.findById(job.getCvId())
                 .orElseThrow(() -> new RuntimeException("CV not found"));
+        List<CVOptimizationLog> logs = logRepository.findByCvId(cv.getId()).stream()
+                .filter(log -> log.getCreatedAt() != null && !log.getCreatedAt().isBefore(job.getCreatedAt()))
+                .toList();
 
         return CVOptimizationResultResponseDTO.builder()
                 .optimizedContent(cv.getContent())
-                .improvementSummary("AI-optimized content based on the provided JD")
+                .improvementSummary(logs.stream()
+                        .filter(log -> "OVERALL".equals(log.getSectionName()))
+                        .reduce((first, second) -> second)
+                        .map(CVOptimizationLog::getSuggestedText)
+                        .orElse("CV đã được rà soát theo mô tả công việc."))
+                .improvements(logs.stream()
+                        .filter(log -> !"OVERALL".equals(log.getSectionName()))
+                        .map(log -> CVOptimizationChangeResponseDTO.builder()
+                                .sectionName(log.getSectionName())
+                                .originalText(log.getOriginalText())
+                                .suggestedText(log.getSuggestedText())
+                                .build())
+                        .toList())
                 .predictedScore(cv.getScore())
                 .build();
     }
@@ -365,12 +408,14 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         } else {
             skillGap = aiProvider.analyzeSkillGap(cv.getContent(), jd.getContent());
             Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jd.getId());
-            if (prior.isPresent()) {
+            if (prior.isPresent() && hasVietnameseFeedback(prior.get())) {
                 feedback = toFeedbackResponse(prior.get());
             } else {
                 feedback = aiProvider.generateFeedback(cv.getContent(), jd.getContent());
-                CVFeedback saved = feedbackRepository.save(CVFeedback.builder().cv(cv).jobDescription(jd)
-                        .overallScore(feedback.getOverallScore()).feedbackJson(feedback.getFeedback()).build());
+                CVFeedback saved = prior.orElseGet(() -> CVFeedback.builder().cv(cv).jobDescription(jd).build());
+                saved.setOverallScore(feedback.getOverallScore());
+                saved.setFeedbackJson(feedback.getFeedback());
+                saved = feedbackRepository.save(saved);
                 feedback.setId(saved.getId());
             }
         }
@@ -387,18 +432,15 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         JobDescription jd = galleryService.findJobDescription(jdId, gallery);
 
         Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jdId);
-        if (prior.isPresent()) return toFeedbackResponse(prior.get());
+        if (prior.isPresent() && hasVietnameseFeedback(prior.get())) return toFeedbackResponse(prior.get());
         quotaService.consumeCvAiAnalysis(gallery.getAccountId());
         CVFeedbackResponseDTO feedbackResponse;
         try { feedbackResponse = aiProvider.generateFeedback(cv.getContent(), jd.getContent()); }
         catch (RuntimeException e) { quotaService.refundCvAiAnalysis(gallery.getAccountId()); throw e; }
 
-        CVFeedback feedback = CVFeedback.builder()
-                .cv(cv)
-                .jobDescription(jd)
-                .overallScore(feedbackResponse.getOverallScore())
-                .feedbackJson(feedbackResponse.getFeedback())
-                .build();
+        CVFeedback feedback = prior.orElseGet(() -> CVFeedback.builder().cv(cv).jobDescription(jd).build());
+        feedback.setOverallScore(feedbackResponse.getOverallScore());
+        feedback.setFeedbackJson(feedbackResponse.getFeedback());
         feedbackRepository.save(feedback);
         feedbackResponse.setId(feedback.getId());
         return feedbackResponse;
@@ -406,6 +448,32 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
     private CVFeedbackResponseDTO toFeedbackResponse(CVFeedback f) {
         return feedbackMapper.toResponse(f);
+    }
+
+    private boolean hasVietnameseFeedback(CVFeedback feedback) {
+        if (feedback == null || feedback.getFeedbackJson() == null) return false;
+        CVFeedbackContent content = feedback.getFeedbackJson();
+        List<String> text = new ArrayList<>();
+        if (content.getSwot() != null) {
+            text.addAll(safeList(content.getSwot().getStrengths()));
+            text.addAll(safeList(content.getSwot().getWeaknesses()));
+            text.addAll(safeList(content.getSwot().getOpportunities()));
+            text.addAll(safeList(content.getSwot().getThreats()));
+        }
+        if (content.getSectionAnalysis() != null) {
+            content.getSectionAnalysis().forEach(section -> {
+                if (section == null) return;
+                text.add(section.getSectionName());
+                text.addAll(safeList(section.getStrengths()));
+                text.addAll(safeList(section.getWeaknesses()));
+                text.addAll(safeList(section.getSuggestions()));
+            });
+        }
+        return text.stream().filter(Objects::nonNull).anyMatch(value -> VIETNAMESE_DIACRITICS.matcher(value).find());
+    }
+
+    private List<String> safeList(List<String> values) {
+        return values == null ? List.of() : values;
     }
 
     @Override
