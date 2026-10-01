@@ -6,9 +6,12 @@ import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.modules.payment.dto.request.CheckoutRequestDTO;
 import fpt.su26.exe101.backend.modules.payment.dto.response.OrderResponseDTO;
 import fpt.su26.exe101.backend.modules.payment.dto.response.QuotaResponseDTO;
+import fpt.su26.exe101.backend.modules.payment.dto.response.PaymentServiceResponseDTO;
 import fpt.su26.exe101.backend.modules.payment.entity.*;
 import fpt.su26.exe101.backend.modules.payment.repository.OrderRepository;
 import fpt.su26.exe101.backend.modules.payment.repository.PaymentServiceEntityRepository;
+import fpt.su26.exe101.backend.modules.payment.repository.CVBenefitRepository;
+import fpt.su26.exe101.backend.modules.payment.repository.InterviewBenefitRepository;
 import fpt.su26.exe101.backend.modules.payment.service.PaymentService;
 import fpt.su26.exe101.backend.modules.payment.util.PayOSChecksumUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import fpt.su26.exe101.backend.base.enums.UserPlan;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,6 +41,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepository;
     private final PaymentServiceEntityRepository paymentServiceEntityRepository;
+    private final CVBenefitRepository cvBenefitRepository;
+    private final InterviewBenefitRepository interviewBenefitRepository;
     private final UsageQuotaService usageQuotaService;
     private final PayOSChecksumUtil checksumUtil;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -48,6 +55,29 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Value("${payos.checksum.key}")
     private String payosChecksumKey;
+
+    @Value("${payos.return.url:http://localhost:5173/}")
+    private String payosReturnUrl;
+
+    @Value("${payos.cancel.url:http://localhost:5173/}")
+    private String payosCancelUrl;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentServiceResponseDTO> getAvailableServices() {
+        log.info("Fetching available payment services");
+        List<PaymentServiceEntity> allServices = paymentServiceEntityRepository.findAll();
+        log.info("Found {} total services in database", allServices.size());
+
+        return allServices.stream()
+                .filter(s -> {
+                    boolean isNotFree = s.getPackageCode() != PaymentServiceEntity.PackageCode.FREE;
+                    log.info("Service {}: packageCode={}, isNotFree={}", s.getName(), s.getPackageCode(), isNotFree);
+                    return isNotFree;
+                })
+                .map(this::mapToServiceResponseDTO)
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional
@@ -144,6 +174,10 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentServiceEntity service = order.getService();
         UUID accountId = order.getAccountId();
 
+        // Update the user's plan to the package code of the purchased service
+        UserPlan plan = UserPlan.valueOf(service.getPackageCode().name());
+        usageQuotaService.activatePlan(accountId, plan);
+
         int cvAdd = 0, aiCvAdd = 0, intMinAdd = 0;
         if (service.getCategory() == PaymentServiceEntity.ServiceCategory.CV) {
             cvAdd = service.getBillingUnits();
@@ -151,9 +185,13 @@ public class PaymentServiceImpl implements PaymentService {
             intMinAdd = service.getBillingUnits();
         }
 
-        usageQuotaService.addQuota(accountId, cvAdd, aiCvAdd, intMinAdd);
-        log.info("Updated quota for account: {}. Added CV: {}, Interview: {}",
-                accountId, cvAdd, intMinAdd);
+        // If the service provides additional units beyond the base plan, add them
+        if (cvAdd > 0 || aiCvAdd > 0 || intMinAdd > 0) {
+            usageQuotaService.addQuota(accountId, cvAdd, aiCvAdd, intMinAdd);
+        }
+
+        log.info("Updated plan to {} and added quota for account: {}. Added CV: {}, Interview: {}",
+                plan, accountId, cvAdd, intMinAdd);
     }
 
     private String createPayOSPaymentLink(Order order) {
@@ -172,8 +210,8 @@ public class PaymentServiceImpl implements PaymentService {
                 description = description.substring(0, 22) + "...";
             }
             requestBody.put("description", description);
-            requestBody.put("cancelUrl", "https://payos.vn/cancel");
-            requestBody.put("returnUrl", "https://payos.vn/return");
+            requestBody.put("cancelUrl", payosCancelUrl);
+            requestBody.put("returnUrl", payosReturnUrl);
 
             // PayOS signature must be created from sorted fields:
             // amount=$amount&cancelUrl=$cancelUrl&description=$description&orderCode=$orderCode&returnUrl=$returnUrl
@@ -239,6 +277,35 @@ public class PaymentServiceImpl implements PaymentService {
                 .paymentMethod(order.getPaymentMethod().name())
                 .orderedAt(order.getOrderedAt())
                 .checkoutUrl(order.getCheckoutUrl())
+                .build();
+    }
+
+    private PaymentServiceResponseDTO mapToServiceResponseDTO(PaymentServiceEntity entity) {
+        List<String> benefits = new ArrayList<>();
+
+        if (entity.getCategory() == PaymentServiceEntity.ServiceCategory.CV) {
+            CVBenefit cvBenefit = cvBenefitRepository.findByServiceId(entity.getId());
+            if (cvBenefit != null) {
+                benefits.add("Max Templates: " + cvBenefit.getMaxTemplates());
+                if (cvBenefit.getAllowSemanticSugg()) benefits.add("Semantic Suggestions");
+                if (cvBenefit.getAllowSkillSugg()) benefits.add("Skill Suggestions");
+                if (cvBenefit.getShowPassRate()) benefits.add("Pass Rate Prediction");
+            }
+        } else if (entity.getCategory() == PaymentServiceEntity.ServiceCategory.INTERVIEW) {
+            InterviewBenefit intBenefit = interviewBenefitRepository.findByServiceId(entity.getId());
+            if (intBenefit != null) {
+                benefits.add("Max Duration: " + intBenefit.getMaxDurationMin() + " mins");
+                if (intBenefit.getAllowRecording()) benefits.add("Session Recording");
+                if (intBenefit.getAllowDeepFeedbk()) benefits.add("Deep Feedback");
+                if (intBenefit.getAllowCompCulture()) benefits.add("Culture Fit Analysis");
+            }
+        }
+
+        return PaymentServiceResponseDTO.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .price(entity.getPrice())
+                .benefits(benefits)
                 .build();
     }
 }
