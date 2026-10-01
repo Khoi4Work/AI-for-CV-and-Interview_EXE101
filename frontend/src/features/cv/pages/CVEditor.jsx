@@ -1,91 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import TopNagivationToolBar from "../components/TopNagivationToolBar.jsx";
-import {User, Star, Monitor, Sparkles, Download, ZoomIn, ZoomOut, RotateCcw, Layout, Plus, Trash2} from "lucide-react";
-import { useApp } from '../../auth/contexts/AppContext.jsx';
+import React, { useState } from 'react';
+import TopNagivationToolBar from '../components/TopNagivationToolBar.jsx';
 import { useCV } from '../contexts/CVContext.jsx';
-import { goodResumeData } from '../constants/cv-mock-data.js';
-import { mapMockDataToCVContext } from '../mapper/cv-data-mapper.js';
 import TemplateRenderer from '../components/TemplateRenderer.jsx';
 import { mapCVDataToTemplate } from '../mapper/cv-data-mapper.js';
 import { TEMPLATES_DATA } from '../constants/templates.js';
-import { cvPipelineService } from '../services/cvPipelineService.js';
 
 export default function CVEditor() {
-    const { showToast } = useApp();
-    const {
-        cvData,
-        currentCvId,
-        setCurrentCvId,
-        setHasCV,
-        updatePersonalInfo,
-        updateSummary,
-        updateExperience,
-        updateExperienceDetail,
-        updateSkills,
-        setTemplate,
-        setFullCVData
-    } = useCV();
+    const { cvData } = useCV();
     const [zoom, setZoom] = useState(100);
     const selectedTemplate = cvData.selectedTemplateId;
-
-    useEffect(() => {
-        if (!currentCvId && !cvData.personalInfo.name) {
-            const mappedData = mapMockDataToCVContext(goodResumeData);
-            setFullCVData(mappedData);
-        }
-    }, [currentCvId, cvData.personalInfo.name, setFullCVData]);
-
-
-    const handleSave = async () => {
-        try {
-            const payload = {
-                name: `${cvData.personalInfo.name || 'My'} CV`,
-                content: cvData,
-            };
-            const savedCV = currentCvId
-                ? await cvPipelineService.updateCV(currentCvId, payload)
-                : await cvPipelineService.createCV(payload);
-            if (!savedCV?.id) throw new Error('API không trả về mã CV.');
-            setCurrentCvId(savedCV.id);
-            setHasCV(true);
-            showToast('CV của bạn đã được lưu thành công!', 'success');
-        } catch (error) {
-            showToast(error.response?.data?.message || error.message || 'Không thể lưu CV.', 'error');
-        }
-    };
-
-    const handleZoomIn = () => setZoom(prev => Math.min(prev + 10, 200));
-    const handleZoomOut = () => setZoom(prev => Math.max(prev - 10, 50));
-    const handleResetZoom = () => setZoom(100);
-
-    const simulateAIRewrite = (section, currentText) => {
-        showToast(`AI đang tối ưu hóa nội dung phần ${section}...`, 'info');
-        setTimeout(() => {
-            const optimizedText = `[AI Optimized] ${currentText} - Đã tối ưu hóa các từ khóa hành động và nhấn mạnh kết quả định lượng.`;
-            if (section === 'summary') updateSummary(optimizedText);
-            showToast(`Đã tối ưu hóa ${section} thành công!`, 'success');
-        }, 1500);
-    };
-
+    const templateName = TEMPLATES_DATA.find(template => template.id === selectedTemplate)?.title || 'CV';
     const templateData = mapCVDataToTemplate(cvData);
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden" style={{ background: 'radial-gradient(circle at center, var(--color-bg-radial-start) 0%, var(--color-bg-radial-end) 100%)' }}>
+        <div className="cv-editor-shell flex flex-col h-screen overflow-hidden" style={{ background: 'radial-gradient(circle at center, var(--color-bg-radial-start) 0%, var(--color-bg-radial-end) 100%)' }}>
             <TopNagivationToolBar
-                onExport={handleSave}
+                onExport={() => window.print()}
+                templateName={templateName}
                 zoom={zoom}
-                onZoomIn={handleZoomIn}
-                onZoomOut={handleZoomOut}
+                onZoomIn={() => setZoom(prev => Math.min(prev + 10, 200))}
+                onZoomOut={() => setZoom(prev => Math.max(prev - 10, 50))}
             />
-            <main className="flex-1 overflow-y-auto flex justify-center p-12 relative">
+            <main className="cv-editor-preview flex-1 overflow-y-auto flex justify-center p-12 relative">
                 <div
                     className="cv-page-container flex shrink-0 transition-transform duration-200 ease-in-out relative z-10"
-                    style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+                    style={{
+                        width: selectedTemplate === 'the-standard' ? 1000 : 850,
+                        maxWidth: '100%',
+                        transform: `scale(${zoom / 100})`,
+                        transformOrigin: 'top center',
+                    }}
                 >
-                    <TemplateRenderer
-                        templateId={selectedTemplate}
-                        userData={templateData}
-                    />
+                    <TemplateRenderer templateId={selectedTemplate} userData={templateData} />
                 </div>
             </main>
         </div>

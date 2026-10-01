@@ -24,7 +24,7 @@ export default function Template6_TheStandard({ data }) {
 
     return (
         <div className="overflow-x-auto w-full">
-            <div className="max-w-full md:max-w-[1000px] mx-auto bg-white shadow-lg min-h-[1800px] flex print:shadow-none print:w-full font-sans text-slate-800 overflow-hidden">
+            <div className="max-w-full md:max-w-[1000px] mx-auto bg-white shadow-lg min-h-[1800px] flex print:shadow-none print:w-full font-sans text-slate-800">
 
                 {/* Left Column */}
                 <div className="w-[60%] flex flex-col">

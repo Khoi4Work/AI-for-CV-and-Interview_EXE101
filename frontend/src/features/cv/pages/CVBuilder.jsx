@@ -19,8 +19,7 @@ import {badResumeData} from '../constants/cv-mock-data.js';
 import {mapImportedCVData, mapMockDataToCVContext} from '../mapper/cv-data-mapper.js';
 import {mockJobDescriptions} from '../../../constants/jobDescription.js';
 import {Footer} from "../../../components/layout/Footer.jsx";
-import {importCV} from '../services/cvImportService.js';
-import {cvPipelineService} from '../services/cvPipelineService.js';
+import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 
 export default function CVBuilder() {
@@ -29,7 +28,6 @@ export default function CVBuilder() {
     const navigate = useNavigate();
     const {
         cvData,
-        currentCvId,
         setCurrentCvId,
         setHasCV,
         updatePersonalInfo,
@@ -79,22 +77,11 @@ export default function CVBuilder() {
     const handleSaveAndEdit = async () => {
         setIsSaving(true);
         try {
-            const payload = {
-                name: `${cvData.personalInfo.name || 'My'} CV`,
-                content: cvData,
-            };
-            const savedCV = currentCvId
-                ? await cvPipelineService.updateCV(currentCvId, payload)
-                : await cvPipelineService.createCV(payload);
-            if (!savedCV?.id) throw new Error('API không trả về mã CV.');
-            setCurrentCvId(savedCV.id);
             setHasCV(true);
-            const job = await cvPipelineService.startOptimization(savedCV.id, {jdText});
-            navigate('/cv-analyzing', {
-                state: {target: '/optimizer', jobId: job?.jobId, cvName: payload.name},
-            });
+            showToast('Thông tin CV đã sẵn sàng. Bạn có thể chỉnh sửa và tải file ở bước tiếp theo.', 'success');
+            navigate('/editor');
         } catch (error) {
-            showToast(getApiErrorMessage(error, 'Không thể lưu hoặc tối ưu CV.'), 'error');
+            showToast(getApiErrorMessage(error, 'Không thể mở trình chỉnh sửa CV.'), 'error');
         } finally {
             setIsSaving(false);
         }
@@ -118,10 +105,9 @@ export default function CVBuilder() {
 
         setIsImporting(true);
         try {
-            const imported = await importCV(file);
-            setCurrentCvId(imported.cvId);
-            setFullCVData(mapImportedCVData(imported.extractedData));
-            showToast(imported.duplicate ? 'CV này đã được import trước đó; đã mở bản đã lưu.' : `Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
+            const extractedData = await extractCV(file);
+            setFullCVData(mapImportedCVData(extractedData));
+            showToast(`Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
         } catch (error) {
             const message = getApiErrorMessage(error, 'Không thể nhập CV. Vui lòng thử lại.');
             showToast(message, 'error');
@@ -131,16 +117,7 @@ export default function CVBuilder() {
         }
     };
 
-    const addKeyword = (keyword) => {
-        showToast(`Đã thêm từ khóa "${keyword}" vào gợi ý CV`, 'success');
-    };
-
     const nextStep = () => {
-        if (!jdText.trim()) {
-            showToast('Vui lòng nhập Mô tả công việc (JD) để AI có thể hỗ trợ bạn tốt nhất!', 'error');
-            return;
-        }
-
         if (step === 1) {
             if (!cvData.personalInfo.name.trim()) {
                 showToast('Vui lòng nhập họ tên đầy đủ!', 'error');
@@ -652,7 +629,7 @@ export default function CVBuilder() {
                                         onClick={handleSaveAndEdit}
                                         disabled={isSaving}
                                         className="px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105 disabled:opacity-50">
-                                        {isSaving ? 'Đang lưu và tối ưu...' : 'Lưu CV & phân tích với AI'} <ChevronRight className="w-5 h-5"/>
+                                        {isSaving ? 'Đang mở trình chỉnh sửa...' : 'Tiếp tục đến trình chỉnh sửa'} <ChevronRight className="w-5 h-5"/>
                                     </button>
                                 </div>
                             )}
@@ -677,73 +654,25 @@ export default function CVBuilder() {
                         )}
                     </section>
 
-                    {/* RIGHT COLUMN: JD & AI */}
                     <section className="col-span-5 flex flex-col gap-6">
-                        <div
-                            className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px] sticky top-24">
-                            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
-                                <div className="flex items-center gap-2">
-                                    <Briefcase className="h-6 w-6 text-slate-800"/>
-                                    <h2 className="text-xl font-bold">Mô tả công việc (JD)</h2>
-                                </div>
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px] sticky top-24">
+                            <div className="p-6 border-b border-slate-100 flex items-center gap-2">
+                                <Briefcase className="h-6 w-6 text-slate-800" />
+                                <h2 className="text-xl font-bold">Mô tả công việc (JD)</h2>
                             </div>
-
                             <div className="p-6 flex-grow flex flex-col">
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-xs font-medium text-slate-400">Dán nội dung JD mục tiêu để AI hỗ trợ</span>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="block w-2 h-2 bg-green-600 rounded-full animate-pulse"></span>
-                                        <span className="text-[10px] font-bold text-green-900 tracking-wider">AI LISTENING</span>
-                                    </div>
+                                <p className="text-xs text-slate-500 mb-3">JD là tùy chọn để tham khảo. Bạn sẽ tải CV về máy ở trình chỉnh sửa; thao tác này không ghi CV vào DB và không tự chạy tối ưu.</p>
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {mockJobDescriptions.map(jd => (
+                                        <button key={jd.id} onClick={() => handleDemoJdSelect(jd.id)}
+                                            className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] hover:bg-green-100 hover:text-green-700 transition-colors">
+                                            {jd.title}
+                                        </button>
+                                    ))}
                                 </div>
-
-                                <div className="flex-grow mb-6 relative">
-                                    <div className="flex gap-2 mb-2">
-                                        <span className="text-xs font-bold text-slate-400 uppercase">Demo JD:</span>
-                                        {mockJobDescriptions.map(jd => (
-                                            <button
-                                                key={jd.id}
-                                                onClick={() => handleDemoJdSelect(jd.id)}
-                                                className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] hover:bg-green-100 hover:text-green-700 transition-colors"
-                                            >
-                                                {jd.title}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <textarea
-                                        value={jdText}
-                                        onChange={(e) => setJdText(e.target.value)}
-                                        placeholder="Dán nội dung chi tiết mô tả công việc vào đây..."
-                                        className="w-full h-64 p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-none"
-                                    ></textarea>
-                                </div>
-
-                                {/* AI Suggestions Card */}
-                                <div
-                                    className="bg-white border-2 border-green-500 rounded-2xl p-5 shadow-md relative overflow-hidden transition-all hover:shadow-lg group">
-                                    <div
-                                        className="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition-opacity">
-                                        <Sparkles className="w-16 h-16 text-green-500"/>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 mb-2 relative z-10">
-                                        <Sparkles className="w-4 h-4 text-green-600" fill="currentColor"/>
-                                        <h4 className="text-sm font-bold text-green-900">Gợi ý từ AI</h4>
-                                    </div>
-                                    <p className="text-[11px] text-slate-500 leading-relaxed mb-4 relative z-10">
-                                        Dựa trên JD, hãy cân nhắc thêm các từ khóa sau vào CV để tăng tỷ lệ khớp:
-                                    </p>
-                                    <div className="flex flex-wrap gap-2 relative z-10">
-                                        {['React Query', 'Web Performance', 'TypeScript', 'Microservices', 'TDD'].map(keyword => (
-                                            <button
-                                                key={keyword}
-                                                onClick={() => addKeyword(keyword)}
-                                                className="bg-green-50 hover:bg-green-100 text-green-700 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-green-100 flex items-center gap-1 transition-all hover:scale-105 active:scale-95">
-                                                <span className="text-xs font-bold">+</span> {keyword}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                <textarea value={jdText} onChange={e => setJdText(e.target.value)}
+                                    placeholder="Dán nội dung mô tả công việc (không bắt buộc)..."
+                                    className="w-full min-h-64 flex-grow p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-y" />
                             </div>
                         </div>
                     </section>

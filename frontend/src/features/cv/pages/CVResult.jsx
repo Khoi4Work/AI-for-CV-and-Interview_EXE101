@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Sparkles, FileText, CheckCircle2, AlertCircle, Plus, X } from 'lucide-react';
 import { MainLayout } from '../../interview/components/MainLayout.jsx';
 import { useNavigate, useLocation } from "react-router-dom";
 import { cvEvaluations } from '../constants/cv-evaluation.js';
+import { cvPipelineService } from '../services/cvPipelineService.js';
+import { useCV } from '../contexts/CVContext.jsx';
+import { useApp } from '../../auth/contexts/AppContext.jsx';
+import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
 
 export function CVResult() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { setFullCVData, setCurrentCvId } = useCV();
+    const { showToast } = useApp();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeSkillIndex, setActiveSkillIndex] = useState(null);
@@ -14,6 +21,35 @@ export function CVResult() {
     const [inputValue, setInputValue] = useState('');
     const optimizationResult = location.state?.optimizationResult;
     const evaluationResult = location.state?.evaluationResult;
+    const [isOptimizing, setIsOptimizing] = useState(false);
+
+    useEffect(() => {
+        const content = optimizationResult?.optimizedContent;
+        if (content && typeof content === 'object') {
+            setFullCVData(mapImportedCVData(content));
+            if (location.state?.cvId) setCurrentCvId(location.state.cvId);
+        }
+    }, [optimizationResult, location.state?.cvId, setFullCVData, setCurrentCvId]);
+
+    const handleOptimizeEvaluatedCV = async () => {
+        const { cvId, jdText, cvName } = location.state || {};
+        if (!cvId || !jdText) {
+            showToast('Không tìm thấy CV hoặc JD của phiên đánh giá. Hãy đánh giá lại CV để tối ưu.', 'error');
+            return;
+        }
+        setIsOptimizing(true);
+        try {
+            const job = await cvPipelineService.startOptimization(cvId, { jdText });
+            if (!job?.jobId) throw new Error('API không trả về mã tác vụ tối ưu.');
+            navigate('/cv-analyzing', {
+                state: { target: '/optimizer', jobId: job.jobId, cvId, cvName, jdText },
+            });
+        } catch (error) {
+            showToast(getApiErrorMessage(error, 'Không thể tối ưu CV.'), 'error');
+        } finally {
+            setIsOptimizing(false);
+        }
+    };
 
     if (optimizationResult) {
         return (
@@ -287,10 +323,11 @@ export function CVResult() {
 
                         <div className="w-full space-y-3">
                             <button
-                                onClick={() => navigate('/builder', { state: { loadBadCV: true } })}
+                                onClick={handleOptimizeEvaluatedCV}
+                                disabled={isOptimizing}
                                 className="w-full py-2 bg-cv-result-score-btn-ai-bg text-white rounded-lg font-bold text-sm transition-all hover:opacity-90 active:scale-95"
                             >
-                                Tự động sửa với AI
+                                {isOptimizing ? 'Đang bắt đầu tối ưu...' : 'Tối ưu CV với AI'}
                             </button>
                             <button
                                 onClick={() => navigate('/interview/job-selection')}

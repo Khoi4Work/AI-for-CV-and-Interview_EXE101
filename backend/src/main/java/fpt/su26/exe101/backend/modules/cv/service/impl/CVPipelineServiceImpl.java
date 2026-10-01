@@ -137,6 +137,19 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .build();
     }
 
+    @Override
+    public CVContent extractCV(byte[] fileContent, String contentType) {
+        CVImportModelResponseDTO parsed = aiProvider.parseCVFile(fileContent, contentType);
+        CVContent extractedData = parsed == null ? null : parsed.getExtractedData();
+        if (parsed == null || !Boolean.TRUE.equals(parsed.getIsCV()) || extractedData == null) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Tệp tải lên không được nhận diện là CV hợp lệ.");
+        }
+        if (!hasCVContent(extractedData)) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "CV không có đủ thông tin cá nhân, học vấn hoặc kinh nghiệm để điền.");
+        }
+        return extractedData;
+    }
+
     private boolean hasCVContent(CVContent data) {
         long populatedSections = List.of(
                 data.getPersonalInfo() != null && hasPersonalInfo(data.getPersonalInfo()),

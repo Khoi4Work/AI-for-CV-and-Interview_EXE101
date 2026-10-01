@@ -177,21 +177,34 @@ export function mapMockDataToCVContext(mockData) {
 }
 
 export function mapImportedCVData(data) {
+    const source = data || {};
+    const experiences = Array.isArray(source.experiences) ? source.experiences : [];
     return {
-        personalInfo: data.personalInfo,
-        summary: data.summary,
-        experiences: data.experiences.map((item, index) => ({
+        personalInfo: {
+            name: source.personalInfo?.name || '',
+            email: source.personalInfo?.email || '',
+            phone: source.personalInfo?.phone || '',
+            dob: source.personalInfo?.dob || '',
+            address: source.personalInfo?.address || '',
+            linkedin: source.personalInfo?.linkedin || '',
+        },
+        summary: source.summary || '',
+        experiences: experiences.map((item, index) => ({
             id: Date.now() + index,
-            company: item.company,
-            role: item.role,
-            period: item.period,
-            details: item.details,
+            company: item?.company || '',
+            role: item?.role || '',
+            period: item?.period || '',
+            details: Array.isArray(item?.details) ? item.details : [],
         })),
-        skills: data.skills.map(skill => ({name: skill.name, level: skill.level, category: skill.category})),
-        education: data.education,
-        projects: data.projects,
-        certificates: data.certificates,
-        languages: data.languages,
-        awards: data.awards,
+        skills: (Array.isArray(source.skills) ? source.skills : []).map(skill => ({
+            name: skill?.name || '',
+            level: skill?.level || null,
+            category: skill?.category || '',
+        })),
+        education: Array.isArray(source.education) ? source.education : [],
+        projects: Array.isArray(source.projects) ? source.projects : [],
+        certificates: Array.isArray(source.certificates) ? source.certificates : [],
+        languages: Array.isArray(source.languages) ? source.languages : [],
+        awards: Array.isArray(source.awards) ? source.awards : [],
     };
 }

@@ -1,12 +1,12 @@
 import { X, FileDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, onZoomOut }) {
+export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, onZoomOut, templateName }) {
     const navigate = useNavigate();
 
     return (
         <>
-            <header className="glass-panel border-b border-white/10 px-6 py-3 flex items-center justify-between z-10 w-full shrink-0">
+            <header className="cv-editor-toolbar glass-panel border-b border-white/10 px-6 py-3 flex items-center justify-between z-10 w-full shrink-0">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/home')}
@@ -19,8 +19,8 @@ export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, o
                             S
                         </div>
                         <div>
-                            <h1 className="font-bold text-lg text-primary leading-tight">Executive Pro</h1>
-                            <p className="text-xs text-on-surface-variant italic">Mẫu CV chuyên nghiệp cho quản lý cấp cao</p>
+                            <h1 className="font-bold text-lg text-primary leading-tight">{templateName || 'Trình chỉnh sửa CV'}</h1>
+                            <p className="text-xs text-on-surface-variant italic">Chỉnh sửa nội dung theo mẫu đã chọn</p>
                         </div>
                     </div>
                 </div>
@@ -42,7 +42,7 @@ export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, o
                         onClick={onExport}
                         className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-6 py-2.5 rounded-lg transition-all active:scale-[0.98] shadow-sm">
                         <FileDown className="h-5 w-5"/>
-                        <span className="font-medium text-sm">Lưu CV</span>
+                        <span className="font-medium text-sm">In / Lưu PDF</span>
                     </button>
                 </div>
             </header>
