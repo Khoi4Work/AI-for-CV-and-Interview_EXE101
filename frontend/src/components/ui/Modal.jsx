@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -30,7 +30,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             <div
                 role="dialog"
                 aria-modal="true"
-                className="relative w-full max-w-3xl glass-panel rounded-2xl shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
+                className="relative w-full min-w-0 max-w-3xl shrink-0 glass-panel rounded-2xl shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant bg-surface-container-low">

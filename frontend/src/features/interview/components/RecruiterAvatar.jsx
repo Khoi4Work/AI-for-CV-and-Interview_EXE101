@@ -17,7 +17,7 @@ export function RecruiterAvatar({ phase }) {
 
   return (
     <div
-      className={`w-56 h-56 rounded-full mb-6 border-4 border-background shadow-sm relative overflow-hidden transition-all
+      className={`w-32 h-32 md:w-56 md:h-56 rounded-full mb-6 border-4 border-background shadow-sm relative overflow-hidden transition-all
       ${phase === 'asking' ? 'bg-primary/20 ring-4 ring-primary/30 animate-pulse' : 'bg-surface-container'}`}
     >
       {/* Blurred Background Layer: Fills the wide frame and prevents empty space on sides */}

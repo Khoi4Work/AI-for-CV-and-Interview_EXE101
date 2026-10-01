@@ -1,5 +1,5 @@
 import React from 'react';
-import {Routes, Route, Navigate, useLocation} from 'react-router-dom';
+import {Routes, Route, Navigate, useLocation, useNavigate} from 'react-router-dom';
 import {AnimatePresence} from 'framer-motion';
 import Sidebar from '../../features/user/components/Sidebar.jsx';
 import Header from '../../features/user/components/Header.jsx';
@@ -35,53 +35,118 @@ import CVEditor from "../../features/cv/pages/CVEditor.jsx";
 import {PaymentPage} from "../../features/payment/pages/PaymentPage.jsx";
 import CVEvaluation from "../../features/cv/pages/CVEvaluation.jsx";
 import CVAnalyzing from "../../features/cv/pages/CVAnalyzing.jsx";
-import FeedbackWidget from "../../features/feedback/components/FeedbackWidget.jsx";
 import PageTransition from "../transitions/PageTransition.jsx";
 import ScrollToTop from "../transitions/ScrollToTop.jsx";
 import RouteProgressBar from "../transitions/RouteProgressBar.jsx";
 import {useInterviewSession} from "../../features/interview/hooks/useInterviewSession.js";
+import InterviewSessionLoading from '../../features/interview/components/InterviewSessionLoading.jsx';
 
 /**
  * Guard cho InterviewRoom: cần interviewConfig (đã setup xong) + questions.
  * - Nếu thiếu interviewConfig → redirect về step 1.
- * - Nếu có config nhưng chưa có questions → tự generate rồi cho vào.
+ * - Nếu có config nhưng không có questions → tự generate rồi cho vào.
  */
 function RoomGuard({children}) {
     const {data, generateQuestions} = useInterviewSession();
+    const navigate = useNavigate();
     const configOk = !!(data.interviewConfig?.type && data.interviewConfig?.duration);
-    const questionsOk = Array.isArray(data.questions) && data.questions.length > 0;
+    const questionsOk = !!data.backendSessionId && Array.isArray(data.questions) && data.questions.length > 0;
+    const creationAttempted = React.useRef(false);
+
+    const createSession = React.useCallback(() => {
+        if (creationAttempted.current) return;
+        creationAttempted.current = true;
+        generateQuestions().catch(() => {});
+    }, [generateQuestions]);
 
     React.useEffect(() => {
-        if (configOk && !questionsOk) {
-            generateQuestions();
+        if (configOk && !questionsOk && !data.sessionError) {
+            createSession();
         }
-    }, [configOk, questionsOk, generateQuestions]);
+    }, [configOk, questionsOk, data.sessionError, createSession]);
 
     if (!configOk) return <Navigate to="/interview/job-selection" replace/>;
-    if (configOk && !questionsOk) return null; // đợi generate xong
+    if (data.sessionError && !questionsOk) return (
+        <main
+            role="alert"
+            aria-live="assertive"
+            style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 1000,
+                display: 'grid',
+                placeItems: 'center',
+                width: '100vw',
+                minHeight: '100vh',
+                padding: '2rem 1rem',
+                boxSizing: 'border-box',
+                background: 'radial-gradient(circle at center, var(--color-interview-bg-start) 0%, var(--color-interview-bg-end) 100%)',
+            }}
+        >
+            <section
+                style={{ width: 'min(100%, 32rem)', boxSizing: 'border-box' }}
+                className="error-card rounded-2xl border border-outline-variant bg-interview-card-bg p-5 text-center text-slate-900 shadow-lg sm:p-8"
+            >
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl font-bold text-red-700" aria-hidden="true">!</div>
+                <h1 className="mb-2 text-xl font-bold text-slate-900">Không thể tạo buổi phỏng vấn</h1>
+                <p className="mb-6 break-words text-sm leading-6 text-slate-700">{data.sessionError}</p>
+                <div className="flex flex-col justify-center gap-3 sm:flex-row">
+                    <button
+                        type="button"
+                        onClick={() => { creationAttempted.current = false; createSession(); }}
+                        className="rounded-lg bg-primary px-5 py-2.5 font-semibold text-on-primary transition-colors hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    >Thử lại</button>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/interview/setup')}
+                        className="rounded-lg border border-slate-400 px-5 py-2.5 font-semibold text-slate-800 transition-colors hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    >Quay lại cấu hình</button>
+                </div>
+            </section>
+        </main>
+    );
+    if (configOk && !questionsOk) return <InterviewSessionLoading config={data.interviewConfig}/>;
     return children;
 }
 
 /**
- * Guard cho InterviewResult: cần session.feedback.
- * - Nếu chưa có feedback → tự generate rồi cho vào.
+ * Guard cho InterviewResult: cần feedback đã lấy từ API.
+ * - Nếu chưa có feedback → yêu cầu backend tạo feedback.
  * - Nếu thiếu questions (không từng vào room) → redirect về step 1.
  */
 function ResultGuard({children}) {
     const {data, generateFeedback} = useInterviewSession();
     const hasQuestions = Array.isArray(data.questions) && data.questions.length > 0;
     const hasFeedback = !!data.feedback;
+    const evaluationAttempted = React.useRef(false);
+    const evaluate = React.useCallback(() => {
+        if (evaluationAttempted.current) return;
+        evaluationAttempted.current = true;
+        generateFeedback().catch(() => {});
+    }, [generateFeedback]);
 
     React.useEffect(() => {
-        // CHỈ tự động generate feedback nếu thực sự đang ở route /interview/result
+        // Generate only when the user opens the result route directly.
         // Sử dụng window.location.pathname vì useLocation() có thể gây loop nếu không cẩn thận
-        if (window.location.pathname === '/interview/result' && hasQuestions && !hasFeedback) {
-            generateFeedback();
+        if (window.location.pathname === '/interview/result' && hasQuestions && !hasFeedback && !data.sessionError) {
+            evaluate();
         }
-    }, [hasQuestions, hasFeedback, generateFeedback]);
+    }, [hasQuestions, hasFeedback, data.sessionError, evaluate]);
 
     if (!hasQuestions) return <Navigate to="/interview/job-selection" replace/>;
-    if (!hasFeedback) return null; // đợi generate xong
+    if (!hasFeedback && data.sessionError) return (
+        <div className="min-h-screen flex items-center justify-center bg-interview-radial p-6">
+            <div className="error-card rounded-xl bg-interview-card-bg p-6 text-center shadow-lg">
+                <h1 className="mb-2 text-xl font-bold text-black">Không thể tải kết quả</h1>
+                <p className="mb-5 text-sm text-black/70">{data.sessionError}</p>
+                <div className="flex justify-center gap-3">
+                    <button onClick={() => { evaluationAttempted.current = false; evaluate(); }} className="rounded-lg bg-primary px-4 py-2 font-semibold text-on-primary">Thử lại</button>
+                    <button onClick={() => { window.location.href = '/interview/review'; }} className="rounded-lg border px-4 py-2 text-black">Quay lại</button>
+                </div>
+            </div>
+        </div>
+    );
+    if (!hasFeedback) return null; // đợi API tạo kết quả
     return children;
 }
 
@@ -89,9 +154,14 @@ function AppLayout() {
     const {isLoggedIn, profile} = useAuth();
     const {notificationsCount, showToast, toast} = useApp();
     const location = useLocation();
+    const [sidebarState, setSidebarState] = React.useState({path: location.pathname, open: false});
+    const isSidebarOpen = sidebarState.path === location.pathname && sidebarState.open;
+    const setIsSidebarOpen = React.useCallback((open) => {
+        setSidebarState({path: location.pathname, open});
+    }, [location.pathname]);
 
     return (
-        <div className="relative">
+        <div className="relative overflow-x-hidden">
             <ScrollToTop/>
             <RouteProgressBar/>
 
@@ -164,23 +234,23 @@ function AppLayout() {
                             <Route path="interview/career-goal"
                                    element={<PageTransition key={location.pathname}><CareerGoal/></PageTransition>}/>
                             <Route path="interview/setup"
-                                   element={<PageTransition
-                                       key={location.pathname}><InterviewSetup/></PageTransition>}/>
+                                   element={<PageTransition key={location.pathname}><InterviewSetup/></PageTransition>}/>
 
                             {/* ZONE B shell: Sidebar + Header stay mounted */}
                             <Route path="*" element={
                                 <ProtectedRoute isLoggedIn={isLoggedIn}>
                                     <div className="flex flex-col min-h-screen">
                                         <div className="flex bg-background text-on-surface font-sans antialiased flex-1">
-                                            <Sidebar/>
+                                            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}/>
                                             <div className="flex-1 flex flex-col min-w-0">
                                                 <Header
                                                     profile={profile}
                                                     notificationsCount={notificationsCount}
                                                     onHelpClick={() => showToast('Trung tâm trợ giúp Smartfolio đang tải dữ liệu.', 'info')}
+                                                    onMenuClick={() => setIsSidebarOpen(true)}
                                                 />
                                                 <main
-                                                    className="flex-1 p-8 overflow-y-auto max-w-5xl w-full mx-auto">
+                                                    className="flex-1 p-4 md:p-8 overflow-y-auto max-w-5xl w-full mx-auto">
                                                     <AnimatePresence mode="wait">
                                                         <PageTransition key={location.pathname}>
                                                             <Routes location={location}>
@@ -216,13 +286,12 @@ function AppLayout() {
                         className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs shrink-0">
                         {toast.type === 'success' ? '✓' : 'ℹ'}
                     </div>
-                    <span className="text-sm font-medium leading-normal whitespace-normal flex-1">
+                    <span className="min-w-0 break-words text-sm font-medium leading-normal whitespace-normal flex-1">
             {toast.message}
           </span>
                 </div>
             )}
             {/* Global feedback widget — available on every page */}
-            {/*<FeedbackWidget/>*/}
         </div>
     );
 }

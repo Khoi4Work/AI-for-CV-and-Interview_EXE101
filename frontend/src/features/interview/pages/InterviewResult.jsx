@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {Download, Sparkles, FileText, CheckCircle2, AlertCircle, Home} from 'lucide-react';
+import {useEffect} from 'react';
+import {Sparkles, FileText, RotateCcw} from 'lucide-react';
 import {Header} from '../../../components/layout/PublicHeader.jsx';
 import {Footer} from '../../../components/layout/Footer.jsx';
 import {useNavigate} from 'react-router-dom';
@@ -24,7 +24,8 @@ export function InterviewResults() {
         );
     }
 
-    const {overallScore, overallLabel, overallColor, hrPersona, criteria, transcript, summary} = feedback;
+    const {overallScore, overallLabel, hrPersona, criteria, transcript, summary,
+        strengths = [], improvementAreas = [], recommendations = []} = feedback;
     const passedCount = transcript.filter((t) => t.status === 'pass').length;
     const improveCount = transcript.filter((t) => t.status === 'improve').length;
     const skippedCount = transcript.filter((t) => t.status === 'skipped').length;
@@ -86,24 +87,19 @@ export function InterviewResults() {
                             </p>
                         </div>
 
-                        <div className="flex gap-3">
+                        <div className="flex items-center justify-between gap-3">
+                            <p className="text-xs text-black/60">Kết quả đã được lưu vào tài khoản.</p>
                             <button
-                                onClick={() => alert('Chức năng lưu kết quả (mock)')}
-                                className="flex-1 flex justify-center items-center gap-2 bg-primary text-on-primary py-2.5 rounded-lg font-medium text-sm hover:bg-primary-container transition-colors"
+                                onClick={() => navigate('/interview/job-selection')}
+                                className="flex justify-center items-center gap-2 bg-interview-card-bg text-black border-2 border-selection-border selection-card-hover px-4 py-2 rounded-lg font-medium text-sm transition-all"
                             >
-                                <Download size={16}/> Lưu kết quả
-                            </button>
-                            <button
-                                onClick={() => navigate('/history')}
-                                className="flex-1 flex justify-center items-center gap-2 bg-interview-card-bg text-black border-2 border-selection-border selection-card-hover py-2.5 rounded-lg font-medium text-sm transition-all"
-                            >
-                                <Home size={16}/> Lịch sử
+                                <RotateCcw size={16}/> Luyện tập lại
                             </button>
                         </div>
                     </div>
 
                     {/* Detail Scores */}
-                    <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm">
+                    {criteria.length > 0 && <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm">
                         <h3 className="text-xs font-bold text-outline mb-5 tracking-wider uppercase">Chi Tiết Năng Lực</h3>
 
                         <div className="space-y-4">
@@ -122,6 +118,21 @@ export function InterviewResults() {
                                 </div>
                             ))}
                         </div>
+                    </div>}
+
+                    <div className="bg-interview-card-bg rounded-2xl p-6 border border-outline-variant shadow-sm space-y-5">
+                        <section>
+                            <h3 className="text-sm font-bold text-black mb-2">Điểm mạnh</h3>
+                            {strengths.length ? <ul className="list-disc pl-5 space-y-1 text-sm text-black/75">{strengths.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="text-sm text-black/60">Chưa có nhận xét.</p>}
+                        </section>
+                        <section>
+                            <h3 className="text-sm font-bold text-black mb-2">Điểm cần cải thiện</h3>
+                            {improvementAreas.length ? <ul className="list-disc pl-5 space-y-1 text-sm text-black/75">{improvementAreas.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="text-sm text-black/60">Chưa có nhận xét.</p>}
+                        </section>
+                        {recommendations.length > 0 && <section>
+                            <h3 className="text-sm font-bold text-black mb-2">Đề xuất luyện tập</h3>
+                            <ul className="list-disc pl-5 space-y-1 text-sm text-black/75">{recommendations.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                        </section>}
                     </div>
                 </div>
 
@@ -182,6 +193,9 @@ function TranscriptBlock({entry, persona}) {
         if (status === 'pass') {
             return <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Đạt</span>;
         }
+        if (status === 'reviewed') {
+            return <span className="bg-slate-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Đã trả lời</span>;
+        }
         return <span className="bg-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Cần cải thiện</span>;
     };
 
@@ -202,6 +216,7 @@ function TranscriptBlock({entry, persona}) {
                 <p className="text-black/80 text-sm leading-relaxed mb-3 italic">
                     {status === 'skipped' ? '"(Đã bỏ qua câu hỏi này)"' : `"${answer}"`}
                 </p>
+                {entry.assessment && <p className="text-sm text-black/75 mb-3"><strong>Đánh giá:</strong> {entry.assessment}</p>}
 
                 <div className="flex items-center gap-2 mb-3">
                     {statusBadge()}

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cvPipelineService } from '../services/cvPipelineService.js';
 
 const MESSAGES = [
   "Đang quét cấu trúc CV...",
@@ -14,11 +15,13 @@ const CVAnalyzing = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
+  const [error, setError] = useState('');
 
   // Lấy điểm đến từ state, nếu không có thì mặc định về /optimizer hoặc /cv-result
   const target = location.state?.target || '/optimizer';
 
   useEffect(() => {
+    if (location.state?.jobId) return undefined;
     if (step < MESSAGES.length - 1) {
       const timer = setTimeout(() => {
         setStep((prev) => prev + 1);
@@ -30,7 +33,54 @@ const CVAnalyzing = () => {
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [step, navigate]);
+  }, [step, navigate, location.state, target]);
+
+  useEffect(() => {
+    const jobId = location.state?.jobId;
+    if (!jobId) return undefined;
+
+    let active = true;
+    let timer;
+    const poll = async () => {
+      try {
+        const status = await cvPipelineService.getOptimizationStatus(jobId);
+        if (!active) return;
+        setStep(Math.min(Math.floor((status.progress || 0) / 20), MESSAGES.length - 1));
+
+        if (status.status === 'COMPLETED') {
+          const result = await cvPipelineService.getOptimizationResult(jobId);
+          if (active) navigate(target, {state: {...location.state, optimizationResult: result}});
+          return;
+        }
+        if (status.status === 'FAILED') {
+          setError('AI chưa thể tối ưu CV này. Bạn có thể quay lại và thử lại.');
+          return;
+        }
+        timer = setTimeout(poll, 1500);
+      } catch (requestError) {
+        if (active) setError(requestError.response?.data?.message || 'Không thể kiểm tra trạng thái tối ưu CV.');
+      }
+    };
+
+    poll();
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [location.state, navigate, target]);
+
+  if (error) {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-surface px-4 text-on-surface">
+          <section role="alert" className="error-card rounded-2xl border border-outline-variant bg-surface-container p-6 text-center shadow-lg">
+            <p className="mb-5 text-lg font-semibold">{error}</p>
+            <button className="rounded-xl bg-primary px-5 py-3 font-bold text-on-primary" onClick={() => navigate('/builder')}>
+              Quay lại CV Builder
+            </button>
+          </section>
+        </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface text-on-surface">

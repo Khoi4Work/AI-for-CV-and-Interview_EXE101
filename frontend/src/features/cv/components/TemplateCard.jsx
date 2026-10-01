@@ -2,7 +2,9 @@ import { Heart, Star, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 
-export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, title, subtitle, image, rating, downloads }) {
+export default function TemplateCard({
+    id, badgeText, badgeTheme, categoryText, title, subtitle, image, rating, downloads, onRate
+}) {
     const { profile, toggleFavorite, isLoggedIn } = useAuth();
     const isFavorite = profile.favorites?.includes(id);
 
@@ -13,6 +15,12 @@ export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, 
             return;
         }
         toggleFavorite(id);
+    };
+
+    const handleRateClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onRate) onRate(id);
     };
 
     const getBadgeStyle = () => {
@@ -80,6 +88,13 @@ export default function TemplateCard({ id, badgeText, badgeTheme, categoryText, 
                         </div>
                     </div>
                 </div>
+
+                <button
+                    onClick={handleRateClick}
+                    className="w-full py-2 bg-gray-50 text-gray-600 text-xs font-semibold hover:bg-green-50 hover:text-green-700 transition-colors border-t border-gray-100"
+                >
+                    Đánh giá mẫu
+                </button>
             </div>
             </Link>
         );

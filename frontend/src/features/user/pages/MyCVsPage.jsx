@@ -1,13 +1,42 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Plus, Sparkles, Trash2, ArrowUpRight} from 'lucide-react';
 import {useNavigate} from 'react-router-dom';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Badge, Button} from '../components/Layout.jsx';
 import { TEMPLATES_DATA } from '../../cv/constants/templates';
+import galleryService from '../../../service/galleryService';
+import { getApiErrorMessage } from '../../../service/apiClient';
 const MyCVsPage = () => {
     const navigate = useNavigate();
-    const {cvs, handleAddCV, handleRemoveCV, showToast} = useApp();
+    const {showToast} = useApp();
+    const [cvs, setCvs] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [activeTabFilter, setActiveTabFilter] = useState('All');
+
+    useEffect(() => {
+        loadAssets();
+    }, []);
+
+    const loadAssets = async () => {
+        setIsLoading(true);
+        try {
+            console.log('[MyCVsPage] Fetching assets from galleryService...');
+            const data = await galleryService.getGalleryAssets();
+            console.log('[MyCVsPage] API Response:', data);
+
+            const cvList = data?.cvs || [];
+            if (cvList.length === 0) {
+                console.log('[MyCVsPage] No CVs found in gallery.');
+            }
+            setCvs(cvList);
+        } catch (error) {
+            console.error('[MyCVsPage] Error loading assets:', error);
+            showToast(getApiErrorMessage(error), 'error');
+            setCvs([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleQuickAdd = () => {
         const occupations = [
@@ -29,8 +58,26 @@ const MyCVsPage = () => {
             score: 95,
             image: randomTemplate.image,
         };
-        handleAddCV(newCV);
+        // Logic handleAddCV moved to server or mock if needed,
+        // for now let's just simulate local update since we don't have a create API yet in the plan
+        setCvs((prev) => [newCV, ...prev]);
         showToast(`Bản mẫu AI đã tự động tạo CV: "${newCV.title}"`, 'success');
+    };
+
+    const handleRemoveCV = async (id) => {
+        const target = cvs.find((cv) => cv.id === id);
+
+        // Optimistic Update
+        const previousCvs = [...cvs];
+        setCvs((prev) => prev.filter((cv) => cv.id !== id));
+
+        try {
+            await galleryService.deleteCV(id);
+            showToast(`Đã xoá hồ sơ: "${target?.title || 'CV'}"`, 'info');
+        } catch (error) {
+            setCvs(previousCvs);
+            showToast(getApiErrorMessage(error), 'error');
+        }
     };
 
     const filteredCvs = cvs.filter(cv => {

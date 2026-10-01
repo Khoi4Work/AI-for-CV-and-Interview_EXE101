@@ -26,6 +26,7 @@ public class ApiResponse<T> {
     private String message;
     private T result;
     private Map<String, String> errors;
+    @Builder.Default
     private Instant timestamp = Instant.now();
     private String path;
 

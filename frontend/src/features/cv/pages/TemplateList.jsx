@@ -1,4 +1,4 @@
-import React, {useState, useMemo} from 'react';
+import React, {useState, useMemo, useEffect} from 'react';
 import {Search, ChevronDown, ChevronLeft, ChevronRight, Upload, X, FileText, Star, Download, Eye} from 'lucide-react';
 import {useNavigate} from 'react-router-dom';
 import TemplateCard from '../components/TemplateCard.jsx';
@@ -8,10 +8,21 @@ import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from '../../../components/layout/Footer.jsx';
 import {useAuth} from "../../auth/contexts/AuthContext.jsx";
 import {TEMPLATES_DATA, TEMPLATE_CATEGORIES, TEMPLATE_STYLES} from '../constants/templates.js';
+import galleryService from '../../../service/galleryService';
+import { getApiErrorMessage } from '../../../service/apiClient';
+import { useApp } from '../../auth/contexts/AppContext.jsx';
+import TemplateFeedbackModal from '../../feedback/components/TemplateFeedbackModal.jsx';
 
 export default function TemplateList() {
     const {isLoggedIn, profile} = useAuth();
+    const { showToast } = useApp();
     const navigate = useNavigate();
+
+    // API States
+    const [templates, setTemplates] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
     // States for filtering and sorting
     const [searchQuery, setSearchQuery] = useState('');
@@ -23,25 +34,58 @@ export default function TemplateList() {
     const itemsPerPage = 6;
     const [previewTemplate, setPreviewTemplate] = useState(null);
 
+    useEffect(() => {
+        loadTemplates();
+    }, []);
+
+    const loadTemplates = async () => {
+        setIsLoading(true);
+        try {
+            const data = await galleryService.getTemplates();
+            setTemplates(data);
+        } catch (error) {
+            showToast(getApiErrorMessage(error), 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRateTemplate = (id) => {
+        setSelectedTemplateId(id);
+        setIsFeedbackModalOpen(true);
+    };
+
+    const handleSubmitFeedback = async (templateId, feedbackData) => {
+        try {
+            await galleryService.submitTemplateFeedback(templateId, feedbackData);
+            showToast('Cảm ơn bạn đã gửi đánh giá!', 'success');
+            // Optionally refresh templates to see updated rating
+            loadTemplates();
+        } catch (error) {
+            showToast(getApiErrorMessage(error), 'error');
+            throw error;
+        }
+    };
+
     // Upload States
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
 
     // Filter and Sort Logic
     const filteredTemplates = useMemo(() => {
-        let result = [...TEMPLATES_DATA];
+        let result = [...templates];
 
         // Search filter
         if (searchQuery) {
             result = result.filter(t =>
-                t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 t.subtitle.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
         // Category filter
         if (activeCategory !== 'all') {
-            result = result.filter(t => t.categoryId === activeCategory);
+            result = result.filter(t => t.category === activeCategory);
         }
 
         // Style filter
@@ -68,7 +112,7 @@ export default function TemplateList() {
         }
 
         return result;
-    }, [searchQuery, activeCategory, activeStyle, activeTab, sortOrder, profile.favorites]);
+    }, [searchQuery, activeCategory, activeStyle, activeTab, sortOrder, profile.favorites, templates]);
 
     // Pagination
     const totalPages = Math.ceil(filteredTemplates.length / itemsPerPage);
@@ -249,7 +293,7 @@ export default function TemplateList() {
                                     <div
                                         className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
                                         <div className="flex items-center gap-3">
-                                            <h3 className="font-bold text-gray-900">{previewTemplate.title}</h3>
+                                            <h3 className="font-bold text-gray-900">{previewTemplate.name}</h3>
                                             <span
                                                 className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">
                                                 {previewTemplate.style}
@@ -266,8 +310,8 @@ export default function TemplateList() {
                                     <div
                                         className="p-10 flex items-start justify-center bg-gray-100 overflow-y-auto max-h-[70vh]">
                                         <img
-                                            src={previewTemplate.image}
-                                            alt={previewTemplate.title}
+                                            src={previewTemplate.previewImage}
+                                            alt={previewTemplate.name}
                                             className="h-auto w-auto max-w-full rounded-lg shadow-2xl object-contain"
                                         />
                                     </div>
@@ -301,19 +345,24 @@ export default function TemplateList() {
 
                         {/* Template Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                            {paginatedTemplates.length > 0 ? (
+                            {isLoading ? (
+                                Array.from({ length: 6 }).map((_, i) => (
+                                    <div key={i} className="h-80 rounded-2xl bg-gray-200 animate-pulse" />
+                                ))
+                            ) : paginatedTemplates.length > 0 ? (
                                 paginatedTemplates.map(template => (
                                     <div key={template.id} className="group relative">
                                         <TemplateCard
                                             id={template.id}
                                             badgeText={template.badgeText}
                                             badgeTheme={template.badgeTheme}
-                                            categoryText={template.categoryText}
-                                            title={template.title}
+                                            categoryText={template.category}
+                                            title={template.name}
                                             subtitle={template.subtitle}
-                                            image={template.image}
+                                            image={template.previewImage}
                                             rating={template.rating}
                                             downloads={template.downloads}
+                                            onRate={handleRateTemplate}
                                         />
                                         <button
                                             onClick={() => setPreviewTemplate(template)}
@@ -343,6 +392,13 @@ export default function TemplateList() {
                                 </div>
                             )}
                         </div>
+
+                        <TemplateFeedbackModal
+                            isOpen={isFeedbackModalOpen}
+                            templateId={selectedTemplateId}
+                            onClose={() => setIsFeedbackModalOpen(false)}
+                            onSubmit={handleSubmitFeedback}
+                        />
 
                         {/* Pagination */}
                         {totalPages > 1 && (

@@ -21,9 +21,11 @@ export function mapCVDataToTemplate(cvData) {
             soft: cvData.skills?.filter(s => s.category === 'soft').map(s => s.name) || [],
         },
         skillsGrouped: {
-            excellent: cvData.skills?.filter(s => s.level >= 80).map(s => s.name) || [],
-            intermediate: cvData.skills?.filter(s => s.level >= 40 && s.level < 80).map(s => s.name) || [],
-            beginner: cvData.skills?.filter(s => s.level < 40).map(s => s.name) || [],
+            beginner: cvData.skills?.filter(s => s.level === 'BEGINNER').map(s => s.name) || [],
+            intermediate: cvData.skills?.filter(s => s.level === 'INTERMEDIATE').map(s => s.name) || [],
+            advanced: cvData.skills?.filter(s => s.level === 'ADVANCED').map(s => s.name) || [],
+            expert: cvData.skills?.filter(s => s.level === 'EXPERT').map(s => s.name) || [],
+            unspecified: cvData.skills?.filter(s => !s.level).map(s => s.name) || [],
         },
         experience: experiences.map(exp => ({
             title: exp.role,
@@ -113,6 +115,15 @@ export function mapMockDataToCVContext(mockData) {
         details: exp.bullets || [],
     });
 
+    const proficiencyGroups = mockData.skillsGrouped || {};
+    const getProficiencyLevel = (name) => {
+        const normalize = value => value.replace(/\s*\(.*\)/, '').trim().toLowerCase();
+        if ((proficiencyGroups.excellent || []).some(item => normalize(item) === normalize(name))) return 'EXPERT';
+        if ((proficiencyGroups.intermediate || []).some(item => normalize(item) === normalize(name))) return 'INTERMEDIATE';
+        if ((proficiencyGroups.beginner || []).some(item => normalize(item) === normalize(name))) return 'BEGINNER';
+        return null;
+    };
+
     return {
         personalInfo: {
             name: mockData.name || '',
@@ -131,7 +142,7 @@ export function mapMockDataToCVContext(mockData) {
         skills: Object.entries(mockData.skills || {}).flatMap(([category, skills]) =>
             skills.map(skill => ({
                 name: skill.replace(/\s*\(.*\)/, '').trim(),
-                level: 80,
+                level: getProficiencyLevel(skill),
                 category: category === 'backend' ? 'backend' : category === 'frontend' ? 'frontend' : 'soft'
             }))
         ),
@@ -162,5 +173,25 @@ export function mapMockDataToCVContext(mockData) {
             issuer: award.issuer || '',
             date: award.date || '',
         })),
+    };
+}
+
+export function mapImportedCVData(data) {
+    return {
+        personalInfo: data.personalInfo,
+        summary: data.summary,
+        experiences: data.experiences.map((item, index) => ({
+            id: Date.now() + index,
+            company: item.company,
+            role: item.role,
+            period: item.period,
+            details: item.details,
+        })),
+        skills: data.skills.map(skill => ({name: skill.name, level: skill.level, category: skill.category})),
+        education: data.education,
+        projects: data.projects,
+        certificates: data.certificates,
+        languages: data.languages,
+        awards: data.awards,
     };
 }

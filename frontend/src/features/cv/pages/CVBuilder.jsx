@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Link, useLocation} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {
     Sparkles,
     Trash2,
@@ -16,15 +16,21 @@ import {Header} from "../../../components/layout/PublicHeader.jsx";
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
 import {badResumeData} from '../constants/cv-mock-data.js';
-import {mapMockDataToCVContext} from '../mapper/cv-data-mapper.js';
+import {mapImportedCVData, mapMockDataToCVContext} from '../mapper/cv-data-mapper.js';
 import {mockJobDescriptions} from '../../../constants/jobDescription.js';
 import {Footer} from "../../../components/layout/Footer.jsx";
+import {importCV} from '../services/cvImportService.js';
+import {cvPipelineService} from '../services/cvPipelineService.js';
+import {getApiErrorMessage} from '../../../service/apiClient.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
     const location = useLocation();
+    const navigate = useNavigate();
     const {
         cvData,
+        currentCvId,
+        setCurrentCvId,
         setHasCV,
         updatePersonalInfo,
         updateSummary,
@@ -54,26 +60,74 @@ export default function CVBuilder() {
 
     useEffect(() => {
         resetCV();
+        setCurrentCvId(null);
         if (location.state?.loadBadCV) {
             handleLoadDemoBadCV();
         }
-    }, [resetCV, location.state]);
+    }, [resetCV, setCurrentCvId, location.state]);
 
     const [step, setStep] = useState(1);
     const [jdText, setJdText] = useState('');
+    const [isImporting, setIsImporting] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const totalSteps = 5;
 
     const handleFileUpload = () => {
         document.getElementById('cv-upload-input').click();
     };
 
-    const onFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            showToast(`Đã tải lên tệp ${file.name} thành công! AI đang trích xuất dữ liệu...`, 'success');
+    const handleSaveAndEdit = async () => {
+        setIsSaving(true);
+        try {
+            const payload = {
+                name: `${cvData.personalInfo.name || 'My'} CV`,
+                content: cvData,
+            };
+            const savedCV = currentCvId
+                ? await cvPipelineService.updateCV(currentCvId, payload)
+                : await cvPipelineService.createCV(payload);
+            if (!savedCV?.id) throw new Error('API không trả về mã CV.');
+            setCurrentCvId(savedCV.id);
+            setHasCV(true);
+            const job = await cvPipelineService.startOptimization(savedCV.id, {jdText});
+            navigate('/cv-analyzing', {
+                state: {target: '/optimizer', jobId: job?.jobId, cvName: payload.name},
+            });
+        } catch (error) {
+            showToast(getApiErrorMessage(error, 'Không thể lưu hoặc tối ưu CV.'), 'error');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
-            const mappedData = mapMockDataToCVContext(badResumeData);
-            setFullCVData(mappedData);
+    const onFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const extension = file.name.split('.').pop()?.toLowerCase();
+        if (!['pdf', 'doc', 'docx'].includes(extension)) {
+            showToast('Vui lòng chọn tệp PDF, DOC hoặc DOCX.', 'error');
+            e.target.value = '';
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Kích thước tệp tối đa là 5 MB.', 'error');
+            e.target.value = '';
+            return;
+        }
+
+        setIsImporting(true);
+        try {
+            const imported = await importCV(file);
+            setCurrentCvId(imported.cvId);
+            setFullCVData(mapImportedCVData(imported.extractedData));
+            showToast(imported.duplicate ? 'CV này đã được import trước đó; đã mở bản đã lưu.' : `Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
+        } catch (error) {
+            const message = getApiErrorMessage(error, 'Không thể nhập CV. Vui lòng thử lại.');
+            showToast(message, 'error');
+        } finally {
+            setIsImporting(false);
+            e.target.value = '';
         }
     };
 
@@ -132,11 +186,12 @@ export default function CVBuilder() {
                                 </div>
                                 <button
                                     onClick={handleFileUpload}
-                                    className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors">
+                                    disabled={isImporting}
+                                    className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
                                     <Download className="h-4 w-4"/>
-                                    Tải CV cũ
-                                    <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.docx"
-                                        // onChange={onFileChange}
+                                    {isImporting ? 'Đang trích xuất...' : 'Tải CV cũ'}
+                                    <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.doc,.docx"
+                                        onChange={onFileChange}
                                     />
                                 </button>
                                 <button
@@ -418,8 +473,8 @@ export default function CVBuilder() {
                                                     onClick={() => {
                                                         const newSkills = [...cvData.skills, {
                                                             name: '',
-                                                            level: 50,
-                                                            category: 'hard'
+                                                            level: null,
+                                                            category: ''
                                                         }];
                                                         updateSkills(newSkills);
                                                     }}
@@ -431,10 +486,10 @@ export default function CVBuilder() {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {cvData.skills.map((skill, index) => (
                                                     <div key={index}
-                                                         className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 group">
+                                                         className="grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 group sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center">
                                                         <input
                                                             type="text"
-                                                            className="flex-grow bg-transparent text-sm font-medium outline-none text-black"
+                                                            className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-black outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 sm:col-span-3"
                                                             value={skill.name}
                                                             onChange={(e) => {
                                                                 const updated = [...cvData.skills];
@@ -443,26 +498,48 @@ export default function CVBuilder() {
                                                             }}
                                                             placeholder="Tên kỹ năng..."
                                                         />
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="relative min-w-0">
                                                             <select
-                                                                className="text-[12px] bg-white border text-black border-slate-200 rounded px-1 outline-none"
-                                                                value={skill.category}
+                                                                className="w-full min-w-0 appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-xs text-slate-700 outline-none transition hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                                                value={skill.category || ''}
                                                                 onChange={(e) => {
                                                                     const updated = [...cvData.skills];
                                                                     updated[index].category = e.target.value;
                                                                     updateSkills(updated);
                                                                 }}
                                                             >
+                                                                <option value="">Chọn nhóm</option>
                                                                 <option value="frontend">Front-end</option>
                                                                 <option value="backend">Back-end</option>
                                                                 <option value="soft">Soft Skill</option>
                                                             </select>
+                                                            <ChevronRight className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-slate-400" />
+                                                        </div>
+                                                        <div className="relative min-w-0">
+                                                            <select
+                                                                className="w-full min-w-0 appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-xs text-slate-700 outline-none transition hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                                                value={skill.level || ''}
+                                                                onChange={(e) => {
+                                                                    const updated = [...cvData.skills];
+                                                                    updated[index].level = e.target.value || null;
+                                                                    updateSkills(updated);
+                                                                }}
+                                                            >
+                                                                <option value="">Chưa xác định mức</option>
+                                                                <option value="BEGINNER">Beginner</option>
+                                                                <option value="INTERMEDIATE">Intermediate</option>
+                                                                <option value="ADVANCED">Advanced</option>
+                                                                <option value="EXPERT">Expert</option>
+                                                            </select>
+                                                            <ChevronRight className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-slate-400" />
+                                                        </div>
+                                                        <div className="flex justify-end sm:justify-center">
                                                             <button onClick={() => {
                                                                 const updated = cvData.skills.filter((_, i) => i !== index);
                                                                 updateSkills(updated);
                                                             }}
-                                                                    className="text-slate-400 hover:text-red-500 transition-colors">
-                                                                <Trash2 className="w-3 h-3"/>
+                                                                    className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500">
+                                                                <Trash2 className="h-4 w-4"/>
                                                             </button>
                                                         </div>
                                                     </div>
@@ -571,11 +648,12 @@ export default function CVBuilder() {
                                         Chúng tôi đã thu thập đủ thông tin. Bây giờ hãy chọn một mẫu thiết kế và tinh
                                         chỉnh nó trong trình chỉnh sửa chuyên nghiệp.
                                     </p>
-                                    <Link to="/cv-analyzing"
-                                          state={{target: '/editor'}}
-                                          className="px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105">
-                                        Vào Trình Chỉnh Sửa <ChevronRight className="w-5 h-5"/>
-                                    </Link>
+                                    <button
+                                        onClick={handleSaveAndEdit}
+                                        disabled={isSaving}
+                                        className="px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105 disabled:opacity-50">
+                                        {isSaving ? 'Đang lưu và tối ưu...' : 'Lưu CV & phân tích với AI'} <ChevronRight className="w-5 h-5"/>
+                                    </button>
                                 </div>
                             )}
                         </div>

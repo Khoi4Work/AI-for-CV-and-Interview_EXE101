@@ -1,15 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileText, Trash2, Link, TextCursor, CheckCircle2, X, Sparkles, FileQuestion } from 'lucide-react';
+import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, Sparkles, FileQuestion, LoaderCircle, BrainCircuit, ClipboardCheck } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { goodResumeData, badResumeData } from '../constants/cv-mock-data.js';
 import { mockJobDescriptions } from '../../../constants/jobDescription.js';
 import { useCV } from '../contexts/CVContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
+import { importCV } from '../services/cvImportService.js';
+import { cvPipelineService } from '../services/cvPipelineService.js';
+import { mapImportedCVData, mapMockDataToCVContext } from '../mapper/cv-data-mapper.js';
+import { useApp } from '../../auth/contexts/AppContext.jsx';
+import { getApiErrorMessage } from '../../../service/apiClient.js';
 
 const CVEvaluation = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const { hasCV, setHasCV } = useCV();
+  const { hasCV, setHasCV, currentCvId, setCurrentCvId, setFullCVData } = useCV();
+  const { showToast } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -20,11 +27,17 @@ const CVEvaluation = () => {
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [demoCv, setDemoCv] = useState(null); // 'good' or 'bad'
-  const [jdTab, setJdTab] = useState('text'); // 'text' or 'url'
   const [jdText, setJdText] = useState('');
-  const [jdUrl, setJdUrl] = useState('');
-  const [selectedJdId, setSelectedJdId] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [evaluationStep, setEvaluationStep] = useState(0);
+
+  const evaluationStages = [
+    { title: 'Chuẩn bị CV', description: 'Đang kiểm tra tệp và chuẩn bị dữ liệu CV của bạn.', icon: FileText },
+    { title: 'Đọc nội dung CV', description: 'Đang trích xuất thông tin cần thiết để phân tích.', icon: FileQuestion },
+    { title: 'Đối chiếu với công việc', description: 'AI đang so sánh kỹ năng và kinh nghiệm với mô tả công việc.', icon: BrainCircuit },
+    { title: 'Hoàn tất báo cáo', description: 'Đang tổng hợp điểm phù hợp, khoảng cách kỹ năng và gợi ý.', icon: ClipboardCheck },
+  ];
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -42,9 +55,7 @@ const CVEvaluation = () => {
   const handleDemoJdSelect = (id) => {
     const jd = mockJobDescriptions.find(j => j.id === id);
     if (jd) {
-      setSelectedJdId(id);
       setJdText(jd.description.overview + '\n\n' + jd.description.details.map(d => d.title + ': ' + d.bullets.join(', ')).join('\n'));
-      setJdTab('text');
     }
   };
 
@@ -76,32 +87,116 @@ const CVEvaluation = () => {
     }
   };
 
-  const handleStartEvaluation = () => {
+  const handleStartEvaluation = async () => {
     if (!selectedFile && !demoCv) {
       alert('Vui lòng tải lên CV của bạn hoặc chọn CV demo.');
       return;
     }
-    if (jdTab === 'text' && !jdText.trim()) {
+    if (!jdText.trim()) {
       alert('Vui lòng nhập nội dung mô tả công việc (JD).');
       return;
     }
-    if (jdTab === 'url' && !jdUrl.trim()) {
-      alert('Vui lòng nhập URL tuyển dụng.');
+    if (selectedFile && selectedFile.size > 5 * 1024 * 1024) {
+      showToast('CV vượt quá giới hạn 5 MB. Hãy chọn tệp nhỏ hơn.', 'error');
       return;
     }
-
-    let scenario = 'default';
-    if (demoCv === 'good') scenario = 'good-devops';
-    if (demoCv === 'bad') scenario = 'bad-devops';
-
-    navigate('/cv-analyzing', {
-        state: {
-            target: '/optimizer',
-            scenario: scenario,
-            cvName: demoCv ? (demoCv === 'good' ? 'Good_Resume_MIT.pdf' : 'Bad_Resume_Sample.pdf') : selectedFile?.name
-        }
-    });
+    setIsEvaluating(true);
+    setEvaluationStep(0);
+    try {
+      let cvId = demoCv ? null : currentCvId;
+      let cvName = demoCv ? (demoCv === 'good' ? 'Good_Resume_MIT.pdf' : 'Bad_Resume_Sample.pdf') : selectedFile.name;
+      if (selectedFile) {
+        setEvaluationStep(1);
+        const imported = await importCV(selectedFile);
+        cvId = imported.cvId;
+        setCurrentCvId(cvId);
+        setFullCVData(mapImportedCVData(imported.extractedData));
+      } else if (demoCv) {
+        setEvaluationStep(1);
+        const demo = mapMockDataToCVContext(demoCv === 'good' ? goodResumeData : badResumeData);
+        const saved = await cvPipelineService.createCV({name: cvName, content: demo});
+        cvId = saved?.id;
+        setCurrentCvId(cvId);
+        setFullCVData(demo);
+      }
+      if (!cvId) throw new Error('Không xác định được CV đã lưu để đánh giá.');
+      setEvaluationStep(2);
+      const analysis = await cvPipelineService.analyzeCV(cvId, jdText.trim());
+      const evaluationResult = analysis?.evaluation;
+      if (!evaluationResult?.jdId) throw new Error('API đánh giá không trả về JD đã lưu.');
+      const {skillGap, feedback} = analysis;
+      setEvaluationStep(3);
+      navigate('/optimizer', {state: {cvId, cvName, jdId: evaluationResult.jdId, jdText: jdText.trim(), evaluationResult, skillGap, feedback}});
+    } catch (error) {
+      showToast(getApiErrorMessage(error, 'Không thể hoàn tất đánh giá CV.'), 'error');
+    } finally {
+      setIsEvaluating(false);
+    }
   };
+
+  if (isEvaluating) {
+    const activeStage = evaluationStages[evaluationStep];
+    const ActiveIcon = activeStage.icon;
+    const progress = Math.round(((evaluationStep + 1) / evaluationStages.length) * 100);
+
+    return (
+      <main className="fixed inset-0 z-[1000] flex min-h-screen w-screen items-center justify-center overflow-y-auto bg-surface px-4 py-10 text-on-surface" style={{boxSizing: 'border-box', width: '100vw'}} aria-busy="true">
+        <section className="flex flex-col items-center gap-8 text-center" style={{boxSizing: 'border-box', width: 'min(42rem, calc(100vw - 2rem))', minWidth: 'min(18rem, calc(100vw - 2rem))', maxWidth: 'calc(100vw - 2rem)', flex: '0 0 auto'}} role="status" aria-live="polite">
+          <div className="relative flex h-64 w-64 items-center justify-center" aria-hidden="true">
+            <div className="absolute h-64 w-64 animate-pulse-glow rounded-full bg-primary/10" />
+            <div className="absolute h-48 w-48 animate-pulse-glow rounded-full bg-primary/15 [animation-delay:0.5s]" />
+            <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-full bg-primary text-white shadow-xl">
+              <ActiveIcon className="h-14 w-14" />
+            </div>
+            <LoaderCircle className="absolute h-40 w-40 animate-spin text-primary/80" strokeWidth={1.5} />
+          </div>
+
+          <div className="w-full px-4" style={{boxSizing: 'border-box', width: '100%'}}>
+            <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-primary">Phân tích CV bằng AI</p>
+            <div className="mb-3 flex min-h-9 items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.h1
+                  key={evaluationStep}
+                  initial={{opacity: 0, y: 8}}
+                  animate={{opacity: 1, y: 0}}
+                  exit={{opacity: 0, y: -8}}
+                  transition={{duration: 0.25}}
+                  className="text-center text-2xl font-bold text-on-surface sm:text-3xl"
+                >
+                  {activeStage.title}
+                </motion.h1>
+              </AnimatePresence>
+            </div>
+            <p className="mx-auto mb-8 w-full text-center text-sm leading-6 text-on-surface-variant">{activeStage.description}</p>
+
+            <div className="mb-3 flex w-full items-center justify-between text-xs font-semibold text-on-surface-variant">
+              <span>Tiến trình</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="mb-5 h-2 w-full overflow-hidden rounded-full bg-surface-container-high" aria-label={`Tiến trình ${progress}%`}>
+              <div className="h-full rounded-full bg-primary transition-all duration-700 ease-out" style={{width: `${progress}%`}} />
+            </div>
+            <div className="flex w-full items-center justify-between gap-2 text-[11px] text-on-surface-variant sm:text-xs">
+              {evaluationStages.map((stage, index) => {
+                const StageIcon = stage.icon;
+                const isComplete = index < evaluationStep;
+                const isCurrent = index === evaluationStep;
+                return (
+                  <div key={stage.title} className={`flex min-w-0 flex-1 flex-col items-center gap-2 ${isCurrent ? 'text-primary' : isComplete ? 'text-on-surface' : 'opacity-50'}`}>
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container">
+                      {isComplete ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : isCurrent ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <StageIcon className="h-4 w-4" aria-hidden="true" />}
+                    </span>
+                    <span className="max-w-full text-center leading-tight">{stage.title}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-7 text-xs text-on-surface-variant">Quá trình có thể mất một chút thời gian. Vui lòng không đóng trang.</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-background p-6 md:p-12 font-sans antialiased text-on-surface">
@@ -209,33 +304,8 @@ const CVEvaluation = () => {
             </div>
 
             <div className="glass-panel rounded-2xl shadow-sm overflow-hidden border border-outline-variant">
-              {/* Tabs */}
-              <div className="flex border-b border-outline-variant">
-                <button
-                  onClick={() => setJdTab('text')}
-                  className={`
-                    flex-1 py-4 text-sm font-medium transition-all flex items-center justify-center gap-2
-                    ${jdTab === 'text' ? 'bg-surface-container text-primary border-b-2 border-primary' : 'bg-background text-on-surface-variant hover:text-on-surface'}
-                  `}
-                >
-                  <TextCursor className="w-4 h-4" />
-                  Nội dung JD
-                </button>
-                <button
-                  onClick={() => setJdTab('url')}
-                  className={`
-                    flex-1 py-4 text-sm font-medium transition-all flex items-center justify-center gap-2
-                    ${jdTab === 'url' ? 'bg-surface-container text-primary border-b-2 border-primary' : 'bg-background text-on-surface-variant hover:text-on-surface'}
-                  `}
-                >
-                  <Link className="w-4 h-4" />
-                  URL tuyển dụng
-                </button>
-              </div>
-
               {/* Content */}
               <div className="p-6">
-                {jdTab === 'text' ? (
                   <div className="flex flex-col gap-4">
                       <div className="flex gap-2 mb-2">
                           <span className="text-xs font-bold text-on-surface-variant uppercase">Demo JD:</span>
@@ -256,31 +326,6 @@ const CVEvaluation = () => {
                         className="w-full h-64 p-4 text-sm text-on-surface border border-outline-variant rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none bg-surface-container"
                       />
                   </div>
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    <div className="relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">
-                        <Link className="w-4 h-4" />
-                      </div>
-                      <input
-                        type="text"
-                        value={jdUrl}
-                        onChange={(e) => setJdUrl(e.target.value)}
-                        placeholder="https://linkedin.com/jobs/..."
-                        className="w-full pl-11 pr-4 py-3 text-sm text-on-surface border border-outline-variant rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-surface-container"
-                      />
-                    </div>
-                    <button
-                      onClick={() => alert('Đang quét URL... (Mock action)')}
-                      className="px-6 py-3 bg-surface-container text-on-surface-variant text-sm font-semibold rounded-2xl hover:bg-surface-container-low hover:text-on-surface transition-colors self-start border border-outline-variant"
-                    >
-                      Quét URL
-                    </button>
-                    <div className="h-40 flex items-center justify-center border border-dashed border-outline-variant rounded-2xl bg-background text-on-surface-variant text-xs italic text-center p-4">
-                      Kết quả quét URL sẽ hiển thị tại đây sau khi bạn nhấn "Quét URL"
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -290,13 +335,14 @@ const CVEvaluation = () => {
         <div className="mt-12 flex justify-center">
           <button
             onClick={handleStartEvaluation}
+            disabled={isEvaluating}
             className="
               group relative px-10 py-4 bg-primary text-on-primary font-bold text-lg rounded-2xl
               transition-all duration-200 hover:opacity-90 active:scale-95 shadow-lg shadow-primary/20
               flex items-center gap-3
             "
           >
-            Bắt đầu đánh giá
+            {isEvaluating ? 'Đang đánh giá...' : 'Bắt đầu đánh giá'}
             <Upload className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </button>
         </div>

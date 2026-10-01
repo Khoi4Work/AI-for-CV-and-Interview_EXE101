@@ -1,6 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Mina:wght@100..1000&display=swap');
 @import "tailwindcss";
 
+.error-card {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: min(32rem, calc(100vw - 2rem));
+    min-width: min(18rem, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+    overflow-wrap: anywhere;
+}
+
+.error-alert {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+#app-toast-alert {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: min(24rem, calc(100vw - 3rem));
+    min-width: min(18rem, calc(100vw - 3rem));
+    max-width: calc(100vw - 3rem);
+}
+
 @theme {
     --font-sans: "Mina", system-ui, -apple-system, sans-serif;
     --font-display: "Mina", system-ui, sans-serif;

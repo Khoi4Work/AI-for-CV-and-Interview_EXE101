@@ -1,20 +1,33 @@
-// /src/pages/interview/VideoReview.jsx
-import React, {useEffect} from 'react';
-import {Play, Download, Settings, Maximize, ArrowLeft} from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {ArrowLeft, Check, LoaderCircle, Sparkles} from 'lucide-react';
 import {MainLayout} from '../components/MainLayout.jsx';
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
+import {getApiErrorMessage} from '../../../service/apiClient.js';
 
 export function VideoReview() {
     const navigate = useNavigate();
-    const {data, update} = useInterviewSession();
+    const {data, update, generateFeedback} = useInterviewSession();
+    const [isEvaluating, setIsEvaluating] = useState(false);
+    const [error, setError] = useState('');
+    const answers = new Map((data.answers || []).map((answer) => [answer.qid, answer]));
 
     useEffect(() => {
         update({step: 9});
     }, [update]);
 
-    const handleSendFeedback = () => {
-        navigate('/interview/result');
+    const handleSendFeedback = async () => {
+        if (isEvaluating) return;
+        setIsEvaluating(true);
+        setError('');
+        try {
+            await generateFeedback();
+            navigate('/interview/result');
+        } catch (requestError) {
+            setError(getApiErrorMessage(requestError, 'Không thể tạo phản hồi phỏng vấn.'));
+        } finally {
+            setIsEvaluating(false);
+        }
     };
 
     return (
@@ -23,63 +36,54 @@ export function VideoReview() {
                 <p className="text-center text-sm text-gray-500 font-medium mb-6">Bước 9 trên 10 • 90% hoàn tất</p>
 
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium">
-                    <span className="hover:text-gray-900 cursor-pointer" onClick={() => navigate('/audio-setup')}>Phỏng vấn thử</span>
+                    <button className="hover:text-gray-900" onClick={() => navigate('/interview/room')}>Phỏng vấn thử</button>
                     <span>›</span>
-                    <span className="text-gray-900">Xem lại bản ghi</span>
+                    <span className="text-gray-900">Xem lại câu trả lời</span>
                 </div>
 
                 <h1 className="text-3xl font-display font-semibold mb-2">Hoàn tất phỏng vấn</h1>
-                <p className="text-gray-500 mb-8">
-                    Vui lòng kiểm tra lại video trước khi nhận kết quả phản hồi từ AI.
+                <p className="text-gray-600 mb-6">
+                    Kiểm tra câu trả lời đã được lưu và phiên âm bởi BE trước khi yêu cầu đánh giá AI.
                 </p>
 
-                {/* Video Player Mockup */}
-                <div className="bg-[#111111] w-full aspect-video rounded-xl relative overflow-hidden mb-6 flex flex-col group shadow-md">
-                    <div className="flex-1 flex items-center justify-center">
-                        <button className="w-16 h-16 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-transform hover:scale-105">
-                            <Play size={28} fill="currentColor" className="ml-1"/>
-                        </button>
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex flex-col gap-2">
-                        <div className="w-full h-1 bg-white/30 rounded-full overflow-hidden flex items-center group-hover:h-1.5 transition-all cursor-pointer relative">
-                            <div className="absolute left-0 top-0 bottom-0 w-1/3 bg-white rounded-full"></div>
-                            <div className="absolute left-1/3 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-sm scale-0 group-hover:scale-100 transition-transform"></div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-white text-xs font-medium mt-1">
-                            <div className="flex items-center gap-3">
-                                <button><Play size={16} fill="currentColor"/></button>
-                                <span className="font-mono pt-0.5">
-                                    {String(Math.floor((data.endedAt && data.startedAt ? (data.endedAt - data.startedAt) / 1000 : 0) / 60)).padStart(2, '0')}:
-                                    {String((data.endedAt && data.startedAt ? (data.endedAt - data.startedAt) / 1000 : 0) % 60).padStart(2, '0')}
-                                    {' / '}
-                                    {(data.interviewConfig?.duration || 10) >= 10 ? '10:00' : '05:00'}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <button><Settings size={16}/></button>
-                                <button><Maximize size={16}/></button>
-                            </div>
-                        </div>
-                    </div>
+                <div className="rounded-xl border border-outline-variant bg-interview-card-bg p-4 mb-5 flex items-start gap-3">
+                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <p className="text-sm text-black/70">Âm thanh được gửi đến BE để phiên âm. File âm thanh thô không được lưu; BE dùng transcript để đánh giá.</p>
                 </div>
 
-                <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={handleSendFeedback}
-                            className="px-6 py-2.5 bg-primary text-on-primary/60 rounded-xl font-bold transition-colors shadow-md hover:text-on-primary hover:opacity-90"
-                        >
-                            Nhận kết quả phản hồi
-                        </button>
-                    </div>
+                <div className="space-y-4 mb-8">
+                    {(data.questions || []).map((question, index) => {
+                        const answer = answers.get(question.id);
+                        const skipped = !answer || answer.skipped;
+                        return (
+                            <article key={question.id} className="rounded-xl border border-outline-variant bg-interview-card-bg p-5">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-2">Câu {index + 1}{question.category ? ` · ${question.category}` : ''}</p>
+                                <h2 className="font-semibold text-black mb-3">{question.text}</h2>
+                                <p className="text-sm text-black/70 whitespace-pre-wrap">
+                                    {skipped ? 'Bạn đã bỏ qua câu hỏi này.' : answer.text}
+                                </p>
+                            </article>
+                        );
+                    })}
+                </div>
 
-                    <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                        <Download size={18}/>
-                        Tải video về máy
+                <div className="flex items-center justify-between gap-4">
+                    <button
+                        onClick={() => navigate('/interview/job-selection')}
+                        className="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-2.5 font-medium text-gray-700 hover:bg-surface-container"
+                    >
+                        <ArrowLeft size={17} /> Thoát
+                    </button>
+                    <button
+                        onClick={handleSendFeedback}
+                        disabled={isEvaluating}
+                        className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-bold text-on-primary shadow-md transition-colors hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                    >
+                        {isEvaluating ? <LoaderCircle size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                        {isEvaluating ? 'Đang đánh giá...' : 'Nhận kết quả phản hồi'}
                     </button>
                 </div>
+                {error && <p role="alert" className="error-alert mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
             </div>
         </MainLayout>
     );

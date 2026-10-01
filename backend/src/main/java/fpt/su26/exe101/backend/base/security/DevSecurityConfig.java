@@ -1,37 +1,87 @@
 package fpt.su26.exe101.backend.base.security;
 
 import fpt.su26.exe101.backend.base.config.CorsConfig;
+import fpt.su26.exe101.backend.modules.auth.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
+@EnableMethodSecurity
 public class DevSecurityConfig {
     private final CorsConfig corsConfig;
-        @Bean
-        public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception {
-            http
-                    .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
-                    .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for API testing
-                    .authorizeHttpRequests(auth -> auth
-                            // Allow access to Swagger UI and API Docs
-                            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                            // Allow access to all API endpoints for testing purposes
-                            .requestMatchers("/api/**").permitAll()
-                            // All other requests must be authenticated (default behavior)
-                            .anyRequest().authenticated()
-                    )
-                    .formLogin(AbstractHttpConfigurer::disable) // Disable the default login form
-                    .httpBasic(AbstractHttpConfigurer::disable); // Disable Basic Auth prompt
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-            return http.build();
-        }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/v1/payments/webhook")
+                        .disable()
+                )
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint))
+                .authorizeHttpRequests(auth -> auth
+                        // 1. HIGHEST PRIORITY: PayOS Webhook must be completely public
+                        .requestMatchers("/api/v1/payments/webhook").permitAll()
+
+                        // Allow all OPTIONS requests for CORS preflight
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 2. Public APIs
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/accounts",
+                                "/api/auth/verify-email",
+                                "/api/auth/tokens",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/api/auth/oauth/**",
+                                "/api/v1/payments/services",
+                                "/login/oauth2/code/google"
+                        ).permitAll()
+
+                        // 3. Authenticated APIs
+                        .requestMatchers("/api/v1/payments/checkout", "/api/v1/payments/history", "/api/v1/payments/quota").authenticated()
+                        .requestMatchers("/api/auth/**").authenticated()
+
+                        // Any other request must be authenticated
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                                )
+                )
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
 

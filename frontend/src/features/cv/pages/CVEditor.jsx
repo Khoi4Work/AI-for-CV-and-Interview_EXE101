@@ -8,11 +8,14 @@ import { mapMockDataToCVContext } from '../mapper/cv-data-mapper.js';
 import TemplateRenderer from '../components/TemplateRenderer.jsx';
 import { mapCVDataToTemplate } from '../mapper/cv-data-mapper.js';
 import { TEMPLATES_DATA } from '../constants/templates.js';
+import { cvPipelineService } from '../services/cvPipelineService.js';
 
 export default function CVEditor() {
     const { showToast } = useApp();
     const {
         cvData,
+        currentCvId,
+        setCurrentCvId,
         setHasCV,
         updatePersonalInfo,
         updateSummary,
@@ -26,14 +29,29 @@ export default function CVEditor() {
     const selectedTemplate = cvData.selectedTemplateId;
 
     useEffect(() => {
-        const mappedData = mapMockDataToCVContext(goodResumeData);
-        setFullCVData(mappedData);
-    }, [setFullCVData]);
+        if (!currentCvId && !cvData.personalInfo.name) {
+            const mappedData = mapMockDataToCVContext(goodResumeData);
+            setFullCVData(mappedData);
+        }
+    }, [currentCvId, cvData.personalInfo.name, setFullCVData]);
 
 
-    const handleSave = () => {
-        setHasCV(true);
-        showToast('CV của bạn đã được lưu thành công!', 'success');
+    const handleSave = async () => {
+        try {
+            const payload = {
+                name: `${cvData.personalInfo.name || 'My'} CV`,
+                content: cvData,
+            };
+            const savedCV = currentCvId
+                ? await cvPipelineService.updateCV(currentCvId, payload)
+                : await cvPipelineService.createCV(payload);
+            if (!savedCV?.id) throw new Error('API không trả về mã CV.');
+            setCurrentCvId(savedCV.id);
+            setHasCV(true);
+            showToast('CV của bạn đã được lưu thành công!', 'success');
+        } catch (error) {
+            showToast(error.response?.data?.message || error.message || 'Không thể lưu CV.', 'error');
+        }
     };
 
     const handleZoomIn = () => setZoom(prev => Math.min(prev + 10, 200));

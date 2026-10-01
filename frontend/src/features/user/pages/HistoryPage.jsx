@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     Clock,
     Sparkles,
@@ -16,28 +16,56 @@ import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
 import {Card, Badge, Button} from '../components/Layout.jsx';
 import {Footer} from "../../../components/layout/Footer.jsx";
+import galleryService from '../../../service/galleryService';
+import { getApiErrorMessage } from '../../../service/apiClient';
 
 const HistoryPage = () => {
     const {showToast} = useApp();
-    const {activityLogs, addActivityLog} = useAuth();
+    const {isLoading: authLoading} = useAuth();
+    const [activityLogs, setActivityLogs] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [filterActive, setFilterActive] = useState('all');
-    const [detailModal, setDetailModal] = useState({open: false, log: null});
+    const [detailModal, setDetailModal] = useState({open: false, log: null, answers: null, answersLoading: false});
 
-    const handleLoadMore = () => {
-        const extraLogs = [
-            {
-                id: `h-extra-${Date.now() + 1}`,
-                type: 'tai_xuong',
-                title: 'Tải xuống PDF',
-                time: '10:00',
-                dateLabel: 'TRƯỚC ĐÓ',
-                details: 'Đã xuất file PDF thành công cho CV Sản phẩm.',
-                meta: '2.1 MB • Hoàn tất',
+    useEffect(() => {
+        loadHistory();
+    }, []);
+
+    const loadHistory = async () => {
+        setIsLoading(true);
+        try {
+            const data = await galleryService.getInterviewHistory();
+            setActivityLogs(data);
+        } catch (error) {
+            showToast(getApiErrorMessage(error), 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleViewDetail = async (log) => {
+        setDetailModal({open: true, log, answers: null, answersLoading: true});
+
+        if (log.type === 'phong_van' && log.sessionId) {
+            try {
+                const answers = await galleryService.getInterviewAnswers(log.sessionId);
+                setDetailModal(prev => ({ ...prev, answers, answersLoading: false }));
+            } catch (error) {
+                showToast(getApiErrorMessage(error), 'error');
+                setDetailModal(prev => ({ ...prev, answersLoading: false }));
             }
-        ];
+        } else {
+            setDetailModal(prev => ({ ...prev, answersLoading: false }));
+        }
+    };
 
-        extraLogs.forEach(log => addActivityLog(log));
-        showToast('Đã tải thêm hoạt động bảo mật cũ hơn.', 'info');
+    const handleLoadMore = async () => {
+        try {
+            showToast('Đang tải thêm hoạt động...', 'info');
+            showToast('Tính năng tải thêm đang được tích hợp với API.', 'info');
+        } catch (error) {
+            showToast('Không thể tải thêm hoạt động.', 'error');
+        }
     };
 
     const getIconForType = (type) => {
@@ -131,7 +159,7 @@ const HistoryPage = () => {
                                             {log.type.replace('_', ' ').toUpperCase()}
                                         </Badge>
                                         <button
-                                            onClick={() => setDetailModal({open: true, log})}
+                                            onClick={() => handleViewDetail(log)}
                                             className="text-xs text-[#10B981] hover:underline transition-colors"
                                         >
                                             Xem chi tiết ›
@@ -162,6 +190,17 @@ const HistoryPage = () => {
     const todayLogs = filteredLogs.filter(log => log.dateLabel === 'HÔM NAY');
     const yesterdayLogs = filteredLogs.filter(log => log.dateLabel === 'HÔM QUA');
     const olderLogs = filteredLogs.filter(log => log.dateLabel === 'TRƯỚC ĐÓ');
+
+    if (isLoading) {
+        return (
+            <div className="max-w-4xl mx-auto pb-12 flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-[#10B981] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-[#64748B] animate-pulse">Đang tải lịch sử hoạt động...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-4xl mx-auto pb-12">
@@ -226,7 +265,7 @@ const HistoryPage = () => {
 
             <Modal
                 isOpen={detailModal.open}
-                onClose={() => setDetailModal({open: false, log: null})}
+                onClose={() => setDetailModal({open: false, log: null, answers: null, answersLoading: false})}
                 title={`Chi tiết hoạt động: ${detailModal.log?.title}`}
             >
                 <div className="space-y-6">
@@ -263,9 +302,34 @@ const HistoryPage = () => {
                         </div>
                     )}
 
+                    {detailModal.log?.type === 'phong_van' && (
+                        <div className="space-y-4">
+                            <span className="text-[10px] font-bold text-on-surface-variant uppercase block">Chi tiết phỏng vấn</span>
+                            {detailModal.answersLoading ? (
+                                <div className="flex items-center justify-center py-4">
+                                    <div className="w-5 h-5 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : detailModal.answers ? (
+                                <div className="space-y-4">
+                                    {detailModal.answers.map((item, idx) => (
+                                        <div key={idx} className="p-3 rounded-lg bg-gray-50 border border-gray-100 space-y-2">
+                                            <p className="text-xs font-bold text-gray-700">Câu {idx + 1}: {item.question}</p>
+                                            <p className="text-xs text-gray-600 italic">{item.answer}</p>
+                                            {item.feedback && (
+                                                <p className="text-xs text-emerald-600 font-medium">AI: {item.feedback}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-gray-400 italic">Không có dữ liệu câu trả lời cho phiên này.</p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="pt-4 flex justify-end">
                         <button
-                            onClick={() => setDetailModal({open: false, log: null})}
+                            onClick={() => setDetailModal({open: false, log: null, answers: null, answersLoading: false})}
                             className="px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:opacity-90 transition-colors"
                         >
                             Đóng

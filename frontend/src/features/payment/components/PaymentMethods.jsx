@@ -38,88 +38,37 @@ function QRCodePlaceholder() {
     );
 }
 
-export function PaymentMethods() {
-    const [selectedMethod, setSelectedMethod] = useState('vnpay');
-
+export function PaymentMethods({ selectedMethod, setSelectedMethod }) {
     return (
         <div className="flex flex-col gap-3">
             <h2 className="text-white text-sm font-medium">2. Chọn phương thức thanh toán</h2>
             <div className="flex flex-col gap-2">
                 <PaymentOption
-                    id="vnpay"
-                    title="Quét mã QR (VNPay)"
-                    selected={selectedMethod === 'vnpay'}
-                    onClick={() => setSelectedMethod('vnpay')}
+                    id="BANK_TRANSFER"
+                    title="PayOS (Ngân hàng/QR)"
+                    selected={selectedMethod === 'BANK_TRANSFER'}
+                    onClick={() => setSelectedMethod('BANK_TRANSFER')}
                     logo={
                         <div className="flex items-center font-bold text-lg tracking-tight">
-                            <span className="text-red-600">VN</span>
-                            <span className="text-blue-600">PAY</span>
-                            <span className="text-blue-600 text-[10px] self-end mb-1 ml-0.5">QR</span>
+                            <span className="text-blue-600">Pay</span>
+                            <span className="text-orange-500">OS</span>
                         </div>
                     }
                 >
                     <div className="flex flex-col items-center w-full max-w-3xl">
-                        <h3 className="text-gray-900 font-semibold mb-6 text-[15px]">Quét mã để thanh toán</h3>
+                        <h3 className="text-gray-900 font-semibold mb-6 text-[15px]">Thanh toán qua cổng PayOS</h3>
                         <div className="mb-6 p-1 bg-white border border-gray-100 rounded-xl shadow-sm">
                             <QRCodePlaceholder />
                         </div>
                         <p className="text-gray-500 text-sm text-center mb-4 leading-relaxed px-4">
-                            Sử dụng ứng dụng ngân hàng hoặc ví điện tử hỗ trợ VNPay để quét mã
+                            Hệ thống sẽ tự động tạo mã QR động qua PayOS. Bạn chỉ cần quét mã để hoàn tất thanh toán.
                         </p>
                         <div className="flex items-center gap-1.5 text-red-500 text-sm font-medium mt-2">
                             <Clock className="w-4 h-4" />
-                            <span>Mã QR hết hạn sau 09:46</span>
+                            <span>Mã QR sẽ được tạo khi bạn nhấn "Thanh toán ngay"</span>
                         </div>
                     </div>
                 </PaymentOption>
-
-                <PaymentOption
-                    id="card"
-                    title="Thẻ quốc tế (Visa, MasterCard, JCB)"
-                    selected={selectedMethod === 'card'}
-                    onClick={() => setSelectedMethod('card')}
-                    logo={
-                        <div className="flex gap-2 items-center">
-                            <span className="text-blue-800 font-bold italic text-sm">VISA</span>
-                            <div className="flex -space-x-1 items-center">
-                                <div className="w-4 h-4 rounded-full bg-red-500/80"></div>
-                                <div className="w-4 h-4 rounded-full bg-yellow-500/80 relative -left-1"></div>
-                            </div>
-                        </div>
-                    }
-                />
-
-                <PaymentOption
-                    id="momo"
-                    title="Ví MoMo"
-                    selected={selectedMethod === 'momo'}
-                    onClick={() => setSelectedMethod('momo')}
-                    logo={
-                        <div className="bg-[#a50064] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                            MoMo
-                        </div>
-                    }
-                />
-
-                <PaymentOption
-                    id="zalopay"
-                    title="ZaloPay"
-                    selected={selectedMethod === 'zalopay'}
-                    onClick={() => setSelectedMethod('zalopay')}
-                    logo={
-                        <div className="text-[#00c56b] font-bold text-sm">
-                            Zalo<span className="text-[#00a359]">Pay</span>
-                        </div>
-                    }
-                />
-
-                <PaymentOption
-                    id="bank"
-                    title="Chuyển khoản ngân hàng"
-                    selected={selectedMethod === 'bank'}
-                    onClick={() => setSelectedMethod('bank')}
-                    logo={<Landmark className="w-5 h-5 text-gray-400" />}
-                />
             </div>
         </div>
     );

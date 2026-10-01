@@ -9,7 +9,7 @@ import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
 
 export function VideoSetup() {
   const navigate = useNavigate();
-  const { data, update, setStep } = useInterviewSession();
+  const { data, setStep, clearCurrentInterview } = useInterviewSession();
   const duration = data.interviewConfig?.duration || 15;
   const {
     stream,
@@ -35,7 +35,7 @@ export function VideoSetup() {
 
   const handleStart = () => {
     stopAllTracks();
-    update({ videoSetupConfirmed: true });
+    clearCurrentInterview();
     navigate('/interview/room');
   };
 

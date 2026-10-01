@@ -1,37 +1,30 @@
 package fpt.su26.exe101.backend.base.persistence;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-@Data
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
-public class BaseEntity {
+@Getter
+@Setter
+public abstract class BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @CreatedDate
-    @Column(updatable = false)
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @LastModifiedDate
-    @Column(insertable = false)
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @CreatedBy
-    @Column(updatable = false)
-    private String createdBy;
+    @Column(name = "created_by")
+    private UUID createdBy;
 
-    @LastModifiedBy
-    @Column(insertable = false)
-    private String updatedBy;
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

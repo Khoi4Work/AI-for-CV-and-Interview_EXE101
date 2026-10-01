@@ -16,14 +16,14 @@ const LandingPage = () => {
         <GuestHeader/>
         {/* Hero Section */}
         <section
-            className="max-w-7xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-1 w-full">
+            className="max-w-7xl mx-auto px-4 md:px-20 pt-16 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-1 w-full">
             <div className="lg:col-span-6 flex flex-col space-y-6">
                 <div
                     className="bg-primary text-on-primary px-sm py-xs rounded-full w-fit font-label-sm text-label-sm text-[12px] font-semibold tracking-wider">AI-Powered
                     Excellence
                 </div>
 
-                <h1 className="text-4xl sm:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
+                <h1 className="text-3xl md:text-6xl font-extrabold text-on-surface tracking-tight leading-tight">
                     ĐỒNG HÀNH CÙNG BẠN XÂY DỰNG <span className="text-primary relative">
                         SỰ NGHIỆP
                     </span>
@@ -60,10 +60,10 @@ const LandingPage = () => {
         </section>
 
         {/* AI Features Section */}
-        <section className=" border-t border-b border-outline-variant py-20 px-6">
+        <section className=" border-t border-b border-outline-variant py-20 px-4 md:px-20">
             <div className="max-w-[1280px] mx-auto flex flex-col space-y-12">
-                <div className="text-center mb-lg space-y-xs">
-                    <h2 className="font-headline-xl text-headline-xl text-primary font-bold">
+                <div className="text-center space-y-4">
+                    <h2 className="font-headline-xl text-2xl md:text-5xl text-primary font-bold">
                         Tính năng đột phá từ AI</h2>
                     <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
                         Quy trình tạo CV truyền thống đã lỗi thời. Hãy để AI đồng hành cùng bạn trên con đường sự
@@ -130,7 +130,7 @@ const LandingPage = () => {
             <div className="max-w-[1280px] mx-auto px-xl lg:px-gutter">
                 <div className="flex justify-between items-end mb-lg">
                     <div className="space-y-2">
-                        <h2 className="font-headline-xl text-headline-xl text-primary font-bold">Kho mẫu CV
+                        <h2 className="font-headline-xl text-2xl md:text-5xl text-primary font-bold">Kho mẫu CV
                             hiện đại</h2>
                         <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Hơn 50+ mẫu thiết kế chuẩn
                             ngành nghề, phong cách đa dạng.</p>
@@ -169,7 +169,7 @@ const LandingPage = () => {
                     className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
                 <div
                     className="absolute bottom-0 left-0 w-64 h-64 bg-primary-container/30 rounded-full blur-3xl -ml-32 -mb-32"></div>
-                <h2 className="font-display-lg text-headline-xl text-white/60 max-w-2xl relative z-10 font-bold">
+                <h2 className="font-display-lg text-2xl md:text-5xl text-white/60 max-w-2xl relative z-10 font-bold">
                     Sẵn sàng để sở hữu công việc mơ ước?
                 </h2>
                 <p className="font-body-lg text-body-lg text-shadow-primary/70 max-w-2xl relative z-10">

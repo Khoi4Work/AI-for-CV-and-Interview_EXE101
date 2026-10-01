@@ -12,11 +12,13 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -84,12 +86,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(buildError(ec.getCode(), ec.getDefaultMessage(), request.getRequestURI(), null));
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
+        ErrorCode ec = ErrorCode.UNAUTHENTICATED;
+        String message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại hoặc sử dụng Login with Google nếu bạn đăng ký qua Google.";
+        return ResponseEntity.status(ec.getStatus())
+                .body(buildError(ec.getCode(), message, request.getRequestURI(), null));
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
         log.warn("DataIntegrityViolation: {}", ex.getMessage());
         ErrorCode ec = ErrorCode.DUPLICATE_RESOURCE;
         return ResponseEntity.status(ec.getStatus())
                 .body(buildError(ec.getCode(), ec.getDefaultMessage(), request.getRequestURI(), null));
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleClientDisconnected(AsyncRequestNotUsableException ex, HttpServletRequest request) {
+        log.debug("Client disconnected while writing response for {}.", request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)

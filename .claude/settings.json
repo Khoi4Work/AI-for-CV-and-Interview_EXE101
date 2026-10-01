@@ -1,0 +1,21 @@
+{
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Write",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(npm test:*)"
+    ],
+    "deny": [
+      "Bash(rm:!(.submission/*))",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(curl:*)",
+      "Read(./.env)"
+    ]
+  }
+}
