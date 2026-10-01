@@ -8,6 +8,7 @@ import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import fpt.su26.exe101.backend.modules.payment.dto.request.CheckoutRequestDTO;
 import fpt.su26.exe101.backend.modules.payment.dto.response.OrderResponseDTO;
 import fpt.su26.exe101.backend.modules.payment.dto.response.QuotaResponseDTO;
+import fpt.su26.exe101.backend.modules.payment.dto.response.PaymentServiceResponseDTO;
 import fpt.su26.exe101.backend.modules.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,16 +19,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/api/v1/payments")
-@RequiredArgsConstructor
-public class PaymentController {
+    @RestController
+    @RequestMapping("/api/v1/payments")
+    @RequiredArgsConstructor
+    public class PaymentController {
 
-    private final PaymentService paymentService;
-    private final AccountRepository accountRepository;
+        private final PaymentService paymentService;
+        private final AccountRepository accountRepository;
 
-    @PostMapping("/checkout")
-    public ResponseEntity<ApiResponse<OrderResponseDTO>> checkout(
+        @GetMapping("/services")
+        public ResponseEntity<ApiResponse<List<PaymentServiceResponseDTO>>> getServices() {
+            return ResponseEntity.ok(ApiResponse.success(paymentService.getAvailableServices()));
+        }
+
+        @PostMapping("/checkout")
+        public ResponseEntity<ApiResponse<OrderResponseDTO>> checkout(
             @RequestBody CheckoutRequestDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
 
@@ -74,6 +80,11 @@ public class PaymentController {
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
 
         return ResponseEntity.ok(ApiResponse.success(paymentService.getCurrentQuota(accountId)));
+    }
+
+    @GetMapping("/webhook")
+    public ResponseEntity<ApiResponse<String>> checkWebhook() {
+        return ResponseEntity.ok(ApiResponse.success("Payment Webhook is active and listening for POST requests."));
     }
 
     @PostMapping("/webhook")

@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     // Simple inner class for UserDetails to avoid importing org.springframework.security.core.userdetails.User
-    private static class User implements UserDetails {
+    public static class User implements UserDetails {
         private final String username;
         private final String password;
         private final java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities;

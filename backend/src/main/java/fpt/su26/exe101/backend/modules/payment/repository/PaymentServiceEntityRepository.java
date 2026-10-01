@@ -1,6 +1,8 @@
 package fpt.su26.exe101.backend.modules.payment.repository;
 
 import fpt.su26.exe101.backend.modules.payment.entity.PaymentServiceEntity;
+import fpt.su26.exe101.backend.modules.payment.entity.CVBenefit;
+import fpt.su26.exe101.backend.modules.payment.entity.InterviewBenefit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

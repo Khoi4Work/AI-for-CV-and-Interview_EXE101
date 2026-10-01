@@ -40,12 +40,19 @@ public class DevSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/v1/payments/webhook")
+                        .disable()
+                )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
+                        // 1. HIGHEST PRIORITY: PayOS Webhook must be completely public
+                        .requestMatchers("/api/v1/payments/webhook").permitAll()
+
                         // Allow all OPTIONS requests for CORS preflight
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        // 1. Public APIs - Accessible to everyone
+
+                        // 2. Public APIs
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(
                                 "/api/auth/accounts",
@@ -54,13 +61,11 @@ public class DevSecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/api/auth/oauth/**",
+                                "/api/v1/payments/services",
                                 "/login/oauth2/code/google"
                         ).permitAll()
 
-                        // PayOS Webhook must be public as it's called by PayOS server
-                        .requestMatchers("/api/v1/payments/webhook").permitAll()
-
-                        // 2. Authenticated APIs - Require valid JWT Token
+                        // 3. Authenticated APIs
                         .requestMatchers("/api/v1/payments/checkout", "/api/v1/payments/history", "/api/v1/payments/quota").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
 

@@ -34,7 +34,7 @@ const PricingPage = () => {
                 <h1 className="text-2xl font-bold text-[#10B981]">Gói dịch vụ & Thanh toán</h1>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+            <div className="grid grid-cols-1 lg:gridg-cols-3 gap-6 mb-12">
                 <Card className="lg:col-span-2 p-6 bg-[#B5C2BC] border-none shadow-sm flex flex-col justify-between">
                     <div>
                         <div className="flex justify-between items-start mb-6">
@@ -72,7 +72,7 @@ const PricingPage = () => {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2 pt-4 border-t border-[#065F46]/20">
                         <div className="flex items-center gap-3">
                             <Button
-                                onClick={() => navigate('/payment')}
+                                onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
                                 className="bg-[#065F46] hover:bg-[#044d3a] text-white text-xs font-bold px-5 py-2.5 rounded-lg shadow-sm transition-colors border-none"
                             >
                                 Gia hạn ngay
@@ -149,7 +149,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto !bg-transparent border-2 !border-[#8B5CF6] !text-[#8B5CF6] hover:!bg-[#8B5CF6] hover:!text-white transition-colors"
-                            onClick={() => navigate('/payment')}
+                            onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
                         >
                             Chọn gói
                         </Button>
@@ -169,7 +169,7 @@ const PricingPage = () => {
                         <Button
                             variant="primary"
                             className="w-full mt-auto !bg-transparent border-2 !border-[#10B981] !text-[#10B981] hover:!bg-[#10B981] hover:!text-white transition-colors"
-                            onClick={() => navigate('/payment')}
+                            onClick={() => navigate('/payment?serviceId=660f9501-f30c-52e5-b827-557766551111')}
                         >
                             Chọn gói
                         </Button>
@@ -189,7 +189,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto !bg-transparent border-2  !border-[#EF4444] !text-[#EF4444] hover:!bg-[#EF4444] hover:!text-white transition-colors"
-                            onClick={() => navigate('/payment')}
+                            onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
                         >
                             Chọn gói
                         </Button>
@@ -274,7 +274,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto bg-[#9333EA]  hover:bg-[#7E22CE] text-white"
-                            onClick={() => navigate('/payment')}
+                            onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
                         >
                             Nâng cấp
                         </Button>
@@ -306,7 +306,7 @@ const PricingPage = () => {
                         <Button
                             variant="primary"
                             className="w-full mt-auto"
-                            onClick={() => navigate('/payment')}
+                            onClick={() => navigate('/payment?serviceId=660f9501-f30c-52e5-b827-557766551111')}
                         >
                             Nâng cấp
                         </Button>
@@ -436,7 +436,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto !bg-[#7C3AED] hover:!bg-[#7E22CE]  !text-white"
-                            onClick={() => navigate('/payment')}
+                            onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
                         >
                             Nâng cấp
                         </Button>
@@ -471,7 +471,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto bg-[#10B981] hover:bg-[#059669] text-white"
-                            onClick={() => navigate('/payment')}
+                            onClick={() => navigate('/payment?serviceId=660f9501-f30c-52e5-b827-557766551111')}
                         >
                             Nâng cấp
                         </Button>
