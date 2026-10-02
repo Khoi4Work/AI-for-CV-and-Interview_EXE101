@@ -13,6 +13,7 @@ export function mapCVDataToTemplate(cvData) {
 
     return {
         name: cvData.personalInfo?.name || "",
+        profilePhoto: cvData.profilePhoto || '',
         title: cvData.professionalTitle || "",
         contact: {
             phone: cvData.personalInfo?.phone || "",

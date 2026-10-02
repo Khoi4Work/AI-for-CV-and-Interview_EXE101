@@ -1,6 +1,7 @@
 import { Globe, Mail, MapPin, Phone, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
+import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
 
 export default function Template6_TheStandard({ data }) {
 
@@ -19,7 +20,7 @@ export default function Template6_TheStandard({ data }) {
 
     if (!cvData) return null;
 
-    const { title, skills } = data || {};
+    const { title, skills, profilePhoto } = data || {};
     const { personalInfo, summary, experiences, education, certificates, languages, awards, projects } = cvData;
 
     return (
@@ -155,17 +156,15 @@ export default function Template6_TheStandard({ data }) {
                 <div className="w-[40%] bg-[#f4f4f4] p-10 pt-16 flex flex-col gap-10 border-l border-slate-200">
 
                     <div className="flex flex-col items-center mb-2">
-                        <div className="w-[180px] h-[180px] bg-slate-300 rounded-full overflow-hidden shadow-sm relative">
-                            <div className="absolute inset-0 bg-slate-200"></div>
-                        </div>
+                        <ProfilePhotoPicker variant="frame" photo={profilePhoto} className="w-[180px] h-[180px] rounded-full overflow-hidden shadow-sm" />
                     </div>
 
                     <div className="flex flex-col gap-4 text-[13px] font-medium text-slate-600">
                         <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><Phone size={14} className="text-slate-500" /></div> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                        <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><Mail size={14} className="text-slate-500" /></div> <span className="break-all"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} /></span></div>
+                        <div className="flex min-w-0 items-center gap-3"><div className="shrink-0 border border-slate-300 p-1.5 rounded-full bg-white"><Mail size={14} className="text-slate-500" /></div> <span className="min-w-0 break-all"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-all" /></span></div>
                         <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><Calendar size={14} className="text-slate-500" /></div> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
                         <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><MapPin size={14} className="text-slate-500" /></div> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
-                        <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><Globe size={14} className="text-slate-500" /></div> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></span></div>
+                        {personalInfo.linkedin?.trim() && <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><Globe size={14} className="text-slate-500" /></div> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></span></div>}
                     </div>
 
                     <div>

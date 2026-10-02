@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import {
     Sparkles,
     Trash2,
@@ -15,16 +15,14 @@ import Sidebar from "../components/Sidebar.jsx";
 import {Header} from "../../../components/layout/PublicHeader.jsx";
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
-import {badResumeData} from '../constants/cv-mock-data.js';
-import {mapImportedCVData, mapMockDataToCVContext} from '../mapper/cv-data-mapper.js';
-import {mockJobDescriptions} from '../../../constants/jobDescription.js';
+import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
 import {Footer} from "../../../components/layout/Footer.jsx";
 import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
+import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
-    const location = useLocation();
     const navigate = useNavigate();
     const {
         cvData,
@@ -50,19 +48,10 @@ export default function CVBuilder() {
         resetCV
     } = useCV();
 
-    const handleLoadDemoBadCV = () => {
-        showToast('Đang tải mẫu CV tệ (Demo)...', 'info');
-        const mappedData = mapMockDataToCVContext(badResumeData);
-        setFullCVData(mappedData);
-    };
-
     useEffect(() => {
         resetCV();
         setCurrentCvId(null);
-        if (location.state?.loadBadCV) {
-            handleLoadDemoBadCV();
-        }
-    }, [resetCV, setCurrentCvId, location.state]);
+    }, [resetCV, setCurrentCvId]);
 
     const [step, setStep] = useState(1);
     const [jdText, setJdText] = useState('');
@@ -133,13 +122,6 @@ export default function CVBuilder() {
     };
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
-    const handleDemoJdSelect = (id) => {
-        const jd = mockJobDescriptions.find(j => j.id === id);
-        if (jd) {
-            setJdText(jd.description.overview + '\n\n' + jd.description.details.map(d => d.title + ': ' + d.bullets.join(', ')).join('\n'));
-        }
-    };
-
     return (
         <>
             <Header/>
@@ -170,12 +152,6 @@ export default function CVBuilder() {
                                     <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.doc,.docx"
                                         onChange={onFileChange}
                                     />
-                                </button>
-                                <button
-                                    onClick={handleLoadDemoBadCV}
-                                    className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors flex items-center gap-1"
-                                >
-                                    <Sparkles className="w-3 h-3"/> CV Tệ (Demo)
                                 </button>
                             </div>
 
@@ -253,6 +229,7 @@ export default function CVBuilder() {
                                                 onChange={(e) => updatePersonalInfo({linkedin: e.target.value})}
                                             />
                                         </div>
+                                        <ProfilePhotoPicker />
                                     </div>
 
                                     <div className="pt-6">
@@ -662,14 +639,6 @@ export default function CVBuilder() {
                             </div>
                             <div className="p-6 flex-grow flex flex-col">
                                 <p className="text-xs text-slate-500 mb-3">JD là tùy chọn để tham khảo. Bạn sẽ tải CV về máy ở trình chỉnh sửa; thao tác này không ghi CV vào DB và không tự chạy tối ưu.</p>
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    {mockJobDescriptions.map(jd => (
-                                        <button key={jd.id} onClick={() => handleDemoJdSelect(jd.id)}
-                                            className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] hover:bg-green-100 hover:text-green-700 transition-colors">
-                                            {jd.title}
-                                        </button>
-                                    ))}
-                                </div>
                                 <textarea value={jdText} onChange={e => setJdText(e.target.value)}
                                     placeholder="Dán nội dung mô tả công việc (không bắt buộc)..."
                                     className="w-full min-h-64 flex-grow p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-y" />

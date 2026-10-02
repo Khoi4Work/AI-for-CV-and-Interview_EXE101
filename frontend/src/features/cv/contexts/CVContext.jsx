@@ -11,6 +11,7 @@ const INITIAL_CV_STATE = {
         address: '',
         linkedin: '',
     },
+    profilePhoto: '',
     summary: '',
     experiences: [],
     skills: [],
@@ -55,6 +56,10 @@ export function CVProvider({children}) {
 
     const updateSummary = useCallback((summary) => {
         setCvData(prev => ({...prev, summary}));
+    }, []);
+
+    const updateProfilePhoto = useCallback((profilePhoto) => {
+        setCvData(prev => ({...prev, profilePhoto: profilePhoto || ''}));
     }, []);
 
     const addExperience = useCallback(() => {
@@ -151,6 +156,7 @@ export function CVProvider({children}) {
             setHasCV: setHasCVWithPersistence,
             updatePersonalInfo,
             updateSummary,
+            updateProfilePhoto,
             addExperience,
             updateExperience,
             updateExperienceDetail,

@@ -1,5 +1,6 @@
 import { X, FileDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ProfilePhotoPicker from './ProfilePhotoPicker.jsx';
 
 export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, onZoomOut, templateName, templateOptions = [], selectedTemplateId, onTemplateChange }) {
     const navigate = useNavigate();
@@ -55,6 +56,7 @@ export default function TopNagivationToolBar({ onExport, zoom = 100, onZoomIn, o
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-3">
+                    <ProfilePhotoPicker variant="compact" />
                     <button
                         onClick={onExport}
                         className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-6 py-2.5 rounded-lg transition-all active:scale-[0.98] shadow-sm">

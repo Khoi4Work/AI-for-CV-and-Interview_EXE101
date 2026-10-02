@@ -1,6 +1,7 @@
 import { Globe, Mail, MapPin, Phone, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
+import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
 
 export default function Template3_SecurityAnalyst({ data }) {
 
@@ -18,7 +19,7 @@ export default function Template3_SecurityAnalyst({ data }) {
     if (!cvData) return null;
 
     // Use a mix of passed data and context to maintain the template's specific layout logic
-    const { title, skillsGrouped } = data || {};
+    const { title, skillsGrouped, profilePhoto } = data || {};
     const { personalInfo, summary, experiences, education, projects, certificates } = cvData;
     const skillLevels = [
         ['Expert', skillsGrouped?.expert],
@@ -49,7 +50,7 @@ export default function Template3_SecurityAnalyst({ data }) {
                                 <EditableText
                                     value={personalInfo.email}
                                     onChange={(val) => updatePersonalInfo({email: val})}
-                                    className="break-all"
+                                    className="min-w-0 break-all"
                                 />
                             </div>
                             <div className="flex items-center gap-2">
@@ -66,15 +67,15 @@ export default function Template3_SecurityAnalyst({ data }) {
                                     onChange={(val) => updatePersonalInfo({address: val})}
                                 />
                             </div>
-                            <div className="flex items-center gap-2 items-start pt-1">
+                            {personalInfo.linkedin?.trim() && <div className="flex items-center gap-2 items-start pt-1">
                                 <Globe size={14} className="text-slate-500 shrink-0" />
                                 <EditableText
                                     multiline
                                     value={personalInfo.linkedin}
                                     onChange={(val) => updatePersonalInfo({linkedin: val})}
-                                    className="break-all leading-tight"
+                                    className="min-w-0 break-all leading-tight"
                                 />
-                            </div>
+                            </div>}
                         </div>
                     </div>
 
@@ -84,7 +85,7 @@ export default function Template3_SecurityAnalyst({ data }) {
                             multiline
                             value={summary}
                             onChange={updateSummary}
-                            className="text-[13px] leading-relaxed text-slate-700 text-justify"
+                            className="text-[13px] leading-relaxed text-slate-700 text-left"
                         />
                     </div>
 
@@ -148,9 +149,7 @@ export default function Template3_SecurityAnalyst({ data }) {
                                 />
                             </h2>
                         </div>
-                        <div className="w-[100px] h-[100px] bg-slate-200 rounded-full shrink-0 mt-2 overflow-hidden border-4 border-slate-100 shadow-sm relative">
-                            <div className="absolute inset-0 bg-slate-300"></div>
-                        </div>
+                        <ProfilePhotoPicker variant="frame" photo={profilePhoto} className="w-[100px] h-[100px] rounded-full shrink-0 mt-2 overflow-hidden border-4 border-slate-100 shadow-sm" />
                     </div>
 
                     <div className="mb-8">

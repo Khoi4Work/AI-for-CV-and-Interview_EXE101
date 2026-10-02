@@ -443,6 +443,13 @@ body {
     margin: 0;
 }
 
+.cv-profile-photo-frame {
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
 @media print {
     html,
     body,
@@ -519,6 +526,12 @@ body {
     }
 
     .cv-editable-field {
+        display: none !important;
+    }
+
+    .cv-profile-photo-action,
+    .cv-profile-photo-hint,
+    .cv-profile-photo-empty > svg {
         display: none !important;
     }
 

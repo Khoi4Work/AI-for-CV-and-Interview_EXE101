@@ -11,11 +11,25 @@ export default function CVEditor() {
     const selectedTemplate = cvData.selectedTemplateId;
     const templateName = TEMPLATES_DATA.find(template => template.id === selectedTemplate)?.title || 'CV';
     const templateData = mapCVDataToTemplate(cvData);
+    const handleExport = async () => {
+        const images = Array.from(document.querySelectorAll('.cv-page-container img'));
+        await Promise.all(images.map(image => (
+            typeof image.decode === 'function'
+                ? image.decode().catch(() => {})
+                : image.complete
+                    ? Promise.resolve()
+                    : new Promise(resolve => {
+                        image.addEventListener('load', resolve, {once: true});
+                        image.addEventListener('error', resolve, {once: true});
+                    })
+        )));
+        window.print();
+    };
 
     return (
         <div className="cv-editor-shell flex flex-col h-screen overflow-hidden" style={{ background: 'radial-gradient(circle at center, var(--color-bg-radial-start) 0%, var(--color-bg-radial-end) 100%)' }}>
             <TopNagivationToolBar
-                onExport={() => window.print()}
+                onExport={handleExport}
                 templateName={templateName}
                 zoom={zoom}
                 onZoomIn={() => setZoom(prev => Math.min(prev + 10, 200))}

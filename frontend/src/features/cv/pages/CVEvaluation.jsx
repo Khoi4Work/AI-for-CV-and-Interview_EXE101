@@ -1,21 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, Sparkles, FileQuestion, LoaderCircle, BrainCircuit, ClipboardCheck } from 'lucide-react';
+import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, FileQuestion, LoaderCircle, BrainCircuit, ClipboardCheck } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { goodResumeData, badResumeData } from '../constants/cv-mock-data.js';
-import { mockJobDescriptions } from '../../../constants/jobDescription.js';
 import { useCV } from '../contexts/CVContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
 import { importCV } from '../services/cvImportService.js';
 import { cvPipelineService } from '../services/cvPipelineService.js';
-import { mapImportedCVData, mapMockDataToCVContext } from '../mapper/cv-data-mapper.js';
+import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 
 const CVEvaluation = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const { hasCV, setHasCV, currentCvId, setCurrentCvId, setFullCVData } = useCV();
+  const { hasCV, setHasCV, setCurrentCvId, setFullCVData } = useCV();
   const { showToast } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -26,7 +24,6 @@ const CVEvaluation = () => {
   }, []); // Only check on mount to avoid re-triggering during navigation
 
   const [selectedFile, setSelectedFile] = useState(null);
-  const [demoCv, setDemoCv] = useState(null); // 'good' or 'bad'
   const [jdText, setJdText] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -43,19 +40,6 @@ const CVEvaluation = () => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
-      setDemoCv(null);
-    }
-  };
-
-  const handleDemoCvSelect = (type) => {
-    setDemoCv(type);
-    setSelectedFile(null);
-  };
-
-  const handleDemoJdSelect = (id) => {
-    const jd = mockJobDescriptions.find(j => j.id === id);
-    if (jd) {
-      setJdText(jd.description.overview + '\n\n' + jd.description.details.map(d => d.title + ': ' + d.bullets.join(', ')).join('\n'));
     }
   };
 
@@ -75,21 +59,19 @@ const CVEvaluation = () => {
     const file = e.dataTransfer.files[0];
     if (file && (file.type === 'application/pdf' || file.name.endsWith('.doc') || file.name.endsWith('.docx'))) {
       setSelectedFile(file);
-      setDemoCv(null);
     }
   };
 
   const removeFile = () => {
     setSelectedFile(null);
-    setDemoCv(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const handleStartEvaluation = async () => {
-    if (!selectedFile && !demoCv) {
-      alert('Vui lòng tải lên CV của bạn hoặc chọn CV demo.');
+    if (!selectedFile) {
+      alert('Vui lòng tải lên CV của bạn.');
       return;
     }
     if (!jdText.trim()) {
@@ -103,22 +85,12 @@ const CVEvaluation = () => {
     setIsEvaluating(true);
     setEvaluationStep(0);
     try {
-      let cvId = demoCv ? null : currentCvId;
-      let cvName = demoCv ? (demoCv === 'good' ? 'Good_Resume_MIT.pdf' : 'Bad_Resume_Sample.pdf') : selectedFile.name;
-      if (selectedFile) {
-        setEvaluationStep(1);
-        const imported = await importCV(selectedFile);
-        cvId = imported.cvId;
-        setCurrentCvId(cvId);
-        setFullCVData(mapImportedCVData(imported.extractedData));
-      } else if (demoCv) {
-        setEvaluationStep(1);
-        const demo = mapMockDataToCVContext(demoCv === 'good' ? goodResumeData : badResumeData);
-        const saved = await cvPipelineService.createCV({name: cvName, content: demo});
-        cvId = saved?.id;
-        setCurrentCvId(cvId);
-        setFullCVData(demo);
-      }
+      setEvaluationStep(1);
+      const imported = await importCV(selectedFile);
+      const cvId = imported.cvId;
+      const cvName = selectedFile.name;
+      setCurrentCvId(cvId);
+      setFullCVData(mapImportedCVData(imported.extractedData));
       if (!cvId) throw new Error('Không xác định được CV đã lưu để đánh giá.');
       setEvaluationStep(2);
       const analysis = await cvPipelineService.analyzeCV(cvId, jdText.trim());
@@ -233,7 +205,7 @@ const CVEvaluation = () => {
                 ${isDragging
                   ? 'border-primary bg-primary/10'
                   : 'border-outline-variant bg-surface-container hover:border-primary hover:bg-surface-container-low'}
-                ${selectedFile || demoCv ? 'border-primary bg-primary/10' : ''}
+                ${selectedFile ? 'border-primary bg-primary/10' : ''}
               `}
             >
               <input
@@ -244,28 +216,12 @@ const CVEvaluation = () => {
                 className="hidden"
               />
 
-              {!selectedFile && !demoCv ? (
+              {!selectedFile ? (
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-primary transition-transform group-hover:scale-110 duration-200 border border-outline-variant shadow-inner">
                     <Upload className="w-8 h-8" />
                   </div>
-                  <div className="flex flex-col items-center gap-4">
-                    <p className="text-lg font-medium text-on-surface">Kéo thả CV vào đây hoặc <span className="text-primary font-semibold">Chọn tệp</span></p>
-                    <div className="flex gap-2 mt-2">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); handleDemoCvSelect('good'); }}
-                            className="px-3 py-1.5 bg-primary/20 text-primary rounded-lg text-xs font-bold hover:bg-primary/30 transition-colors flex items-center gap-1"
-                        >
-                            <Sparkles className="w-3 h-3" /> CV Tốt (Demo)
-                        </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); handleDemoCvSelect('bad'); }}
-                            className="px-3 py-1.5 bg-rose-500/20 text-rose-500 rounded-lg text-xs font-bold hover:bg-rose-500/30 transition-colors flex items-center gap-1"
-                        >
-                            <Sparkles className="w-3 h-3" /> CV Tệ (Demo)
-                        </button>
-                    </div>
-                  </div>
+                  <p className="text-lg font-medium text-on-surface">Kéo thả CV vào đây hoặc <span className="text-primary font-semibold">Chọn tệp</span></p>
                   <p className="text-sm text-on-surface-variant mt-1">Hỗ trợ định dạng PDF, DOC, DOCX</p>
                 </div>
               ) : (
@@ -275,10 +231,10 @@ const CVEvaluation = () => {
                   </div>
                   <div className="text-center">
                     <p className="text-on-surface font-semibold truncate w-full px-2">
-                      {demoCv === 'good' ? 'Good_Resume_MIT.pdf' : demoCv === 'bad' ? 'Bad_Resume_Sample.pdf' : selectedFile?.name}
+                      {selectedFile.name}
                     </p>
                     <p className="text-sm text-on-surface-variant mt-1">
-                      {demoCv ? 'Mẫu demo đã chọn' : `${(selectedFile.size / 1024).toFixed(1)} KB`}
+                      {`${(selectedFile.size / 1024).toFixed(1)} KB`}
                     </p>
                   </div>
                   <button
@@ -307,18 +263,6 @@ const CVEvaluation = () => {
               {/* Content */}
               <div className="p-6">
                   <div className="flex flex-col gap-4">
-                      <div className="flex gap-2 mb-2">
-                          <span className="text-xs font-bold text-on-surface-variant uppercase">Demo JD:</span>
-                          {mockJobDescriptions.map(jd => (
-                              <button
-                                  key={jd.id}
-                                  onClick={() => handleDemoJdSelect(jd.id)}
-                                  className="px-2 py-1 bg-surface-container text-on-surface-variant rounded text-[10px] hover:bg-primary/20 hover:text-primary transition-colors border border-outline-variant"
-                                >
-                                  {jd.title}
-                                </button>
-                          ))}
-                      </div>
                       <textarea
                         value={jdText}
                         onChange={(e) => setJdText(e.target.value)}

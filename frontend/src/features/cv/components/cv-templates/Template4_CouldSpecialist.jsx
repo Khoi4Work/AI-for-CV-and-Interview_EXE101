@@ -1,6 +1,7 @@
 import { Mail, MapPin, Phone, Globe, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
+import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
 
 export default function Template4({ data }) {
 
@@ -16,7 +17,7 @@ export default function Template4({ data }) {
     } = useCV();
 
     if (!cvData) return null;
-    const { title, skillsGrouped } = data || {};
+    const { title, skillsGrouped, profilePhoto } = data || {};
     const { personalInfo, summary, education, experiences, certificates, projects } = cvData;
     const skillLevels = [
         ['Expert', skillsGrouped?.expert],
@@ -53,10 +54,10 @@ export default function Template4({ data }) {
                     <div className="px-8 flex flex-col gap-6 text-[13px]">
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2"><Phone size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                            <div className="flex items-center gap-2"><Mail size={14} className="text-[#A2CAEA]" /> <span className="break-all"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} /></span></div>
+                            <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0 text-[#A2CAEA]" /> <span className="min-w-0 break-all"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-all" /></span></div>
                             <div className="flex items-center gap-2"><Calendar size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
                             <div className="flex items-center gap-2"><MapPin size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
-                            <div className="flex items-center gap-2"><Globe size={14} className="text-[#A2CAEA]" /> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></span></div>
+                            {personalInfo.linkedin?.trim() && <div className="flex items-center gap-2"><Globe size={14} className="text-[#A2CAEA]" /> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} className="break-all" /></span></div>}
                         </div>
 
                         <div className="pt-4">
@@ -142,7 +143,7 @@ export default function Template4({ data }) {
                                 className="text-[13px] text-slate-600 leading-relaxed text-justify"
                             />
                         </div>
-                        <div className="w-24 h-24 rounded-full bg-slate-200 shrink-0"></div>
+                        <ProfilePhotoPicker variant="frame" photo={profilePhoto} className="w-24 h-24 rounded-full shrink-0 overflow-hidden" />
                     </div>
 
                     <div className="mb-8">

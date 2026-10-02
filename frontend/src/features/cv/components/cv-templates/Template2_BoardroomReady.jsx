@@ -37,12 +37,12 @@ export default function Template2_BoardroomReady({ data }) {
                             />
                         </h2>
                     </div>
-                    <div className="flex flex-col gap-1.5 text-[13px] text-slate-600 font-medium whitespace-nowrap pt-2">
+                    <div className="flex min-w-0 flex-col gap-1.5 text-[13px] text-slate-600 font-medium pt-2">
                         <div className="flex items-center gap-2"><Phone size={14} /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                        <div className="flex items-center gap-2"><Mail size={14} /> <EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} /></div>
+                        <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0" /> <EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-all" /></div>
                         <div className="flex items-center gap-2"><Calendar size={14} /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
                         <div className="flex items-center gap-2"><MapPin size={14} /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
-                        <div className="flex items-center gap-2"><Globe size={14} /> <EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></div>
+                        {personalInfo.linkedin?.trim() && <div className="flex items-center gap-2"><Globe size={14} /> <EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></div>}
                     </div>
                 </div>
 
