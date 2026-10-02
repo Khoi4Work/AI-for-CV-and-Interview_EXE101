@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +38,18 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     }
 
     @Override @Transactional(readOnly = true)
-    public UserPlan getPlan(UUID accountId) {
-        return repository.findByAccountId(accountId).map(UserUsageQuota::getPlan).orElseGet(() -> {
+    public UserPlan getCvPlan(UUID accountId) {
+        return repository.findByAccountId(accountId).map(quota -> isExpired(quota.getCvPeriodEnd())
+                ? UserPlan.FREE : quota.getCvPlan()).orElseGet(() -> {
+            eventPublisher.publishEvent(new QuotaInitializationRequestedEvent(accountId));
+            return UserPlan.FREE;
+        });
+    }
+
+    @Override @Transactional(readOnly = true)
+    public UserPlan getInterviewPlan(UUID accountId) {
+        return repository.findByAccountId(accountId).map(quota -> isExpired(quota.getInterviewPeriodEnd())
+                ? UserPlan.FREE : quota.getInterviewPlan()).orElseGet(() -> {
             eventPublisher.publishEvent(new QuotaInitializationRequestedEvent(accountId));
             return UserPlan.FREE;
         });
@@ -52,16 +63,17 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
 
     private UserUsageQuota defaultQuota(UUID accountId) {
         QuotaBenefit freeBenefit = benefitConfig.getBenefit(UserPlan.FREE);
-        return UserUsageQuota.builder().accountId(accountId).plan(UserPlan.FREE)
+        return UserUsageQuota.builder().accountId(accountId).cvPlan(UserPlan.FREE).interviewPlan(UserPlan.FREE)
                 .remainingCvCnt(freeBenefit.getCvCnt())
                 .remainingCvAiCnt(freeBenefit.getAiCvCnt())
-                .remainingIntMin(freeBenefit.getIntMin())
+                .remainingIntMin(0)
                 .build();
     }
 
     @Override @Transactional
     public void consumeCvCreation(UUID accountId) {
         UserUsageQuota quota = lockedQuota(accountId);
+        expireCvIfNeeded(quota);
         if (quota.getRemainingCvCnt() <= 0) {
             log.warn("[QUOTA] Request denied | accountId={} | type=cv_creation | reason=exhausted", accountId);
             throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
@@ -72,6 +84,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     @Override @Transactional
     public void consumeCvAiAnalysis(UUID accountId) {
         UserUsageQuota quota = lockedQuota(accountId);
+        expireCvIfNeeded(quota);
         if (quota.getRemainingCvAiCnt() <= 0) {
             log.warn("[QUOTA] Request denied | accountId={} | type=cv_ai_analysis | reason=exhausted", accountId);
             throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
@@ -90,6 +103,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     public void consumeInterviewMinutes(UUID accountId, int minutes) {
         if (minutes <= 0) throw new IllegalArgumentException("Interview minutes must be positive");
         UserUsageQuota quota = lockedQuota(accountId);
+        expireInterviewIfNeeded(quota);
         if (quota.getRemainingIntMin() < minutes) {
             log.warn("[QUOTA] Request denied | accountId={} | type=interview_minutes | requested={} | reason=insufficient",
                     accountId, minutes);
@@ -99,34 +113,68 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     }
 
     @Override @Transactional
-    public void refundInterviewMinutes(UUID accountId, int minutes) {
+    public void refundInterviewMinutes(UUID accountId, int minutes, LocalDateTime periodStart) {
         if (minutes <= 0) throw new IllegalArgumentException("Interview minutes must be positive");
         UserUsageQuota quota = lockedQuota(accountId);
+        if (periodStart == null || !periodStart.equals(quota.getInterviewPeriodStart())
+                || quota.getInterviewPlan() == UserPlan.FREE || isExpired(quota.getInterviewPeriodEnd())) return;
         quota.setRemainingIntMin(quota.getRemainingIntMin() + minutes);
         log.info("[QUOTA] Refunded | accountId={} | type=interview_minutes | minutes={}", accountId, minutes);
     }
 
     @Override
     @Transactional
-    public void activatePlan(UUID accountId, UserPlan plan) {
-        if (plan == null) throw new ApiException(ErrorCode.INVALID_INPUT, "Plan is required");
+    public void activateCvSubscription(UUID accountId, UserPlan plan, int cvCount) {
+        if (plan == null || cvCount < 0) throw new ApiException(ErrorCode.INVALID_INPUT, "Valid CV plan and quota are required");
         QuotaBenefit benefit = benefitConfig.getBenefit(plan);
         UserUsageQuota quota = lockedQuota(accountId);
-        quota.setPlan(plan);
-        quota.setRemainingCvCnt(benefit.getCvCnt());
+        LocalDateTime now = LocalDateTime.now();
+        quota.setCvPlan(plan);
+        quota.setCvPeriodStart(now);
+        quota.setCvPeriodEnd(now.plusMonths(1));
+        quota.setCvExpiryEmailSent(false);
+        quota.setRemainingCvCnt(cvCount);
         quota.setRemainingCvAiCnt(benefit.getAiCvCnt());
-        quota.setRemainingIntMin(benefit.getIntMin());
     }
 
     @Override
     @Transactional
-    public void addQuota(UUID accountId, int cvCnt, int aiCvCnt, int intMin) {
-        if (cvCnt < 0 || aiCvCnt < 0 || intMin < 0 || (cvCnt == 0 && aiCvCnt == 0 && intMin == 0)) {
-            throw new ApiException(ErrorCode.INVALID_INPUT, "At least one non-negative quota amount is required");
-        }
+    public void activateInterviewSubscription(UUID accountId, UserPlan plan, int interviewMinutes) {
+        if (plan == null || interviewMinutes < 0) throw new ApiException(ErrorCode.INVALID_INPUT, "Valid Interview plan and quota are required");
         UserUsageQuota quota = lockedQuota(accountId);
-        quota.setRemainingCvCnt(quota.getRemainingCvCnt() + cvCnt);
-        quota.setRemainingCvAiCnt(quota.getRemainingCvAiCnt() + aiCvCnt);
-        quota.setRemainingIntMin(quota.getRemainingIntMin() + intMin);
+        LocalDateTime now = LocalDateTime.now();
+        quota.setInterviewPlan(plan);
+        quota.setInterviewPeriodStart(now);
+        quota.setInterviewPeriodEnd(now.plusMonths(1));
+        quota.setInterviewExpiryEmailSent(false);
+        quota.setRemainingIntMin(interviewMinutes);
+    }
+
+    @Override
+    @Transactional
+    public void refreshSubscriptionState(UUID accountId) {
+        UserUsageQuota quota = lockedQuota(accountId);
+        expireCvIfNeeded(quota);
+        expireInterviewIfNeeded(quota);
+    }
+
+    private boolean isExpired(LocalDateTime periodEnd) {
+        return periodEnd != null && !periodEnd.isAfter(LocalDateTime.now());
+    }
+
+    private void expireCvIfNeeded(UserUsageQuota quota) {
+        if (quota.getCvPlan() != UserPlan.FREE && isExpired(quota.getCvPeriodEnd())) {
+            QuotaBenefit free = benefitConfig.getBenefit(UserPlan.FREE);
+            quota.setCvPlan(UserPlan.FREE);
+            quota.setRemainingCvCnt(free.getCvCnt());
+            quota.setRemainingCvAiCnt(free.getAiCvCnt());
+        }
+    }
+
+    private void expireInterviewIfNeeded(UserUsageQuota quota) {
+        if (quota.getInterviewPlan() != UserPlan.FREE && isExpired(quota.getInterviewPeriodEnd())) {
+            quota.setInterviewPlan(UserPlan.FREE);
+            quota.setRemainingIntMin(0);
+        }
     }
 }

@@ -71,4 +71,24 @@ public class EmailService {
             throw new RuntimeException("Email sending failed");
         }
     }
+
+    @Async
+    public void sendSubscriptionExpiredEmail(String to, String serviceName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject("Gói " + serviceName + " đã hết hạn");
+            helper.setText(
+                    "<h3>Gói " + serviceName + " của bạn đã hết hạn</h3>" +
+                    "<p>Chu kỳ dịch vụ đã kết thúc và quyền lợi trả phí đã tạm dừng.</p>" +
+                    "<p><a href=\"" + frontendUrl + "/pricing\">Gia hạn gói dịch vụ</a></p>", true);
+            mailSender.send(message);
+            log.info("[EMAIL] Subscription expiration message sent | service={}", serviceName);
+        } catch (MessagingException e) {
+            log.error("[EMAIL] Subscription expiration message delivery failed | service={} | errorType={}",
+                    serviceName, e.getClass().getSimpleName(), e);
+            throw new RuntimeException("Email sending failed");
+        }
+    }
 }

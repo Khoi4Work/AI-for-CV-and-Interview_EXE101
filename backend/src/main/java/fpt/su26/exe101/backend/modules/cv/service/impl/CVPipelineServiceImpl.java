@@ -394,7 +394,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private CVEvaluationResponseDTO evaluateAndConsume(CV cv, JobDescription jd, Gallery gallery) {
         quotaService.consumeCvAiAnalysis(gallery.getAccountId());
         try {
-            CVEvaluationResponseDTO result = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), quotaService.getPlan(gallery.getAccountId()));
+            CVEvaluationResponseDTO result = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), quotaService.getCvPlan(gallery.getAccountId()));
             result.setJdId(jd.getId());
             return result;
         } catch (RuntimeException e) {
@@ -415,7 +415,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 cvId, gallery.getId(), jd.getId());
         try {
             quotaService.consumeCvAiAnalysis(gallery.getAccountId());
-            UserPlan plan = quotaService.getPlan(gallery.getAccountId());
+            UserPlan plan = quotaService.getCvPlan(gallery.getAccountId());
             CVEvaluationResponseDTO evaluation = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), plan);
             evaluation.setJdId(jd.getId());
             CVSkillGapResponseDTO skillGap;
@@ -530,7 +530,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     private void requirePlan(UUID accountId, UserPlan minimumPlan) {
-        if (quotaService.getPlan(accountId).ordinal() < minimumPlan.ordinal()) {
+        if (quotaService.getCvPlan(accountId).ordinal() < minimumPlan.ordinal()) {
             throw new ApiException(ErrorCode.QUOTA_EXCEEDED, "This CV feature requires the " + minimumPlan + " plan.");
         }
     }

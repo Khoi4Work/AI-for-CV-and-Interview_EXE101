@@ -74,7 +74,7 @@ public class InterviewServiceImpl implements InterviewService {
         ExperienceLevel level = parseExperienceLevel(request.getExperienceLevel());
         validateSessionOptions(request);
 
-        UserPlan plan = usageQuotaService.getPlan(gallery.getAccountId());
+        UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         int maxDuration = switch (plan) {
             case FREE -> 5;
             case MIDDLE -> 10;
@@ -84,6 +84,7 @@ public class InterviewServiceImpl implements InterviewService {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION,
                     "Your current plan allows interviews up to " + maxDuration + " minutes.");
         }
+        usageQuotaService.refreshSubscriptionState(gallery.getAccountId());
 
         CV cv = request.getCvId() == null ? null : cvPipelineService.getCVForInterview(request.getCvId(), gallery);
         JobDescription jd = resolveJobDescription(request, gallery);
@@ -156,6 +157,10 @@ public class InterviewServiceImpl implements InterviewService {
         }
         snapshot.put("questions", questionSnapshot);
 
+        usageQuotaService.consumeInterviewMinutes(gallery.getAccountId(), request.getDurationMinutes());
+        LocalDateTime interviewPeriodStart = usageQuotaService.getQuota(gallery.getAccountId())
+                .map(fpt.su26.exe101.backend.modules.quota.entity.UserUsageQuota::getInterviewPeriodStart)
+                .orElse(null);
         InterviewSession session = InterviewSession.builder()
                 .gallery(gallery)
                 .cv(cv)
@@ -165,6 +170,9 @@ public class InterviewServiceImpl implements InterviewService {
                 .candidateExperienceLevel(level.name())
                 .contextSnapshot(snapshot)
                 .sessionDate(LocalDateTime.now())
+                .interviewStartedAt(LocalDateTime.now())
+                .reservedInterviewMinutes(request.getDurationMinutes())
+                .quotaPeriodStartAtReservation(interviewPeriodStart)
                 .status(InterviewSessionStatus.IN_PROGRESS)
                 .build();
         InterviewSession saved = sessionRepository.save(session);
@@ -218,6 +226,9 @@ public class InterviewServiceImpl implements InterviewService {
                 .audioUrl(request.getAudioUrl())
                 .isSkipped(request.getIsSkipped())
                 .build());
+        LocalDateTime answerSubmittedAt = LocalDateTime.now();
+        if (session.getInterviewStartedAt() == null) session.setInterviewStartedAt(answerSubmittedAt);
+        session.setInterviewLastActivityAt(answerSubmittedAt);
         log.info("[INTERVIEW] Answer submitted | sessionId={} | questionId={} | skipped={} | source=text",
                 sessionId, answer.getQuestionId(), Boolean.TRUE.equals(answer.getIsSkipped()));
         return InterviewAnswerResponseDTO.builder()
@@ -257,6 +268,9 @@ public class InterviewServiceImpl implements InterviewService {
                 .answerText(transcript)
                 .isSkipped(false)
                 .build());
+        LocalDateTime answerSubmittedAt = LocalDateTime.now();
+        if (session.getInterviewStartedAt() == null) session.setInterviewStartedAt(answerSubmittedAt);
+        session.setInterviewLastActivityAt(answerSubmittedAt);
         log.info("[INTERVIEW] Audio answer transcribed | sessionId={} | questionId={} | audioSizeBytes={}",
                 sessionId, questionId, audio.length);
         return InterviewAnswerResponseDTO.builder()
@@ -271,6 +285,22 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     @Transactional
+    public void finishSession(UUID sessionId) {
+        Gallery gallery = galleryService.getCurrentGallery();
+        InterviewSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Interview session not found"));
+        if (!session.getGallery().getId().equals(gallery.getId())) throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
+        if (!session.isInterviewQuotaSettled()) {
+            LocalDateTime endedAt = LocalDateTime.now();
+            settleInterviewReservation(session, gallery.getAccountId(), endedAt);
+            session.setCompletedAt(endedAt);
+            session.setStatus(InterviewSessionStatus.COMPLETED);
+            sessionRepository.save(session);
+        }
+    }
+
+    @Override
+    @Transactional
     public InterviewEvaluationResponseDTO evaluateSession(UUID sessionId) {
         Gallery gallery = galleryService.getCurrentGallery();
         InterviewSession session = sessionRepository.findById(sessionId)
@@ -278,7 +308,7 @@ public class InterviewServiceImpl implements InterviewService {
         if (!session.getGallery().getId().equals(gallery.getId())) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
-        UserPlan plan = usageQuotaService.getPlan(gallery.getAccountId());
+        UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         if (plan == UserPlan.FREE) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Interview feedback is available on MIDDLE and ENHANCE plans.");
         }
@@ -301,6 +331,9 @@ public class InterviewServiceImpl implements InterviewService {
             throw new ApiException(ErrorCode.INVALID_INPUT,
                     "Audio-only answers must be transcribed by the BE voice flow before evaluation.");
         }
+
+        LocalDateTime interviewEndedAt = session.getCompletedAt() == null ? LocalDateTime.now() : session.getCompletedAt();
+        settleInterviewReservation(session, gallery.getAccountId(), interviewEndedAt);
 
         Map<String, Object> transcript = new HashMap<>();
         transcript.put("interviewType", session.getInterviewType().name());
@@ -330,6 +363,23 @@ public class InterviewServiceImpl implements InterviewService {
         return evaluation;
     }
 
+    private void settleInterviewReservation(InterviewSession session, UUID accountId, LocalDateTime endedAt) {
+        if (session.isInterviewQuotaSettled() || session.getReservedInterviewMinutes() <= 0) return;
+        int actualMinutes = 0;
+        if (session.getInterviewStartedAt() != null) {
+            long elapsedSeconds = java.time.Duration.between(session.getInterviewStartedAt(), endedAt).getSeconds();
+            actualMinutes = (int) Math.ceil(Math.max(0, elapsedSeconds) / 60.0);
+            actualMinutes = Math.min(Math.max(1, actualMinutes), session.getReservedInterviewMinutes());
+        }
+        int unusedMinutes = session.getReservedInterviewMinutes() - actualMinutes;
+        if (unusedMinutes > 0) usageQuotaService.refundInterviewMinutes(accountId, unusedMinutes,
+                session.getQuotaPeriodStartAtReservation());
+        session.setReservedInterviewMinutes(actualMinutes);
+        session.setInterviewQuotaSettled(true);
+        log.info("[INTERVIEW] Reserved minutes settled | sessionId={} | chargedMinutes={} | refundedMinutes={}",
+                session.getId(), actualMinutes, unusedMinutes);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public InterviewSessionDetailResponseDTO getSessionDetail(UUID sessionId) {
@@ -344,7 +394,7 @@ public class InterviewServiceImpl implements InterviewService {
                 .sessionsToSessionResponses(List.of(session)).getFirst();
         List<InterviewAnswerResponseDTO> answers = interviewMapper
                 .answersToAnswerResponses(answerRepository.findBySession(session));
-        UserPlan plan = usageQuotaService.getPlan(gallery.getAccountId());
+        UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         InterviewEvaluationResponseDTO evaluation = null;
         if (plan == UserPlan.FREE) {
             sessionInfo.setFeedbackJson(null);
@@ -364,7 +414,7 @@ public class InterviewServiceImpl implements InterviewService {
         Gallery gallery = galleryService.getCurrentGallery();
         List<InterviewSessionResponseDTO> sessions = interviewMapper
                 .sessionsToSessionResponses(sessionRepository.findByGallery(gallery));
-        if (usageQuotaService.getPlan(gallery.getAccountId()) == UserPlan.FREE) {
+        if (usageQuotaService.getInterviewPlan(gallery.getAccountId()) == UserPlan.FREE) {
             sessions.forEach(session -> session.setFeedbackJson(null));
         }
         return sessions;

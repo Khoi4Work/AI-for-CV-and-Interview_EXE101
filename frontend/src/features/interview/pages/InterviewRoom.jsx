@@ -21,7 +21,7 @@ const END_PHRASE_REGEX = new RegExp(
 
 export function InterviewRoom() {
     const navigate = useNavigate();
-    const { data, update, generateQuestions, saveAnswer, addTranscript } = useInterviewSession();
+    const { data, update, generateQuestions, saveAnswer, addTranscript, finishInterview } = useInterviewSession();
     const {
         audioLevels,
         volumeRef,
@@ -136,12 +136,17 @@ export function InterviewRoom() {
         setSttEngine('none');
     }, []);
 
-    const endInterview = useCallback(() => {
+    const endInterview = useCallback(async () => {
         setPhase('done');
         stopAllTracks();
         stopSTT();
+        try {
+            await finishInterview();
+        } catch (error) {
+            console.error('Could not finalize interview quota:', error);
+        }
         setTimeout(() => navigate('/interview/review'), 200);
-    }, [navigate, stopAllTracks, stopSTT]);
+    }, [finishInterview, navigate, stopAllTracks, stopSTT]);
 
     const transitionToNext = useCallback(() => {
         let nextIndex = currentIndex + 1;

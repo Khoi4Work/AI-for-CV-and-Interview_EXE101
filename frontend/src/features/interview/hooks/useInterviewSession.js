@@ -271,6 +271,15 @@ export function useInterviewSession() {
     return evaluatePromiseRef.current;
   }, [data, update]);
 
+  const finishInterview = useCallback(async () => {
+    if (!data.backendSessionId) return;
+    await interviewService.finishSession(data.backendSessionId);
+    const next = { ...data, endedAt: Date.now() };
+    dataRef.current = next;
+    saveSession(next);
+    setData(next);
+  }, [data]);
+
   return {
     data,
     update,
@@ -279,6 +288,7 @@ export function useInterviewSession() {
     clearCurrentInterview,
     generateQuestions,
     generateFeedback,
+    finishInterview,
     saveAnswer,
     addTranscript,
   };

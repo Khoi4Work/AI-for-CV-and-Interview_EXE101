@@ -129,9 +129,14 @@ public class PaymentServiceImpl implements PaymentService {
         String orderCode = String.valueOf(data.get("orderCode"));
         String statusDesc = String.valueOf(data.get("desc"));
 
-        Order order = orderRepository.findByTransactionId(orderCode).orElse(null);
+        Order order = orderRepository.findByTransactionIdForUpdate(orderCode).orElse(null);
         if (order == null) {
             log.warn("[PAYMENT] Webhook order not found | orderCode={}", orderCode);
+            return;
+        }
+        if (order.getPaymentStatus() == Order.PaymentStatus.PAID) {
+            log.info("[PAYMENT] Duplicate successful webhook ignored | orderId={} | orderCode={}",
+                    order.getId(), orderCode);
             return;
         }
 
@@ -158,13 +163,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public QuotaResponseDTO getCurrentQuota(UUID accountId) {
+        usageQuotaService.refreshSubscriptionState(accountId);
         return usageQuotaService.getQuota(accountId)
                 .map(quota -> QuotaResponseDTO.builder()
                         .remainingCvCount(quota.getRemainingCvCnt())
                         .remainingInterviewMinutes(quota.getRemainingIntMin())
                         .remainingAiCvCnt(quota.getRemainingCvAiCnt())
-                        .plan(quota.getPlan())
-                        .resetAt("Monthly reset") // Simplified for now
+                        .cvPlan(quota.getCvPlan())
+                        .interviewPlan(quota.getInterviewPlan())
+                        .cvPeriodEnd(quota.getCvPeriodEnd())
+                        .interviewPeriodEnd(quota.getInterviewPeriodEnd())
                         .build())
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
     }
@@ -173,24 +181,14 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentServiceEntity service = order.getService();
         UUID accountId = order.getAccountId();
 
-        // Update the user's plan to the package code of the purchased service
         UserPlan plan = UserPlan.valueOf(service.getPackageCode().name());
-        usageQuotaService.activatePlan(accountId, plan);
-
-        int cvAdd = 0, aiCvAdd = 0, intMinAdd = 0;
         if (service.getCategory() == PaymentServiceEntity.ServiceCategory.CV) {
-            cvAdd = service.getBillingUnits();
+            usageQuotaService.activateCvSubscription(accountId, plan, service.getBillingUnits());
         } else if (service.getCategory() == PaymentServiceEntity.ServiceCategory.INTERVIEW) {
-            intMinAdd = service.getBillingUnits();
+            usageQuotaService.activateInterviewSubscription(accountId, plan, service.getBillingUnits());
         }
-
-        // If the service provides additional units beyond the base plan, add them
-        if (cvAdd > 0 || aiCvAdd > 0 || intMinAdd > 0) {
-            usageQuotaService.addQuota(accountId, cvAdd, aiCvAdd, intMinAdd);
-        }
-
-        log.info("[PAYMENT] Plan and quota activated | accountId={} | plan={} | cvAdded={} | aiCvAdded={} | interviewMinutesAdded={}",
-                accountId, plan, cvAdd, aiCvAdd, intMinAdd);
+        log.info("[PAYMENT] Monthly subscription activated | accountId={} | category={} | plan={} | includedUnits={}",
+                accountId, service.getCategory(), plan, service.getBillingUnits());
     }
 
     private String createPayOSPaymentLink(Order order) {
@@ -309,6 +307,9 @@ public class PaymentServiceImpl implements PaymentService {
                 .name(entity.getName())
                 .price(entity.getPrice())
                 .benefits(benefits)
+                .category(entity.getCategory().name())
+                .packageCode(entity.getPackageCode().name())
+                .billingUnits(entity.getBillingUnits())
                 .build();
     }
 }

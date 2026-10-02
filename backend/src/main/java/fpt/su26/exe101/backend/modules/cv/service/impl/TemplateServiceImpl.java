@@ -37,7 +37,7 @@ public class TemplateServiceImpl implements TemplateService {
     @Override
     public List<CVTemplateResponseDTO> getAllTemplates() {
         UUID accountId = getAccountIdFromToken();
-        UserPlan plan = quotaService.getPlan(accountId);
+        UserPlan plan = quotaService.getCvPlan(accountId);
         int userPlanLevel = plan.ordinal();
 
         return cvMapper.templatesToTemplateResponses(templateRepository.findAll().stream()

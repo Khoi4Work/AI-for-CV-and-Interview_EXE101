@@ -14,6 +14,7 @@ const PersonalInfoPage = () => {
 
     const [formData, setFormData] = useState({...profile});
     const [local2fa, setLocal2fa] = useState(is2faEnabled);
+    const [usageQuota, setUsageQuota] = useState(null);
 
     useEffect(() => {
         setFormData({...profile});
@@ -22,6 +23,20 @@ const PersonalInfoPage = () => {
     useEffect(() => {
         setLocal2fa(is2faEnabled);
     }, [is2faEnabled]);
+
+    useEffect(() => {
+        let active = true;
+        apiClient.get('/v1/payments/quota')
+            .then((response) => {
+                if (active) setUsageQuota(response.data?.result || response.data?.data);
+            })
+            .catch(() => { if (active) setUsageQuota(null); });
+        return () => { active = false; };
+    }, []);
+
+    const formatPeriodEnd = (value) => value
+        ? new Intl.DateTimeFormat('vi-VN', {dateStyle: 'medium'}).format(new Date(value))
+        : 'Chưa đăng ký';
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -255,23 +270,24 @@ const PersonalInfoPage = () => {
             {/* Subscription Summary */}
             <div className="mb-8">
                 <SectionHeader title="Gói dịch vụ" icon={<Package size={18}/>}/>
-                <Card
-                    className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#28615F] border-none">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-[#042F2E] rounded-full">
-                            <Shield size={20} className="text-white"/>
+                <Card className="p-5 bg-[#28615F] border-none">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div className="flex items-start gap-3">
+                            <div className="p-3 bg-[#042F2E] rounded-full"><Shield size={20} className="text-white"/></div>
+                            <div>
+                                <h4 className="text-white font-medium">CV · {usageQuota?.cvPlan || '—'}</h4>
+                                <p className="text-[#CCFBF1] text-sm">Còn {usageQuota?.remainingCvCount ?? '—'} lượt tạo • hết hạn {formatPeriodEnd(usageQuota?.cvPeriodEnd)}</p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="text-white font-medium">Gói {profile.membershipType}</h4>
-                            <p className="text-[#CCFBF1] text-sm">Thanh toán hằng năm • Gia hạn vào 12 thg 12, 2026</p>
+                        <div className="flex items-start gap-3">
+                            <div className="p-3 bg-[#042F2E] rounded-full"><Shield size={20} className="text-white"/></div>
+                            <div>
+                                <h4 className="text-white font-medium">Interview · {usageQuota?.interviewPlan || '—'}</h4>
+                                <p className="text-[#CCFBF1] text-sm">Còn {usageQuota?.remainingInterviewMinutes ?? '—'} phút • hết hạn {formatPeriodEnd(usageQuota?.interviewPeriodEnd)}</p>
+                            </div>
                         </div>
                     </div>
-                    <Button
-                        variant="dark"
-                        onClick={() => navigate('/pricing')}
-                    >
-                        Quản lý gói dịch vụ
-                    </Button>
+                    <Button variant="dark" onClick={() => navigate('/pricing')}>Quản lý gói dịch vụ</Button>
                 </Card>
             </div>
 

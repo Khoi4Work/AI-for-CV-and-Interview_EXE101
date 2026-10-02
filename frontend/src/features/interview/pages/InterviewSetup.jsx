@@ -7,6 +7,7 @@ import { Footer } from '../../../components/layout/Footer.jsx';
 import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../constants/interviewTypes.js';
 import { COMPANIES } from '../constants/companies.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
+import { paymentService } from '../../../services/paymentService.js';
 
 export default function InterviewSetup() {
   const navigate = useNavigate();
@@ -17,12 +18,33 @@ export default function InterviewSetup() {
   const [language, setLanguage] = useState(data.interviewConfig?.language || 'vi');
   const [duration, setDuration] = useState(data.interviewConfig?.duration || 10);
   const [jd, setJd] = useState(data.interviewConfig?.jd || '');
+  const [quota, setQuota] = useState(null);
+  const [quotaError, setQuotaError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    paymentService.getCurrentQuota()
+      .then((value) => { if (active) { setQuota(value); setQuotaError(''); } })
+      .catch(() => { if (active) setQuotaError('Không tải được quota Interview. Vui lòng thử lại.'); });
+    return () => { active = false; };
+  }, []);
+
+  const maxDuration = quota?.interviewPlan === 'ENHANCE' ? 15 : quota?.interviewPlan === 'MIDDLE' ? 10 : 5;
+  const remainingMinutes = Number(quota?.remainingInterviewMinutes ?? 0);
+  const canChooseDuration = (minutes) => minutes <= maxDuration && minutes <= remainingMinutes;
+
+  useEffect(() => {
+    if (!quota || canChooseDuration(Number(duration))) return;
+    const firstAvailable = DURATIONS.find((item) => canChooseDuration(item.value));
+    if (firstAvailable) setDuration(firstAvailable.value);
+  }, [quota, duration]);
 
   useEffect(() => {
     setStep(5);
   }, [setStep]);
 
   const handleNext = () => {
+    if (!quota || !canChooseDuration(Number(duration))) return;
     update({
       interviewConfig: {
         type,
@@ -108,12 +130,17 @@ export default function InterviewSetup() {
 
                 <div>
                   <label className="block text-sm font-semibold text-black mb-2">Thời lượng</label>
+                  <p className="text-xs text-black/70 mb-2" aria-live="polite">
+                    Quota Interview: {quota ? `${remainingMinutes} phút còn lại` : quotaError || 'Đang tải...'}
+                  </p>
                   <div className="grid grid-cols-3 gap-2">
                     {DURATIONS.map((d) => (
                       <button
                         key={d.value}
                         onClick={() => setDuration(d.value)}
-                        className={`py-2.5 px-1 border rounded-xl text-center transition-colors bg-interview-card-bg ${
+                        disabled={!canChooseDuration(d.value)}
+                        title={!canChooseDuration(d.value) ? (d.value > maxDuration ? `Gói hiện tại chỉ hỗ trợ tối đa ${maxDuration} phút/buổi` : 'Quota còn lại không đủ cho thời lượng này') : ''}
+                        className={`py-2.5 px-1 border rounded-xl text-center transition-colors bg-interview-card-bg disabled:opacity-40 disabled:cursor-not-allowed ${
                           duration === d.value
                             ? 'selection-card-selected'
                             : 'border-transparent shadow-sm hover:border-primary'
@@ -174,9 +201,10 @@ export default function InterviewSetup() {
                 </button>
                 <button
                   onClick={handleNext}
+                  disabled={!quota || !canChooseDuration(Number(duration))}
                   className="
                   hover:text-on-primary
-                  hover:opacity-90
+                  hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
                   w-full flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
                 >
                   Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />

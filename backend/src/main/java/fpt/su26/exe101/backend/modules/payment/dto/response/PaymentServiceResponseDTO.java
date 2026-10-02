@@ -14,4 +14,7 @@ public class PaymentServiceResponseDTO {
     private String name;
     private BigDecimal price;
     private List<String> benefits;
+    private String category;
+    private String packageCode;
+    private Integer billingUnits;
 }

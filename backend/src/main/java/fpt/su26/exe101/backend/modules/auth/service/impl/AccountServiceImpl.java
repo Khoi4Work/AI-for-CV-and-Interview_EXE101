@@ -267,8 +267,10 @@ public class AccountServiceImpl implements AccountService {
             profile.put("fullName", account.getEmail());
         }
 
-        String planName = quotaService.getPlan(account.getId()).name();
+        String planName = quotaService.getCvPlan(account.getId()).name();
         profile.put("membershipType", planName.charAt(0) + planName.substring(1).toLowerCase());
+        String interviewPlanName = quotaService.getInterviewPlan(account.getId()).name();
+        profile.put("interviewMembershipType", interviewPlanName.charAt(0) + interviewPlanName.substring(1).toLowerCase());
         profile.put("memberSince", account.getCreatedAt() == null ? "" : String.valueOf(account.getCreatedAt().getYear()));
 
         return profile;

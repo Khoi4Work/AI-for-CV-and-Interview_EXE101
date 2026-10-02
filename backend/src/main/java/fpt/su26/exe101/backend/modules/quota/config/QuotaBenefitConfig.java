@@ -16,18 +16,16 @@ public class QuotaBenefitConfig {
     public static class QuotaBenefit {
         private final int cvCnt;
         private final int aiCvCnt;
-        private final int intMin;
     }
 
     private final Map<UserPlan, QuotaBenefit> benefits = new EnumMap<>(UserPlan.class);
 
     public QuotaBenefitConfig() {
-        // FREE: 1 lượt tạo CV, 1 lượt AI CV, 0 phút Interview.
-        benefits.put(UserPlan.FREE, new QuotaBenefit(1, 1, 0));
-        // MIDDLE: 5 lượt tạo CV, 10 lượt AI CV, 30 phút Interview.
-        benefits.put(UserPlan.MIDDLE, new QuotaBenefit(5, 10, 30));
-        // ENHANCE: 10 lượt tạo CV, 50 lượt AI CV, 120 phút Interview.
-        benefits.put(UserPlan.ENHANCE, new QuotaBenefit(10, 50, 120));
+        // FREE: 1 lượt tạo CV, 1 lượt AI CV.
+        benefits.put(UserPlan.FREE, new QuotaBenefit(1, 1));
+        // CV AI analysis limits match the monthly packages shown in PricingPage.
+        benefits.put(UserPlan.MIDDLE, new QuotaBenefit(5, 5));
+        benefits.put(UserPlan.ENHANCE, new QuotaBenefit(10, 10));
     }
 
     public QuotaBenefit getBenefit(UserPlan plan) {

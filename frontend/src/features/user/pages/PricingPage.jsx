@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
     HelpCircle,
@@ -11,12 +11,34 @@ import {
 } from 'lucide-react';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Badge} from '../components/Layout.jsx';
+import {paymentService} from '../../../services/paymentService.js';
 
 const PricingPage = () => {
     const [activeFaq, setActiveFaq] = useState(null);
     const [comparisonType, setComparisonType] = useState(null); // 'cv' | 'interview' | null
+    const [quota, setQuota] = useState(null);
+    const [quotaError, setQuotaError] = useState('');
     const {showToast} = useApp();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let active = true;
+        paymentService.getCurrentQuota()
+            .then((current) => { if (active) setQuota(current); })
+            .catch(() => { if (active) setQuotaError('Không tải được trạng thái gói.'); });
+        return () => { active = false; };
+    }, []);
+
+    const formatDate = (value) => value
+        ? new Intl.DateTimeFormat('vi-VN', {dateStyle: 'medium'}).format(new Date(value))
+        : 'Chưa đăng ký';
+    const renewPlan = (category) => {
+        const plan = category === 'CV' ? quota?.cvPlan : quota?.interviewPlan;
+        const serviceId = category === 'CV'
+            ? (plan === 'ENHANCE' ? '660f9501-f30c-52e5-b827-557766551111' : '550e8400-e29b-41d4-a716-446655440000')
+            : (plan === 'ENHANCE' ? '880f9501-f30c-52e5-b827-557766553333' : '770f9501-f30c-52e5-b827-557766552222');
+        navigate(`/payment?serviceId=${serviceId}`);
+    };
 
     const toggleFaq = (idx) => {
         setActiveFaq((prev) => (prev === idx ? null : idx));
@@ -34,58 +56,29 @@ const PricingPage = () => {
                 <h1 className="text-2xl font-bold text-[#10B981]">Gói dịch vụ & Thanh toán</h1>
             </div>
 
-            <div className="grid grid-cols-1 lg:gridg-cols-3 gap-6 mb-12">
-                <Card className="lg:col-span-2 p-6 bg-[#B5C2BC] border-none shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <Badge variant="light" className="text-[10px] !text-[#1E293B] font-bold">Đang sử dụng</Badge>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-3xl font-bold text-[#065F46]">Gói CV Middle</h3>
-                                    <Badge variant="default"
-                                           className="!bg-[#539A8C] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                        ★ Phổ biến
-                                    </Badge>
-                                </div>
-                                <p className="text-[#334155] text-sm font-medium">Gói CV x5 lần</p>
-                            </div>
-                            <div className="text-right">
-                                <span
-                                    className="text-xs font-semibold text-[#1E293B] block">Ngày gia hạn tiếp theo</span>
-                                <span
-                                    className="text-xs font-semibold text-[#475569] block mt-0.5">31 Tháng 12, 2026</span>
-                            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {quotaError && <p className="md:col-span-2 text-sm text-red-700">{quotaError}</p>}
+                    <Card className="p-6 bg-[#B5C2BC] border-none shadow-sm">
+                        <Badge variant="light" className="text-[10px] !text-[#1E293B] font-bold">Gói CV</Badge>
+                        <div className="flex justify-between items-start gap-3 mt-2 mb-5">
+                            <h3 className="text-2xl font-bold text-[#065F46]">{quota?.cvPlan || '—'}</h3>
+                            <span className="text-right text-xs text-[#475569]">Hết hạn<br/><b>{formatDate(quota?.cvPeriodEnd)}</b></span>
                         </div>
-
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-bold text-[#1E293B]">Đã dùng: 4/5 CV</span>
-                            <span className="text-xs font-bold text-[#1E293B]">Hết hạn: 27/2/2027</span>
+                        <p className="text-sm text-[#334155] mb-1">Còn {quota?.remainingCvCount ?? '—'} lượt tạo CV</p>
+                        <p className="text-sm text-[#334155] mb-5">Còn {quota?.remainingAiCvCnt ?? '—'} lượt AI CV</p>
+                        <Button onClick={() => renewPlan('CV')} className="bg-[#065F46] hover:bg-[#044d3a] text-white text-xs font-bold px-5 py-2.5 rounded-lg">Gia hạn CV</Button>
+                    </Card>
+                    <Card className="p-6 bg-[#B5C2BC] border-none shadow-sm">
+                        <Badge variant="light" className="text-[10px] !text-[#1E293B] font-bold">Gói Interview</Badge>
+                        <div className="flex justify-between items-start gap-3 mt-2 mb-5">
+                            <h3 className="text-2xl font-bold text-[#7C3AED]">{quota?.interviewPlan || '—'}</h3>
+                            <span className="text-right text-xs text-[#475569]">Hết hạn<br/><b>{formatDate(quota?.interviewPeriodEnd)}</b></span>
                         </div>
-
-                        <div className="w-full bg-slate-300 h-2 rounded-full overflow-hidden mb-6">
-                            <div className="bg-[#065F46] h-full rounded-full" style={{width: '80%'}}></div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2 pt-4 border-t border-[#065F46]/20">
-                        <div className="flex items-center gap-3">
-                            <Button
-                                onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
-                                className="bg-[#065F46] hover:bg-[#044d3a] text-white text-xs font-bold px-5 py-2.5 rounded-lg shadow-sm transition-colors border-none"
-                            >
-                                Gia hạn ngay
-                            </Button>
-                        </div>
-
-                        <div className="text-right">
-                            <span className="text-[11px] font-medium text-[#475569]">
-                                ✓ Tự động gia hạn qua thẻ
-                            </span>
-                        </div>
-                    </div>
-                </Card>
+                        <p className="text-sm text-[#334155] mb-5">Còn {quota?.remainingInterviewMinutes ?? '—'} phút trong chu kỳ hiện tại</p>
+                        <Button onClick={() => renewPlan('INTERVIEW')} className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold px-5 py-2.5 rounded-lg">Gia hạn Interview</Button>
+                    </Card>
+                </div>
 
                 <Card className="p-6 bg-[#B5C2BC] border-none shadow-sm">
                     <div className="flex justify-between items-center mb-3">
@@ -149,7 +142,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto !bg-transparent border-2 !border-[#8B5CF6] !text-[#8B5CF6] hover:!bg-[#8B5CF6] hover:!text-white transition-colors"
-                            onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
+                            onClick={() => showToast('Gói CV và Interview hiện gia hạn riêng. Vui lòng chọn từng gói ở bên dưới.', 'info')}
                         >
                             Chọn gói
                         </Button>
@@ -169,7 +162,7 @@ const PricingPage = () => {
                         <Button
                             variant="primary"
                             className="w-full mt-auto !bg-transparent border-2 !border-[#10B981] !text-[#10B981] hover:!bg-[#10B981] hover:!text-white transition-colors"
-                            onClick={() => navigate('/payment?serviceId=660f9501-f30c-52e5-b827-557766551111')}
+                            onClick={() => showToast('Gói CV và Interview hiện gia hạn riêng. Vui lòng chọn từng gói ở bên dưới.', 'info')}
                         >
                             Chọn gói
                         </Button>
@@ -189,7 +182,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto !bg-transparent border-2  !border-[#EF4444] !text-[#EF4444] hover:!bg-[#EF4444] hover:!text-white transition-colors"
-                            onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
+                            onClick={() => showToast('Gói CV và Interview hiện gia hạn riêng. Vui lòng chọn từng gói ở bên dưới.', 'info')}
                         >
                             Chọn gói
                         </Button>
@@ -426,6 +419,10 @@ const PricingPage = () => {
                                 lượng phỏng vấn: 10 phút/lần
                             </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
+                                                                                className="!text-[#7C3AED] shrink-0 mt-0.5"/> 30
+                                phút quota Interview/tháng
+                            </li>
+                            <li className="flex items-start gap-2"><CheckCircle size={16}
                                                                                 className="!text-[#7C3AED] shrink-0 mt-0.5"/> Chưa
                                 hỗ trợ nhận xét (Feedback) chung
                             </li>
@@ -436,7 +433,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto !bg-[#7C3AED] hover:!bg-[#7E22CE]  !text-white"
-                            onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
+                            onClick={() => navigate('/payment?serviceId=770f9501-f30c-52e5-b827-557766552222')}
                         >
                             Nâng cấp
                         </Button>
@@ -457,6 +454,10 @@ const PricingPage = () => {
                                 cấp thời lượng phỏng vấn lên 15 phút/lần
                             </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
+                                                                                className="!text-[#2563EB] shrink-0 mt-0.5"/> 120
+                                phút quota Interview/tháng
+                            </li>
+                            <li className="flex items-start gap-2"><CheckCircle size={16}
                                                                                 className="!text-[#2563EB] shrink-0 mt-0.5"/> Tùy
                                 chỉnh câu hỏi bám sát Văn hóa doanh nghiệp ứng tuyển
                             </li>
@@ -471,7 +472,7 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             className="w-full mt-auto bg-[#10B981] hover:bg-[#059669] text-white"
-                            onClick={() => navigate('/payment?serviceId=660f9501-f30c-52e5-b827-557766551111')}
+                            onClick={() => navigate('/payment?serviceId=880f9501-f30c-52e5-b827-557766553333')}
                         >
                             Nâng cấp
                         </Button>
@@ -507,6 +508,12 @@ const PricingPage = () => {
                                 <div className="md:table-cell">–</div>
                                 <div className="md:table-cell">10 phút</div>
                                 <div className="md:table-cell">15 phút</div>
+                            </div>
+                            <div className="grid grid-cols-1 md:table-row">
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Quota Interview mỗi tháng</div>
+                                <div className="md:table-cell">0 phút</div>
+                                <div className="md:table-cell">30 phút</div>
+                                <div className="md:table-cell">120 phút</div>
                             </div>
                             <div className="grid grid-cols-1 md:table-row">
                                 <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Câu
