@@ -40,11 +40,19 @@ public class TemplateServiceImpl implements TemplateService {
         UserPlan plan = quotaService.getCvPlan(accountId);
         int userPlanLevel = plan.ordinal();
 
-        return cvMapper.templatesToTemplateResponses(templateRepository.findAll().stream()
-                .filter(template -> {
-                    if (template.getMinimumPlan() == null) return true;
-                    return userPlanLevel >= template.getMinimumPlan().ordinal();
-                }).toList());
+        List<CVTemplate> allTemplates = templateRepository.findAll();
+        List<CVTemplateResponseDTO> responses = cvMapper.templatesToTemplateResponses(allTemplates);
+
+        for (int i = 0; i < responses.size(); i++) {
+            CVTemplate template = allTemplates.get(i);
+            int requiredLevel = (template.getMinimumPlan() != null)
+                                ? template.getMinimumPlan().ordinal()
+                                : UserPlan.FREE.ordinal();
+
+            responses.get(i).setLocked(userPlanLevel < requiredLevel);
+        }
+
+        return responses;
     }
 
     @Override
