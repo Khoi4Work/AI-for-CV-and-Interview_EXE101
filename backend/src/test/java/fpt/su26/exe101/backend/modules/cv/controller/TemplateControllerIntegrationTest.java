@@ -33,6 +33,25 @@ public class TemplateControllerIntegrationTest {
     private TemplateService templateService;
 
     @Test
+    void getAllTemplates_Anonymous_ShouldReturnTemplates() throws Exception {
+        when(templateService.getAllTemplates()).thenReturn(Collections.singletonList(
+                CVTemplateResponseDTO.builder().id("template-1").name("Public CV").build()));
+
+        mockMvc.perform(get("/api/templates"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result[0].name").value("Public CV"));
+    }
+
+    @Test
+    void submitFeedback_Anonymous_ShouldRequireAuthentication() throws Exception {
+        mockMvc.perform(post("/api/templates/feedback")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"templateId\":\"template-1\",\"rating\":5}"))
+                .andExpect(status().isUnauthorized());
+        verify(templateService, never()).submitFeedback(any());
+    }
+
+    @Test
     @WithMockUser(username = "test@example.com")
     void getAllTemplates_HappyPath_ShouldReturnTemplates() throws Exception {
         CVTemplateResponseDTO template = CVTemplateResponseDTO.builder()

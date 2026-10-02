@@ -9,6 +9,7 @@ import LandingPage from '../../pages/LandingPage.jsx';
 import Home from '../../pages/Home.jsx';
 import Login from '../../features/auth/pages/Login.jsx';
 import Register from '../../features/auth/pages/Register.jsx';
+import CheckEmail from '../../features/auth/pages/CheckEmail.jsx';
 import ForgotPassword from '../../features/auth/pages/ForgotPassword.jsx';
 import ResetPassword from '../../features/auth/pages/ResetPassword.jsx';
 import PersonalInfoPage from '../../features/user/pages/PersonalInfoPage.jsx';
@@ -179,6 +180,8 @@ function AppLayout() {
                        element={<PageTransition key={location.pathname}><Login/></PageTransition>}/>
                 <Route path="/register"
                        element={<PageTransition key={location.pathname}><Register/></PageTransition>}/>
+                <Route path="/check-email"
+                       element={<PageTransition key={location.pathname}><CheckEmail/></PageTransition>}/>
                 <Route path="/forgot-password"
                        element={<PageTransition key={location.pathname}><ForgotPassword/></PageTransition>}/>
                 <Route path="/reset-password"

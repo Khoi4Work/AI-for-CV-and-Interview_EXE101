@@ -9,5 +9,4 @@ import lombok.*;
 public class RegisterResponseDTO {
     private String message;
     private String id;
-    private String verificationToken;
 }

@@ -28,7 +28,7 @@ const galleryService = {
 
     async getTemplates() {
         try {
-            const response = await apiClient.get('/templates');
+            const response = await apiClient.get('/templates', { publicRequest: true });
             const data = response.data?.result;
             if (!data || (Array.isArray(data) && data.length === 0)) {
                 console.log('[GalleryService] No data found for templates');

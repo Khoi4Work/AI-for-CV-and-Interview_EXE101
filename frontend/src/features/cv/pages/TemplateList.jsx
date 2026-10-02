@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useEffect} from 'react';
+import {useState, useMemo, useEffect, useCallback} from 'react';
 import {Lock,Search, ChevronDown, ChevronLeft, ChevronRight, Upload, X, FileText, Star, Download, Eye} from 'lucide-react';
 import {useNavigate} from 'react-router-dom';
 import TemplateCard from '../components/TemplateCard.jsx';
@@ -7,7 +7,6 @@ import {Header} from "../../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from '../../../components/layout/Footer.jsx';
 import {useAuth} from "../../auth/contexts/AuthContext.jsx";
-import {TEMPLATES_DATA, TEMPLATE_CATEGORIES, TEMPLATE_STYLES} from '../constants/templates.js';
 import galleryService from '../../../service/galleryService';
 import {getApiErrorMessage} from '../../../service/apiClient';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
@@ -21,6 +20,7 @@ export default function TemplateList() {
     // API States
     const [templates, setTemplates] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
     const [selectedTemplateId, setSelectedTemplateId] = useState(null);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
@@ -28,15 +28,12 @@ export default function TemplateList() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('all');
     const [activeStyle, setActiveStyle] = useState(null);
-    const [activeTab, setActiveTab] = useState('Phổ biến');
+    const [activeTab, setActiveTab] = useState('Tất cả');
     const [sortOrder, setSortOrder] = useState('Mới nhất');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
     const [previewTemplate, setPreviewTemplate] = useState(null);
 
-    useEffect(() => {
-        loadTemplates();
-    }, []);
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
     const [lockedTemplateName, setLockedTemplateName] = useState('');
 
@@ -45,18 +42,30 @@ export default function TemplateList() {
         setLockedTemplateName(name);
         setIsUpgradeModalOpen(true);
     };
-    const loadTemplates = async () => {
-        setIsLoading(true);
-        try {
-            const data = await galleryService.getTemplates();
-            console.log('[TemplateList] Templates loaded from API:', data);
+    const loadTemplates = useCallback(() => {
+        return galleryService.getTemplates().then(data => {
+            if (!Array.isArray(data)) throw new Error('Dữ liệu mẫu CV không hợp lệ.');
             setTemplates(data);
-        } catch (error) {
+            setLoadError(null);
+        }).catch(error => {
             console.error('[TemplateList] Error loading templates:', error);
-            showToast(getApiErrorMessage(error), 'error');
-        } finally {
+            setLoadError('Không thể tải danh sách mẫu CV. Vui lòng thử lại.');
+        }).finally(() => {
             setIsLoading(false);
+        });
+    }, []);
+
+    useEffect(() => {
+        loadTemplates();
+    }, [loadTemplates]);
+
+    const openTemplate = (id) => {
+        const pathname = `/template/${id}`;
+        if (!isLoggedIn) {
+            navigate('/login', { state: { from: { pathname } } });
+            return;
         }
+        navigate(pathname);
     };
 
     const handleRateTemplate = (id) => {
@@ -69,6 +78,7 @@ export default function TemplateList() {
             await galleryService.submitTemplateFeedback(templateId, feedbackData);
             showToast('Cảm ơn bạn đã gửi đánh giá!', 'success');
             // Optionally refresh templates to see updated rating
+            setIsLoading(true);
             loadTemplates();
         } catch (error) {
             showToast(getApiErrorMessage(error), 'error');
@@ -140,9 +150,9 @@ export default function TemplateList() {
                     {/* Left Sidebar */}
                     <Sidebar
                         activeCategory={activeCategory}
-                        setActiveCategory={setActiveCategory}
+                        setActiveCategory={(category) => { setActiveCategory(category); setCurrentPage(1); }}
                         activeStyle={activeStyle}
-                        setActiveStyle={setActiveStyle}
+                        setActiveStyle={(style) => { setActiveStyle(style); setCurrentPage(1); }}
                     />
 
                     {/* Main Display */}
@@ -157,7 +167,13 @@ export default function TemplateList() {
                             </div>
                             <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
                                 <button
-                                    onClick={() => setIsUploadModalOpen(true)}
+                                    onClick={() => {
+                                        if (!isLoggedIn) {
+                                            navigate('/login', { state: { from: { pathname: '/templates' } } });
+                                            return;
+                                        }
+                                        setIsUploadModalOpen(true);
+                                    }}
                                     className="w-full sm:w-auto px-5 py-2.5 bg-white border border-green-600 text-green-600 font-semibold rounded-2xl hover:bg-green-50 transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
                                 >
                                     <Upload className="w-4 h-4"/>
@@ -184,8 +200,8 @@ export default function TemplateList() {
                         <div className="bg-slate-500 rounded-2xl p-6">
 
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10">
-                                <div className="flex bg-gray-100 p-1 rounded-xl">
-                                    {['Phổ biến', 'Mới nhất', 'Yêu thích'].map(tab => (
+                                <div className="flex flex-wrap bg-gray-100 p-1 rounded-xl">
+                                    {['Tất cả', 'Phổ biến', 'Mới nhất', ...(isLoggedIn ? ['Yêu thích'] : [])].map(tab => (
                                         <button
                                             key={tab}
                                             onClick={() => {
@@ -376,7 +392,7 @@ export default function TemplateList() {
                                             <button
                                                 onClick={() => {
                                                     setPreviewTemplate(null);
-                                                    navigate(`/template/${previewTemplate.id}`);
+                                                    openTemplate(previewTemplate.id);
                                                 }}
                                                 className="px-6 py-2 bg-green-700 text-white rounded-xl font-bold hover:bg-green-800 transition-all flex items-center gap-2 shadow-md"
                                             >
@@ -394,6 +410,13 @@ export default function TemplateList() {
                                     Array.from({length: 6}).map((_, i) => (
                                         <div key={i} className="h-80 rounded-2xl bg-gray-200 animate-pulse"/>
                                     ))
+                                ) : loadError ? (
+                                    <div role="alert" className="col-span-full rounded-2xl bg-white p-8 text-center">
+                                        <p className="text-red-600">{loadError}</p>
+                                        <button onClick={() => { setIsLoading(true); setLoadError(null); loadTemplates(); }} className="mt-4 rounded-xl bg-[#0b3c8f] px-5 py-2 text-white">
+                                            Thử lại
+                                        </button>
+                                    </div>
                                 ) : paginatedTemplates.length > 0 ? (
                                     paginatedTemplates.map(template => (
                                         <div key={template.id} className="group relative">
@@ -408,11 +431,14 @@ export default function TemplateList() {
                                                 rating={template.rating}
                                                 downloads={template.downloads}
                                                 onRate={handleRateTemplate}
-                                                isLocked={template.locked}
+                                                isLocked={isLoggedIn && template.locked}
                                                 onLockedClick={() => handleLockedTemplateClick(template.name)}
                                             />
                                             <button
-                                                onClick={() => setPreviewTemplate(template)}
+                                                onClick={() => {
+                                                    if (!isLoggedIn) { openTemplate(template.id); return; }
+                                                    setPreviewTemplate(template);
+                                                }}
                                                 className="absolute bottom-25 right-0 p-2 bg-white/90 backdrop-blur-sm text-green-700 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-white border border-green-200 z-20"
                                                 title="Xem nhanh"
                                             >
@@ -430,6 +456,8 @@ export default function TemplateList() {
                                                     setSearchQuery('');
                                                     setActiveCategory('all');
                                                     setActiveStyle(null);
+                                                    setActiveTab('Tất cả');
+                                                    setCurrentPage(1);
                                                 }}
                                                 className="text-green-700 font-semibold hover:underline"
                                             >

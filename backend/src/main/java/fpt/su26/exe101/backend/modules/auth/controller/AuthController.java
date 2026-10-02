@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.UUID;
+import jakarta.servlet.http.HttpServletRequest;
+import fpt.su26.exe101.backend.base.exception.ApiException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,6 +29,7 @@ public class AuthController {
     private final AuthService authService;
     private final RecoveryService recoveryService;
     private final InvitationService invitationService;
+    private final EmailVerificationService verificationService;
 
     @PostMapping("/accounts")
     public ResponseEntity<ApiResponse<RegisterResponseDTO>> register(@RequestBody RegisterRequestDTO request) {
@@ -35,11 +38,27 @@ public class AuthController {
     }
 
     @GetMapping("/verify-email")
-    public ResponseEntity<Void> verifyEmail(@RequestParam String token) {
-        accountService.verifyEmail(token);
+    public ResponseEntity<Void> verifyEmail(@RequestParam(required = false) String token) {
+        String outcome = "verified=true";
+        try { accountService.verifyEmail(token); }
+        catch (ApiException e) { outcome = "verification=invalid"; }
         return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(frontendUrl.replaceAll("/+$", "") + "/login?verified=true"))
+                .location(URI.create(frontendUrl.replaceAll("/+$", "") + "/login?" + outcome))
                 .build();
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<ApiResponse<GenericResponseDTO>> resendVerification(
+            @RequestBody ResendVerificationRequestDTO request, HttpServletRequest servletRequest) {
+        // Use transport peer address; never trust an arbitrary X-Forwarded-For header.
+        try { verificationService.resend(request.getEmail(), servletRequest.getRemoteAddr()); }
+        catch (VerificationRateLimitException e) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .header("Retry-After", String.valueOf(e.getRetrySeconds()))
+                    .body(ApiResponse.error(e.getErrorCode().getCode(), e.getMessage(), null));
+        }
+        return ResponseEntity.ok(ApiResponse.success(GenericResponseDTO.builder()
+                .message("Nếu tài khoản đang chờ xác thực, email sẽ được gửi. Vui lòng kiểm tra hộp thư và thư rác.").build()));
     }
 
     @PostMapping("/tokens")

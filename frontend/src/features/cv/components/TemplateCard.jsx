@@ -1,5 +1,5 @@
 import {Heart, Star, Download, Lock} from 'lucide-react';
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 
 export default function TemplateCard({
@@ -17,12 +17,15 @@ export default function TemplateCard({
                                          onLockedClick
                                      }) {
     const {profile, toggleFavorite, isLoggedIn} = useAuth();
+    const navigate = useNavigate();
+    const requireLogin = () => navigate('/login', { state: { from: { pathname: `/template/${id}` } } });
     const isFavorite = profile.favorites?.includes(id);
 
     const handleToggleFavorite = (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!isLoggedIn) {
+            requireLogin();
             return;
         }
         toggleFavorite(id);
@@ -31,6 +34,10 @@ export default function TemplateCard({
     const handleRateClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (!isLoggedIn) {
+            requireLogin();
+            return;
+        }
         if (onRate) onRate(id);
     };
 
@@ -49,10 +56,11 @@ export default function TemplateCard({
 
     return (
         <Link
-            to={isLocked ? '#' : `/template/${id}`}
+            to={!isLoggedIn ? '/login' : isLocked ? '#' : `/template/${id}`}
+            state={!isLoggedIn ? { from: { pathname: `/template/${id}` } } : undefined}
             className={`block ${isLocked ? 'cursor-pointer' : ''}`}
             onClick={(e) => {
-                if (isLocked) {
+                if (isLoggedIn && isLocked) {
                     e.preventDefault();
                     if (onLockedClick) onLockedClick();
                 }

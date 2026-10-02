@@ -18,6 +18,8 @@ import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +38,12 @@ public class TemplateServiceImpl implements TemplateService {
 
     @Override
     public List<CVTemplateResponseDTO> getAllTemplates() {
-        UUID accountId = getAccountIdFromToken();
-        UserPlan plan = quotaService.getCvPlan(accountId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserPlan plan = UserPlan.FREE;
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            plan = quotaService.getCvPlan(getAccountIdFromToken());
+        }
         int userPlanLevel = plan.ordinal();
 
         List<CVTemplate> allTemplates = templateRepository.findAll();

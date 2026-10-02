@@ -20,6 +20,7 @@ public class CorsConfig {
         ));
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(java.util.List.of("*"));
+        configuration.setExposedHeaders(java.util.List.of("Retry-After"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
