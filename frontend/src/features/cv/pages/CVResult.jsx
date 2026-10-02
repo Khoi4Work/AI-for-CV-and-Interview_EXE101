@@ -10,6 +10,7 @@ import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { mapCVDataToTemplate, mapImportedCVData } from '../mapper/cv-data-mapper.js';
 import TemplateRenderer from '../components/TemplateRenderer.jsx';
 import { TEMPLATES_DATA } from '../constants/templates.js';
+import { paymentService } from '../../../services/paymentService.js';
 
 export function CVResult() {
     const navigate = useNavigate();
@@ -24,6 +25,15 @@ export function CVResult() {
     const optimizationResult = location.state?.optimizationResult;
     const evaluationResult = location.state?.evaluationResult;
     const [isOptimizing, setIsOptimizing] = useState(false);
+    const [cvPlan, setCvPlan] = useState(null);
+
+    useEffect(() => {
+        let active = true;
+        paymentService.getCurrentQuota()
+            .then((quota) => { if (active) setCvPlan(quota?.cvPlan || null); })
+            .catch(() => {});
+        return () => { active = false; };
+    }, []);
 
     useEffect(() => {
         const content = optimizationResult?.optimizedContent;
@@ -224,6 +234,24 @@ export function CVResult() {
                 </div>
             </div>
 
+            {evaluationResult && cvPlan === 'FREE' && (
+                <div className="mb-6 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p className="font-bold">Bạn đang dùng gói CV Cơ bản.</p>
+                        <p className="mt-1 text-sm">
+                            Phân tích kỹ năng và gợi ý chi tiết cần gói MIDDLE. Tối ưu CV tự động cần gói ENHANCE.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/pricing')}
+                        className="shrink-0 rounded-lg bg-amber-900 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800"
+                    >
+                        Xem các gói CV
+                    </button>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Left & Middle Flow (Col 1 Span 2) */}
@@ -281,7 +309,11 @@ export function CVResult() {
                             <div className="shrink-0"><ChartIcon /></div><span className="leading-none">Phân tích khoảng cách kỹ năng</span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-black">
+                        {evaluationResult && cvPlan === 'FREE' ? (
+                            <PlanLockedNotice requiredPlan="MIDDLE" onViewPlans={() => navigate('/pricing')}>
+                                Mở gói MIDDLE để xem kỹ năng hiện có và kỹ năng còn thiếu so với JD.
+                            </PlanLockedNotice>
+                        ) : <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-black">
                             <div>
                                 <h4 className="text-xs font-bold text-outline uppercase tracking-wider mb-4">KỸ NĂNG HIỆN CÓ</h4>
                                 <ul className="space-y-3">
@@ -318,7 +350,7 @@ export function CVResult() {
                                     ))}
                                 </ul>
                             </div>
-                        </div>
+                        </div>}
                     </div>
 
                     {/* ATS Optimization */}
@@ -327,13 +359,20 @@ export function CVResult() {
                             <div className="shrink-0"><SettingsIcon /></div><span className="leading-none">{evaluationResult ? 'Đề xuất cải thiện CV' : 'Tối ưu hóa ATS'}</span>
                         </div>
                         <p className="text-sm text-black italic mb-4">{evaluationResult ? 'Các đề xuất được tạo từ kết quả phân tích CV và JD:' : 'Thêm các "Power Words" sau vào phần mô tả kinh nghiệm để tăng thứ hạng lọc hồ sơ:'}</p>
-                        <div className="flex flex-wrap gap-2">
+                        {evaluationResult && cvPlan === 'FREE' ? (
+                            <PlanLockedNotice requiredPlan="MIDDLE" onViewPlans={() => navigate('/pricing')}>
+                                Gói MIDDLE mở khóa đề xuất cải thiện dựa trên kết quả đánh giá.
+                            </PlanLockedNotice>
+                        ) : <div className="flex flex-wrap gap-2">
                             {analysis.atsOptimization.map((phrase, idx) => (
                                 <span key={idx} className="px-3 py-1.5 border-[1px] border-cv-result-ats-tag-border bg-cv-result-ats-tag-bg text-cv-result-ats-tag-text rounded-full text-sm font-semibold">
                                     {phrase}
                                 </span>
                             ))}
-                        </div>
+                            {evaluationResult && analysis.atsOptimization.length === 0 && (
+                                <p className="text-sm text-black/60">Chưa có đề xuất cho CV và JD này.</p>
+                            )}
+                        </div>}
                     </div>
 
                 </div>
@@ -373,13 +412,23 @@ export function CVResult() {
                         <p className="text-sm text-black/70 mb-6">{analysis.overallFeedback}</p>
 
                         <div className="w-full space-y-3">
-                            <button
-                                onClick={handleOptimizeEvaluatedCV}
-                                disabled={isOptimizing}
-                                className="w-full py-2 bg-cv-result-score-btn-ai-bg text-white rounded-lg font-bold text-sm transition-all hover:opacity-90 active:scale-95"
-                            >
-                                {isOptimizing ? 'Đang bắt đầu tối ưu...' : 'Tối ưu CV với AI'}
-                            </button>
+                            {evaluationResult && cvPlan && cvPlan !== 'ENHANCE' ? (
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/pricing')}
+                                    className="w-full rounded-lg bg-cv-result-score-btn-ai-bg py-2 text-sm font-bold text-white transition-all hover:opacity-90"
+                                >
+                                    Mở gói ENHANCE để tối ưu CV
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleOptimizeEvaluatedCV}
+                                    disabled={isOptimizing}
+                                    className="w-full py-2 bg-cv-result-score-btn-ai-bg text-white rounded-lg font-bold text-sm transition-all hover:opacity-90 active:scale-95"
+                                >
+                                    {isOptimizing ? 'Đang bắt đầu tối ưu...' : 'Tối ưu CV với AI'}
+                                </button>
+                            )}
                             <button
                                 onClick={() => navigate('/interview/job-selection')}
                                 className="w-full py-2 bg-cv-result-score-btn-int-bg text-white rounded-lg font-bold text-sm transition-all hover:opacity-90 active:scale-95"
@@ -397,6 +446,11 @@ export function CVResult() {
                         </div>
 
                         <div className="space-y-4 relative z-10">
+                            {evaluationResult && cvPlan === 'FREE' ? (
+                                <PlanLockedNotice requiredPlan="MIDDLE" onViewPlans={() => navigate('/pricing')}>
+                                    Gợi ý cho phần tóm tắt chuyên môn và kinh nghiệm làm việc có từ gói MIDDLE.
+                                </PlanLockedNotice>
+                            ) : <>
                             <div>
                                 <h5 className="text-sm font-semibold text-cv-result-card-text mb-1">Tóm tắt chuyên môn</h5>
                                 <p className="text-sm text-cv-result-ai-desc leading-relaxed">
@@ -409,6 +463,7 @@ export function CVResult() {
                                     {analysis.aiSuggestions.workExperience}
                                 </p>
                             </div>
+                            </>}
                         </div>
                     </div>
                 </div>
@@ -475,6 +530,21 @@ export function CVResult() {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-outline); border-radius: 4px; }
       `}} />
         </MainLayout>
+    );
+}
+
+function PlanLockedNotice({children, requiredPlan, onViewPlans}) {
+    return (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+            <p>{children}</p>
+            <button
+                type="button"
+                onClick={onViewPlans}
+                className="mt-3 font-bold text-amber-900 underline underline-offset-2 hover:text-amber-700"
+            >
+                Xem gói {requiredPlan}
+            </button>
+        </div>
     );
 }
 
