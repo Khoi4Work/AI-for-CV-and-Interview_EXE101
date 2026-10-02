@@ -2,6 +2,7 @@ package fpt.su26.exe101.backend.modules.auth.service.impl;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import fpt.su26.exe101.backend.base.service.EmailService;
 import fpt.su26.exe101.backend.modules.auth.dto.request.*;
 import fpt.su26.exe101.backend.modules.auth.dto.response.*;
@@ -26,6 +27,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final AttendanceRepository attendanceRepository;
@@ -90,6 +92,8 @@ public class AccountServiceImpl implements AccountService {
         }
 
         emailService.sendVerificationEmail(account.getEmail(), verificationToken);
+        log.info("[AUTH] Account registered | accountId={} | role={} | provider=local",
+                account.getId(), account.getRole());
 
         return RegisterResponseDTO.builder()
                 .message("Account created. Please verify your email.")
@@ -105,6 +109,7 @@ public class AccountServiceImpl implements AccountService {
         if (updatedRows == 0) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Invalid or expired token");
         }
+        log.info("[AUTH] Email verified | provider=local");
     }
 
     @Override
@@ -138,6 +143,8 @@ public class AccountServiceImpl implements AccountService {
                 .attendance(attendance)
                 .build();
         attendanceInfoRepository.save(info);
+
+        log.info("[AUTH] OAuth account registered | accountId={} | provider=google", account.getId());
 
         return account;
     }

@@ -95,6 +95,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .status("DRAFT")
                 .build();
         cvRepository.save(cv);
+        log.info("[CV] Created draft | cvId={} | galleryId={}", cv.getId(), gallery.getId());
         return cvMapper.cvToCVResponse(cv);
     }
 
@@ -118,6 +119,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         Optional<CV> existing = cvRepository.findByGalleryIdAndSourceHash(gallery.getId(), sourceHash);
         if (existing.isPresent()) {
             CV cv = existing.get();
+            log.info("[CV] Import completed | cvId={} | galleryId={} | duplicate=true",
+                    cv.getId(), gallery.getId());
             return CVImportResponseDTO.builder().cvId(cv.getId()).sourceHash(sourceHash).duplicate(true)
                     .extractedData(cv.getContent()).build();
         }
@@ -135,6 +138,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         CV draft = CV.builder().name(cvName).content(extractedData).gallery(gallery)
                 .sourceHash(sourceHash).optimizationState(OptimizationState.DRAFT).status("DRAFT").build();
         cvRepository.save(draft);
+        log.info("[CV] Import completed | cvId={} | galleryId={} | duplicate=false",
+                draft.getId(), gallery.getId());
         return CVImportResponseDTO.builder()
                 .extractedData(extractedData)
                 .cvId(draft.getId())
@@ -231,6 +236,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
+                log.info("[CV OPTIMIZATION] Job queued | cvId={} | galleryId={} | jobId={}",
+                        cvId, galleryId, jobId);
                 selfProvider.getObject().processOptimization(jobId, cvId, galleryId, accountId, request);
             }
         });
@@ -248,10 +255,13 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .orElse(null);
         if (job == null) {
             quotaService.refundCvAiAnalysis(accountId);
-            log.error("Optimization job {} disappeared before processing; quota refunded", jobId);
+            log.error("[CV OPTIMIZATION] Job record not found; quota refunded | cvId={} | galleryId={} | jobId={}",
+                    cvId, galleryId, jobId);
             return;
         }
 
+        long startedAtNanos = System.nanoTime();
+        log.info("[CV OPTIMIZATION] Started | cvId={} | galleryId={} | jobId={}", cvId, galleryId, jobId);
         try {
             CV cv = cvRepository.findWithGalleryById(cvId)
                     .filter(candidate -> candidate.getGallery().getId().equals(galleryId))
@@ -302,9 +312,13 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             job.setProgress(100);
             job.setCompletedAt(LocalDateTime.now());
             jobRepository.save(job);
+            log.info("[CV OPTIMIZATION] Completed | cvId={} | galleryId={} | jobId={} | durationMs={}",
+                    cvId, galleryId, jobId, (System.nanoTime() - startedAtNanos) / 1_000_000);
 
         } catch (Exception e) {
-            log.error("Optimization failed for job {}: {}", jobId, e.getMessage());
+            log.error("[CV OPTIMIZATION] Failed | cvId={} | galleryId={} | jobId={} | errorType={} | durationMs={}",
+                    cvId, galleryId, jobId, e.getClass().getSimpleName(),
+                    (System.nanoTime() - startedAtNanos) / 1_000_000, e);
             quotaService.refundCvAiAnalysis(accountId);
             job.setStatus("FAILED");
             job.setErrorMessage(e.getMessage());
@@ -396,30 +410,44 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .filter(item -> item.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
         JobDescription jd = findOrCreateJD(jdText, gallery);
-        quotaService.consumeCvAiAnalysis(gallery.getAccountId());
-        UserPlan plan = quotaService.getPlan(gallery.getAccountId());
-        CVEvaluationResponseDTO evaluation = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), plan);
-        evaluation.setJdId(jd.getId());
-        CVSkillGapResponseDTO skillGap;
-        CVFeedbackResponseDTO feedback;
-        if (plan == UserPlan.FREE) {
-            skillGap = CVSkillGapResponseDTO.builder().matchingSkills(List.of()).missingSkills(List.of()).build();
-            feedback = CVFeedbackResponseDTO.builder().overallScore(evaluation.getScore()).build();
-        } else {
-            skillGap = aiProvider.analyzeSkillGap(cv.getContent(), jd.getContent());
-            Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jd.getId());
-            if (prior.isPresent() && hasVietnameseFeedback(prior.get())) {
-                feedback = toFeedbackResponse(prior.get());
+        long startedAtNanos = System.nanoTime();
+        log.info("[CV ANALYSIS] Started | cvId={} | galleryId={} | jdId={}",
+                cvId, gallery.getId(), jd.getId());
+        try {
+            quotaService.consumeCvAiAnalysis(gallery.getAccountId());
+            UserPlan plan = quotaService.getPlan(gallery.getAccountId());
+            CVEvaluationResponseDTO evaluation = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), plan);
+            evaluation.setJdId(jd.getId());
+            CVSkillGapResponseDTO skillGap;
+            CVFeedbackResponseDTO feedback;
+            if (plan == UserPlan.FREE) {
+                skillGap = CVSkillGapResponseDTO.builder().matchingSkills(List.of()).missingSkills(List.of()).build();
+                feedback = CVFeedbackResponseDTO.builder().overallScore(evaluation.getScore()).build();
             } else {
-                feedback = aiProvider.generateFeedback(cv.getContent(), jd.getContent());
-                CVFeedback saved = prior.orElseGet(() -> CVFeedback.builder().cv(cv).jobDescription(jd).build());
-                saved.setOverallScore(feedback.getOverallScore());
-                saved.setFeedbackJson(feedback.getFeedback());
-                saved = feedbackRepository.save(saved);
-                feedback.setId(saved.getId());
+                skillGap = aiProvider.analyzeSkillGap(cv.getContent(), jd.getContent());
+                Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jd.getId());
+                if (prior.isPresent() && hasVietnameseFeedback(prior.get())) {
+                    feedback = toFeedbackResponse(prior.get());
+                } else {
+                    feedback = aiProvider.generateFeedback(cv.getContent(), jd.getContent());
+                    CVFeedback saved = prior.orElseGet(() -> CVFeedback.builder().cv(cv).jobDescription(jd).build());
+                    saved.setOverallScore(feedback.getOverallScore());
+                    saved.setFeedbackJson(feedback.getFeedback());
+                    saved = feedbackRepository.save(saved);
+                    feedback.setId(saved.getId());
+                }
             }
+
+            log.info("[CV ANALYSIS] Completed | cvId={} | galleryId={} | jdId={} | score={} | durationMs={}",
+                    cvId, gallery.getId(), jd.getId(), evaluation.getScore(),
+                    (System.nanoTime() - startedAtNanos) / 1_000_000);
+            return CVAnalysisResponseDTO.builder().evaluation(evaluation).skillGap(skillGap).feedback(feedback).build();
+        } catch (RuntimeException e) {
+            log.error("[CV ANALYSIS] Failed | cvId={} | galleryId={} | jdId={} | errorType={} | durationMs={}",
+                    cvId, gallery.getId(), jd.getId(), e.getClass().getSimpleName(),
+                    (System.nanoTime() - startedAtNanos) / 1_000_000, e);
+            throw e;
         }
-        return CVAnalysisResponseDTO.builder().evaluation(evaluation).skillGap(skillGap).feedback(feedback).build();
     }
 
     @Override

@@ -26,7 +26,8 @@ public class QuotaAccountCreatedListener {
         try {
             quotaService.initializeDefaultQuota(accountId);
         } catch (Exception e) {
-            log.error("Failed to initialize shared quota for account {}", accountId, e);
+            log.error("[QUOTA] Default quota initialization failed | accountId={} | errorType={}",
+                    accountId, e.getClass().getSimpleName(), e);
         }
     }
 }

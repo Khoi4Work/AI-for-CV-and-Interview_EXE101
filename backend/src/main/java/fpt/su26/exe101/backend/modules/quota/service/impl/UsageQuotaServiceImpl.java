@@ -2,6 +2,7 @@ package fpt.su26.exe101.backend.modules.quota.service.impl;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import fpt.su26.exe101.backend.modules.quota.config.QuotaBenefitConfig;
 import fpt.su26.exe101.backend.modules.quota.config.QuotaBenefitConfig.QuotaBenefit;
 import fpt.su26.exe101.backend.modules.quota.entity.UserUsageQuota;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UsageQuotaServiceImpl implements UsageQuotaService {
     private final UserUsageQuotaRepository repository;
     private final ApplicationEventPublisher eventPublisher;
@@ -60,14 +62,20 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     @Override @Transactional
     public void consumeCvCreation(UUID accountId) {
         UserUsageQuota quota = lockedQuota(accountId);
-        if (quota.getRemainingCvCnt() <= 0) throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
+        if (quota.getRemainingCvCnt() <= 0) {
+            log.warn("[QUOTA] Request denied | accountId={} | type=cv_creation | reason=exhausted", accountId);
+            throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
+        }
         quota.setRemainingCvCnt(quota.getRemainingCvCnt() - 1);
     }
 
     @Override @Transactional
     public void consumeCvAiAnalysis(UUID accountId) {
         UserUsageQuota quota = lockedQuota(accountId);
-        if (quota.getRemainingCvAiCnt() <= 0) throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
+        if (quota.getRemainingCvAiCnt() <= 0) {
+            log.warn("[QUOTA] Request denied | accountId={} | type=cv_ai_analysis | reason=exhausted", accountId);
+            throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
+        }
         quota.setRemainingCvAiCnt(quota.getRemainingCvAiCnt() - 1);
     }
 
@@ -75,13 +83,18 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     public void refundCvAiAnalysis(UUID accountId) {
         UserUsageQuota quota = lockedQuota(accountId);
         quota.setRemainingCvAiCnt(quota.getRemainingCvAiCnt() + 1);
+        log.info("[QUOTA] Refunded | accountId={} | type=cv_ai_analysis", accountId);
     }
 
     @Override @Transactional
     public void consumeInterviewMinutes(UUID accountId, int minutes) {
         if (minutes <= 0) throw new IllegalArgumentException("Interview minutes must be positive");
         UserUsageQuota quota = lockedQuota(accountId);
-        if (quota.getRemainingIntMin() < minutes) throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
+        if (quota.getRemainingIntMin() < minutes) {
+            log.warn("[QUOTA] Request denied | accountId={} | type=interview_minutes | requested={} | reason=insufficient",
+                    accountId, minutes);
+            throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
+        }
         quota.setRemainingIntMin(quota.getRemainingIntMin() - minutes);
     }
 
@@ -90,6 +103,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
         if (minutes <= 0) throw new IllegalArgumentException("Interview minutes must be positive");
         UserUsageQuota quota = lockedQuota(accountId);
         quota.setRemainingIntMin(quota.getRemainingIntMin() + minutes);
+        log.info("[QUOTA] Refunded | accountId={} | type=interview_minutes | minutes={}", accountId, minutes);
     }
 
     @Override

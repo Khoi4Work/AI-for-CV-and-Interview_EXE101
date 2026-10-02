@@ -38,6 +38,7 @@ import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +52,7 @@ import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InterviewServiceImpl implements InterviewService {
     private final InterviewSessionRepository sessionRepository;
     private final InterviewAnswerRepository answerRepository;
@@ -166,6 +168,9 @@ public class InterviewServiceImpl implements InterviewService {
                 .status(InterviewSessionStatus.IN_PROGRESS)
                 .build();
         InterviewSession saved = sessionRepository.save(session);
+        log.info("[INTERVIEW] Session created | sessionId={} | galleryId={} | cvId={} | jdId={} | type={} | durationMinutes={} | questionCount={}",
+                saved.getId(), gallery.getId(), cv == null ? "none" : cv.getId(),
+                jd == null ? "none" : jd.getId(), type, saved.getDurationMinutes(), questions.size());
 
         List<InterviewQuestionResponseDTO> responseQuestions = questions.stream()
                 .map(question -> InterviewQuestionResponseDTO.builder()
@@ -213,6 +218,8 @@ public class InterviewServiceImpl implements InterviewService {
                 .audioUrl(request.getAudioUrl())
                 .isSkipped(request.getIsSkipped())
                 .build());
+        log.info("[INTERVIEW] Answer submitted | sessionId={} | questionId={} | skipped={} | source=text",
+                sessionId, answer.getQuestionId(), Boolean.TRUE.equals(answer.getIsSkipped()));
         return InterviewAnswerResponseDTO.builder()
                 .id(answer.getId())
                 .sessionId(sessionId)
@@ -250,6 +257,8 @@ public class InterviewServiceImpl implements InterviewService {
                 .answerText(transcript)
                 .isSkipped(false)
                 .build());
+        log.info("[INTERVIEW] Audio answer transcribed | sessionId={} | questionId={} | audioSizeBytes={}",
+                sessionId, questionId, audio.length);
         return InterviewAnswerResponseDTO.builder()
                 .id(answer.getId())
                 .sessionId(sessionId)
@@ -298,7 +307,16 @@ public class InterviewServiceImpl implements InterviewService {
         transcript.put("experienceLevel", session.getCandidateExperienceLevel());
         transcript.put("durationMinutes", session.getDurationMinutes());
         transcript.put("questionsAndAnswers", buildQuestionsAndAnswers(session, answers));
-        InterviewEvaluationResponseDTO evaluation = interviewAIProvider.evaluate(transcript, plan);
+        long startedAtNanos = System.nanoTime();
+        InterviewEvaluationResponseDTO evaluation;
+        try {
+            evaluation = interviewAIProvider.evaluate(transcript, plan);
+        } catch (RuntimeException e) {
+            log.error("[INTERVIEW] Evaluation failed | sessionId={} | answerCount={} | errorType={} | durationMs={}",
+                    session.getId(), answers.size(), e.getClass().getSimpleName(),
+                    (System.nanoTime() - startedAtNanos) / 1_000_000, e);
+            throw e;
+        }
         evaluation.setSessionId(session.getId());
         session.setOverallScore(evaluation.getOverallScore());
         session.setFeedbackJson(objectMapper.convertValue(evaluation,
@@ -306,6 +324,9 @@ public class InterviewServiceImpl implements InterviewService {
         session.setStatus(InterviewSessionStatus.COMPLETED);
         session.setCompletedAt(LocalDateTime.now());
         sessionRepository.save(session);
+        log.info("[INTERVIEW] Evaluation completed | sessionId={} | answerCount={} | score={} | durationMs={}",
+                session.getId(), answers.size(), evaluation.getOverallScore(),
+                (System.nanoTime() - startedAtNanos) / 1_000_000);
         return evaluation;
     }
 

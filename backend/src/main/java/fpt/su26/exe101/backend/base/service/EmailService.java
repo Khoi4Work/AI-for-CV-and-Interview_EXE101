@@ -38,9 +38,10 @@ public class EmailService {
             );
 
             mailSender.send(message);
-            log.info("Verification email sent to {}", to);
+            log.info("[EMAIL] Verification message sent");
         } catch (MessagingException e) {
-            log.error("Failed to send verification email to {}: {}", to, e.getMessage());
+            log.error("[EMAIL] Verification message delivery failed | errorType={}",
+                    e.getClass().getSimpleName(), e);
             throw new RuntimeException("Email sending failed");
         }
     }
@@ -63,9 +64,10 @@ public class EmailService {
             );
 
             mailSender.send(message);
-            log.info("Reset password email sent to {}", to);
+            log.info("[EMAIL] Password reset message sent");
         } catch (MessagingException e) {
-            log.error("Failed to send reset password email to {}: {}", to, e.getMessage());
+            log.error("[EMAIL] Password reset message delivery failed | errorType={}",
+                    e.getClass().getSimpleName(), e);
             throw new RuntimeException("Email sending failed");
         }
     }

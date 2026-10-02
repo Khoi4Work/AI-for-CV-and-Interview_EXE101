@@ -34,9 +34,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
 
-        log.info("OAuth2 login attempt for email: {}", email);
-
         accountService.createOAuthAccount(email, name);
+        log.info("[AUTH] Google OAuth account processed");
 
         // We return the OAuth2User, but the actual JWT issuance is typically handled
         // by a SuccessHandler or a custom controller endpoint in a decoupled SPA architecture.

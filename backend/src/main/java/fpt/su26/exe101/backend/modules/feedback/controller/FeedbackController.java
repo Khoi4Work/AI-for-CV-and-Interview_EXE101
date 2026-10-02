@@ -33,17 +33,13 @@ public class FeedbackController {
     public ResponseEntity<ApiResponse<Feedback>> createFeedback(
             @ModelAttribute FeedbackRequest request,
             @RequestParam(value = "image", required = false) MultipartFile imageFile) {
-        log.info("POST /api/feedbacks — incoming multipart: userName='{}', category='{}', hasImage={}",
-                request.getUserName(), request.getCategory(),
-                imageFile != null && !imageFile.isEmpty());
         try {
             Feedback feedback = feedbackService.createFeedback(request, imageFile);
-            log.info("POST /api/feedbacks — 200 OK, id={}", feedback.getId());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(feedback, "Feedback created"));
         } catch (IOException e) {
-            log.error("POST /api/feedbacks — 500 I/O error while creating feedback: {}",
-                    e.getMessage(), e);
+            log.error("[FEEDBACK] Request failed while saving feedback | errorType={}",
+                    e.getClass().getSimpleName(), e);
             return ResponseEntity.internalServerError().body(ApiResponse.error(
                     ErrorCode.UNEXPECTED_ERROR.getCode(), "Unable to save feedback.", null));
         }
@@ -52,9 +48,7 @@ public class FeedbackController {
     @Operation(summary = "Get all feedbacks", description = "Returns a list of all stored user feedbacks")
     @GetMapping
     public ResponseEntity<ApiResponse<List<Feedback>>> getAllFeedbacks() {
-        log.info("GET /api/feedbacks");
         List<Feedback> all = feedbackService.getAllFeedbacks();
-        log.info("GET /api/feedbacks — 200 OK, count={}", all.size());
         return ResponseEntity.ok(ApiResponse.success(all));
     }
 }

@@ -62,7 +62,9 @@ public class TemplateServiceImpl implements TemplateService {
                 .comment(request.getComment())
                 .build();
 
-        feedbackRepository.save(feedback);
+        TemplateFeedback saved = feedbackRepository.save(feedback);
+        log.info("[CV TEMPLATE] Feedback submitted | templateId={} | feedbackId={} | rating={}",
+                template.getId(), saved.getId(), saved.getRating());
     }
 
     @Override

@@ -40,7 +40,8 @@ public class ElevenLabsInterviewVoiceService implements InterviewVoiceService {
         try {
             audio = textToSpeechModel.call(questionText);
         } catch (RuntimeException exception) {
-            log.error("TTS generation failed for interview question {}", questionId, exception);
+            log.error("[INTERVIEW TTS] Audio generation failed | questionId={} | errorType={}",
+                    questionId, exception.getClass().getSimpleName(), exception);
             throw exception;
         }
         if (audio == null || audio.length == 0) {
@@ -87,8 +88,8 @@ public class ElevenLabsInterviewVoiceService implements InterviewVoiceService {
             }
             return result.text().trim();
         } catch (WebClientResponseException exception) {
-            log.error("ElevenLabs speech-to-text failed: status={}, providerResponse={}",
-                    exception.getStatusCode().value(), exception.getResponseBodyAsString());
+            log.error("[INTERVIEW STT] Transcription request failed | provider=elevenlabs | httpStatus={} | audioSizeBytes={}",
+                    exception.getStatusCode().value(), audio.length, exception);
             throw new IllegalStateException("Voice transcription provider returned HTTP "
                     + exception.getStatusCode().value() + ".", exception);
         }

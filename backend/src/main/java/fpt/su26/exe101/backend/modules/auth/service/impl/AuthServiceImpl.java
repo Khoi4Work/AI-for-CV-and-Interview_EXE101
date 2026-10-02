@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = tokenProvider.createRefreshToken(account.getEmail());
 
         // Xóa token cũ nếu có để tránh lỗi duplicate account_id
-        tokenRepository.deleteByAccount(account);
+        tokenRepository.findByAccount(account).ifPresent(tokenRepository::delete);
 
         Token token = Token.builder()
                 .account(account)
@@ -67,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         tokenRepository.save(token);
 
+        log.info("[AUTH] Login succeeded | accountId={} | provider=password", account.getId());
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -121,7 +122,7 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = tokenProvider.createRefreshToken(account.getEmail());
 
         // Xóa token cũ nếu có để tránh lỗi duplicate account_id
-        tokenRepository.deleteByAccount(account);
+        tokenRepository.findByAccount(account).ifPresent(tokenRepository::delete);
 
         Token token = Token.builder()
                 .account(account)
@@ -130,6 +131,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         tokenRepository.save(token);
 
+        log.info("[AUTH] Login succeeded | accountId={} | provider=google", account.getId());
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -154,7 +156,8 @@ public class AuthServiceImpl implements AuthService {
             if (e instanceof ApiException) {
                 throw (ApiException) e;
             }
-            log.error("Google token verification failed: ", e);
+            log.error("[AUTH] Google token verification failed | errorType={}",
+                    e.getClass().getSimpleName(), e);
             throw new ApiException(ErrorCode.INVALID_INPUT, "Error verifying Google token: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getName()));
         }
     }
@@ -165,5 +168,6 @@ public class AuthServiceImpl implements AuthService {
         Token token = tokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new ApiException(ErrorCode.INVALID_INPUT, "Invalid refresh token"));
         tokenRepository.delete(token);
+        log.info("[AUTH] Logout succeeded | accountId={}", token.getAccount().getId());
     }
 }

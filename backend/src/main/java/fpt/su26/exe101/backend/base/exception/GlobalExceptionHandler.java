@@ -96,7 +96,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
-        log.warn("DataIntegrityViolation: {}", ex.getMessage());
+        log.warn("[HTTP] Request rejected by a data constraint | method={} | path={}",
+                request.getMethod(), request.getRequestURI());
         ErrorCode ec = ErrorCode.DUPLICATE_RESOURCE;
         return ResponseEntity.status(ec.getStatus())
                 .body(buildError(ec.getCode(), ec.getDefaultMessage(), request.getRequestURI(), null));
@@ -104,12 +105,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AsyncRequestNotUsableException.class)
     public void handleClientDisconnected(AsyncRequestNotUsableException ex, HttpServletRequest request) {
-        log.debug("Client disconnected while writing response for {}.", request.getRequestURI());
+        log.debug("[HTTP] Client disconnected during response write | method={} | path={}",
+                request.getMethod(), request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleUnexpected(Exception ex, HttpServletRequest request) {
-        log.error("Unexpected error:", ex);
+        log.error("[HTTP] Unexpected request error | method={} | path={} | errorType={}",
+                request.getMethod(), request.getRequestURI(), ex.getClass().getSimpleName(), ex);
         ErrorCode ec = ErrorCode.UNEXPECTED_ERROR;
         return ResponseEntity.status(ec.getStatus())
                 .body(buildError(ec.getCode(), ec.getDefaultMessage(), request.getRequestURI(), null));

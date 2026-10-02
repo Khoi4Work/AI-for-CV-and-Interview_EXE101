@@ -55,14 +55,14 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
     @Transactional
     public void createGalleryForAccount(UUID accountId) {
         if (galleryRepository.findByAccountId(accountId).isPresent()) {
-            log.info("Gallery already exists for account: {}", accountId);
+            log.debug("[GALLERY] Creation skipped | accountId={} | reason=already_exists", accountId);
             return;
         }
         Gallery gallery = Gallery.builder()
                 .accountId(accountId)
                 .build();
         galleryRepository.save(gallery);
-        log.info("Created new gallery for account: {}", accountId);
+        log.info("[GALLERY] Created | accountId={} | galleryId={}", accountId, gallery.getId());
     }
 
     @Override
@@ -111,6 +111,8 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
                 .build();
 
         JobDescription savedJd = jdRepository.save(jd);
+        log.info("[GALLERY] Job description created | galleryId={} | jdId={}",
+                gallery.getId(), savedJd.getId());
         return galleryMapper.jdToJDResponse(savedJd);
     }
 
@@ -129,7 +131,10 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
         jd.setContent(request.getContent());
         jd.setCompanyName(request.getCompanyName());
 
-        return galleryMapper.jdToJDResponse(jdRepository.save(jd));
+        JobDescription updatedJd = jdRepository.save(jd);
+        log.info("[GALLERY] Job description updated | galleryId={} | jdId={}",
+                gallery.getId(), updatedJd.getId());
+        return galleryMapper.jdToJDResponse(updatedJd);
     }
 
     @Override
@@ -144,6 +149,7 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
         }
 
         jdRepository.delete(jd);
+        log.info("[GALLERY] Job description deleted | galleryId={} | jdId={}", gallery.getId(), id);
     }
 
 }
