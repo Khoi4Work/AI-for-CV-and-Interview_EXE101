@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { useApp } from '../contexts/AppContext.jsx';
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
+import LoginLoading from '../components/LoginLoading.jsx';
 
 export default function Register() {
   const panelRef = useRef(null);
@@ -18,6 +19,10 @@ export default function Register() {
   const { handleLogin } = useAuth();
   const { showToast } = useApp();
   const [loading, setLoading] = useState(false);
+  const [registering, setRegistering] = useState(false);
+  const [emailDraft, setEmailDraft] = useState('');
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const loginInProgress = useRef(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -51,44 +56,55 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (loginInProgress.current) return;
+    loginInProgress.current = true;
+    setRegistering(true);
+    setError(null);
     const formData = new FormData(e.target);
     const data = {
       displayName: formData.get('fullName'),
-      email: formData.get('email'),
+      email: formData.get('email').trim(),
       password: formData.get('password'),
       confirmPassword: formData.get('confirmPassword'),
     };
 
     try {
-      await apiClient.post('/auth/accounts', data);
+      await apiClient.post('/auth/accounts', data, { publicRequest: true, anonymousRequest: true });
       showToast('Đăng ký tài khoản thành công! Vui lòng kiểm tra email để xác thực.', 'success');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      navigate('/check-email', { state: { email: data.email, registeredAt: Date.now(), from: location.state?.from } });
     } catch (err) {
       const msg = getApiErrorMessage(err);
       showToast(msg, 'error');
       setError(msg);
+    } finally {
+      loginInProgress.current = false;
+      setRegistering(false);
     }
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
+    if (loginInProgress.current) return;
+    loginInProgress.current = true;
     setLoading(true);
+    setLoginSuccess(false);
     setError(null);
     try {
       const idToken = credentialResponse.credential;
       const response = await apiClient.post(`/auth/oauth/google`, {
         token: idToken
-      });
+      }, { publicRequest: true, anonymousRequest: true });
       const tokens = response.data?.result || response.data?.data || {};
-      handleLogin(null, tokens);
+      if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
+      setLoginSuccess(true);
+      await handleLogin(null, tokens);
 
       const origin = location.state?.from?.pathname || '/home';
       navigate(origin);
     } catch (err) {
-      setError(getApiErrorMessage(err));
-    } finally {
+      setLoginSuccess(false);
       setLoading(false);
+      loginInProgress.current = false;
+      setError(getApiErrorMessage(err));
     }
   };
 
@@ -97,7 +113,9 @@ export default function Register() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-transparent page-enter">
+    <>
+    {loading && <LoginLoading success={loginSuccess} />}
+    <div inert={loading || registering} aria-busy={loading || registering} className="flex flex-col min-h-screen w-full bg-transparent page-enter">
       <GuestHeader />
       <main className="flex-grow flex items-center justify-center py-xl px-margin-mobile md:px-gutter w-full">
         <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-lg items-center">
@@ -162,6 +180,7 @@ export default function Register() {
                     <input
                       required
                       name="email"
+                      onChange={(event) => setEmailDraft(event.target.value)}
                       className="w-full pl-[48px] pr-md py-sm rounded-lg border border-outline-variant bg-surface-container focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-on-surface placeholder:text-outline/50 text-body-md"
                       placeholder="example@gmail.com"
                       type="email"
@@ -212,10 +231,11 @@ export default function Register() {
                 </div>
 
                 <button
+                  disabled={registering}
                   className="w-full ai-gradient text-on-primary py-sm rounded-lg font-title-md text-body-lg font-semibold flex items-center justify-center gap-xs hover:shadow-lg transition-all active:scale-[0.98] group"
                   type="submit"
                 >
-                  Đăng ký
+                  {registering ? 'Đang tạo tài khoản...' : 'Đăng ký'}
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </button>
               </form>
@@ -225,6 +245,9 @@ export default function Register() {
                   {error}
                 </div>
               )}
+              <p className="mt-md text-center text-sm text-on-surface-variant">
+                Chưa nhận được email? <Link to="/check-email" state={{ email: emailDraft, from: location.state?.from }} className="text-primary font-medium hover:underline">Gửi lại email xác thực</Link>
+              </p>
 
               <div className="mt-lg text-center">
                 <p className="font-body-sm text-body-sm text-on-surface-variant">
@@ -238,18 +261,22 @@ export default function Register() {
                 <div className="flex-grow border-t border-outline-variant"></div>
               </div>
 
-              <div className="grid grid-cols-2 gap-md">
-                <div className="flex items-center justify-center">
+              <div className="grid grid-cols-1 gap-md">
+                <div className="flex min-h-[44px] flex-col items-center justify-center">
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
                     onError={handleGoogleError}
                     useOneTap={true}
                     use_fedcm_for_prompt={false}
                     theme="outline"
-                    width="100%"
+                    size="high"
+                    text="signup_with"
+                    locale="vi"
+                    shape="rectangular"
                   />
                   {loading && <span className="mt-2 text-xs text-on-surface-variant" role="status">Đang đăng nhập...</span>}
                 </div>
+                {/* Facebook login chưa được triển khai.
                 <button
                   onClick={() => setError('Only Google login is supported at the moment')}
                   className="flex items-center justify-center gap-xs py-sm border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container transition-all text-on-surface-variant cursor-pointer"
@@ -257,6 +284,7 @@ export default function Register() {
                   <svg className="w-5 h-5 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
                   Facebook
                 </button>
+                */}
               </div>
             </div>
           </div>
@@ -264,5 +292,6 @@ export default function Register() {
       </main>
       <Footer />
     </div>
+    </>
   );
 }

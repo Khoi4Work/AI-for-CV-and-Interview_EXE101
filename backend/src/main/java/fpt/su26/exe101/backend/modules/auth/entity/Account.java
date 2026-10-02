@@ -5,6 +5,7 @@ import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "account")
@@ -33,6 +34,11 @@ public class Account extends BaseEntity {
 
     @Column(name = "verification_token")
     private String verificationToken;
+
+    private LocalDateTime verificationExpiresAt;
+    private LocalDateTime verificationLastSentAt;
+    private LocalDateTime verifiedAt;
+    private LocalDateTime verificationManagedAt;
 
     @Column(name = "reset_password_token")
     private String resetPasswordToken;

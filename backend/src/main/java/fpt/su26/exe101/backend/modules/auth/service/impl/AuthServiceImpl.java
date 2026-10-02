@@ -43,6 +43,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO request) {
+        if (request == null || request.getEmail() == null) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Email is required");
+        }
+        request.setEmail(request.getEmail().trim().toLowerCase(java.util.Locale.ROOT));
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -50,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
         Account account = accountRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Account not found"));
 
-        if ("PENDING_VERIFICATION".equals(account.getStatus())) {
+        if (!"ACTIVE".equals(account.getStatus())) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Account is SUSPENDED or email not verified");
         }
 
@@ -86,6 +90,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Account account = token.getAccount();
+        requireActive(account);
         String accessToken = tokenProvider.createToken(
                 account.getEmail(),
                 Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
@@ -111,9 +116,7 @@ public class AuthServiceImpl implements AuthService {
         Account account = accountRepository.findByEmail(email)
                 .orElseGet(() -> accountService.createOAuthAccount(email, "OAuth User"));
 
-        if ("SUSPENDED".equals(account.getStatus())) {
-            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Account is suspended");
-        }
+        requireActive(account);
 
         String accessToken = tokenProvider.createToken(
                 account.getEmail(),
@@ -148,7 +151,10 @@ public class AuthServiceImpl implements AuthService {
 
             GoogleIdToken idToken = verifier.verify(idTokenString);
             if (idToken != null) {
-                return idToken.getPayload().getEmail();
+                if (!Boolean.TRUE.equals(idToken.getPayload().getEmailVerified())) {
+                    throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Google email is not verified");
+                }
+                return idToken.getPayload().getEmail().trim().toLowerCase(java.util.Locale.ROOT);
             } else {
                 throw new ApiException(ErrorCode.INVALID_INPUT, "Invalid Google ID token");
             }
@@ -159,6 +165,12 @@ public class AuthServiceImpl implements AuthService {
             log.error("[AUTH] Google token verification failed | errorType={}",
                     e.getClass().getSimpleName(), e);
             throw new ApiException(ErrorCode.INVALID_INPUT, "Error verifying Google token: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getName()));
+        }
+    }
+
+    private void requireActive(Account account) {
+        if (!"ACTIVE".equals(account.getStatus())) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Tài khoản chưa xác thực email hoặc đã bị khóa.");
         }
     }
 

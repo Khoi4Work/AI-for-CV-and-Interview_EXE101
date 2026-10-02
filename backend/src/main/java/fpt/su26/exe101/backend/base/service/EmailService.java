@@ -17,15 +17,17 @@ public class EmailService {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
+    @Value("${app.backend.url:http://localhost:8080}")
+    private String backendUrl;
+
     private final JavaMailSender mailSender;
 
-    @Async
     public void sendVerificationEmail(String to, String token) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            String verificationUrl = "http://localhost:8080/api/auth/verify-email?token=" + token;
+            String verificationUrl = backendUrl.replaceAll("/+$", "") + "/api/auth/verify-email?token=" + token;
 
             helper.setTo(to);
             helper.setSubject("Verify your account - AI for CV and Interview");
@@ -41,7 +43,7 @@ public class EmailService {
             log.info("[EMAIL] Verification message sent");
         } catch (MessagingException e) {
             log.error("[EMAIL] Verification message delivery failed | errorType={}",
-                    e.getClass().getSimpleName(), e);
+                    e.getClass().getSimpleName());
             throw new RuntimeException("Email sending failed");
         }
     }

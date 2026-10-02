@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -92,6 +93,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         String message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại hoặc sử dụng Login with Google nếu bạn đăng ký qua Google.";
         return ResponseEntity.status(ec.getStatus())
                 .body(buildError(ec.getCode(), message, request.getRequestURI(), null));
+    }
+
+    @ExceptionHandler(AccountStatusException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInactiveAccount(AccountStatusException ex, HttpServletRequest request) {
+        ErrorCode ec = ErrorCode.FORBIDDEN_ACTION;
+        return ResponseEntity.status(ec.getStatus()).body(buildError(ec.getCode(),
+                "Tài khoản chưa xác thực email hoặc đã bị khóa. Vui lòng kiểm tra email xác thực.",
+                request.getRequestURI(), null));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

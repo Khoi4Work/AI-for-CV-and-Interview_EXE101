@@ -3,7 +3,6 @@ package fpt.su26.exe101.backend.modules.auth.service.impl;
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
-import fpt.su26.exe101.backend.base.service.EmailService;
 import fpt.su26.exe101.backend.modules.auth.dto.request.*;
 import fpt.su26.exe101.backend.modules.auth.dto.response.*;
 import fpt.su26.exe101.backend.modules.auth.entity.*;
@@ -14,6 +13,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.modules.auth.repository.*;
 import fpt.su26.exe101.backend.modules.auth.service.AccountService;
+import fpt.su26.exe101.backend.modules.auth.service.EmailVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class AccountServiceImpl implements AccountService {
     private final PartnerRepository partnerRepository;
     private final PartnerInfoRepository partnerInfoRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final EmailVerificationService verificationService;
     private final ApplicationEventPublisher eventPublisher;
     private final UsageQuotaService quotaService;
 
@@ -47,23 +47,23 @@ public class AccountServiceImpl implements AccountService {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Mật khẩu xác nhận không khớp");
         }
 
-        if (accountRepository.existsByEmail(request.getEmail())) {
+        if (request.getEmail() == null || request.getEmail().length() > 254
+                || !request.getEmail().trim().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Email không hợp lệ.");
+        }
+        if (accountRepository.existsByEmail(request.getEmail().trim().toLowerCase(java.util.Locale.ROOT))) {
             throw new ApiException(ErrorCode.DUPLICATE_RESOURCE, "Email already exists");
         }
 
-        String verificationToken = UUID.randomUUID().toString();
-
         Account account = Account.builder()
-                .email(request.getEmail())
+                .email(request.getEmail().trim().toLowerCase(java.util.Locale.ROOT))
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .provider(AccountProvider.LOCAL)
                 .role(request.getRole() != null ? request.getRole() : AccountRole.ATTENDANCE)
                 .status("PENDING_VERIFICATION")
-                .verificationToken(verificationToken)
                 .build();
 
         account = accountRepository.save(account);
-        eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
 
         if (account.getRole() == AccountRole.ATTENDANCE) {
             // Get default name from email if displayName is not provided
@@ -91,32 +91,32 @@ public class AccountServiceImpl implements AccountService {
             partnerInfoRepository.save(info);
         }
 
-        emailService.sendVerificationEmail(account.getEmail(), verificationToken);
+        verificationService.issue(account);
         log.info("[AUTH] Account registered | accountId={} | role={} | provider=local",
                 account.getId(), account.getRole());
 
         return RegisterResponseDTO.builder()
                 .message("Account created. Please verify your email.")
                 .id(account.getId().toString())
-                .verificationToken(verificationToken)
                 .build();
     }
 
     @Override
     @Transactional
     public void verifyEmail(String token) {
-        int updatedRows = accountRepository.verifyEmailToken(token, "ACTIVE");
-        if (updatedRows == 0) {
-            throw new ApiException(ErrorCode.INVALID_INPUT, "Invalid or expired token");
-        }
+        verificationService.verify(token);
         log.info("[AUTH] Email verified | provider=local");
     }
 
     @Override
     @Transactional
     public Account createOAuthAccount(String email, String name) {
+        email = email.trim().toLowerCase(java.util.Locale.ROOT);
         Optional<Account> existingAccount = accountRepository.findByEmail(email);
         if (existingAccount.isPresent()) {
+            if (!"ACTIVE".equals(existingAccount.get().getStatus())) {
+                throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Vui lòng xác thực email trước khi đăng nhập Google.");
+            }
             return existingAccount.get();
         }
 
