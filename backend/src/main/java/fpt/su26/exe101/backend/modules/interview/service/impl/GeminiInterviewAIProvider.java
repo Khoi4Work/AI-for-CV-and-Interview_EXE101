@@ -59,10 +59,10 @@ public class GeminiInterviewAIProvider implements InterviewAIProvider {
     }
 
     @Override
-    public InterviewQuestionGenerationDTO generateQuestions(InterviewType type, ExperienceLevel level, int count) {
+    public InterviewQuestionGenerationDTO generateQuestions(InterviewType type, ExperienceLevel level, int count, String language) {
         try {
             String response = chatClientBuilder.build()
-                    .prompt(Prompt.interviewQuestionGeneration(type, level, count))
+                    .prompt(Prompt.interviewQuestionGeneration(type, level, count, language))
                     .options(GoogleGenAiChatOptions.builder()
                             .responseMimeType("application/json")
                             .maxOutputTokens(MAX_JSON_OUTPUT_TOKENS)

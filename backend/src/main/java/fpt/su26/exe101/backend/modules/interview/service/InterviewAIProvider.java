@@ -9,5 +9,5 @@ import java.util.Map;
 
 public interface InterviewAIProvider {
     InterviewEvaluationResponseDTO evaluate(Map<String, Object> transcript, UserPlan plan);
-    InterviewQuestionGenerationDTO generateQuestions(InterviewType type, ExperienceLevel level, int count);
+    InterviewQuestionGenerationDTO generateQuestions(InterviewType type, ExperienceLevel level, int count, String language);
 }

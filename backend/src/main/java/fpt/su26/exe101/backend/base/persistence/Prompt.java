@@ -235,8 +235,12 @@ public class Prompt {
                 + "<interview_transcript>\n" + transcriptJson + "\n</interview_transcript>";
     }
 
-    public static String interviewQuestionGeneration(InterviewType type, ExperienceLevel level, int count) {
-        return JSON_OUTPUT_RULES + VIETNAMESE_RESPONSE_STYLE_RULES + "Create exactly " + count + " reusable interview questions in Vietnamese for interview type " + type
+    public static String interviewQuestionGeneration(InterviewType type, ExperienceLevel level, int count, String language) {
+        String languageRules = "en".equalsIgnoreCase(language)
+                ? "Write every human-readable value in English. Keep JSON keys unchanged. Use plain text without Markdown markers or code fences.\n\n"
+                : VIETNAMESE_RESPONSE_STYLE_RULES;
+        String languageName = "en".equalsIgnoreCase(language) ? "English" : "Vietnamese";
+        return JSON_OUTPUT_RULES + languageRules + "Create exactly " + count + " reusable interview questions in " + languageName + " for interview type " + type
                 + " and candidate experience level " + level + ". Questions must be practical and appropriate for entry-level candidates. "
                 + "Do not assume a company, job description, or candidate-specific history. Do not include personal information or refer to a specific candidate. "
                 + "Questions must be distinct, concise, and suitable for a real interviewer to ask. "

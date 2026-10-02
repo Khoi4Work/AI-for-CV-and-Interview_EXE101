@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.Comparator;
 
@@ -73,6 +74,7 @@ public class InterviewServiceImpl implements InterviewService {
         InterviewType type = parseInterviewType(request.getInterviewType());
         ExperienceLevel level = parseExperienceLevel(request.getExperienceLevel());
         validateSessionOptions(request);
+        String language = request.getLanguage().trim().toLowerCase(Locale.ROOT);
 
         UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         int maxDuration = switch (plan) {
@@ -101,11 +103,11 @@ public class InterviewServiceImpl implements InterviewService {
         if (jd != null) availableContexts.add(QuestionContextType.JD);
         if (cv != null) availableContexts.add(QuestionContextType.CV);
         if (cv != null && jd != null) availableContexts.add(QuestionContextType.JD_AND_CV);
-        List<InterviewQuestion> questions = selectQuestions(type, level, availableContexts,
+        List<InterviewQuestion> questions = selectQuestions(type, level, language, availableContexts,
                 cv != null, jd != null, requestedQuestionCount);
         if (questions.size() < requestedQuestionCount) {
             int missingCount = requestedQuestionCount - questions.size();
-            InterviewQuestionGenerationDTO generated = interviewAIProvider.generateQuestions(type, level, missingCount);
+            InterviewQuestionGenerationDTO generated = interviewAIProvider.generateQuestions(type, level, missingCount, language);
             InterviewQuestionBank generalBank = questionBankRepository
                     .findFirstByCompanyIsNullAndInterviewTypeAndExperienceLevel(type, level)
                     .orElseGet(() -> questionBankRepository.save(InterviewQuestionBank.builder()
@@ -118,6 +120,7 @@ public class InterviewServiceImpl implements InterviewService {
                     .map(draft -> InterviewQuestion.builder()
                             .bank(generalBank)
                             .questionText(draft.getText().trim())
+                            .language(language)
                             .sampleAnswer(draft.getSampleAnswer())
                             .gradingCriteria(draft.getGradingCriteria())
                             .category(draft.getCategory())
@@ -128,7 +131,7 @@ public class InterviewServiceImpl implements InterviewService {
                             .build())
                     .toList();
             questionRepository.saveAll(newQuestions);
-            questions = selectQuestions(type, level, availableContexts, cv != null, jd != null, requestedQuestionCount);
+            questions = selectQuestions(type, level, language, availableContexts, cv != null, jd != null, requestedQuestionCount);
         }
         if (questions.size() < requestedQuestionCount) {
             throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND,
@@ -136,7 +139,7 @@ public class InterviewServiceImpl implements InterviewService {
         }
 
         Map<String, Object> snapshot = new HashMap<>();
-        snapshot.put("language", request.getLanguage());
+        snapshot.put("language", language);
         snapshot.put("adaptiveMode", false);
         if (cv != null) {
             snapshot.put("cv", Map.of("id", cv.getId().toString(), "name", cv.getName(),
@@ -176,9 +179,9 @@ public class InterviewServiceImpl implements InterviewService {
                 .status(InterviewSessionStatus.IN_PROGRESS)
                 .build();
         InterviewSession saved = sessionRepository.save(session);
-        log.info("[INTERVIEW] Session created | sessionId={} | galleryId={} | cvId={} | jdId={} | type={} | durationMinutes={} | questionCount={}",
+        log.info("[INTERVIEW] Session created | sessionId={} | galleryId={} | cvId={} | jdId={} | type={} | language={} | durationMinutes={} | questionCount={}",
                 saved.getId(), gallery.getId(), cv == null ? "none" : cv.getId(),
-                jd == null ? "none" : jd.getId(), type, saved.getDurationMinutes(), questions.size());
+                jd == null ? "none" : jd.getId(), type, language, saved.getDurationMinutes(), questions.size());
 
         List<InterviewQuestionResponseDTO> responseQuestions = questions.stream()
                 .map(question -> InterviewQuestionResponseDTO.builder()
@@ -496,12 +499,12 @@ public class InterviewServiceImpl implements InterviewService {
         return questionContext == QuestionContextType.GENERAL ? 2 : 3;
     }
 
-    private List<InterviewQuestion> selectQuestions(InterviewType type, ExperienceLevel level,
+    private List<InterviewQuestion> selectQuestions(InterviewType type, ExperienceLevel level, String language,
                                                     List<QuestionContextType> contexts,
                                                     boolean hasCv, boolean hasJd, int limit) {
         return questionRepository
-                .findByBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
-                        type, level, QuestionRole.PRIMARY, contexts)
+                .findByLanguageAndBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
+                        language, type, level, QuestionRole.PRIMARY, contexts)
                 .stream()
                 .sorted(Comparator.comparingInt(question -> contextPriority(
                         question.getContextType(), hasCv, hasJd)))
