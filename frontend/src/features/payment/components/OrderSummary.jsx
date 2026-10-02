@@ -20,23 +20,26 @@ function BenefitItem({ text }) {
     );
 }
 
-export function OrderSummary({ service, selectedPaymentMethod, onPaymentClick }) {
+export function OrderSummary({ service, loading, error, selectedPaymentMethod, onPaymentClick }) {
     const benefits = service?.benefits || [];
+    const unavailable = loading ? 'Đang tải...' : '—';
+    const paymentDisabled = loading || Boolean(error) || !service || !selectedPaymentMethod;
 
     return (
         <div className="bg-[#E5ECE9] rounded-2xl p-6 flex flex-col w-full h-fit">
             <h2 className="text-gray-900 font-bold text-lg mb-4">Thông tin đơn hàng</h2>
+            {error && <p role="alert" className="text-red-600 text-sm mb-4">{error}</p>}
 
             <div className="flex flex-col mb-2">
-                <InfoRow label="Gói dịch vụ" value={service?.serviceName || 'Đang tải...'} />
-                <InfoRow label="Chu kỳ" value={service?.duration || '...'} />
-                <InfoRow label="Số lượng" value={service?.description || '...'} />
+                <InfoRow label="Gói dịch vụ" value={service?.name || unavailable} />
+                <InfoRow label="Chu kỳ" value={service?.duration || unavailable} />
+                <InfoRow label="Hạn mức" value={service?.quotaLabel || unavailable} />
             </div>
 
             <div className="border-t border-gray-300 my-2"></div>
 
             <div className="flex flex-col py-2">
-                <InfoRow label="Tạm tính" value={service ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(service.price) : '...'} />
+                <InfoRow label="Tạm tính" value={service?.formattedPrice || unavailable} />
                 <InfoRow label="Phí VAT (0%)" value="0đ" />
             </div>
 
@@ -45,7 +48,7 @@ export function OrderSummary({ service, selectedPaymentMethod, onPaymentClick })
             <div className="flex justify-between items-center py-4">
                 <span className="text-gray-900 font-bold text-[15px]">Tổng thanh toán</span>
                 <span className="text-[#1c8c54] font-bold text-2xl">
-                    {service ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(service.price) : '...'}
+                    {service?.formattedPrice || unavailable}
                 </span>
             </div>
 
@@ -66,16 +69,18 @@ export function OrderSummary({ service, selectedPaymentMethod, onPaymentClick })
                         <BenefitItem key={i} text={benefit} />
                     ))
                 ) : (
-                    <p className="text-gray-400 text-xs italic">Đang tải quyền lợi gói...</p>
+                    <p className="text-gray-400 text-xs italic">
+                        {loading ? 'Đang tải quyền lợi gói...' : service ? 'Chưa có thông tin quyền lợi bổ sung.' : 'Chưa có thông tin gói.'}
+                    </p>
                 )}
             </div>
 
             <div className="flex flex-col gap-2 mt-2">
                 <button
                     onClick={onPaymentClick}
-                    disabled={!service || !selectedPaymentMethod}
+                    disabled={paymentDisabled}
                     className={`w-full py-3 text-white font-bold rounded-xl min-h-[44px] transition-colors ${
-                        (!service || !selectedPaymentMethod)
+                        paymentDisabled
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-[#1c8c54] hover:bg-[#167345]'
                     }`}
