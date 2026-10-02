@@ -2,6 +2,7 @@ package fpt.su26.exe101.backend.base.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -13,6 +14,9 @@ import jakarta.mail.internet.MimeMessage;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     private final JavaMailSender mailSender;
 
     @Async
@@ -46,7 +50,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            String resetUrl = "http://localhost:8080/api/auth/reset-password?token=" + token;
+            String resetUrl = frontendUrl + "/reset-password?token=" + token;
 
             helper.setTo(to);
             helper.setSubject("Reset your password - AI for CV and Interview");

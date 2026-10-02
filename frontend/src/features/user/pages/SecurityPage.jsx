@@ -31,7 +31,8 @@ const SecurityPage = () => {
         securityLogs,
         addSecurityLog,
         changePassword,
-        isLoading
+        isLoading,
+        profile // Add profile here
     } = useAuth();
     const {showToast} = useApp();
     const [state, setState] = useState({
@@ -126,49 +127,62 @@ const SecurityPage = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 {/* Password Section */}
-                <Card className="p-6 bg-[#C2CFCD] border-none shadow-sm rounded-xl">
-                    <SectionHeader title="Đổi mật khẩu" icon={<KeyRound size={18}/>} titleClassName="text-black"/>
-                    <form onSubmit={handleUpdatePassword} className="space-y-4 mt-6">
-                        <Input
-                            label="Mật khẩu hiện tại"
-                            type="password"
-                            value={state.currentPassword || ''}
-                            onChange={(e) => setState({...state, currentPassword: e.target.value})}
-                            placeholder="••••••••"
-                            className="bg-[#DEE6E5] rounded-md border-none"
-                            labelClassName="text-black"
-                        />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {profile?.provider !== 'GOOGLE' ? (
+                    <Card className="p-6 bg-[#C2CFCD] border-none shadow-sm rounded-xl">
+                        <SectionHeader title="Đổi mật khẩu" icon={<KeyRound size={18}/>} titleClassName="text-black"/>
+                        <form onSubmit={handleUpdatePassword} className="space-y-4 mt-6">
                             <Input
-                                label="Mật khẩu mới"
+                                label="Mật khẩu hiện tại"
                                 type="password"
-                                value={state.newPassword || ''}
-                                onChange={(e) => setState({...state, newPassword: e.target.value})}
+                                value={state.currentPassword || ''}
+                                onChange={(e) => setState({...state, currentPassword: e.target.value})}
                                 placeholder="••••••••"
                                 className="bg-[#DEE6E5] rounded-md border-none"
                                 labelClassName="text-black"
                             />
-                            <Input
-                                label="Xác nhận mật khẩu"
-                                type="password"
-                                value={state.confirmPassword || ''}
-                                onChange={(e) => setState({...state, confirmPassword: e.target.value})}
-                                placeholder="••••••••"
-                                className="bg-[#DEE6E5] rounded-md border-none"
-                                labelClassName="text-black"
-                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Input
+                                    label="Mật khẩu mới"
+                                    type="password"
+                                    value={state.newPassword || ''}
+                                    onChange={(e) => setState({...state, newPassword: e.target.value})}
+                                    placeholder="••••••••"
+                                    className="bg-[#DEE6E5] rounded-md border-none"
+                                    labelClassName="text-black"
+                                />
+                                <Input
+                                    label="Xác nhận mật khẩu"
+                                    type="password"
+                                    value={state.confirmPassword || ''}
+                                    onChange={(e) => setState({...state, confirmPassword: e.target.value})}
+                                    placeholder="••••••••"
+                                    className="bg-[#DEE6E5] rounded-md border-none"
+                                    labelClassName="text-black"
+                                />
+                            </div>
+                            <div className="flex justify-end pt-2">
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    className="bg-[#75B6A3] hover:bg-[#66a38f] text-white px-6 py-2.5 rounded-md"
+                                >
+                                    Cập nhật mật khẩu
+                                </Button>
+                            </div>
+                        </form>
+                    </Card>
+                ) : (
+                    <Card className="p-6 bg-[#F1F5F9] border-none shadow-sm rounded-xl flex flex-col items-center justify-center text-center">
+                        <div className="p-3 bg-slate-100 rounded-full text-slate-500 mb-4">
+                            <Shield size={24}/>
                         </div>
-                        <div className="flex justify-end pt-2">
-                            <Button
-                                type="submit"
-                                variant="primary"
-                                className="bg-[#75B6A3] hover:bg-[#66a38f] text-white px-6 py-2.5 rounded-md"
-                            >
-                                Cập nhật mật khẩu
-                            </Button>
-                        </div>
-                    </form>
-                </Card>
+                        <h4 className="text-[#0F172A] font-medium mb-2">Đăng nhập qua Google</h4>
+                        <p className="text-[#64748B] text-sm">
+                            Bạn đang sử dụng tài khoản Google để đăng nhập.
+                            Vui lòng quản lý mật khẩu trực tiếp trong cài đặt tài khoản Google của bạn.
+                        </p>
+                    </Card>
+                )}
 
                 {/* 2FA Section */}
                 <Card className="p-6 bg-[#E1F4EE] border-none shadow-sm rounded-xl">

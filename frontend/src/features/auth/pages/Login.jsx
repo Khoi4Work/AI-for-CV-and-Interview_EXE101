@@ -153,7 +153,7 @@ export default function Login() {
                             <div className="flex justify-between items-center">
                                 <label className="block font-label-md text-label-md text-on-surface" htmlFor="password">Mật
                                     khẩu</label>
-                                <Link className="font-label-sm text-label-sm text-primary hover:underline" to="#">Quên
+                                <Link className="font-label-sm text-label-sm text-primary hover:underline" to="/forgot-password">Quên
                                     mật khẩu?</Link>
                             </div>
                             <div className="relative group">
