@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = tokenProvider.createRefreshToken(account.getEmail());
 
         // Xóa token cũ nếu có để tránh lỗi duplicate account_id
-        tokenRepository.findByAccount(account).ifPresent(tokenRepository::delete);
+        tokenRepository.deleteByAccount(account);
 
         Token token = Token.builder()
                 .account(account)
@@ -121,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = tokenProvider.createRefreshToken(account.getEmail());
 
         // Xóa token cũ nếu có để tránh lỗi duplicate account_id
-        tokenRepository.findByAccount(account).ifPresent(tokenRepository::delete);
+        tokenRepository.deleteByAccount(account);
 
         Token token = Token.builder()
                 .account(account)

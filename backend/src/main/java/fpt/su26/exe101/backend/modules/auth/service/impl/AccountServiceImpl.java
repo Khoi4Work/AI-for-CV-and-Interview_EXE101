@@ -6,6 +6,7 @@ import fpt.su26.exe101.backend.base.service.EmailService;
 import fpt.su26.exe101.backend.modules.auth.dto.request.*;
 import fpt.su26.exe101.backend.modules.auth.dto.response.*;
 import fpt.su26.exe101.backend.modules.auth.entity.*;
+import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
 import fpt.su26.exe101.backend.modules.auth.event.AccountCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -53,6 +54,7 @@ public class AccountServiceImpl implements AccountService {
         Account account = Account.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .provider(AccountProvider.LOCAL)
                 .role(request.getRole() != null ? request.getRole() : AccountRole.ATTENDANCE)
                 .status("PENDING_VERIFICATION")
                 .verificationToken(verificationToken)
@@ -62,9 +64,11 @@ public class AccountServiceImpl implements AccountService {
         eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
 
         if (account.getRole() == AccountRole.ATTENDANCE) {
+            // Get default name from email if displayName is not provided
+            String defaultName = request.getEmail().split("@")[0];
             Attendance attendance = Attendance.builder()
                     .account(account)
-                    .displayName(request.getDisplayName() != null ? request.getDisplayName() : "User")
+                    .displayName(request.getDisplayName() != null ? request.getDisplayName() : defaultName)
                     .build();
             attendance = attendanceRepository.save(attendance);
 
@@ -113,7 +117,7 @@ public class AccountServiceImpl implements AccountService {
 
         Account account = Account.builder()
                 .email(email)
-                .passwordHash("OAUTH2_" + UUID.randomUUID())
+                .provider(AccountProvider.GOOGLE)
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
                 .build();
@@ -121,9 +125,12 @@ public class AccountServiceImpl implements AccountService {
         account = accountRepository.save(account);
         eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
 
+        // ALWAYS use email prefix as display name for OAuth users
+        String finalDisplayName = email.split("@")[0];
+
         Attendance attendance = Attendance.builder()
                 .account(account)
-                .displayName(name)
+                .displayName(finalDisplayName)
                 .build();
         attendance = attendanceRepository.save(attendance);
 
@@ -216,6 +223,7 @@ public class AccountServiceImpl implements AccountService {
 
         Map<String, Object> profile = new HashMap<>();
         profile.put("email", account.getEmail());
+        profile.put("provider", account.getProvider());
         profile.put("role", account.getRole());
         profile.put("status", account.getStatus());
 

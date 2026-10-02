@@ -13,7 +13,7 @@ export function Header() {
     const isInterview = location.pathname === '/interview';
     const isTemplates = location.pathname === '/templates';
     const isEvaluation = location.pathname === '/cv-evaluation';
-    const {handleLogout} = useAuth();
+    const {handleLogout, isLoggingOut} = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,8 +30,8 @@ export function Header() {
         setDropdownOpen(false);
     }, [location.pathname]);
 
-    const logout = () => {
-        handleLogout();
+    const logout = async () => {
+        await handleLogout();
         navigate('/');
     }
     const maxW = 'max-w-full';
@@ -124,10 +124,15 @@ export function Header() {
                                 <div className="my-2 border-t border-outline-variant/50"></div>
                                 <button
                                     onClick={logout}
-                                    className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 transition-all group"
+                                    disabled={isLoggingOut}
+                                    className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all group ${
+                                        isLoggingOut
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : 'text-rose-600 hover:bg-rose-500/10 hover:text-rose-700'
+                                    }`}
                                 >
-                                    <LogOut className="w-4 h-4 text-rose-500 group-hover:text-rose-700"/>
-                                    <span>Đăng xuất</span>
+                                    <LogOut className={`w-4 h-4 ${isLoggingOut ? 'text-gray-400' : 'text-rose-500 group-hover:text-rose-700'}`}/>
+                                    <span>{isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}</span>
                                 </button>
                             </div>
                         </div>

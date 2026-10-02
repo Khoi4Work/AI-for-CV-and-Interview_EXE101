@@ -5,8 +5,13 @@ import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import logo from '../../../assets/logo.jpg';
 
 const Sidebar = ({ isOpen, onClose }) => {
-    const {handleLogout, is2faEnabled} = useAuth();
+    const {handleLogout, is2faEnabled, isLoggingOut} = useAuth();
     const navigate = useNavigate();
+
+    const onLogoutClick = async () => {
+        await handleLogout();
+        navigate('/home');
+    }
 
     const menuItems = [
         {path: '/personal-info', label: 'Thông tin cá nhân', icon: User},
@@ -15,7 +20,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         {path: '/history', label: 'Lịch sử', icon: Clock},
         {path: '/my-cvs', label: 'CV của tôi', icon: FileText},
         // {path: '/help', label: 'Trợ giúp', icon: HelpCircle},
-        {onClick: handleLogout, label: 'Đăng xuất', icon: LogOut, variant: 'danger'}
+        {onClick: onLogoutClick, label: 'Đăng xuất', icon: LogOut, variant: 'danger'}
     ];
 
     const handleBackHome = () => {
@@ -79,15 +84,18 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 <li key={idx}>
                                     <button
                                         onClick={item.onClick}
+                                        disabled={isLoggingOut}
                                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
-                                            item.variant === 'danger'
-                                                ? 'text-red-500 hover:bg-red-500/10'
-                                                : 'text-[#94A3B8] hover:bg-[#1E2E42] hover:text-white'
+                                            isLoggingOut
+                                                ? 'opacity-50 cursor-not-allowed'
+                                                : item.variant === 'danger'
+                                                    ? 'text-red-500 hover:bg-red-500/10'
+                                                    : 'text-[#94A3B8] hover:bg-[#1E2E42] hover:text-white'
                                         }`}
                                     >
                                         <Icon size={18}
                                               className={item.variant === 'danger' ? 'text-red-500' : 'text-[#94A3B8]'}/>
-                                        <span>{item.label}</span>
+                                        <span>{isLoggingOut && item.variant === 'danger' ? 'Đang đăng xuất...' : item.label}</span>
                                     </button>
                                 </li>
                             );
