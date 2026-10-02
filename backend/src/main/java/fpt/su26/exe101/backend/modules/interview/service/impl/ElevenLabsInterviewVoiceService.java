@@ -5,8 +5,8 @@ import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewQuestionRepository;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
@@ -20,11 +20,18 @@ import java.time.Duration;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ElevenLabsInterviewVoiceService implements InterviewVoiceService {
     private final InterviewQuestionRepository questionRepository;
     private final TextToSpeechModel textToSpeechModel;
+
+    public ElevenLabsInterviewVoiceService(
+            InterviewQuestionRepository questionRepository,
+            @Qualifier("elevenLabsSpeechModel") TextToSpeechModel textToSpeechModel) {
+        this.questionRepository = questionRepository;
+        this.textToSpeechModel = textToSpeechModel;
+    }
+
     @Value("${spring.ai.elevenlabs.api-key}")
     private String elevenLabsApiKey;
     @Value("${interview.voice.stt-model:scribe_v2}")

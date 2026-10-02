@@ -4,9 +4,8 @@ import fpt.su26.exe101.backend.base.persistence.Prompt;
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
+import fpt.su26.exe101.backend.base.service.AIChatCompletionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.stereotype.Service;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
@@ -17,32 +16,14 @@ import java.util.concurrent.CompletableFuture;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 
 @Service
-public class GeminiAIProviderImpl implements AIProviderService {
+public class AIProviderServiceImpl implements AIProviderService {
 
     private static final int MAX_JSON_OUTPUT_TOKENS = 8192;
-    private final ChatClient chatClient;
+    private final AIChatCompletionService aiChatCompletionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private String jsonResponse(String prompt) {
-        return jsonResponse(prompt, null);
-    }
-
-    private String jsonResponse(String prompt, String responseSchema) {
-        GoogleGenAiChatOptions.Builder options = GoogleGenAiChatOptions.builder()
-                .responseMimeType("application/json")
-                .maxOutputTokens(MAX_JSON_OUTPUT_TOKENS);
-        if (responseSchema != null) options.responseSchema(responseSchema);
-
-        String response = chatClient.prompt(prompt)
-                .options(options.build())
-                .call()
-                .content();
-        if (response == null || response.isBlank()) throw new IllegalStateException("AI returned an empty response.");
-        return response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "");
-    }
-
-    public GeminiAIProviderImpl(ChatClient.Builder chatClientBuilder) {
-        this.chatClient = chatClientBuilder.build();
+    public AIProviderServiceImpl(AIChatCompletionService aiChatCompletionService) {
+        this.aiChatCompletionService = aiChatCompletionService;
     }
 
     @Override
@@ -58,7 +39,7 @@ public class GeminiAIProviderImpl implements AIProviderService {
             }
 
             String limitedText = extractedText.substring(0, Math.min(extractedText.length(), 30000));
-            String modelResponse = jsonResponse(Prompt.cvImport(limitedText));
+            String modelResponse = jsonResponse(Prompt.cvImport(limitedText), null, "cv-import");
             if (modelResponse == null || modelResponse.isBlank()) {
                 throw new IllegalStateException("AI returned an empty response while importing the CV.");
             }
@@ -80,7 +61,7 @@ public class GeminiAIProviderImpl implements AIProviderService {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String contentJson = objectMapper.writeValueAsString(cvContent);
-                return objectMapper.readValue(jsonResponse(Prompt.cvOptimization(contentJson, jdText)), CVOptimizationResultResponseDTO.class);
+                return objectMapper.readValue(jsonResponse(Prompt.cvOptimization(contentJson, jdText), null, "cv-optimization"), CVOptimizationResultResponseDTO.class);
             } catch (IOException e) {
                 throw new IllegalStateException("AI returned invalid CV optimization JSON.", e);
             }
@@ -91,7 +72,7 @@ public class GeminiAIProviderImpl implements AIProviderService {
     public CVEvaluationResponseDTO evaluateCV(CVContent cvContent, String jdText, UserPlan plan) {
         try {
             String prompt = Prompt.cvEvaluation(objectMapper.writeValueAsString(cvContent), jdText, plan);
-            return objectMapper.readValue(jsonResponse(prompt, Prompt.cvEvaluationResponseSchema()), CVEvaluationResponseDTO.class);
+            return objectMapper.readValue(jsonResponse(prompt, Prompt.cvEvaluationResponseSchema(), "cv-evaluation"), CVEvaluationResponseDTO.class);
         } catch (IOException e) {
             throw new IllegalStateException("AI returned invalid CV evaluation JSON.", e);
         }
@@ -100,7 +81,7 @@ public class GeminiAIProviderImpl implements AIProviderService {
     @Override
     public CVFeedbackResponseDTO generateFeedback(CVContent cvContent, String jdText) {
         try {
-            return objectMapper.readValue(jsonResponse(Prompt.cvFeedback(objectMapper.writeValueAsString(cvContent), jdText)), CVFeedbackResponseDTO.class);
+            return objectMapper.readValue(jsonResponse(Prompt.cvFeedback(objectMapper.writeValueAsString(cvContent), jdText), null, "cv-feedback"), CVFeedbackResponseDTO.class);
         } catch (IOException e) {
             throw new IllegalStateException("AI returned invalid CV feedback JSON.", e);
         }
@@ -109,9 +90,13 @@ public class GeminiAIProviderImpl implements AIProviderService {
     @Override
     public CVSkillGapResponseDTO analyzeSkillGap(CVContent cvContent, String jdText) {
         try {
-            return objectMapper.readValue(jsonResponse(Prompt.cvSkillGap(objectMapper.writeValueAsString(cvContent), jdText)), CVSkillGapResponseDTO.class);
+            return objectMapper.readValue(jsonResponse(Prompt.cvSkillGap(objectMapper.writeValueAsString(cvContent), jdText), null, "cv-skill-gap"), CVSkillGapResponseDTO.class);
         } catch (IOException e) {
             throw new IllegalStateException("AI returned invalid skill-gap JSON.", e);
         }
+    }
+
+    private String jsonResponse(String prompt, String responseSchema, String operation) {
+        return aiChatCompletionService.generateJson(prompt, responseSchema, MAX_JSON_OUTPUT_TOKENS, "cv", operation);
     }
 }

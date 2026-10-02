@@ -9,9 +9,8 @@ import fpt.su26.exe101.backend.modules.interview.dto.InterviewQuestionGeneration
 import fpt.su26.exe101.backend.modules.interview.entity.enums.ExperienceLevel;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewType;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
+import fpt.su26.exe101.backend.base.service.AIChatCompletionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.HashSet;
@@ -19,26 +18,18 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class GeminiInterviewAIProvider implements InterviewAIProvider {
+public class InterviewAIProviderImpl implements InterviewAIProvider {
     private static final int MAX_JSON_OUTPUT_TOKENS = 8192;
-    private final ChatClient.Builder chatClientBuilder;
+    private final AIChatCompletionService aiChatCompletionService;
     private final ObjectMapper objectMapper;
 
     @Override
     public InterviewEvaluationResponseDTO evaluate(Map<String, Object> transcript, UserPlan plan) {
         try {
-            ChatClient chatClient = chatClientBuilder.build();
             String transcriptJson = objectMapper.writeValueAsString(transcript);
-            String response = chatClient.prompt(Prompt.interviewEvaluation(transcriptJson, plan))
-                    .options(GoogleGenAiChatOptions.builder()
-                            .responseMimeType("application/json")
-                            .maxOutputTokens(MAX_JSON_OUTPUT_TOKENS)
-                            .build())
-                    .call()
-                    .content();
-            if (response == null || response.isBlank()) {
-                throw new IllegalStateException("AI returned an empty interview evaluation.");
-            }
+            String response = aiChatCompletionService.generateJson(
+                    Prompt.interviewEvaluation(transcriptJson, plan), null, MAX_JSON_OUTPUT_TOKENS,
+                    "interview", "interview-evaluation");
             InterviewEvaluationResponseDTO evaluation = objectMapper.readValue(
                     response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", ""),
                     InterviewEvaluationResponseDTO.class);
@@ -61,17 +52,9 @@ public class GeminiInterviewAIProvider implements InterviewAIProvider {
     @Override
     public InterviewQuestionGenerationDTO generateQuestions(InterviewType type, ExperienceLevel level, int count, String language) {
         try {
-            String response = chatClientBuilder.build()
-                    .prompt(Prompt.interviewQuestionGeneration(type, level, count, language))
-                    .options(GoogleGenAiChatOptions.builder()
-                            .responseMimeType("application/json")
-                            .maxOutputTokens(MAX_JSON_OUTPUT_TOKENS)
-                            .build())
-                    .call()
-                    .content();
-            if (response == null || response.isBlank()) {
-                throw new IllegalStateException("AI returned an empty interview question set.");
-            }
+            String response = aiChatCompletionService.generateJson(
+                    Prompt.interviewQuestionGeneration(type, level, count, language), null,
+                    MAX_JSON_OUTPUT_TOKENS, "interview", "question-generation");
             InterviewQuestionGenerationDTO generated = objectMapper.readValue(
                     response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", ""),
                     InterviewQuestionGenerationDTO.class);
