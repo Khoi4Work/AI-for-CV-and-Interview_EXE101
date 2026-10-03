@@ -1,7 +1,7 @@
 import axios from 'axios';
 import apiClient from '../service/apiClient.js';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_BE_URL  || 'http://localhost:8080/api';
 
 export const paymentService = {
     async getPaymentHistory() {
