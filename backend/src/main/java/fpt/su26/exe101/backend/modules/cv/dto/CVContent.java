@@ -14,6 +14,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class CVContent {
     private PersonalInfo personalInfo;
+    private String profilePhoto;
+    private String professionalTitle;
     private String summary;
     @Builder.Default
     private List<Experience> experiences = new ArrayList<>();
