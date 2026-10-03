@@ -59,6 +59,12 @@ public class InterviewController {
                 "Audio transcribed and answer saved"));
     }
 
+    @PostMapping("/sessions/{sessionId}/finish")
+    public ResponseEntity<ApiResponse<Void>> finishSession(@PathVariable UUID sessionId) {
+        interviewService.finishSession(sessionId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Interview session finished"));
+    }
+
     @PostMapping("/sessions/{sessionId}/evaluate")
     public ResponseEntity<ApiResponse<InterviewEvaluationResponseDTO>> evaluateSession(
             @PathVariable UUID sessionId) {

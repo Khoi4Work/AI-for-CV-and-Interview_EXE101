@@ -37,7 +37,10 @@ import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,11 +49,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InterviewServiceImpl implements InterviewService {
     private final InterviewSessionRepository sessionRepository;
     private final InterviewAnswerRepository answerRepository;
@@ -63,6 +68,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final ObjectMapper objectMapper;
     private final InterviewAIProvider interviewAIProvider;
     private final InterviewVoiceService interviewVoiceService;
+    private final InterviewQuestionRelevanceService questionRelevanceService;
 
     @Override
     @Transactional
@@ -71,8 +77,9 @@ public class InterviewServiceImpl implements InterviewService {
         InterviewType type = parseInterviewType(request.getInterviewType());
         ExperienceLevel level = parseExperienceLevel(request.getExperienceLevel());
         validateSessionOptions(request);
+        String language = request.getLanguage().trim().toLowerCase(Locale.ROOT);
 
-        UserPlan plan = usageQuotaService.getPlan(gallery.getAccountId());
+        UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         int maxDuration = switch (plan) {
             case FREE -> 5;
             case MIDDLE -> 10;
@@ -82,6 +89,7 @@ public class InterviewServiceImpl implements InterviewService {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION,
                     "Your current plan allows interviews up to " + maxDuration + " minutes.");
         }
+        usageQuotaService.refreshSubscriptionState(gallery.getAccountId());
 
         CV cv = request.getCvId() == null ? null : cvPipelineService.getCVForInterview(request.getCvId(), gallery);
         JobDescription jd = resolveJobDescription(request, gallery);
@@ -98,11 +106,18 @@ public class InterviewServiceImpl implements InterviewService {
         if (jd != null) availableContexts.add(QuestionContextType.JD);
         if (cv != null) availableContexts.add(QuestionContextType.CV);
         if (cv != null && jd != null) availableContexts.add(QuestionContextType.JD_AND_CV);
-        List<InterviewQuestion> questions = selectQuestions(type, level, availableContexts,
-                cv != null, jd != null, requestedQuestionCount);
+        String candidateContext = cv == null ? null : buildCandidateContext(cv);
+        List<InterviewQuestion> questionCandidates = findQuestionCandidates(type, level, language, availableContexts);
+        List<InterviewQuestion> questions = cv == null
+                ? prioritizeQuestions(questionCandidates, false, jd != null, requestedQuestionCount)
+                : questionRelevanceService.findRelevantQuestions(questionCandidates, candidateContext,
+                        requestedQuestionCount);
+        log.info("[INTERVIEW QUESTIONS] Bank retrieval completed | type={} | language={} | cvProvided={} | candidateCount={} | relevantCount={} | requiredCount={}",
+                type, language, cv != null, questionCandidates.size(), questions.size(), requestedQuestionCount);
         if (questions.size() < requestedQuestionCount) {
             int missingCount = requestedQuestionCount - questions.size();
-            InterviewQuestionGenerationDTO generated = interviewAIProvider.generateQuestions(type, level, missingCount);
+            InterviewQuestionGenerationDTO generated = interviewAIProvider.generateQuestions(
+                    type, level, missingCount, language, candidateContext);
             InterviewQuestionBank generalBank = questionBankRepository
                     .findFirstByCompanyIsNullAndInterviewTypeAndExperienceLevel(type, level)
                     .orElseGet(() -> questionBankRepository.save(InterviewQuestionBank.builder()
@@ -115,6 +130,7 @@ public class InterviewServiceImpl implements InterviewService {
                     .map(draft -> InterviewQuestion.builder()
                             .bank(generalBank)
                             .questionText(draft.getText().trim())
+                            .language(language)
                             .sampleAnswer(draft.getSampleAnswer())
                             .gradingCriteria(draft.getGradingCriteria())
                             .category(draft.getCategory())
@@ -124,8 +140,20 @@ public class InterviewServiceImpl implements InterviewService {
                             .active(true)
                             .build())
                     .toList();
-            questionRepository.saveAll(newQuestions);
-            questions = selectQuestions(type, level, availableContexts, cv != null, jd != null, requestedQuestionCount);
+            List<InterviewQuestion> savedGeneratedQuestions = questionRepository.saveAll(newQuestions);
+            if (cv == null) {
+                questionCandidates = findQuestionCandidates(type, level, language, availableContexts);
+                questions = prioritizeQuestions(questionCandidates, false, jd != null, requestedQuestionCount);
+            } else {
+                List<InterviewQuestion> completedSelection = new ArrayList<>(questions);
+                for (InterviewQuestion generatedQuestion : savedGeneratedQuestions) {
+                    if (completedSelection.stream().noneMatch(question -> question.getId().equals(generatedQuestion.getId()))) {
+                        completedSelection.add(generatedQuestion);
+                    }
+                    if (completedSelection.size() == requestedQuestionCount) break;
+                }
+                questions = completedSelection;
+            }
         }
         if (questions.size() < requestedQuestionCount) {
             throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND,
@@ -133,7 +161,7 @@ public class InterviewServiceImpl implements InterviewService {
         }
 
         Map<String, Object> snapshot = new HashMap<>();
-        snapshot.put("language", request.getLanguage());
+        snapshot.put("language", language);
         snapshot.put("adaptiveMode", false);
         if (cv != null) {
             snapshot.put("cv", Map.of("id", cv.getId().toString(), "name", cv.getName(),
@@ -154,6 +182,10 @@ public class InterviewServiceImpl implements InterviewService {
         }
         snapshot.put("questions", questionSnapshot);
 
+        usageQuotaService.consumeInterviewMinutes(gallery.getAccountId(), request.getDurationMinutes());
+        LocalDateTime interviewPeriodStart = usageQuotaService.getQuota(gallery.getAccountId())
+                .map(fpt.su26.exe101.backend.modules.quota.entity.UserUsageQuota::getInterviewPeriodStart)
+                .orElse(null);
         InterviewSession session = InterviewSession.builder()
                 .gallery(gallery)
                 .cv(cv)
@@ -163,9 +195,15 @@ public class InterviewServiceImpl implements InterviewService {
                 .candidateExperienceLevel(level.name())
                 .contextSnapshot(snapshot)
                 .sessionDate(LocalDateTime.now())
+                .interviewStartedAt(LocalDateTime.now())
+                .reservedInterviewMinutes(request.getDurationMinutes())
+                .quotaPeriodStartAtReservation(interviewPeriodStart)
                 .status(InterviewSessionStatus.IN_PROGRESS)
                 .build();
         InterviewSession saved = sessionRepository.save(session);
+        log.info("[INTERVIEW] Session created | sessionId={} | galleryId={} | cvId={} | jdId={} | type={} | language={} | durationMinutes={} | questionCount={}",
+                saved.getId(), gallery.getId(), cv == null ? "none" : cv.getId(),
+                jd == null ? "none" : jd.getId(), type, language, saved.getDurationMinutes(), questions.size());
 
         List<InterviewQuestionResponseDTO> responseQuestions = questions.stream()
                 .map(question -> InterviewQuestionResponseDTO.builder()
@@ -213,6 +251,11 @@ public class InterviewServiceImpl implements InterviewService {
                 .audioUrl(request.getAudioUrl())
                 .isSkipped(request.getIsSkipped())
                 .build());
+        LocalDateTime answerSubmittedAt = LocalDateTime.now();
+        if (session.getInterviewStartedAt() == null) session.setInterviewStartedAt(answerSubmittedAt);
+        session.setInterviewLastActivityAt(answerSubmittedAt);
+        log.info("[INTERVIEW] Answer submitted | sessionId={} | questionId={} | skipped={} | source=text",
+                sessionId, answer.getQuestionId(), Boolean.TRUE.equals(answer.getIsSkipped()));
         return InterviewAnswerResponseDTO.builder()
                 .id(answer.getId())
                 .sessionId(sessionId)
@@ -250,6 +293,11 @@ public class InterviewServiceImpl implements InterviewService {
                 .answerText(transcript)
                 .isSkipped(false)
                 .build());
+        LocalDateTime answerSubmittedAt = LocalDateTime.now();
+        if (session.getInterviewStartedAt() == null) session.setInterviewStartedAt(answerSubmittedAt);
+        session.setInterviewLastActivityAt(answerSubmittedAt);
+        log.info("[INTERVIEW] Audio answer transcribed | sessionId={} | questionId={} | audioSizeBytes={}",
+                sessionId, questionId, audio.length);
         return InterviewAnswerResponseDTO.builder()
                 .id(answer.getId())
                 .sessionId(sessionId)
@@ -262,6 +310,22 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     @Transactional
+    public void finishSession(UUID sessionId) {
+        Gallery gallery = galleryService.getCurrentGallery();
+        InterviewSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Interview session not found"));
+        if (!session.getGallery().getId().equals(gallery.getId())) throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
+        if (!session.isInterviewQuotaSettled()) {
+            LocalDateTime endedAt = LocalDateTime.now();
+            settleInterviewReservation(session, gallery.getAccountId(), endedAt);
+            session.setCompletedAt(endedAt);
+            session.setStatus(InterviewSessionStatus.COMPLETED);
+            sessionRepository.save(session);
+        }
+    }
+
+    @Override
+    @Transactional
     public InterviewEvaluationResponseDTO evaluateSession(UUID sessionId) {
         Gallery gallery = galleryService.getCurrentGallery();
         InterviewSession session = sessionRepository.findById(sessionId)
@@ -269,7 +333,7 @@ public class InterviewServiceImpl implements InterviewService {
         if (!session.getGallery().getId().equals(gallery.getId())) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
-        UserPlan plan = usageQuotaService.getPlan(gallery.getAccountId());
+        UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         if (plan == UserPlan.FREE) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Interview feedback is available on MIDDLE and ENHANCE plans.");
         }
@@ -293,12 +357,24 @@ public class InterviewServiceImpl implements InterviewService {
                     "Audio-only answers must be transcribed by the BE voice flow before evaluation.");
         }
 
+        LocalDateTime interviewEndedAt = session.getCompletedAt() == null ? LocalDateTime.now() : session.getCompletedAt();
+        settleInterviewReservation(session, gallery.getAccountId(), interviewEndedAt);
+
         Map<String, Object> transcript = new HashMap<>();
         transcript.put("interviewType", session.getInterviewType().name());
         transcript.put("experienceLevel", session.getCandidateExperienceLevel());
         transcript.put("durationMinutes", session.getDurationMinutes());
         transcript.put("questionsAndAnswers", buildQuestionsAndAnswers(session, answers));
-        InterviewEvaluationResponseDTO evaluation = interviewAIProvider.evaluate(transcript, plan);
+        long startedAtNanos = System.nanoTime();
+        InterviewEvaluationResponseDTO evaluation;
+        try {
+            evaluation = interviewAIProvider.evaluate(transcript, plan);
+        } catch (RuntimeException e) {
+            log.error("[INTERVIEW] Evaluation failed | sessionId={} | answerCount={} | errorType={} | durationMs={}",
+                    session.getId(), answers.size(), e.getClass().getSimpleName(),
+                    (System.nanoTime() - startedAtNanos) / 1_000_000, e);
+            throw e;
+        }
         evaluation.setSessionId(session.getId());
         session.setOverallScore(evaluation.getOverallScore());
         session.setFeedbackJson(objectMapper.convertValue(evaluation,
@@ -306,7 +382,27 @@ public class InterviewServiceImpl implements InterviewService {
         session.setStatus(InterviewSessionStatus.COMPLETED);
         session.setCompletedAt(LocalDateTime.now());
         sessionRepository.save(session);
+        log.info("[INTERVIEW] Evaluation completed | sessionId={} | answerCount={} | score={} | durationMs={}",
+                session.getId(), answers.size(), evaluation.getOverallScore(),
+                (System.nanoTime() - startedAtNanos) / 1_000_000);
         return evaluation;
+    }
+
+    private void settleInterviewReservation(InterviewSession session, UUID accountId, LocalDateTime endedAt) {
+        if (session.isInterviewQuotaSettled() || session.getReservedInterviewMinutes() <= 0) return;
+        int actualMinutes = 0;
+        if (session.getInterviewStartedAt() != null) {
+            long elapsedSeconds = java.time.Duration.between(session.getInterviewStartedAt(), endedAt).getSeconds();
+            actualMinutes = (int) Math.ceil(Math.max(0, elapsedSeconds) / 60.0);
+            actualMinutes = Math.min(Math.max(1, actualMinutes), session.getReservedInterviewMinutes());
+        }
+        int unusedMinutes = session.getReservedInterviewMinutes() - actualMinutes;
+        if (unusedMinutes > 0) usageQuotaService.refundInterviewMinutes(accountId, unusedMinutes,
+                session.getQuotaPeriodStartAtReservation());
+        session.setReservedInterviewMinutes(actualMinutes);
+        session.setInterviewQuotaSettled(true);
+        log.info("[INTERVIEW] Reserved minutes settled | sessionId={} | chargedMinutes={} | refundedMinutes={}",
+                session.getId(), actualMinutes, unusedMinutes);
     }
 
     @Override
@@ -321,9 +417,8 @@ public class InterviewServiceImpl implements InterviewService {
 
         InterviewSessionResponseDTO sessionInfo = interviewMapper
                 .sessionsToSessionResponses(List.of(session)).getFirst();
-        List<InterviewAnswerResponseDTO> answers = interviewMapper
-                .answersToAnswerResponses(answerRepository.findBySession(session));
-        UserPlan plan = usageQuotaService.getPlan(gallery.getAccountId());
+        List<InterviewAnswerResponseDTO> answers = mapHistoryAnswers(session);
+        UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         InterviewEvaluationResponseDTO evaluation = null;
         if (plan == UserPlan.FREE) {
             sessionInfo.setFeedbackJson(null);
@@ -343,7 +438,7 @@ public class InterviewServiceImpl implements InterviewService {
         Gallery gallery = galleryService.getCurrentGallery();
         List<InterviewSessionResponseDTO> sessions = interviewMapper
                 .sessionsToSessionResponses(sessionRepository.findByGallery(gallery));
-        if (usageQuotaService.getPlan(gallery.getAccountId()) == UserPlan.FREE) {
+        if (usageQuotaService.getInterviewPlan(gallery.getAccountId()) == UserPlan.FREE) {
             sessions.forEach(session -> session.setFeedbackJson(null));
         }
         return sessions;
@@ -425,17 +520,42 @@ public class InterviewServiceImpl implements InterviewService {
         return questionContext == QuestionContextType.GENERAL ? 2 : 3;
     }
 
-    private List<InterviewQuestion> selectQuestions(InterviewType type, ExperienceLevel level,
-                                                    List<QuestionContextType> contexts,
-                                                    boolean hasCv, boolean hasJd, int limit) {
+    private List<InterviewQuestion> findQuestionCandidates(InterviewType type, ExperienceLevel level, String language,
+                                                           List<QuestionContextType> contexts) {
         return questionRepository
-                .findByBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
-                        type, level, QuestionRole.PRIMARY, contexts)
-                .stream()
+                .findByLanguageAndBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
+                        language, type, level, QuestionRole.PRIMARY, contexts);
+    }
+
+    private List<InterviewQuestion> prioritizeQuestions(List<InterviewQuestion> candidates,
+                                                        boolean hasCv, boolean hasJd, int limit) {
+        return candidates.stream()
                 .sorted(Comparator.comparingInt(question -> contextPriority(
                         question.getContextType(), hasCv, hasJd)))
                 .limit(limit)
                 .toList();
+    }
+
+    private String buildCandidateContext(CV cv) {
+        ObjectNode content = objectMapper.valueToTree(cv.getContent());
+        content.remove("personalInfo");
+        content.remove("selectedTemplateId");
+        removeFields(content, "experiences", "company");
+        removeFields(content, "education", "school", "gpa");
+        removeFields(content, "projects", "name", "url", "period");
+        removeFields(content, "certificates", "issuer", "date", "url");
+        removeFields(content, "awards", "issuer", "date");
+        String candidateContext = content.toString();
+        return candidateContext.length() > 10000 ? candidateContext.substring(0, 10000) : candidateContext;
+    }
+
+    private void removeFields(ObjectNode content, String listName, String... fields) {
+        if (!(content.get(listName) instanceof ArrayNode items)) return;
+        items.forEach(item -> {
+            if (item instanceof com.fasterxml.jackson.databind.node.ObjectNode objectNode) {
+                for (String field : fields) objectNode.remove(field);
+            }
+        });
     }
 
     private void validateSessionOptions(CreateInterviewSessionRequestDTO request) {
@@ -476,6 +596,27 @@ public class InterviewServiceImpl implements InterviewService {
         if (!session.getGallery().getId().equals(gallery.getId())) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
-        return interviewMapper.answersToAnswerResponses(answerRepository.findBySession(session));
+        return mapHistoryAnswers(session);
+    }
+
+    private List<InterviewAnswerResponseDTO> mapHistoryAnswers(InterviewSession session) {
+        List<InterviewAnswerResponseDTO> answers = interviewMapper
+                .answersToAnswerResponses(answerRepository.findBySession(session));
+        Map<String, String> questionTexts = new HashMap<>();
+        Object snapshotQuestions = session.getContextSnapshot() == null
+                ? null : session.getContextSnapshot().get("questions");
+        if (snapshotQuestions instanceof List<?> questions) {
+            for (Object item : questions) {
+                if (item instanceof Map<?, ?> question && question.get("id") != null
+                        && question.get("text") instanceof String text) {
+                    questionTexts.put(question.get("id").toString(), text);
+                }
+            }
+        }
+        answers.forEach(answer -> {
+            answer.setSessionId(session.getId());
+            answer.setQuestionText(questionTexts.get(String.valueOf(answer.getQuestionId())));
+        });
+        return answers;
     }
 }

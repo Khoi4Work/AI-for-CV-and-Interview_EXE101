@@ -4,6 +4,7 @@ import fpt.su26.exe101.backend.modules.cv.dto.request.CVCreateRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVOptimizationRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVUpdateRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
+import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
 import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 
@@ -17,6 +18,7 @@ public interface CVPipelineService {
     CVResponseDTO createCV(CVCreateRequestDTO request, Gallery gallery);
     CVResponseDTO updateCV(UUID id, CVUpdateRequestDTO request, Gallery gallery);
     CVImportResponseDTO importCV(byte[] fileContent, String contentType, String filename, Gallery gallery);
+    CVContent extractCV(byte[] fileContent, String contentType, Gallery gallery);
     CVOptimizationJobResponseDTO startOptimization(UUID cvId, CVOptimizationRequestDTO request, Gallery gallery);
     CVOptimizationStatusResponseDTO getOptimizationStatus(String jobId);
     CVOptimizationResultResponseDTO getOptimizationResult(String jobId);

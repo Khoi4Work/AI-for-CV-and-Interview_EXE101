@@ -38,5 +38,9 @@ public class IdentityResponseDTO {
     public static class QuotaDetail {
         private Integer remainingCvCount;
         private Integer remainingInterviewMinutes;
+        private String cvPlan;
+        private String interviewPlan;
+        private LocalDateTime cvPeriodEnd;
+        private LocalDateTime interviewPeriodEnd;
     }
 }

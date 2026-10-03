@@ -26,7 +26,32 @@ public class UserUsageQuota extends BaseEntity {
     private int remainingCvAiCnt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'FREE'")
+    @Column(name = "cv_plan", nullable = false, length = 20, columnDefinition = "varchar(20) default 'FREE'")
     @Builder.Default
-    private UserPlan plan = UserPlan.FREE;
+    private UserPlan cvPlan = UserPlan.FREE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "interview_plan", nullable = false, length = 20, columnDefinition = "varchar(20) default 'FREE'")
+    @Builder.Default
+    private UserPlan interviewPlan = UserPlan.FREE;
+
+    @Column(name = "cv_period_start")
+    private java.time.LocalDateTime cvPeriodStart;
+
+    @Column(name = "cv_period_end")
+    private java.time.LocalDateTime cvPeriodEnd;
+
+    @Column(name = "interview_period_start")
+    private java.time.LocalDateTime interviewPeriodStart;
+
+    @Column(name = "interview_period_end")
+    private java.time.LocalDateTime interviewPeriodEnd;
+
+    @Builder.Default
+    @Column(name = "cv_expiry_email_sent", nullable = false)
+    private boolean cvExpiryEmailSent = false;
+
+    @Builder.Default
+    @Column(name = "interview_expiry_email_sent", nullable = false)
+    private boolean interviewExpiryEmailSent = false;
 }

@@ -5,12 +5,20 @@ import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionRe
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewAnswer;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewSession;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface InterviewMapper {
+    @Mapping(target = "cvId", source = "cv.id")
+    @Mapping(target = "jdId", source = "jobDescription.id")
+    InterviewSessionResponseDTO sessionToSessionResponse(InterviewSession session);
+
+    @Mapping(target = "sessionId", source = "session.id")
+    InterviewAnswerResponseDTO answerToAnswerResponse(InterviewAnswer answer);
+
     List<InterviewSessionResponseDTO> sessionsToSessionResponses(List<InterviewSession> sessions);
     List<InterviewAnswerResponseDTO> answersToAnswerResponses(List<InterviewAnswer> answers);
 }

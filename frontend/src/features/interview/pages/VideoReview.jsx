@@ -4,6 +4,7 @@ import {MainLayout} from '../components/MainLayout.jsx';
 import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
+import {interviewService} from '../services/interviewService.js';
 
 export function VideoReview() {
     const navigate = useNavigate();
@@ -15,6 +16,25 @@ export function VideoReview() {
     useEffect(() => {
         update({step: 9});
     }, [update]);
+
+    useEffect(() => {
+        if (!data.backendSessionId) return undefined;
+        let active = true;
+        interviewService.getSessionDetail(data.backendSessionId)
+            .then((detail) => {
+                if (!active) return;
+                const answers = (detail.answers || []).map((answer) => ({
+                    qid: answer.questionId,
+                    text: answer.answerText || '',
+                    skipped: Boolean(answer.isSkipped),
+                }));
+                update({answers});
+            })
+            .catch((requestError) => {
+                if (active) setError(getApiErrorMessage(requestError, 'Không thể tải câu trả lời đã lưu.'));
+            });
+        return () => { active = false; };
+    }, [data.backendSessionId, update]);
 
     const handleSendFeedback = async () => {
         if (isEvaluating) return;

@@ -11,6 +11,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrderResponseDTO {
     private UUID id;
+    private UUID serviceId;
+    private String serviceName;
     private BigDecimal amount;
     private String status;
     private String paymentStatus;

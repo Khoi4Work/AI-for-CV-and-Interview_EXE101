@@ -24,6 +24,9 @@ public class InterviewQuestion extends BaseEntity {
     @Column(name = "question_text", nullable = false, columnDefinition = "TEXT")
     private String questionText;
 
+    @Column(name = "language", length = 5)
+    private String language;
+
     @Column(name = "sample_answer", columnDefinition = "TEXT")
     private String sampleAnswer;
 

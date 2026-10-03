@@ -20,4 +20,5 @@ public class CVTemplateResponseDTO {
     private Double rating;
     private Integer downloads;
     private String previewImage;
+    private boolean locked;
 }

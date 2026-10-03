@@ -10,6 +10,10 @@ const apiClient = axios.create({
 
 // Request interceptor: thêm token vào header
 apiClient.interceptors.request.use((config) => {
+    if (config.anonymousRequest) {
+        delete config.headers.Authorization;
+        return config;
+    }
     const token = localStorage.getItem('accessToken');
     if (token && token !== 'undefined' && token !== 'null') {
         config.headers.Authorization = `Bearer ${token}`;
@@ -22,6 +26,8 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        // Catalog failures should stay on the public page, without refreshing or redirecting.
+        if (originalRequest?.publicRequest) return Promise.reject(error);
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {

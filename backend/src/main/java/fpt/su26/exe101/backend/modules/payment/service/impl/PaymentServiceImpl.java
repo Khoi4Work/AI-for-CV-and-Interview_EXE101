@@ -65,14 +65,11 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional(readOnly = true)
     public List<PaymentServiceResponseDTO> getAvailableServices() {
-        log.info("Fetching available payment services");
         List<PaymentServiceEntity> allServices = paymentServiceEntityRepository.findAll();
-        log.info("Found {} total services in database", allServices.size());
 
         return allServices.stream()
                 .filter(s -> {
                     boolean isNotFree = s.getPackageCode() != PaymentServiceEntity.PackageCode.FREE;
-                    log.info("Service {}: packageCode={}, isNotFree={}", s.getName(), s.getPackageCode(), isNotFree);
                     return isNotFree;
                 })
                 .map(this::mapToServiceResponseDTO)
@@ -82,7 +79,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public OrderResponseDTO checkout(CheckoutRequestDTO request, UUID accountId) {
-        log.info("Processing checkout for account: {} and serviceId: {}", accountId, request.getServiceId());
+        log.info("[PAYMENT] Checkout requested | accountId={} | serviceId={}",
+                accountId, request.getServiceId());
 
         PaymentServiceEntity paymentService = paymentServiceEntityRepository.findById(request.getServiceId())
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -100,14 +98,14 @@ public class PaymentServiceImpl implements PaymentService {
         order.setCheckoutUrl(createPayOSPaymentLink(order));
 
         Order savedOrder = orderRepository.save(order);
+        log.info("[PAYMENT] Checkout created | orderId={} | orderCode={} | amount={} VND | accountId={}",
+                savedOrder.getId(), savedOrder.getTransactionId(), savedOrder.getAmount(), accountId);
         return mapToOrderResponseDTO(savedOrder);
     }
 
     @Override
     @Transactional
     public void handleWebhook(Map<String, Object> payload) {
-        log.info("Handling PayOS webhook payload: {}", payload);
-
         // 1. Verify checksum
         String receivedChecksum = (String) payload.get("signature");
         if (receivedChecksum == null) {
@@ -116,14 +114,14 @@ public class PaymentServiceImpl implements PaymentService {
 
         Map<String, Object> data = (Map<String, Object>) payload.get("data");
         if (data == null) {
-            log.error("Webhook payload is missing 'data' object");
+            log.warn("[PAYMENT] Webhook rejected | reason=missing_data");
             return;
         }
 
         // Security: Verify if the data was actually sent by PayOS
         String calculatedChecksum = checksumUtil.calculateChecksum(payosChecksumKey, data);
         if (receivedChecksum == null || !calculatedChecksum.equalsIgnoreCase(receivedChecksum)) {
-            log.error("PayOS checksum verification failed! Received: {}, Calculated: {}", receivedChecksum, calculatedChecksum);
+            log.warn("[PAYMENT] Webhook rejected | reason=checksum_mismatch");
             throw new ApiException(ErrorCode.UNAUTHENTICATED);
         }
 
@@ -131,9 +129,14 @@ public class PaymentServiceImpl implements PaymentService {
         String orderCode = String.valueOf(data.get("orderCode"));
         String statusDesc = String.valueOf(data.get("desc"));
 
-        Order order = orderRepository.findByTransactionId(orderCode).orElse(null);
+        Order order = orderRepository.findByTransactionIdForUpdate(orderCode).orElse(null);
         if (order == null) {
-            log.warn("Order not found for transactionId: {}. This might be a PayOS test request.", orderCode);
+            log.warn("[PAYMENT] Webhook order not found | orderCode={}", orderCode);
+            return;
+        }
+        if (order.getPaymentStatus() == Order.PaymentStatus.PAID) {
+            log.info("[PAYMENT] Duplicate successful webhook ignored | orderId={} | orderCode={}",
+                    order.getId(), orderCode);
             return;
         }
 
@@ -147,25 +150,30 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         orderRepository.save(order);
-        log.info("Order {} updated to status {} via webhook", orderCode, statusDesc);
+        log.info("[PAYMENT] Webhook processed | orderId={} | orderCode={} | paymentStatus={}",
+                order.getId(), orderCode, order.getPaymentStatus());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponseDTO> getPaymentHistory(UUID accountId) {
-        return orderRepository.findByAccountId(accountId).stream()
+        return orderRepository.findPaymentHistoryByAccountId(accountId).stream()
                 .map(this::mapToOrderResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public QuotaResponseDTO getCurrentQuota(UUID accountId) {
+        usageQuotaService.refreshSubscriptionState(accountId);
         return usageQuotaService.getQuota(accountId)
                 .map(quota -> QuotaResponseDTO.builder()
                         .remainingCvCount(quota.getRemainingCvCnt())
                         .remainingInterviewMinutes(quota.getRemainingIntMin())
                         .remainingAiCvCnt(quota.getRemainingCvAiCnt())
-                        .plan(quota.getPlan())
-                        .resetAt("Monthly reset") // Simplified for now
+                        .cvPlan(quota.getCvPlan())
+                        .interviewPlan(quota.getInterviewPlan())
+                        .cvPeriodEnd(quota.getCvPeriodEnd())
+                        .interviewPeriodEnd(quota.getInterviewPeriodEnd())
                         .build())
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
     }
@@ -174,30 +182,20 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentServiceEntity service = order.getService();
         UUID accountId = order.getAccountId();
 
-        // Update the user's plan to the package code of the purchased service
         UserPlan plan = UserPlan.valueOf(service.getPackageCode().name());
-        usageQuotaService.activatePlan(accountId, plan);
-
-        int cvAdd = 0, aiCvAdd = 0, intMinAdd = 0;
         if (service.getCategory() == PaymentServiceEntity.ServiceCategory.CV) {
-            cvAdd = service.getBillingUnits();
+            usageQuotaService.activateCvSubscription(accountId, plan, service.getBillingUnits());
         } else if (service.getCategory() == PaymentServiceEntity.ServiceCategory.INTERVIEW) {
-            intMinAdd = service.getBillingUnits();
+            usageQuotaService.activateInterviewSubscription(accountId, plan, service.getBillingUnits());
         }
-
-        // If the service provides additional units beyond the base plan, add them
-        if (cvAdd > 0 || aiCvAdd > 0 || intMinAdd > 0) {
-            usageQuotaService.addQuota(accountId, cvAdd, aiCvAdd, intMinAdd);
-        }
-
-        log.info("Updated plan to {} and added quota for account: {}. Added CV: {}, Interview: {}",
-                plan, accountId, cvAdd, intMinAdd);
+        log.info("[PAYMENT] Monthly subscription activated | accountId={} | category={} | plan={} | includedUnits={}",
+                accountId, service.getCategory(), plan, service.getBillingUnits());
     }
 
     private String createPayOSPaymentLink(Order order) {
+        long orderCode = System.currentTimeMillis() / 1000;
         try {
             // PayOS requires orderCode to be an integer
-            long orderCode = System.currentTimeMillis() / 1000;
             order.setTransactionId(String.valueOf(orderCode));
 
             Map<String, Object> requestBody = new HashMap<>();
@@ -218,7 +216,7 @@ public class PaymentServiceImpl implements PaymentService {
             String signature = checksumUtil.calculateChecksum(payosChecksumKey, requestBody);
             requestBody.put("signature", signature);
 
-            log.info("Requesting payment link from PayOS for orderCode: {}", orderCode);
+            log.info("[PAYMENT] Requesting checkout link from PayOS | orderCode={}", orderCode);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -236,7 +234,8 @@ public class PaymentServiceImpl implements PaymentService {
 
             Map<String, Object> response = responseEntity.getBody();
 
-            log.info("Full PayOS Response Body: {}", response);
+            log.info("[PAYMENT] PayOS checkout response received | orderCode={} | httpStatus={}",
+                    orderCode, responseEntity.getStatusCode().value());
 
             if (response != null && response.containsKey("data")) {
                 Map<String, Object> data = (Map<String, Object>) response.get("data");
@@ -247,23 +246,26 @@ public class PaymentServiceImpl implements PaymentService {
 
             if (response != null && response.containsKey("desc")) {
                 String errorDesc = String.valueOf(response.get("desc"));
-                log.error("PayOS returned error: {}", errorDesc);
+                log.warn("[PAYMENT] PayOS declined checkout request | orderCode={} | reason=provider_rejection",
+                        orderCode);
                 throw new ApiException(ErrorCode.INVALID_INPUT, errorDesc);
             }
 
             if (response != null && response.containsKey("message")) {
                 String errorMsg = String.valueOf(response.get("message"));
-                log.error("PayOS returned error message: {}", errorMsg);
+                log.warn("[PAYMENT] PayOS returned an unsuccessful response | orderCode={} | reason=provider_error",
+                        orderCode);
                 throw new ApiException(ErrorCode.INVALID_INPUT, errorMsg);
             }
 
             throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND);
         } catch (org.springframework.web.client.HttpStatusCodeException e) {
-            log.error("PayOS HTTP Error: Status {}, Body {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("[PAYMENT] PayOS request failed | orderCode={} | httpStatus={}",
+                    orderCode, e.getStatusCode().value(), e);
             throw new ApiException(ErrorCode.UNEXPECTED_ERROR);
         } catch (Exception e) {
-            log.error("PayOS payment link creation failed. Message: {}, Cause: {}", e.getMessage(), e.getCause());
-            log.error("Full StackTrace: ", e);
+            log.error("[PAYMENT] Checkout link creation failed | orderCode={} | errorType={}",
+                    orderCode, e.getClass().getSimpleName(), e);
             throw new ApiException(ErrorCode.UNEXPECTED_ERROR);
         }
     }
@@ -271,11 +273,13 @@ public class PaymentServiceImpl implements PaymentService {
     private OrderResponseDTO mapToOrderResponseDTO(Order order) {
         return OrderResponseDTO.builder()
                 .id(order.getId())
+                .serviceId(order.getService() == null ? null : order.getService().getId())
+                .serviceName(order.getService() == null ? null : order.getService().getName())
                 .amount(order.getAmount())
                 .status(order.getStatus())
-                .paymentStatus(order.getPaymentStatus().name())
-                .paymentMethod(order.getPaymentMethod().name())
-                .orderedAt(order.getOrderedAt())
+                .paymentStatus(order.getPaymentStatus() == null ? null : order.getPaymentStatus().name())
+                .paymentMethod(order.getPaymentMethod() == null ? null : order.getPaymentMethod().name())
+                .orderedAt(order.getOrderedAt() == null ? order.getCreatedAt() : order.getOrderedAt())
                 .checkoutUrl(order.getCheckoutUrl())
                 .build();
     }
@@ -306,6 +310,9 @@ public class PaymentServiceImpl implements PaymentService {
                 .name(entity.getName())
                 .price(entity.getPrice())
                 .benefits(benefits)
+                .category(entity.getCategory().name())
+                .packageCode(entity.getPackageCode().name())
+                .billingUnits(entity.getBillingUnits())
                 .build();
     }
 }

@@ -1,6 +1,22 @@
-import React, {createContext, useState, useContext, useCallback} from 'react';
+import {createContext, useState, useContext, useCallback} from 'react';
 
 const CVContext = createContext();
+
+const noop = () => {};
+const previewActions = Object.fromEntries([
+    'updatePersonalInfo', 'updateSummary', 'updateProfilePhoto', 'updateExperience',
+    'updateExperienceDetail', 'updateEducation', 'updateProjects', 'updateCertificates',
+    'updateLanguages', 'updateAwards', 'updateSkills',
+].map(name => [name, noop]));
+
+export function CVPreviewProvider({ cvData, children }) {
+    return <CVContext.Provider value={{ cvData, readOnly: true, ...previewActions }}>{children}</CVContext.Provider>;
+}
+
+// eslint-disable-next-line react-refresh/only-export-components -- Context hooks share the provider's context.
+export function useCVReadOnly() {
+    return useContext(CVContext)?.readOnly === true;
+}
 
 const INITIAL_CV_STATE = {
     personalInfo: {
@@ -11,6 +27,7 @@ const INITIAL_CV_STATE = {
         address: '',
         linkedin: '',
     },
+    profilePhoto: '',
     summary: '',
     experiences: [],
     skills: [],
@@ -19,12 +36,13 @@ const INITIAL_CV_STATE = {
     certificates: [],
     languages: [],
     awards: [],
-    selectedTemplateId: 'boardroom-ready',
+    selectedTemplateId: 'the-standard',
 };
 
 export function CVProvider({children}) {
     const [cvData, setCvData] = useState(INITIAL_CV_STATE);
-    const [currentCvId, setCurrentCvId] = useState(() => localStorage.getItem('currentCvId'));
+    // Content is held in memory; never attach a stale persisted ID to a fresh draft after reload.
+    const [currentCvId, setCurrentCvId] = useState(null);
     const [hasCV, setHasCV] = useState(() => {
         const saved = localStorage.getItem('hasCV');
         return saved !== null ? saved === 'true' : null;
@@ -55,6 +73,10 @@ export function CVProvider({children}) {
 
     const updateSummary = useCallback((summary) => {
         setCvData(prev => ({...prev, summary}));
+    }, []);
+
+    const updateProfilePhoto = useCallback((profilePhoto) => {
+        setCvData(prev => ({...prev, profilePhoto: profilePhoto || ''}));
     }, []);
 
     const addExperience = useCallback(() => {
@@ -151,6 +173,7 @@ export function CVProvider({children}) {
             setHasCV: setHasCVWithPersistence,
             updatePersonalInfo,
             updateSummary,
+            updateProfilePhoto,
             addExperience,
             updateExperience,
             updateExperienceDetail,
@@ -174,6 +197,7 @@ export function CVProvider({children}) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- Context hooks share the provider's context.
 export function useCV() {
     const context = useContext(CVContext);
     if (!context) {

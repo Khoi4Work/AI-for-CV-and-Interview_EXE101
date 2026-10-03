@@ -4,6 +4,16 @@ import apiClient from '../service/apiClient.js';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 export const paymentService = {
+    async getPaymentHistory() {
+        const response = await apiClient.get('/v1/payments/history');
+        const orders = response.data?.result ?? response.data?.data;
+        return Array.isArray(orders) ? orders : [];
+    },
+    async getCurrentQuota() {
+        const response = await apiClient.get('/v1/payments/quota');
+        return response.data?.result || response.data?.data;
+    },
+
     async getPaymentServices() {
         try {
             const response = await axios.get(`${API_BASE_URL}/v1/payments/services`);

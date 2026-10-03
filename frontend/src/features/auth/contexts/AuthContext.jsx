@@ -6,6 +6,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [is2faEnabled, setIs2faEnabled] = useState(false);
   const [profile, setProfile] = useState({
     fullName: '',
@@ -97,6 +98,7 @@ export function AuthProvider({ children }) {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
@@ -111,6 +113,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('userProfile');
       setIsLoggedIn(false);
+      setIsLoggingOut(false);
     }
   };
 
@@ -183,6 +186,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       isLoggedIn,
       isLoading,
+      isLoggingOut,
       setIsLoggedIn,
       is2faEnabled,
       profile,

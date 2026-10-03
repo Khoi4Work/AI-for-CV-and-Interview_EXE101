@@ -4,6 +4,7 @@ import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.base.response.ApiResponse;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVCreateRequestDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVFeedbackRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVOptimizationRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVUpdateRequestDTO;
@@ -33,8 +34,24 @@ public class CVPipelineController {
     private final GalleryService galleryService;
 
     // --- Import ---
+    @PostMapping(value = "/extract", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<CVContent>> extractCV(@RequestParam("file") MultipartFile file) throws IOException {
+        validateCVUpload(file);
+        return ResponseEntity.ok(ApiResponse.success(
+                cvPipelineService.extractCV(file.getBytes(), file.getContentType(), currentGallery()), "CV EXTRACTED"));
+    }
+
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CVImportResponseDTO>> importCV(@RequestParam("file") MultipartFile file) throws IOException {
+        validateCVUpload(file);
+
+        String filename = file.getOriginalFilename();
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
+                cvPipelineService.importCV(file.getBytes(), file.getContentType(), filename, currentGallery()),
+                "IMPORT SUCCESS"));
+    }
+
+    private void validateCVUpload(MultipartFile file) {
         if (file.isEmpty()) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV file must not be empty.");
         }
@@ -48,10 +65,6 @@ public class CVPipelineController {
         if (!Set.of("pdf", "doc", "docx").contains(extension)) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Only PDF, DOC, and DOCX CV files are supported.");
         }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
-                cvPipelineService.importCV(file.getBytes(), file.getContentType(), file.getOriginalFilename(), currentGallery()),
-                "IMPORT SUCCESS"));
     }
 
     // --- Lifecycle ---

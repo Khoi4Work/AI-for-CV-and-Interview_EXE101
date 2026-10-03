@@ -16,11 +16,11 @@ public class AccountCreatedListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAccountCreatedEvent(AccountCreatedEvent event) {
-        log.info("Received AccountCreatedEvent for accountId: {}. Triggering gallery creation.", event.accountId());
         try {
             galleryService.createGalleryForAccount(event.accountId());
         } catch (Exception e) {
-            log.error("Failed to create gallery for account: {}. Error: {}", event.accountId(), e.getMessage());
+            log.error("[GALLERY] Account setup failed | accountId={} | errorType={}",
+                    event.accountId(), e.getClass().getSimpleName(), e);
         }
     }
 }

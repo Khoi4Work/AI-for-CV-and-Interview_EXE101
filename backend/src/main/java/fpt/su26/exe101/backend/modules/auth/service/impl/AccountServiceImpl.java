@@ -2,16 +2,18 @@ package fpt.su26.exe101.backend.modules.auth.service.impl;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
-import fpt.su26.exe101.backend.base.service.EmailService;
+import lombok.extern.slf4j.Slf4j;
 import fpt.su26.exe101.backend.modules.auth.dto.request.*;
 import fpt.su26.exe101.backend.modules.auth.dto.response.*;
 import fpt.su26.exe101.backend.modules.auth.entity.*;
+import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
 import fpt.su26.exe101.backend.modules.auth.event.AccountCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.modules.auth.repository.*;
 import fpt.su26.exe101.backend.modules.auth.service.AccountService;
+import fpt.su26.exe101.backend.modules.auth.service.EmailVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final AttendanceRepository attendanceRepository;
@@ -32,7 +35,7 @@ public class AccountServiceImpl implements AccountService {
     private final PartnerRepository partnerRepository;
     private final PartnerInfoRepository partnerInfoRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final EmailVerificationService verificationService;
     private final ApplicationEventPublisher eventPublisher;
     private final UsageQuotaService quotaService;
 
@@ -44,27 +47,30 @@ public class AccountServiceImpl implements AccountService {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Mật khẩu xác nhận không khớp");
         }
 
-        if (accountRepository.existsByEmail(request.getEmail())) {
+        if (request.getEmail() == null || request.getEmail().length() > 254
+                || !request.getEmail().trim().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Email không hợp lệ.");
+        }
+        if (accountRepository.existsByEmail(request.getEmail().trim().toLowerCase(java.util.Locale.ROOT))) {
             throw new ApiException(ErrorCode.DUPLICATE_RESOURCE, "Email already exists");
         }
 
-        String verificationToken = UUID.randomUUID().toString();
-
         Account account = Account.builder()
-                .email(request.getEmail())
+                .email(request.getEmail().trim().toLowerCase(java.util.Locale.ROOT))
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .provider(AccountProvider.LOCAL)
                 .role(request.getRole() != null ? request.getRole() : AccountRole.ATTENDANCE)
                 .status("PENDING_VERIFICATION")
-                .verificationToken(verificationToken)
                 .build();
 
         account = accountRepository.save(account);
-        eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
 
         if (account.getRole() == AccountRole.ATTENDANCE) {
+            // Get default name from email if displayName is not provided
+            String defaultName = request.getEmail().split("@")[0];
             Attendance attendance = Attendance.builder()
                     .account(account)
-                    .displayName(request.getDisplayName() != null ? request.getDisplayName() : "User")
+                    .displayName(request.getDisplayName() != null ? request.getDisplayName() : defaultName)
                     .build();
             attendance = attendanceRepository.save(attendance);
 
@@ -85,35 +91,38 @@ public class AccountServiceImpl implements AccountService {
             partnerInfoRepository.save(info);
         }
 
-        emailService.sendVerificationEmail(account.getEmail(), verificationToken);
+        verificationService.issue(account);
+        log.info("[AUTH] Account registered | accountId={} | role={} | provider=local",
+                account.getId(), account.getRole());
 
         return RegisterResponseDTO.builder()
                 .message("Account created. Please verify your email.")
                 .id(account.getId().toString())
-                .verificationToken(verificationToken)
                 .build();
     }
 
     @Override
     @Transactional
     public void verifyEmail(String token) {
-        int updatedRows = accountRepository.verifyEmailToken(token, "ACTIVE");
-        if (updatedRows == 0) {
-            throw new ApiException(ErrorCode.INVALID_INPUT, "Invalid or expired token");
-        }
+        verificationService.verify(token);
+        log.info("[AUTH] Email verified | provider=local");
     }
 
     @Override
     @Transactional
     public Account createOAuthAccount(String email, String name) {
+        email = email.trim().toLowerCase(java.util.Locale.ROOT);
         Optional<Account> existingAccount = accountRepository.findByEmail(email);
         if (existingAccount.isPresent()) {
+            if (!"ACTIVE".equals(existingAccount.get().getStatus())) {
+                throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Vui lòng xác thực email trước khi đăng nhập Google.");
+            }
             return existingAccount.get();
         }
 
         Account account = Account.builder()
                 .email(email)
-                .passwordHash("OAUTH2_" + UUID.randomUUID())
+                .provider(AccountProvider.GOOGLE)
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
                 .build();
@@ -121,9 +130,12 @@ public class AccountServiceImpl implements AccountService {
         account = accountRepository.save(account);
         eventPublisher.publishEvent(new AccountCreatedEvent(account.getId()));
 
+        // ALWAYS use email prefix as display name for OAuth users
+        String finalDisplayName = email.split("@")[0];
+
         Attendance attendance = Attendance.builder()
                 .account(account)
-                .displayName(name)
+                .displayName(finalDisplayName)
                 .build();
         attendance = attendanceRepository.save(attendance);
 
@@ -131,6 +143,8 @@ public class AccountServiceImpl implements AccountService {
                 .attendance(attendance)
                 .build();
         attendanceInfoRepository.save(info);
+
+        log.info("[AUTH] OAuth account registered | accountId={} | provider=google", account.getId());
 
         return account;
     }
@@ -216,6 +230,7 @@ public class AccountServiceImpl implements AccountService {
 
         Map<String, Object> profile = new HashMap<>();
         profile.put("email", account.getEmail());
+        profile.put("provider", account.getProvider());
         profile.put("role", account.getRole());
         profile.put("status", account.getStatus());
 
@@ -252,8 +267,10 @@ public class AccountServiceImpl implements AccountService {
             profile.put("fullName", account.getEmail());
         }
 
-        String planName = quotaService.getPlan(account.getId()).name();
+        String planName = quotaService.getCvPlan(account.getId()).name();
         profile.put("membershipType", planName.charAt(0) + planName.substring(1).toLowerCase());
+        String interviewPlanName = quotaService.getInterviewPlan(account.getId()).name();
+        profile.put("interviewMembershipType", interviewPlanName.charAt(0) + interviewPlanName.substring(1).toLowerCase());
         profile.put("memberSince", account.getCreatedAt() == null ? "" : String.valueOf(account.getCreatedAt().getYear()));
 
         return profile;

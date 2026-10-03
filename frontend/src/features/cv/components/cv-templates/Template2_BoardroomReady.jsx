@@ -37,12 +37,12 @@ export default function Template2_BoardroomReady({ data }) {
                             />
                         </h2>
                     </div>
-                    <div className="flex flex-col gap-1.5 text-[13px] text-slate-600 font-medium whitespace-nowrap pt-2">
+                    <div className="flex min-w-0 flex-col gap-1.5 text-[13px] text-slate-600 font-medium pt-2">
                         <div className="flex items-center gap-2"><Phone size={14} /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                        <div className="flex items-center gap-2"><Mail size={14} /> <EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} /></div>
+                        <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0" /> <EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-all" /></div>
                         <div className="flex items-center gap-2"><Calendar size={14} /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
                         <div className="flex items-center gap-2"><MapPin size={14} /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
-                        <div className="flex items-center gap-2"><Globe size={14} /> <EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></div>
+                        {personalInfo.linkedin?.trim() && <div className="flex items-center gap-2"><Globe size={14} /> <EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></div>}
                     </div>
                 </div>
 
@@ -74,6 +74,12 @@ export default function Template2_BoardroomReady({ data }) {
                         <ul className="list-disc ml-5 flex flex-col gap-1.5">
                             {skills?.soft?.map((s, i) => <li key={i}>{s}</li>)}
                         </ul>
+                        {skills?.other?.length > 0 && <>
+                            <div className="font-bold pt-1">Other skills</div>
+                            <div className="flex flex-wrap gap-2">
+                                {skills.other.map((s, i) => <span key={i} className="bg-slate-200 px-3 py-1 rounded-sm text-[13px] font-medium text-slate-800">{s}</span>)}
+                            </div>
+                        </>}
                     </div>
                 </div>
 

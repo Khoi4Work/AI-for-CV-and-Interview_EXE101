@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -94,9 +95,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(buildError(ec.getCode(), message, request.getRequestURI(), null));
     }
 
+    @ExceptionHandler(AccountStatusException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInactiveAccount(AccountStatusException ex, HttpServletRequest request) {
+        ErrorCode ec = ErrorCode.FORBIDDEN_ACTION;
+        return ResponseEntity.status(ec.getStatus()).body(buildError(ec.getCode(),
+                "Tài khoản chưa xác thực email hoặc đã bị khóa. Vui lòng kiểm tra email xác thực.",
+                request.getRequestURI(), null));
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
-        log.warn("DataIntegrityViolation: {}", ex.getMessage());
+        log.warn("[HTTP] Request rejected by a data constraint | method={} | path={}",
+                request.getMethod(), request.getRequestURI());
         ErrorCode ec = ErrorCode.DUPLICATE_RESOURCE;
         return ResponseEntity.status(ec.getStatus())
                 .body(buildError(ec.getCode(), ec.getDefaultMessage(), request.getRequestURI(), null));
@@ -104,12 +114,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AsyncRequestNotUsableException.class)
     public void handleClientDisconnected(AsyncRequestNotUsableException ex, HttpServletRequest request) {
-        log.debug("Client disconnected while writing response for {}.", request.getRequestURI());
+        log.debug("[HTTP] Client disconnected during response write | method={} | path={}",
+                request.getMethod(), request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleUnexpected(Exception ex, HttpServletRequest request) {
-        log.error("Unexpected error:", ex);
+        log.error("[HTTP] Unexpected request error | method={} | path={} | errorType={}",
+                request.getMethod(), request.getRequestURI(), ex.getClass().getSimpleName(), ex);
         ErrorCode ec = ErrorCode.UNEXPECTED_ERROR;
         return ResponseEntity.status(ec.getStatus())
                 .body(buildError(ec.getCode(), ec.getDefaultMessage(), request.getRequestURI(), null));

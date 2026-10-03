@@ -67,4 +67,21 @@ public class InterviewSession extends BaseEntity {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @Column(name = "interview_started_at")
+    private LocalDateTime interviewStartedAt;
+
+    @Column(name = "interview_last_activity_at")
+    private LocalDateTime interviewLastActivityAt;
+
+    @Column(name = "quota_period_start_at_reservation")
+    private LocalDateTime quotaPeriodStartAtReservation;
+
+    @Builder.Default
+    @Column(name = "reserved_interview_minutes", nullable = false)
+    private Integer reservedInterviewMinutes = 0;
+
+    @Builder.Default
+    @Column(name = "interview_quota_settled", nullable = false)
+    private boolean interviewQuotaSettled = false;
 }

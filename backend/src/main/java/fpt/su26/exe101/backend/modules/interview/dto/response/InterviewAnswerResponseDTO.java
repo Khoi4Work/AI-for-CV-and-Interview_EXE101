@@ -12,6 +12,7 @@ public class InterviewAnswerResponseDTO {
     private UUID sessionId;
     private UUID questionId;
     private String answerText;
+    private String questionText;
     private String audioUrl;
     private Boolean isSkipped;
 }

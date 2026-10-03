@@ -13,11 +13,14 @@ import fpt.su26.exe101.backend.modules.cv.dto.response.CVTemplateResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.response.TemplateFeedbackResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.mapper.CVMapper;
 import fpt.su26.exe101.backend.modules.cv.service.TemplateService;
+import fpt.su26.exe101.backend.modules.cv.service.TemplateAccessPolicy;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,15 +39,22 @@ public class TemplateServiceImpl implements TemplateService {
 
     @Override
     public List<CVTemplateResponseDTO> getAllTemplates() {
-        UUID accountId = getAccountIdFromToken();
-        UserPlan plan = quotaService.getPlan(accountId);
-        int userPlanLevel = plan.ordinal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserPlan plan = UserPlan.FREE;
+        if (authentication != null && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            plan = quotaService.getCvPlan(getAccountIdFromToken());
+        }
 
-        return cvMapper.templatesToTemplateResponses(templateRepository.findAll().stream()
-                .filter(template -> {
-                    if (template.getMinimumPlan() == null) return true;
-                    return userPlanLevel >= template.getMinimumPlan().ordinal();
-                }).toList());
+        List<CVTemplate> allTemplates = templateRepository.findAll();
+        List<CVTemplateResponseDTO> responses = cvMapper.templatesToTemplateResponses(allTemplates);
+
+        for (int i = 0; i < responses.size(); i++) {
+            CVTemplate template = allTemplates.get(i);
+            responses.get(i).setLocked(!TemplateAccessPolicy.canUse(plan, template.getMinimumPlan()));
+        }
+
+        return responses;
     }
 
     @Override
@@ -62,7 +72,9 @@ public class TemplateServiceImpl implements TemplateService {
                 .comment(request.getComment())
                 .build();
 
-        feedbackRepository.save(feedback);
+        TemplateFeedback saved = feedbackRepository.save(feedback);
+        log.info("[CV TEMPLATE] Feedback submitted | templateId={} | feedbackId={} | rating={}",
+                template.getId(), saved.getId(), saved.getRating());
     }
 
     @Override

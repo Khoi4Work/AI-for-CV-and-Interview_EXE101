@@ -53,10 +53,13 @@ public class DevSecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
                         // 2. Public APIs
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/health", "/api/health/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/templates").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(
                                 "/api/auth/accounts",
                                 "/api/auth/verify-email",
+                                "/api/auth/resend-verification",
                                 "/api/auth/tokens",
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",

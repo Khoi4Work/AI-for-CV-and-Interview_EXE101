@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
@@ -6,66 +6,77 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useAuth } from "../contexts/AuthContext.jsx";
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
+import LoginLoading from '../components/LoginLoading.jsx';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [loginSuccess, setLoginSuccess] = useState(false);
+    const loginInProgress = useRef(false);
     const [error, setError] = useState(null);
+    const [emailDraft, setEmailDraft] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
     const { handleLogin } = useAuth();
     const emailVerified = new URLSearchParams(location.search).get('verified') === 'true';
+    const verificationInvalid = new URLSearchParams(location.search).get('verification') === 'invalid';
 
     const handleIsLoggedIn = async (e) => {
         e.preventDefault();
+        if (loginInProgress.current) return;
+        loginInProgress.current = true;
         const formData = new FormData(e.target);
         const email = formData.get('email');
         const password = formData.get('password');
 
         setLoading(true);
+        setLoginSuccess(false);
         setError(null);
 
         try {
-            const response = await apiClient.post('/auth/tokens', { email, password });
-            console.log('Login response:', response.data);
+            const response = await apiClient.post('/auth/tokens', { email: email.trim(), password }, { publicRequest: true, anonymousRequest: true });
 
             // BE returns data in 'result' field based on logs
             const tokens = response.data?.result || response.data?.data || {};
             const { accessToken, refreshToken } = tokens;
 
-            console.log('Extracted tokens:', { accessToken, refreshToken });
-
-            // Assuming BE might not return full user profile in /tokens,
-            // but we need some basic info or just trigger handleLogin.
-            // In a real app, we'd call /auth/me here.
-            handleLogin(null, { accessToken, refreshToken });
+            if (!accessToken) throw new Error('Không nhận được thông tin đăng nhập');
+            setLoginSuccess(true);
+            await handleLogin(null, { accessToken, refreshToken });
 
             const origin = location.state?.from?.pathname || '/home';
             navigate(origin);
         } catch (err) {
-            setError(getApiErrorMessage(err));
-        } finally {
+            setLoginSuccess(false);
             setLoading(false);
+            loginInProgress.current = false;
+            setError(getApiErrorMessage(err));
         }
     };
 
     const handleGoogleSuccess = async (credentialResponse) => {
+        if (loginInProgress.current) return;
+        loginInProgress.current = true;
         setLoading(true);
+        setLoginSuccess(false);
         setError(null);
         try {
             const idToken = credentialResponse.credential;
             const response = await apiClient.post(`/auth/oauth/google`, {
                 token: idToken
-            });
+            }, { publicRequest: true, anonymousRequest: true });
             const tokens = response.data?.result || response.data?.data || {};
-            handleLogin(null, tokens);
+            if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
+            setLoginSuccess(true);
+            await handleLogin(null, tokens);
 
             const origin = location.state?.from?.pathname || '/home';
             navigate(origin);
         } catch (err) {
-            setError(getApiErrorMessage(err));
-        } finally {
+            setLoginSuccess(false);
             setLoading(false);
+            loginInProgress.current = false;
+            setError(getApiErrorMessage(err));
         }
     };
 
@@ -74,7 +85,9 @@ export default function Login() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen w-full bg-surface">
+        <>
+        {loading && <LoginLoading success={loginSuccess} />}
+        <div inert={loading} aria-busy={loading} className="flex flex-col min-h-screen w-full bg-surface">
             <GuestHeader/>
             <main className="flex-grow flex items-center justify-center py-xl px-sm relative overflow-hidden w-full">
                 {/* Atmospheric Ambient Elements */}
@@ -95,23 +108,28 @@ export default function Login() {
                     </div>
 
                     {/* Social Logins */}
-                    <div className="grid grid-cols-2 gap-sm mb-lg">
-                        <div className="flex items-center justify-center">
+                    <div className="grid grid-cols-1 gap-sm mb-lg">
+                        <div className="flex min-h-[44px] items-center justify-center">
                             <GoogleLogin
                                 onSuccess={handleGoogleSuccess}
                                 onError={handleGoogleError}
                                 useOneTap={true}
                                 use_fedcm_for_prompt={false}
                                 theme="outline"
-                                width="100%"
+                                size="medium"
+                                text="signin_with"
+                                locale="vi"
+                                shape="rectangular"
                             />
                         </div>
+                        {/* Facebook login chưa được triển khai.
                         <button
                             onClick={() => setError('Only Google login is supported at the moment')}
                             className="flex items-center justify-center gap-xs border border-outline-variant rounded-lg py-sm font-label-md text-label-md text-on-surface-variant bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
                             <svg className="w-5 h-5 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
                             Facebook
                         </button>
+                        */}
                     </div>
 
                     {/* Divider */}
@@ -133,6 +151,11 @@ export default function Login() {
                             Email đã được xác thực. Bạn có thể đăng nhập.
                         </div>
                     )}
+                    {verificationInvalid && !error && (
+                        <div className="mb-md rounded-lg border border-amber-200 bg-amber-50 p-sm text-sm text-amber-800" role="alert">
+                            Đường dẫn xác thực không hợp lệ, đã hết hạn hoặc đã được sử dụng. Vui lòng yêu cầu gửi lại email bên dưới.
+                        </div>
+                    )}
 
                     {/* Login Form */}
                     <form className="space-y-md" onSubmit={handleIsLoggedIn}>
@@ -144,6 +167,8 @@ export default function Login() {
                                     className="absolute left-sm top-1/2 -translate-y-1/2 w-5 h-5 text-outline group-focus-within:text-primary transition-colors"/>
                                 <input required
                                        name="email"
+                                       value={emailDraft}
+                                       onChange={(event) => setEmailDraft(event.target.value)}
                                        className="w-full pl-[48px] pr-sm py-sm rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary-fixed bg-surface-container-lowest transition-all outline-none text-body-md"
                                        id="email" placeholder="email@example.com" type="email"/>
                             </div>
@@ -153,7 +178,7 @@ export default function Login() {
                             <div className="flex justify-between items-center">
                                 <label className="block font-label-md text-label-md text-on-surface" htmlFor="password">Mật
                                     khẩu</label>
-                                <Link className="font-label-sm text-label-sm text-primary hover:underline" to="#">Quên
+                                <Link className="font-label-sm text-label-sm text-primary hover:underline" to="/forgot-password">Quên
                                     mật khẩu?</Link>
                             </div>
                             <div className="relative group">
@@ -189,6 +214,10 @@ export default function Login() {
                         </button>
                     </form>
 
+                    {/*<p className="mt-md text-center text-sm text-on-surface-variant">*/}
+                    {/*    Chưa xác thực email? <Link to="/check-email" state={{ email: emailDraft, from: location.state?.from }} className="font-medium text-primary hover:underline">Gửi lại email xác thực</Link>*/}
+                    {/*</p>*/}
+
                     <div className="mt-lg text-center">
                         <p className="font-body-md text-body-md text-on-surface-variant">
                             Chưa có tài khoản?{' '}
@@ -200,5 +229,6 @@ export default function Login() {
             </main>
             <Footer/>
         </div>
+        </>
     );
 }

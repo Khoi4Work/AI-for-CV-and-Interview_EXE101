@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface InterviewQuestionRepository extends JpaRepository<InterviewQuestion, UUID> {
-    List<InterviewQuestion> findByBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
-            InterviewType interviewType, ExperienceLevel experienceLevel, QuestionRole questionRole,
+    List<InterviewQuestion> findByLanguageAndBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
+            String language, InterviewType interviewType, ExperienceLevel experienceLevel, QuestionRole questionRole,
             List<QuestionContextType> contextTypes);
 }

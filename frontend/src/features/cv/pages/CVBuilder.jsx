@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {
     Sparkles,
     Trash2,
@@ -11,25 +11,23 @@ import {
     ChevronLeft,
     CheckCircle2
 } from 'lucide-react';
-import Sidebar from "../components/Sidebar.jsx";
 import {Header} from "../../../components/layout/PublicHeader.jsx";
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
-import {badResumeData} from '../constants/cv-mock-data.js';
-import {mapImportedCVData, mapMockDataToCVContext} from '../mapper/cv-data-mapper.js';
-import {mockJobDescriptions} from '../../../constants/jobDescription.js';
+import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
 import {Footer} from "../../../components/layout/Footer.jsx";
-import {importCV} from '../services/cvImportService.js';
-import {cvPipelineService} from '../services/cvPipelineService.js';
+import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
+import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
+import {paymentService} from '../../../services/paymentService.js';
+import {checkBuilderQuota} from '../services/builderQuota.js';
+import galleryService from '../../../service/galleryService.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
-    const location = useLocation();
     const navigate = useNavigate();
     const {
         cvData,
-        currentCvId,
         setCurrentCvId,
         setHasCV,
         updatePersonalInfo,
@@ -38,11 +36,9 @@ export default function CVBuilder() {
         updateExperience,
         updateExperienceDetail,
         removeExperience,
-        setExperiences,
         updateEducation,
         addEducation,
         removeEducation,
-        setEducation,
         updateSkills,
         updateProjects,
         updateCertificates,
@@ -52,49 +48,74 @@ export default function CVBuilder() {
         resetCV
     } = useCV();
 
-    const handleLoadDemoBadCV = () => {
-        showToast('Đang tải mẫu CV tệ (Demo)...', 'info');
-        const mappedData = mapMockDataToCVContext(badResumeData);
-        setFullCVData(mappedData);
-    };
-
     useEffect(() => {
         resetCV();
         setCurrentCvId(null);
-        if (location.state?.loadBadCV) {
-            handleLoadDemoBadCV();
-        }
-    }, [resetCV, setCurrentCvId, location.state]);
+    }, [resetCV, setCurrentCvId]);
 
     const [step, setStep] = useState(1);
     const [jdText, setJdText] = useState('');
     const [isImporting, setIsImporting] = useState(false);
+    const [savedCVs, setSavedCVs] = useState([]);
+    const [showSavedCVPicker, setShowSavedCVPicker] = useState(false);
+    const [isLoadingSavedCVs, setIsLoadingSavedCVs] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [quotaState, setQuotaState] = useState({ loading: true, error: '', exhausted: false });
+    const [quotaRetry, setQuotaRetry] = useState(0);
     const totalSteps = 5;
+
+    useEffect(() => {
+        let active = true;
+        checkBuilderQuota(() => paymentService.getCurrentQuota()).then(() => {
+            if (active) setQuotaState({ loading: false, error: '', exhausted: false });
+        }).catch(error => {
+            if (active) setQuotaState({ loading: false,
+                error: getApiErrorMessage(error, 'Không kiểm tra được lượt tạo CV. Vui lòng thử lại.'),
+                exhausted: error.code === 'CV_CREATION_QUOTA_EXCEEDED' });
+        });
+        return () => { active = false; };
+    }, [quotaRetry]);
 
     const handleFileUpload = () => {
         document.getElementById('cv-upload-input').click();
     };
 
+    const handleShowSavedCVs = async () => {
+        setShowSavedCVPicker(true);
+        if (savedCVs.length > 0) return;
+
+        setIsLoadingSavedCVs(true);
+        try {
+            const assets = await galleryService.getGalleryAssets();
+            setSavedCVs(assets?.cvs || []);
+        } catch (error) {
+            showToast(getApiErrorMessage(error, 'Không thể tải danh sách CV đã lưu.'), 'error');
+        } finally {
+            setIsLoadingSavedCVs(false);
+        }
+    };
+
+    const handleSelectSavedCV = (cvId) => {
+        const selectedCV = savedCVs.find((cv) => cv.id === cvId);
+        if (!selectedCV?.content) return;
+
+        setFullCVData(mapImportedCVData(selectedCV.content));
+        showToast(`Đã điền thông tin từ CV "${selectedCV.name || 'CV đã lưu'}".`, 'success');
+    };
+
     const handleSaveAndEdit = async () => {
+        if (isSaving || quotaState.loading || quotaState.error) return;
         setIsSaving(true);
         try {
-            const payload = {
-                name: `${cvData.personalInfo.name || 'My'} CV`,
-                content: cvData,
-            };
-            const savedCV = currentCvId
-                ? await cvPipelineService.updateCV(currentCvId, payload)
-                : await cvPipelineService.createCV(payload);
-            if (!savedCV?.id) throw new Error('API không trả về mã CV.');
-            setCurrentCvId(savedCV.id);
+            // Refresh before navigating: quota may have changed in another tab.
+            await checkBuilderQuota(() => paymentService.getCurrentQuota());
             setHasCV(true);
-            const job = await cvPipelineService.startOptimization(savedCV.id, {jdText});
-            navigate('/cv-analyzing', {
-                state: {target: '/optimizer', jobId: job?.jobId, cvName: payload.name},
-            });
+            showToast('Thông tin CV đã sẵn sàng. Bạn có thể chỉnh sửa và tải file ở bước tiếp theo.', 'success');
+            navigate('/editor');
         } catch (error) {
-            showToast(getApiErrorMessage(error, 'Không thể lưu hoặc tối ưu CV.'), 'error');
+            const message = getApiErrorMessage(error, 'Không thể mở trình chỉnh sửa CV.');
+            setQuotaState({ loading: false, error: message, exhausted: error.code === 'CV_CREATION_QUOTA_EXCEEDED' });
+            showToast(message, 'error');
         } finally {
             setIsSaving(false);
         }
@@ -118,10 +139,9 @@ export default function CVBuilder() {
 
         setIsImporting(true);
         try {
-            const imported = await importCV(file);
-            setCurrentCvId(imported.cvId);
-            setFullCVData(mapImportedCVData(imported.extractedData));
-            showToast(imported.duplicate ? 'CV này đã được import trước đó; đã mở bản đã lưu.' : `Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
+            const extractedData = await extractCV(file);
+            setFullCVData(mapImportedCVData(extractedData));
+            showToast(`Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
         } catch (error) {
             const message = getApiErrorMessage(error, 'Không thể nhập CV. Vui lòng thử lại.');
             showToast(message, 'error');
@@ -131,16 +151,7 @@ export default function CVBuilder() {
         }
     };
 
-    const addKeyword = (keyword) => {
-        showToast(`Đã thêm từ khóa "${keyword}" vào gợi ý CV`, 'success');
-    };
-
     const nextStep = () => {
-        if (!jdText.trim()) {
-            showToast('Vui lòng nhập Mô tả công việc (JD) để AI có thể hỗ trợ bạn tốt nhất!', 'error');
-            return;
-        }
-
         if (step === 1) {
             if (!cvData.personalInfo.name.trim()) {
                 showToast('Vui lòng nhập họ tên đầy đủ!', 'error');
@@ -155,13 +166,6 @@ export default function CVBuilder() {
         setStep(prev => Math.min(prev + 1, totalSteps));
     };
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
-
-    const handleDemoJdSelect = (id) => {
-        const jd = mockJobDescriptions.find(j => j.id === id);
-        if (jd) {
-            setJdText(jd.description.overview + '\n\n' + jd.description.details.map(d => d.title + ': ' + d.bullets.join(', ')).join('\n'));
-        }
-    };
 
     return (
         <>
@@ -184,23 +188,46 @@ export default function CVBuilder() {
                                     </div>
                                     <h2 className="text-xl font-bold text-slate-800">Xây dựng nội dung CV</h2>
                                 </div>
-                                <button
-                                    onClick={handleFileUpload}
-                                    disabled={isImporting}
-                                    className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
-                                    <Download className="h-4 w-4"/>
-                                    {isImporting ? 'Đang trích xuất...' : 'Tải CV cũ'}
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <button
+                                        onClick={handleShowSavedCVs}
+                                        disabled={isLoadingSavedCVs}
+                                        className="text-sm font-medium text-green-700 hover:underline transition-colors disabled:opacity-50">
+                                        {isLoadingSavedCVs ? 'Đang tải CV đã lưu...' : 'Chọn CV đã lưu'}
+                                    </button>
+                                    <button
+                                        onClick={handleFileUpload}
+                                        disabled={isImporting}
+                                        className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
+                                        <Download className="h-4 w-4"/>
+                                        {isImporting ? 'Đang trích xuất...' : 'Tải CV cũ'}
+                                    </button>
                                     <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.doc,.docx"
                                         onChange={onFileChange}
                                     />
-                                </button>
-                                <button
-                                    onClick={handleLoadDemoBadCV}
-                                    className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors flex items-center gap-1"
-                                >
-                                    <Sparkles className="w-3 h-3"/> CV Tệ (Demo)
-                                </button>
+                                </div>
                             </div>
+
+                            {showSavedCVPicker && (
+                                <div className="px-6 pb-5 bg-slate-50/50">
+                                    <label htmlFor="saved-cv-picker" className="block text-xs font-semibold text-slate-600 mb-2">
+                                        Chọn CV trong gallery để điền thông tin
+                                    </label>
+                                    <select
+                                        id="saved-cv-picker"
+                                        defaultValue=""
+                                        disabled={isLoadingSavedCVs || savedCVs.length === 0}
+                                        onChange={(event) => handleSelectSavedCV(event.target.value)}
+                                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 disabled:bg-slate-100">
+                                        <option value="" disabled>
+                                            {isLoadingSavedCVs ? 'Đang tải...' : savedCVs.length ? 'Chọn CV đã lưu' : 'Chưa có CV nào trong gallery'}
+                                        </option>
+                                        {savedCVs.map((cv) => (
+                                            <option key={cv.id} value={cv.id}>{cv.name || 'CV không có tên'}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             {/* Stepper Visual */}
                             <div className="flex items-center gap-4">
@@ -225,6 +252,20 @@ export default function CVBuilder() {
                         </div>
 
                         <div className="p-8 flex-grow">
+                            {(quotaState.loading || quotaState.error) && (
+                                <div role={quotaState.error ? 'alert' : 'status'} className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                    <p>{quotaState.loading ? 'Đang kiểm tra lượt tạo CV còn lại…' : quotaState.error}</p>
+                                    {!quotaState.loading && quotaState.error && (
+                                        <div className="mt-3 flex flex-wrap gap-4">
+                                            {quotaState.exhausted && <button onClick={() => navigate('/pricing')} className="font-semibold underline">Nâng cấp gói CV</button>}
+                                            <button onClick={() => {
+                                                setQuotaState({ loading: true, error: '', exhausted: false });
+                                                setQuotaRetry(value => value + 1);
+                                            }} className="font-semibold underline">Kiểm tra lại</button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             {step === 1 && (
                                 <div className="space-y-8 animate-fade-in">
                                     <div className="space-y-6">
@@ -276,6 +317,7 @@ export default function CVBuilder() {
                                                 onChange={(e) => updatePersonalInfo({linkedin: e.target.value})}
                                             />
                                         </div>
+                                        <ProfilePhotoPicker />
                                     </div>
 
                                     <div className="pt-6">
@@ -306,7 +348,7 @@ export default function CVBuilder() {
                                     </div>
 
                                     <div className="space-y-6">
-                                        {cvData.experiences.map((exp, index) => (
+                                    {cvData.experiences.map((exp) => (
                                             <div key={exp.id}
                                                  className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-green-500">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -650,9 +692,9 @@ export default function CVBuilder() {
                                     </p>
                                     <button
                                         onClick={handleSaveAndEdit}
-                                        disabled={isSaving}
-                                        className="px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105 disabled:opacity-50">
-                                        {isSaving ? 'Đang lưu và tối ưu...' : 'Lưu CV & phân tích với AI'} <ChevronRight className="w-5 h-5"/>
+                                        disabled={isSaving || quotaState.loading || Boolean(quotaState.error)}
+                                        className="mx-auto px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100">
+                                        {isSaving || quotaState.loading ? 'Đang kiểm tra lượt tạo CV...' : 'Tiếp tục đến trình chỉnh sửa'} <ChevronRight className="w-5 h-5"/>
                                     </button>
                                 </div>
                             )}
@@ -677,73 +719,16 @@ export default function CVBuilder() {
                         )}
                     </section>
 
-                    {/* RIGHT COLUMN: JD & AI */}
                     <section className="col-span-5 flex flex-col gap-6">
-                        <div
-                            className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px] sticky top-24">
-                            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
-                                <div className="flex items-center gap-2">
-                                    <Briefcase className="h-6 w-6 text-slate-800"/>
-                                    <h2 className="text-xl font-bold">Mô tả công việc (JD)</h2>
-                                </div>
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px] sticky top-24">
+                            <div className="p-6 border-b border-slate-100 flex items-center gap-2">
+                                <Briefcase className="h-6 w-6 text-slate-800" />
+                                <h2 className="text-xl font-bold">Mô tả công việc (JD)</h2>
                             </div>
-
                             <div className="p-6 flex-grow flex flex-col">
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-xs font-medium text-slate-400">Dán nội dung JD mục tiêu để AI hỗ trợ</span>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="block w-2 h-2 bg-green-600 rounded-full animate-pulse"></span>
-                                        <span className="text-[10px] font-bold text-green-900 tracking-wider">AI LISTENING</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex-grow mb-6 relative">
-                                    <div className="flex gap-2 mb-2">
-                                        <span className="text-xs font-bold text-slate-400 uppercase">Demo JD:</span>
-                                        {mockJobDescriptions.map(jd => (
-                                            <button
-                                                key={jd.id}
-                                                onClick={() => handleDemoJdSelect(jd.id)}
-                                                className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] hover:bg-green-100 hover:text-green-700 transition-colors"
-                                            >
-                                                {jd.title}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <textarea
-                                        value={jdText}
-                                        onChange={(e) => setJdText(e.target.value)}
-                                        placeholder="Dán nội dung chi tiết mô tả công việc vào đây..."
-                                        className="w-full h-64 p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-none"
-                                    ></textarea>
-                                </div>
-
-                                {/* AI Suggestions Card */}
-                                <div
-                                    className="bg-white border-2 border-green-500 rounded-2xl p-5 shadow-md relative overflow-hidden transition-all hover:shadow-lg group">
-                                    <div
-                                        className="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition-opacity">
-                                        <Sparkles className="w-16 h-16 text-green-500"/>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 mb-2 relative z-10">
-                                        <Sparkles className="w-4 h-4 text-green-600" fill="currentColor"/>
-                                        <h4 className="text-sm font-bold text-green-900">Gợi ý từ AI</h4>
-                                    </div>
-                                    <p className="text-[11px] text-slate-500 leading-relaxed mb-4 relative z-10">
-                                        Dựa trên JD, hãy cân nhắc thêm các từ khóa sau vào CV để tăng tỷ lệ khớp:
-                                    </p>
-                                    <div className="flex flex-wrap gap-2 relative z-10">
-                                        {['React Query', 'Web Performance', 'TypeScript', 'Microservices', 'TDD'].map(keyword => (
-                                            <button
-                                                key={keyword}
-                                                onClick={() => addKeyword(keyword)}
-                                                className="bg-green-50 hover:bg-green-100 text-green-700 text-[11px] font-semibold px-3 py-1.5 rounded-full border border-green-100 flex items-center gap-1 transition-all hover:scale-105 active:scale-95">
-                                                <span className="text-xs font-bold">+</span> {keyword}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                <textarea value={jdText} onChange={e => setJdText(e.target.value)}
+                                    placeholder="Dán nội dung mô tả công việc (không bắt buộc)..."
+                                    className="w-full min-h-64 flex-grow p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-y" />
                             </div>
                         </div>
                     </section>

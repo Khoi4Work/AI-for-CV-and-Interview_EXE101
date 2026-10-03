@@ -1,45 +1,59 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
+import { useCVReadOnly } from '../contexts/CVContext.jsx';
 
 /**
  * EditableText is a component that allows inline editing of text within a CV template.
- * It switches between an <input> and a <textarea> based on the `multiline` prop.
- * It is designed to be "invisible" until focused, maintaining the template's aesthetic.
+ * Text fields wrap and grow with their content so a long value cannot be clipped
+ * by the fixed dimensions of a template section.
  */
 const EditableText = ({ value, onChange, multiline = false, className = "" }) => {
     const textareaRef = useRef(null);
+    const readOnly = useCVReadOnly();
     // Removed w-full from commonStyles to prevent forced truncation in flex containers
     const commonStyles = "bg-transparent border-none outline-none transition-all focus:bg-white focus:ring-1 focus:ring-blue-300 focus:border-slate-200 rounded px-1";
 
-    // Auto-resize textarea whenever value changes or component mounts
+    // Auto-resize after edits so wrapped lines remain visible in the template.
     useLayoutEffect(() => {
-        if (multiline && textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-        }
+        const textarea = textareaRef.current;
+        if (!textarea) return undefined;
+
+        const fitText = () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        };
+        fitText();
+
+        let previousWidth = textarea.getBoundingClientRect().width;
+        const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => {
+            const width = textarea.getBoundingClientRect().width;
+            if (width !== previousWidth) {
+                previousWidth = width;
+                fitText();
+            }
+        });
+        observer?.observe(textarea.parentElement || textarea);
+        return () => observer?.disconnect();
     }, [value, multiline]);
 
     const handleInput = (e) => {
         onChange(e.target.value);
     };
 
-    if (multiline) {
-        return (
+    if (readOnly) return <span className={`block w-full min-w-0 whitespace-pre-wrap break-words px-1 ${className}`}>{value ?? ''}</span>;
+
+    return (
+        <>
             <textarea
                 ref={textareaRef}
-                className={`${commonStyles} w-full resize-none overflow-hidden block ${className}`}
-                value={value}
+                className={`cv-editable-field ${commonStyles} block w-full min-w-0 max-w-full resize-none overflow-hidden whitespace-pre-wrap break-words align-top leading-[inherit] ${className}`}
+                value={value ?? ''}
                 onChange={handleInput}
                 rows={1}
-                style={{ minHeight: '1em' }}
+                wrap="soft"
+                style={{ minHeight: '1em', lineHeight: 'inherit' }}
             />
-        );
-    }
-    return (
-        <input
-            className={`${commonStyles} w-full ${className}`}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-        />
+            <span className={`cv-print-text ${className}`}>{value ?? ''}</span>
+        </>
     );
 };
 

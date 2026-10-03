@@ -37,11 +37,10 @@ public class PayOSChecksumUtil {
             }
 
             String data = sb.toString();
-            log.debug("Data for checksum: {}", data);
-
             return hmacSha256(data, checksumKey);
         } catch (Exception e) {
-            log.error("Error calculating PayOS checksum: {}", e.getMessage());
+            log.error("[PAYMENT] Signature calculation failed | errorType={}",
+                    e.getClass().getSimpleName(), e);
             throw new RuntimeException("Checksum calculation failed", e);
         }
     }

@@ -17,6 +17,13 @@ export default function Template1_DataScientist({ data }) {
 
     const { title, skills } = data || {};
     const { personalInfo, summary, experiences, education } = cvData;
+    const contactItems = [
+        {field: 'phone', value: personalInfo.phone, Icon: Phone},
+        {field: 'email', value: personalInfo.email, Icon: Mail},
+        {field: 'dob', value: personalInfo.dob, Icon: Calendar},
+        {field: 'address', value: personalInfo.address, Icon: MapPin},
+        {field: 'linkedin', value: personalInfo.linkedin, Icon: Globe},
+    ].filter(item => String(item.value || '').trim());
 
     return (
         <div className="overflow-x-auto w-full">
@@ -36,12 +43,17 @@ export default function Template1_DataScientist({ data }) {
                             className="text-center"
                         />
                     </h2>
-                    <div className="flex flex-wrap justify-center items-center gap-4 text-[13px] text-slate-600">
-                        <div className="flex items-center gap-1.5"><Phone size={14} /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                        <div className="flex items-center gap-1.5"><Mail size={14} /> <EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} /></div>
-                        <div className="flex items-center gap-1.5"><Calendar size={14} /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
-                        <div className="flex items-center gap-1.5"><MapPin size={14} /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
-                        <div className="flex items-center gap-1.5"><Globe size={14} /> <EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-3 text-left text-[13px] text-slate-600">
+                        {contactItems.map(({field, value, Icon}) => (
+                            <div key={field} className="flex min-w-0 items-start gap-2">
+                                <Icon size={14} className="mt-1 shrink-0" />
+                                <EditableText
+                                    value={value}
+                                    onChange={(val) => updatePersonalInfo({[field]: val})}
+                                    className={`min-w-0 text-left ${field === 'email' || field === 'linkedin' ? 'break-all' : 'break-words'}`}
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -126,6 +138,12 @@ export default function Template1_DataScientist({ data }) {
                         <ul className="list-disc ml-5 flex flex-col gap-1.5">
                             {skills?.soft?.map((s, i) => <li key={i}>{s}</li>)}
                         </ul>
+                        {skills?.other?.length > 0 && <>
+                            <div className="font-bold pt-1">Other skills</div>
+                            <div className="flex flex-wrap gap-2">
+                                {skills.other.map((s, i) => <span key={i} className="bg-slate-100 px-3 py-1.5 text-xs font-semibold rounded">{s}</span>)}
+                            </div>
+                        </>}
                     </div>
                 </div>
             </div>
