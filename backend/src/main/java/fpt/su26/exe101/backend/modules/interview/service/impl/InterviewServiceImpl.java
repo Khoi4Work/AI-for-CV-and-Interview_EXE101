@@ -417,8 +417,7 @@ public class InterviewServiceImpl implements InterviewService {
 
         InterviewSessionResponseDTO sessionInfo = interviewMapper
                 .sessionsToSessionResponses(List.of(session)).getFirst();
-        List<InterviewAnswerResponseDTO> answers = interviewMapper
-                .answersToAnswerResponses(answerRepository.findBySession(session));
+        List<InterviewAnswerResponseDTO> answers = mapHistoryAnswers(session);
         UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         InterviewEvaluationResponseDTO evaluation = null;
         if (plan == UserPlan.FREE) {
@@ -597,6 +596,27 @@ public class InterviewServiceImpl implements InterviewService {
         if (!session.getGallery().getId().equals(gallery.getId())) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
-        return interviewMapper.answersToAnswerResponses(answerRepository.findBySession(session));
+        return mapHistoryAnswers(session);
+    }
+
+    private List<InterviewAnswerResponseDTO> mapHistoryAnswers(InterviewSession session) {
+        List<InterviewAnswerResponseDTO> answers = interviewMapper
+                .answersToAnswerResponses(answerRepository.findBySession(session));
+        Map<String, String> questionTexts = new HashMap<>();
+        Object snapshotQuestions = session.getContextSnapshot() == null
+                ? null : session.getContextSnapshot().get("questions");
+        if (snapshotQuestions instanceof List<?> questions) {
+            for (Object item : questions) {
+                if (item instanceof Map<?, ?> question && question.get("id") != null
+                        && question.get("text") instanceof String text) {
+                    questionTexts.put(question.get("id").toString(), text);
+                }
+            }
+        }
+        answers.forEach(answer -> {
+            answer.setSessionId(session.getId());
+            answer.setQuestionText(questionTexts.get(String.valueOf(answer.getQuestionId())));
+        });
+        return answers;
     }
 }

@@ -14,6 +14,9 @@ import java.util.UUID;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByAccountId(UUID accountId);
+    @Query("select o from Order o left join fetch o.service where o.accountId = :accountId "
+            + "order by coalesce(o.orderedAt, o.createdAt) desc, o.id desc")
+    List<Order> findPaymentHistoryByAccountId(@Param("accountId") UUID accountId);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from Order o where o.transactionId = :transactionId")
     java.util.Optional<Order> findByTransactionIdForUpdate(@Param("transactionId") String transactionId);

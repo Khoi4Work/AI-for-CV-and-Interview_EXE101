@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
     HelpCircle,
@@ -6,12 +6,12 @@ import {
     Gift,
     FileText,
     Mic,
-    Download,
     HeartHandshake
 } from 'lucide-react';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Badge} from '../components/Layout.jsx';
 import {paymentService} from '../../../services/paymentService.js';
+import PaymentHistory from '../components/PaymentHistory.jsx';
 
 const PricingPage = () => {
     const [activeFaq, setActiveFaq] = useState(null);
@@ -71,12 +71,6 @@ const PricingPage = () => {
         setActiveFaq((prev) => (prev === idx ? null : idx));
     };
 
-    const invoices = [
-        {date: '15/11/2026', id: '#INV-2941', amount: '39.000'},
-        {date: '23/10/2026', id: '#INV-2812', amount: '59.000'},
-        {date: '02/09/2026', id: '#INV-2655', amount: '39.000'},
-    ];
-
     return (
         <div className="max-w-5xl mx-auto pb-12">
             <div className="flex items-center justify-between mb-8">
@@ -107,35 +101,7 @@ const PricingPage = () => {
                     </Card>
                 </div>
 
-                <Card className="p-6 bg-[#B5C2BC] border-none shadow-sm">
-                    <div className="flex justify-between items-center mb-3">
-                        <h4 className="text-sm font-bold text-[#475569]">
-                            Lịch sử thanh toán
-                        </h4>
-                        <button
-                            onClick={() => showToast('Lịch sử thanh toán chi tiết sẽ được tải về dưới dạng PDF.', 'info')}
-                            className="text-xs font-bold text-[#10B981] hover:underline transition-colors"
-                        >
-                            Xem tất cả
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        {invoices.map((inv, i) => (
-                            <div key={i}
-                                 className="flex justify-between items-center py-3 border-b border-slate-300 last:border-0">
-                                <div className="flex flex-col">
-                                    <span className="text-lg font-bold text-[#0F172A]">{inv.date}</span>
-                                    <span className="text-sm text-[#64748B]">{inv.id}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-[#065F46]">{inv.amount}</span>
-                                    <Download size={16}
-                                              className="text-[#065F46] cursor-pointer hover:text-[#044d3a] transition-colors"/>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
+                <PaymentHistory />
             </div>
 
             <div className="text-center mb-8">

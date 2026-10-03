@@ -9,6 +9,7 @@ const server = await createServer({
 });
 const { default: apiClient } = await server.ssrLoadModule('/src/service/apiClient.js');
 const { default: galleryService } = await server.ssrLoadModule('/src/service/galleryService.js');
+const { paymentService } = await server.ssrLoadModule('/src/services/paymentService.js');
 const savedStorage = globalThis.localStorage;
 const savedWindow = globalThis.window;
 after(async () => {
@@ -56,4 +57,17 @@ test('protected API requests still receive the current access token', async () =
         return { data: {}, status: 200, headers: {}, config };
     };
     await apiClient.get('/gallery/assets');
+});
+
+test('payment history calls the protected endpoint and returns orders from the API envelope', async () => {
+    globalThis.localStorage = { getItem: () => 'payment-token' };
+    const orders = [{ id: 'order-1', serviceName: 'CV Middle', amount: 39000 }];
+    apiClient.defaults.adapter = async config => {
+        assert.equal(config.url, '/v1/payments/history');
+        assert.equal(config.headers.Authorization, 'Bearer payment-token');
+        return { data: { result: orders }, status: 200, headers: {}, config };
+    };
+    assert.deepEqual(await paymentService.getPaymentHistory(), orders);
+    apiClient.defaults.adapter = async config => ({ data: { result: [] }, status: 200, headers: {}, config });
+    assert.deepEqual(await paymentService.getPaymentHistory(), []);
 });

@@ -6,6 +6,9 @@ import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
 import fpt.su26.exe101.backend.modules.cv.dto.CVFeedbackContent;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.cv.entity.CV;
+import fpt.su26.exe101.backend.modules.cv.entity.CVTemplate;
+import fpt.su26.exe101.backend.modules.cv.repository.CVTemplateRepository;
+import fpt.su26.exe101.backend.modules.cv.service.TemplateAccessPolicy;
 import fpt.su26.exe101.backend.modules.cv.entity.CVFeedback;
 import fpt.su26.exe101.backend.modules.cv.entity.CVOptimizationJob;
 import fpt.su26.exe101.backend.modules.cv.entity.CVOptimizationLog;
@@ -48,6 +51,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private static final Pattern VIETNAMESE_DIACRITICS = Pattern.compile("[\\u0102\\u0103\\u0110\\u0111\\u0128-\\u0129\\u0168-\\u0169\\u01A0-\\u01A1\\u01AF-\\u01B0\\u1EA0-\\u1EF9]");
 
     private final CVRepository cvRepository;
+    private final CVTemplateRepository templateRepository;
     private final CVFeedbackRepository feedbackRepository;
     private final CVOptimizationLogRepository logRepository;
     private final CVOptimizationJobRepository jobRepository;
@@ -86,9 +90,12 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Transactional
     @Override
     public CVResponseDTO createCV(CVCreateRequestDTO request, Gallery gallery) {
+        validateDraft(request.getName(), request.getContent());
+        CVTemplate template = resolveTemplate(request.getTemplateId(), request.getContent(), null, gallery);
         quotaService.consumeCvCreation(gallery.getAccountId());
         CV cv = CV.builder()
-                .name(request.getName())
+                .name(request.getName().trim())
+                .template(template)
                 .content(request.getContent())
                 .gallery(gallery)
                 .optimizationState(OptimizationState.DRAFT)
@@ -104,12 +111,39 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     public CVResponseDTO updateCV(UUID id, CVUpdateRequestDTO request, Gallery gallery) {
         CV cv = cvRepository.findById(id)
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
-                .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
 
-        cv.setName(request.getName());
+        validateDraft(request.getName(), request.getContent());
+        CVTemplate template = resolveTemplate(request.getTemplateId(), request.getContent(), cv.getTemplate(), gallery);
+        cv.setName(request.getName().trim());
+        cv.setTemplate(template);
         cv.setContent(request.getContent());
         cvRepository.save(cv);
         return cvMapper.cvToCVResponse(cv);
+    }
+
+    private void validateDraft(String name, CVContent content) {
+        if (name == null || name.isBlank() || name.trim().length() > 100 || content == null) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Tên CV phải có từ 1 đến 100 ký tự và nội dung không được trống.");
+        }
+    }
+
+    private CVTemplate resolveTemplate(String requestedId, CVContent content, CVTemplate existing, Gallery gallery) {
+        String contentId = content.getSelectedTemplateId();
+        if (requestedId != null && contentId != null && !requestedId.equals(contentId)) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Mẫu CV trong nội dung không khớp templateId.");
+        }
+        String id = requestedId != null ? requestedId : contentId;
+        if (id == null && existing != null) id = existing.getId();
+        // Legacy import/evaluation drafts may not have chosen a template yet.
+        if (id == null) return null;
+        CVTemplate template = templateRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Mẫu CV không tồn tại."));
+        if (!TemplateAccessPolicy.canUse(quotaService.getCvPlan(gallery.getAccountId()), template.getMinimumPlan())) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Gói CV hiện tại không cho phép sử dụng mẫu này.");
+        }
+        content.setSelectedTemplateId(template.getId());
+        return template;
     }
 
     @Override

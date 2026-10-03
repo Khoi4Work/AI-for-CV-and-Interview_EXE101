@@ -177,6 +177,12 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <testSourceDirectory>${project.basedir}/tests/java</testSourceDirectory>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/tests/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

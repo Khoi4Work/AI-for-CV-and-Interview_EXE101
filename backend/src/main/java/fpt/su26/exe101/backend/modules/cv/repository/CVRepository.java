@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface CVRepository extends JpaRepository<CV, UUID> {
     @EntityGraph(attributePaths = "gallery")
     java.util.Optional<CV> findWithGalleryById(UUID id);
+    @EntityGraph(attributePaths = {"gallery", "template"})
     List<CV> findByGalleryId(UUID galleryId);
     List<CV> findByTemplateId(String templateId);
     java.util.Optional<CV> findByGalleryIdAndSourceHash(UUID galleryId, String sourceHash);

@@ -1,4 +1,5 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
+import { useCVReadOnly } from '../contexts/CVContext.jsx';
 
 /**
  * EditableText is a component that allows inline editing of text within a CV template.
@@ -7,6 +8,7 @@ import React, { useRef, useLayoutEffect } from 'react';
  */
 const EditableText = ({ value, onChange, multiline = false, className = "" }) => {
     const textareaRef = useRef(null);
+    const readOnly = useCVReadOnly();
     // Removed w-full from commonStyles to prevent forced truncation in flex containers
     const commonStyles = "bg-transparent border-none outline-none transition-all focus:bg-white focus:ring-1 focus:ring-blue-300 focus:border-slate-200 rounded px-1";
 
@@ -36,6 +38,8 @@ const EditableText = ({ value, onChange, multiline = false, className = "" }) =>
     const handleInput = (e) => {
         onChange(e.target.value);
     };
+
+    if (readOnly) return <span className={`block w-full min-w-0 whitespace-pre-wrap break-words px-1 ${className}`}>{value ?? ''}</span>;
 
     return (
         <>

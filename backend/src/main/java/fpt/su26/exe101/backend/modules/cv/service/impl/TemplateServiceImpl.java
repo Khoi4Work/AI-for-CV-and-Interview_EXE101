@@ -13,6 +13,7 @@ import fpt.su26.exe101.backend.modules.cv.dto.response.CVTemplateResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.response.TemplateFeedbackResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.mapper.CVMapper;
 import fpt.su26.exe101.backend.modules.cv.service.TemplateService;
+import fpt.su26.exe101.backend.modules.cv.service.TemplateAccessPolicy;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import lombok.RequiredArgsConstructor;
@@ -44,18 +45,13 @@ public class TemplateServiceImpl implements TemplateService {
                 && !(authentication instanceof AnonymousAuthenticationToken)) {
             plan = quotaService.getCvPlan(getAccountIdFromToken());
         }
-        int userPlanLevel = plan.ordinal();
 
         List<CVTemplate> allTemplates = templateRepository.findAll();
         List<CVTemplateResponseDTO> responses = cvMapper.templatesToTemplateResponses(allTemplates);
 
         for (int i = 0; i < responses.size(); i++) {
             CVTemplate template = allTemplates.get(i);
-            int requiredLevel = (template.getMinimumPlan() != null)
-                                ? template.getMinimumPlan().ordinal()
-                                : UserPlan.FREE.ordinal();
-
-            responses.get(i).setLocked(userPlanLevel < requiredLevel);
+            responses.get(i).setLocked(!TemplateAccessPolicy.canUse(plan, template.getMinimumPlan()));
         }
 
         return responses;

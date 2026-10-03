@@ -8,8 +8,13 @@ export default function ProfilePhotoPicker({variant = 'field', className = '', p
     const inputRef = useRef(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const {showToast} = useApp();
-    const {cvData, updateProfilePhoto} = useCV();
+    const {cvData, updateProfilePhoto, readOnly} = useCV();
     const profilePhoto = suppliedPhoto ?? cvData.profilePhoto ?? '';
+
+    if (readOnly) return <div className={`relative overflow-hidden bg-slate-200 text-slate-400 ${className}`}>
+        {profilePhoto ? <img src={profilePhoto} alt="Ảnh hồ sơ" className="h-full w-full object-cover" />
+            : <span className="absolute inset-0 flex items-center justify-center"><UserRound className="h-7 w-7" /></span>}
+    </div>;
 
     const onFileChange = async (event) => {
         const file = event.target.files?.[0];

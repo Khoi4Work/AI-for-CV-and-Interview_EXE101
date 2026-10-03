@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import {useState} from 'react';
 import {
     Briefcase,
     Zap,
@@ -6,9 +6,7 @@ import {
     MonitorPlay,
     FileText,
     CheckCircle2,
-    ZoomIn,
-    ZoomOut,
-    RotateCcw
+    LoaderCircle
 } from 'lucide-react';
 import {Link, useParams, useNavigate} from 'react-router-dom';
 import TopAction from "../components/TopAction.jsx";
@@ -19,6 +17,9 @@ import {useCV} from '../contexts/CVContext.jsx';
 import {Header} from "../../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from "../../../components/layout/Footer.jsx";
+import {paymentService} from '../../../services/paymentService.js';
+import {getApiErrorMessage} from '../../../service/apiClient.js';
+import {checkBuilderQuota} from '../services/builderQuota.js';
 
 export default function TemplateDetail() {
     const {id} = useParams();
@@ -26,7 +27,8 @@ export default function TemplateDetail() {
     const {profile, isLoggedIn, toggleFavorite} = useAuth();
     const {showToast} = useApp();
     const {setTemplate} = useCV();
-    const [zoom, setZoom] = useState(100);
+    const [checkingQuota, setCheckingQuota] = useState(false);
+    const [quotaError, setQuotaError] = useState(null);
 
     // Tìm thông tin template từ constants dựa trên id từ URL
     const template = TEMPLATES_DATA.find(t => t.id === id);
@@ -44,6 +46,28 @@ export default function TemplateDetail() {
     }
 
     const isFavorite = profile.favorites?.includes(id);
+
+    const handleUseTemplate = async () => {
+        if (checkingQuota) return;
+        if (!isLoggedIn) {
+            showToast('Vui lòng đăng nhập để sử dụng mẫu CV này!', 'info');
+            navigate('/login');
+            return;
+        }
+        setCheckingQuota(true);
+        setQuotaError(null);
+        try {
+            await checkBuilderQuota(() => paymentService.getCurrentQuota());
+            setTemplate(id);
+            navigate('/builder');
+        } catch (error) {
+            const message = getApiErrorMessage(error, 'Không kiểm tra được lượt tạo CV. Vui lòng thử lại.');
+            setQuotaError({ templateId: id, message, exhausted: error.code === 'CV_CREATION_QUOTA_EXCEEDED' });
+            showToast(message, 'error');
+        } finally {
+            setCheckingQuota(false);
+        }
+    };
 
     const handleToggleFavorite = () => {
         if (!isLoggedIn) {
@@ -174,14 +198,18 @@ export default function TemplateDetail() {
                         {/* Call to Actions */}
                         <div className="flex flex-col gap-4 mt-4">
                             <button
-                                onClick={() => {
-                                    setTemplate(id);
-                                    navigate('/builder');
-                                }}
-                                className="w-full py-4 bg-green-700 text-white font-bold rounded-2xl hover:bg-green-800 transition-all flex items-center justify-center gap-3 shadow-lg shadow-green-900/20 group">
-                                <FileText className="h-6 w-6 group-hover:scale-110 transition-transform"/>
-                                Sử dụng mẫu này
+                                onClick={handleUseTemplate}
+                                disabled={checkingQuota}
+                                className="w-full py-4 bg-green-700 text-white font-bold rounded-2xl hover:bg-green-800 transition-all flex items-center justify-center gap-3 shadow-lg shadow-green-900/20 group disabled:opacity-50">
+                                {checkingQuota ? <LoaderCircle className="h-6 w-6 animate-spin"/> : <FileText className="h-6 w-6 group-hover:scale-110 transition-transform"/>}
+                                {checkingQuota ? 'Đang kiểm tra lượt tạo CV…' : 'Sử dụng mẫu này'}
                             </button>
+                            {quotaError?.templateId === id && (
+                                <div role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                    <p>{quotaError.message}</p>
+                                    {quotaError.exhausted && <Link to="/pricing" className="mt-2 inline-block font-semibold underline">Nâng cấp gói CV</Link>}
+                                </div>
+                            )}
                             <button
                                 onClick={handleToggleFavorite}
                                 className={`w-full py-4 border font-bold rounded-2xl transition-all flex items-center justify-center gap-3 ${

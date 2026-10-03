@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
     Sparkles,
@@ -11,7 +11,6 @@ import {
     ChevronLeft,
     CheckCircle2
 } from 'lucide-react';
-import Sidebar from "../components/Sidebar.jsx";
 import {Header} from "../../../components/layout/PublicHeader.jsx";
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
@@ -20,6 +19,8 @@ import {Footer} from "../../../components/layout/Footer.jsx";
 import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
+import {paymentService} from '../../../services/paymentService.js';
+import {checkBuilderQuota} from '../services/builderQuota.js';
 import galleryService from '../../../service/galleryService.js';
 
 export default function CVBuilder() {
@@ -35,11 +36,9 @@ export default function CVBuilder() {
         updateExperience,
         updateExperienceDetail,
         removeExperience,
-        setExperiences,
         updateEducation,
         addEducation,
         removeEducation,
-        setEducation,
         updateSkills,
         updateProjects,
         updateCertificates,
@@ -61,7 +60,21 @@ export default function CVBuilder() {
     const [showSavedCVPicker, setShowSavedCVPicker] = useState(false);
     const [isLoadingSavedCVs, setIsLoadingSavedCVs] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [quotaState, setQuotaState] = useState({ loading: true, error: '', exhausted: false });
+    const [quotaRetry, setQuotaRetry] = useState(0);
     const totalSteps = 5;
+
+    useEffect(() => {
+        let active = true;
+        checkBuilderQuota(() => paymentService.getCurrentQuota()).then(() => {
+            if (active) setQuotaState({ loading: false, error: '', exhausted: false });
+        }).catch(error => {
+            if (active) setQuotaState({ loading: false,
+                error: getApiErrorMessage(error, 'Không kiểm tra được lượt tạo CV. Vui lòng thử lại.'),
+                exhausted: error.code === 'CV_CREATION_QUOTA_EXCEEDED' });
+        });
+        return () => { active = false; };
+    }, [quotaRetry]);
 
     const handleFileUpload = () => {
         document.getElementById('cv-upload-input').click();
@@ -91,13 +104,18 @@ export default function CVBuilder() {
     };
 
     const handleSaveAndEdit = async () => {
+        if (isSaving || quotaState.loading || quotaState.error) return;
         setIsSaving(true);
         try {
+            // Refresh before navigating: quota may have changed in another tab.
+            await checkBuilderQuota(() => paymentService.getCurrentQuota());
             setHasCV(true);
             showToast('Thông tin CV đã sẵn sàng. Bạn có thể chỉnh sửa và tải file ở bước tiếp theo.', 'success');
             navigate('/editor');
         } catch (error) {
-            showToast(getApiErrorMessage(error, 'Không thể mở trình chỉnh sửa CV.'), 'error');
+            const message = getApiErrorMessage(error, 'Không thể mở trình chỉnh sửa CV.');
+            setQuotaState({ loading: false, error: message, exhausted: error.code === 'CV_CREATION_QUOTA_EXCEEDED' });
+            showToast(message, 'error');
         } finally {
             setIsSaving(false);
         }
@@ -234,6 +252,20 @@ export default function CVBuilder() {
                         </div>
 
                         <div className="p-8 flex-grow">
+                            {(quotaState.loading || quotaState.error) && (
+                                <div role={quotaState.error ? 'alert' : 'status'} className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                    <p>{quotaState.loading ? 'Đang kiểm tra lượt tạo CV còn lại…' : quotaState.error}</p>
+                                    {!quotaState.loading && quotaState.error && (
+                                        <div className="mt-3 flex flex-wrap gap-4">
+                                            {quotaState.exhausted && <button onClick={() => navigate('/pricing')} className="font-semibold underline">Nâng cấp gói CV</button>}
+                                            <button onClick={() => {
+                                                setQuotaState({ loading: true, error: '', exhausted: false });
+                                                setQuotaRetry(value => value + 1);
+                                            }} className="font-semibold underline">Kiểm tra lại</button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             {step === 1 && (
                                 <div className="space-y-8 animate-fade-in">
                                     <div className="space-y-6">
@@ -316,7 +348,7 @@ export default function CVBuilder() {
                                     </div>
 
                                     <div className="space-y-6">
-                                        {cvData.experiences.map((exp, index) => (
+                                    {cvData.experiences.map((exp) => (
                                             <div key={exp.id}
                                                  className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-green-500">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -660,9 +692,9 @@ export default function CVBuilder() {
                                     </p>
                                     <button
                                         onClick={handleSaveAndEdit}
-                                        disabled={isSaving}
-                                        className="px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105 disabled:opacity-50">
-                                        {isSaving ? 'Đang mở trình chỉnh sửa...' : 'Tiếp tục đến trình chỉnh sửa'} <ChevronRight className="w-5 h-5"/>
+                                        disabled={isSaving || quotaState.loading || Boolean(quotaState.error)}
+                                        className="mx-auto px-10 py-4 bg-green-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg hover:bg-green-800 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100">
+                                        {isSaving || quotaState.loading ? 'Đang kiểm tra lượt tạo CV...' : 'Tiếp tục đến trình chỉnh sửa'} <ChevronRight className="w-5 h-5"/>
                                     </button>
                                 </div>
                             )}

@@ -70,3 +70,10 @@ All commits must use the following prefixes:
 - **Frontend**: React 19, Tailwind CSS 4.0. Professional, rounded-2xl design system.
 - **Backend**: Java, Spring Boot. Strictly follow the Layered Architecture: `Controller` $\rightarrow$ `Service` $\rightarrow$ `Repository`.
 - **Documentation**: All session progress must be recorded in `SESSIONS.md`.
+
+## Test locations
+
+- Frontend tests: `frontend/tests/`. Run `npm test -- --test-concurrency=1` from `frontend/`.
+- Backend tests: `backend/tests/java/`, preserving Java package directories. Test configuration lives in `backend/tests/resources/`; Maven reads both locations through `backend/pom.xml`.
+- Manual SQL test fixtures: `backend/tests/fixtures/`. These scripts are run manually against a development database and are not included in application resources.
+- After pulling this layout change, reload the Maven project in IntelliJ so the test folders are recognized.
