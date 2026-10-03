@@ -18,7 +18,7 @@ public interface CVPipelineService {
     CVResponseDTO createCV(CVCreateRequestDTO request, Gallery gallery);
     CVResponseDTO updateCV(UUID id, CVUpdateRequestDTO request, Gallery gallery);
     CVImportResponseDTO importCV(byte[] fileContent, String contentType, String filename, Gallery gallery);
-    CVContent extractCV(byte[] fileContent, String contentType);
+    CVContent extractCV(byte[] fileContent, String contentType, Gallery gallery);
     CVOptimizationJobResponseDTO startOptimization(UUID cvId, CVOptimizationRequestDTO request, Gallery gallery);
     CVOptimizationStatusResponseDTO getOptimizationStatus(String jobId);
     CVOptimizationResultResponseDTO getOptimizationResult(String jobId);
