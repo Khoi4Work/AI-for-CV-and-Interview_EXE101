@@ -149,7 +149,15 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     @Override
-    public CVContent extractCV(byte[] fileContent, String contentType) {
+    public CVContent extractCV(byte[] fileContent, String contentType, Gallery gallery) {
+        String sourceHash = sha256(fileContent);
+        Optional<CV> existing = cvRepository.findByGalleryIdAndSourceHash(gallery.getId(), sourceHash);
+        if (existing.isPresent()) {
+            log.info("[CV] Reused saved CV content for builder import | cvId={} | galleryId={}",
+                    existing.get().getId(), gallery.getId());
+            return existing.get().getContent();
+        }
+
         CVImportModelResponseDTO parsed = aiProvider.parseCVFile(fileContent, contentType);
         CVContent extractedData = parsed == null ? null : parsed.getExtractedData();
         if (parsed == null || !Boolean.TRUE.equals(parsed.getIsCV()) || extractedData == null) {

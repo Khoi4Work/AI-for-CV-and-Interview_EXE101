@@ -20,6 +20,7 @@ import {Footer} from "../../../components/layout/Footer.jsx";
 import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
+import galleryService from '../../../service/galleryService.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
@@ -56,11 +57,37 @@ export default function CVBuilder() {
     const [step, setStep] = useState(1);
     const [jdText, setJdText] = useState('');
     const [isImporting, setIsImporting] = useState(false);
+    const [savedCVs, setSavedCVs] = useState([]);
+    const [showSavedCVPicker, setShowSavedCVPicker] = useState(false);
+    const [isLoadingSavedCVs, setIsLoadingSavedCVs] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const totalSteps = 5;
 
     const handleFileUpload = () => {
         document.getElementById('cv-upload-input').click();
+    };
+
+    const handleShowSavedCVs = async () => {
+        setShowSavedCVPicker(true);
+        if (savedCVs.length > 0) return;
+
+        setIsLoadingSavedCVs(true);
+        try {
+            const assets = await galleryService.getGalleryAssets();
+            setSavedCVs(assets?.cvs || []);
+        } catch (error) {
+            showToast(getApiErrorMessage(error, 'Không thể tải danh sách CV đã lưu.'), 'error');
+        } finally {
+            setIsLoadingSavedCVs(false);
+        }
+    };
+
+    const handleSelectSavedCV = (cvId) => {
+        const selectedCV = savedCVs.find((cv) => cv.id === cvId);
+        if (!selectedCV?.content) return;
+
+        setFullCVData(mapImportedCVData(selectedCV.content));
+        showToast(`Đã điền thông tin từ CV "${selectedCV.name || 'CV đã lưu'}".`, 'success');
     };
 
     const handleSaveAndEdit = async () => {
@@ -143,17 +170,46 @@ export default function CVBuilder() {
                                     </div>
                                     <h2 className="text-xl font-bold text-slate-800">Xây dựng nội dung CV</h2>
                                 </div>
-                                <button
-                                    onClick={handleFileUpload}
-                                    disabled={isImporting}
-                                    className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
-                                    <Download className="h-4 w-4"/>
-                                    {isImporting ? 'Đang trích xuất...' : 'Tải CV cũ'}
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <button
+                                        onClick={handleShowSavedCVs}
+                                        disabled={isLoadingSavedCVs}
+                                        className="text-sm font-medium text-green-700 hover:underline transition-colors disabled:opacity-50">
+                                        {isLoadingSavedCVs ? 'Đang tải CV đã lưu...' : 'Chọn CV đã lưu'}
+                                    </button>
+                                    <button
+                                        onClick={handleFileUpload}
+                                        disabled={isImporting}
+                                        className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
+                                        <Download className="h-4 w-4"/>
+                                        {isImporting ? 'Đang trích xuất...' : 'Tải CV cũ'}
+                                    </button>
                                     <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.doc,.docx"
                                         onChange={onFileChange}
                                     />
-                                </button>
+                                </div>
                             </div>
+
+                            {showSavedCVPicker && (
+                                <div className="px-6 pb-5 bg-slate-50/50">
+                                    <label htmlFor="saved-cv-picker" className="block text-xs font-semibold text-slate-600 mb-2">
+                                        Chọn CV trong gallery để điền thông tin
+                                    </label>
+                                    <select
+                                        id="saved-cv-picker"
+                                        defaultValue=""
+                                        disabled={isLoadingSavedCVs || savedCVs.length === 0}
+                                        onChange={(event) => handleSelectSavedCV(event.target.value)}
+                                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 disabled:bg-slate-100">
+                                        <option value="" disabled>
+                                            {isLoadingSavedCVs ? 'Đang tải...' : savedCVs.length ? 'Chọn CV đã lưu' : 'Chưa có CV nào trong gallery'}
+                                        </option>
+                                        {savedCVs.map((cv) => (
+                                            <option key={cv.id} value={cv.id}>{cv.name || 'CV không có tên'}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             {/* Stepper Visual */}
                             <div className="flex items-center gap-4">
@@ -638,7 +694,6 @@ export default function CVBuilder() {
                                 <h2 className="text-xl font-bold">Mô tả công việc (JD)</h2>
                             </div>
                             <div className="p-6 flex-grow flex flex-col">
-                                <p className="text-xs text-slate-500 mb-3">JD là tùy chọn để tham khảo. Bạn sẽ tải CV về máy ở trình chỉnh sửa; thao tác này không ghi CV vào DB và không tự chạy tối ưu.</p>
                                 <textarea value={jdText} onChange={e => setJdText(e.target.value)}
                                     placeholder="Dán nội dung mô tả công việc (không bắt buộc)..."
                                     className="w-full min-h-64 flex-grow p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-y" />

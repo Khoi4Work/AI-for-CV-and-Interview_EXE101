@@ -38,7 +38,7 @@ public class CVPipelineController {
     public ResponseEntity<ApiResponse<CVContent>> extractCV(@RequestParam("file") MultipartFile file) throws IOException {
         validateCVUpload(file);
         return ResponseEntity.ok(ApiResponse.success(
-                cvPipelineService.extractCV(file.getBytes(), file.getContentType()), "CV EXTRACTED"));
+                cvPipelineService.extractCV(file.getBytes(), file.getContentType(), currentGallery()), "CV EXTRACTED"));
     }
 
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
