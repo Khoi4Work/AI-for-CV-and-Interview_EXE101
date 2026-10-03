@@ -155,8 +155,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponseDTO> getPaymentHistory(UUID accountId) {
-        return orderRepository.findByAccountId(accountId).stream()
+        return orderRepository.findPaymentHistoryByAccountId(accountId).stream()
                 .map(this::mapToOrderResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -272,11 +273,13 @@ public class PaymentServiceImpl implements PaymentService {
     private OrderResponseDTO mapToOrderResponseDTO(Order order) {
         return OrderResponseDTO.builder()
                 .id(order.getId())
+                .serviceId(order.getService() == null ? null : order.getService().getId())
+                .serviceName(order.getService() == null ? null : order.getService().getName())
                 .amount(order.getAmount())
                 .status(order.getStatus())
-                .paymentStatus(order.getPaymentStatus().name())
-                .paymentMethod(order.getPaymentMethod().name())
-                .orderedAt(order.getOrderedAt())
+                .paymentStatus(order.getPaymentStatus() == null ? null : order.getPaymentStatus().name())
+                .paymentMethod(order.getPaymentMethod() == null ? null : order.getPaymentMethod().name())
+                .orderedAt(order.getOrderedAt() == null ? order.getCreatedAt() : order.getOrderedAt())
                 .checkoutUrl(order.getCheckoutUrl())
                 .build();
     }
