@@ -37,6 +37,8 @@ import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -66,6 +68,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final ObjectMapper objectMapper;
     private final InterviewAIProvider interviewAIProvider;
     private final InterviewVoiceService interviewVoiceService;
+    private final InterviewQuestionRelevanceService questionRelevanceService;
 
     @Override
     @Transactional
@@ -103,11 +106,18 @@ public class InterviewServiceImpl implements InterviewService {
         if (jd != null) availableContexts.add(QuestionContextType.JD);
         if (cv != null) availableContexts.add(QuestionContextType.CV);
         if (cv != null && jd != null) availableContexts.add(QuestionContextType.JD_AND_CV);
-        List<InterviewQuestion> questions = selectQuestions(type, level, language, availableContexts,
-                cv != null, jd != null, requestedQuestionCount);
+        String candidateContext = cv == null ? null : buildCandidateContext(cv);
+        List<InterviewQuestion> questionCandidates = findQuestionCandidates(type, level, language, availableContexts);
+        List<InterviewQuestion> questions = cv == null
+                ? prioritizeQuestions(questionCandidates, false, jd != null, requestedQuestionCount)
+                : questionRelevanceService.findRelevantQuestions(questionCandidates, candidateContext,
+                        requestedQuestionCount);
+        log.info("[INTERVIEW QUESTIONS] Bank retrieval completed | type={} | language={} | cvProvided={} | candidateCount={} | relevantCount={} | requiredCount={}",
+                type, language, cv != null, questionCandidates.size(), questions.size(), requestedQuestionCount);
         if (questions.size() < requestedQuestionCount) {
             int missingCount = requestedQuestionCount - questions.size();
-            InterviewQuestionGenerationDTO generated = interviewAIProvider.generateQuestions(type, level, missingCount, language);
+            InterviewQuestionGenerationDTO generated = interviewAIProvider.generateQuestions(
+                    type, level, missingCount, language, candidateContext);
             InterviewQuestionBank generalBank = questionBankRepository
                     .findFirstByCompanyIsNullAndInterviewTypeAndExperienceLevel(type, level)
                     .orElseGet(() -> questionBankRepository.save(InterviewQuestionBank.builder()
@@ -130,8 +140,20 @@ public class InterviewServiceImpl implements InterviewService {
                             .active(true)
                             .build())
                     .toList();
-            questionRepository.saveAll(newQuestions);
-            questions = selectQuestions(type, level, language, availableContexts, cv != null, jd != null, requestedQuestionCount);
+            List<InterviewQuestion> savedGeneratedQuestions = questionRepository.saveAll(newQuestions);
+            if (cv == null) {
+                questionCandidates = findQuestionCandidates(type, level, language, availableContexts);
+                questions = prioritizeQuestions(questionCandidates, false, jd != null, requestedQuestionCount);
+            } else {
+                List<InterviewQuestion> completedSelection = new ArrayList<>(questions);
+                for (InterviewQuestion generatedQuestion : savedGeneratedQuestions) {
+                    if (completedSelection.stream().noneMatch(question -> question.getId().equals(generatedQuestion.getId()))) {
+                        completedSelection.add(generatedQuestion);
+                    }
+                    if (completedSelection.size() == requestedQuestionCount) break;
+                }
+                questions = completedSelection;
+            }
         }
         if (questions.size() < requestedQuestionCount) {
             throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND,
@@ -499,17 +521,42 @@ public class InterviewServiceImpl implements InterviewService {
         return questionContext == QuestionContextType.GENERAL ? 2 : 3;
     }
 
-    private List<InterviewQuestion> selectQuestions(InterviewType type, ExperienceLevel level, String language,
-                                                    List<QuestionContextType> contexts,
-                                                    boolean hasCv, boolean hasJd, int limit) {
+    private List<InterviewQuestion> findQuestionCandidates(InterviewType type, ExperienceLevel level, String language,
+                                                           List<QuestionContextType> contexts) {
         return questionRepository
                 .findByLanguageAndBank_InterviewTypeAndBank_ExperienceLevelAndQuestionRoleAndContextTypeInAndActiveTrueOrderByCreatedAtAsc(
-                        language, type, level, QuestionRole.PRIMARY, contexts)
-                .stream()
+                        language, type, level, QuestionRole.PRIMARY, contexts);
+    }
+
+    private List<InterviewQuestion> prioritizeQuestions(List<InterviewQuestion> candidates,
+                                                        boolean hasCv, boolean hasJd, int limit) {
+        return candidates.stream()
                 .sorted(Comparator.comparingInt(question -> contextPriority(
                         question.getContextType(), hasCv, hasJd)))
                 .limit(limit)
                 .toList();
+    }
+
+    private String buildCandidateContext(CV cv) {
+        ObjectNode content = objectMapper.valueToTree(cv.getContent());
+        content.remove("personalInfo");
+        content.remove("selectedTemplateId");
+        removeFields(content, "experiences", "company");
+        removeFields(content, "education", "school", "gpa");
+        removeFields(content, "projects", "name", "url", "period");
+        removeFields(content, "certificates", "issuer", "date", "url");
+        removeFields(content, "awards", "issuer", "date");
+        String candidateContext = content.toString();
+        return candidateContext.length() > 10000 ? candidateContext.substring(0, 10000) : candidateContext;
+    }
+
+    private void removeFields(ObjectNode content, String listName, String... fields) {
+        if (!(content.get(listName) instanceof ArrayNode items)) return;
+        items.forEach(item -> {
+            if (item instanceof com.fasterxml.jackson.databind.node.ObjectNode objectNode) {
+                for (String field : fields) objectNode.remove(field);
+            }
+        });
     }
 
     private void validateSessionOptions(CreateInterviewSessionRequestDTO request) {

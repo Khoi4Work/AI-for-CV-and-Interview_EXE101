@@ -50,10 +50,11 @@ public class InterviewAIProviderImpl implements InterviewAIProvider {
     }
 
     @Override
-    public InterviewQuestionGenerationDTO generateQuestions(InterviewType type, ExperienceLevel level, int count, String language) {
+    public InterviewQuestionGenerationDTO generateQuestions(InterviewType type, ExperienceLevel level, int count,
+                                                            String language, String candidateContext) {
         try {
             String response = aiChatCompletionService.generateJson(
-                    Prompt.interviewQuestionGeneration(type, level, count, language), null,
+                    Prompt.interviewQuestionGeneration(type, level, count, language, candidateContext), null,
                     MAX_JSON_OUTPUT_TOKENS, "interview", "question-generation");
             InterviewQuestionGenerationDTO generated = objectMapper.readValue(
                     response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", ""),
