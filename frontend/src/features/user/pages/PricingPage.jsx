@@ -40,6 +40,33 @@ const PricingPage = () => {
         navigate(`/payment?serviceId=${serviceId}`);
     };
 
+    const getPlanAction = (category, targetPlan) => {
+        if (!quota) {
+            return quotaError
+                ? {label: 'Chọn gói', disabled: false, state: 'upgrade'}
+                : {label: 'Đang tải...', disabled: true, state: 'loading'};
+        }
+        const currentPlan = category === 'CV' ? quota.cvPlan : quota.interviewPlan;
+        const planLevels = {FREE: 0, MIDDLE: 1, ENHANCE: 2};
+        if (currentPlan === targetPlan) return {label: 'Đang sử dụng gói này', disabled: true, state: 'current'};
+        if ((planLevels[targetPlan] ?? 0) < (planLevels[currentPlan] ?? 0)) {
+            return {label: 'Gói thấp hơn', disabled: true, state: 'lower'};
+        }
+        return {label: 'Nâng cấp', disabled: false, state: 'upgrade'};
+    };
+
+    const handlePlanSelection = (category, targetPlan, serviceId) => {
+        if (getPlanAction(category, targetPlan).state !== 'upgrade') return;
+        navigate(`/payment?serviceId=${serviceId}`);
+    };
+
+    const planButtonClass = (action, upgradeClass) =>
+        `w-full mt-auto ${action.state === 'current'
+            ? '!bg-transparent border border-slate-400 !text-slate-600 cursor-default'
+            : action.state === 'lower'
+                ? '!bg-transparent border border-slate-300 !text-slate-400 cursor-not-allowed'
+                : upgradeClass}`;
+
     const toggleFaq = (idx) => {
         setActiveFaq((prev) => (prev === idx ? null : idx));
     };
@@ -228,9 +255,9 @@ const PricingPage = () => {
                                 tích CV 1 lần (Chấm điểm tổng quan)
                             </li>
                         </ul>
-                        <Button variant="outline"
-                                className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">
-                            Đang dùng miễn phí
+                        <Button variant="outline" disabled
+                                className={`w-full mt-auto !bg-transparent border !text-slate-600 cursor-default ${quota?.cvPlan === 'FREE' ? '!border-slate-400' : '!border-slate-300'}`}>
+                            {quota?.cvPlan === 'FREE' ? 'Đang sử dụng gói này' : 'Gói miễn phí'}
                         </Button>
                     </div>
 
@@ -266,10 +293,11 @@ const PricingPage = () => {
                             </li>
                         </ul>
                         <Button
-                            className="w-full mt-auto bg-[#9333EA]  hover:bg-[#7E22CE] text-white"
-                            onClick={() => navigate('/payment?serviceId=550e8400-e29b-41d4-a716-446655440000')}
+                            disabled={getPlanAction('CV', 'MIDDLE').disabled}
+                            className={planButtonClass(getPlanAction('CV', 'MIDDLE'), 'bg-[#9333EA] hover:bg-[#7E22CE] text-white')}
+                            onClick={() => handlePlanSelection('CV', 'MIDDLE', '550e8400-e29b-41d4-a716-446655440000')}
                         >
-                            Nâng cấp
+                            {getPlanAction('CV', 'MIDDLE').label}
                         </Button>
                     </div>
 
@@ -298,10 +326,11 @@ const PricingPage = () => {
                         </ul>
                         <Button
                             variant="primary"
-                            className="w-full mt-auto"
-                            onClick={() => navigate('/payment?serviceId=660f9501-f30c-52e5-b827-557766551111')}
+                            disabled={getPlanAction('CV', 'ENHANCE').disabled}
+                            className={planButtonClass(getPlanAction('CV', 'ENHANCE'), '')}
+                            onClick={() => handlePlanSelection('CV', 'ENHANCE', '660f9501-f30c-52e5-b827-557766551111')}
                         >
-                            Nâng cấp
+                            {getPlanAction('CV', 'ENHANCE').label}
                         </Button>
                     </div>
                 </div>
@@ -392,12 +421,13 @@ const PricingPage = () => {
                             </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
                                                                                 className="!text-[#065F46] shrink-0 mt-0.5"/> Chưa
-                                hỗ trợ ghi hình phỏng vấn
+                                hỗ trợ ghi lại hội thoại
                             </li>
                         </ul>
-                        <Button variant="outline"
-                                className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46] hover:!bg-[#065F46] hover:!text-white transition-colors">Dùng
-                            thử miễn phí</Button>
+                        <Button variant="outline" disabled
+                                className={`w-full mt-auto !bg-transparent border !text-slate-600 cursor-default ${quota?.interviewPlan === 'FREE' ? '!border-slate-400' : '!border-slate-300'}`}>
+                            {quota?.interviewPlan === 'FREE' ? 'Đang sử dụng gói này' : 'Gói miễn phí'}
+                        </Button>
                     </div>
 
                     {/* Middle */}
@@ -428,14 +458,15 @@ const PricingPage = () => {
                             </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
                                                                                 className="!text-[#7C3AED] shrink-0 mt-0.5"/>Hỗ
-                                trợ Ghi hình (3 lượt)
+                                trợ ghi lại hội thoại (3 lượt)
                             </li>
                         </ul>
                         <Button
-                            className="w-full mt-auto !bg-[#7C3AED] hover:!bg-[#7E22CE]  !text-white"
-                            onClick={() => navigate('/payment?serviceId=770f9501-f30c-52e5-b827-557766552222')}
+                            disabled={getPlanAction('INTERVIEW', 'MIDDLE').disabled}
+                            className={planButtonClass(getPlanAction('INTERVIEW', 'MIDDLE'), '!bg-[#7C3AED] hover:!bg-[#7E22CE] !text-white')}
+                            onClick={() => handlePlanSelection('INTERVIEW', 'MIDDLE', '770f9501-f30c-52e5-b827-557766552222')}
                         >
-                            Nâng cấp
+                            {getPlanAction('INTERVIEW', 'MIDDLE').label}
                         </Button>
                     </div>
 
@@ -467,14 +498,15 @@ const PricingPage = () => {
                             </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
                                                                                 className="!text-[#2563EB] shrink-0 mt-0.5"/> Hỗ
-                                trợ Ghi hình đánh giá (6 lượt)
+                                trợ ghi lại hội thoại (6 lượt)
                             </li>
                         </ul>
                         <Button
-                            className="w-full mt-auto bg-[#10B981] hover:bg-[#059669] text-white"
-                            onClick={() => navigate('/payment?serviceId=880f9501-f30c-52e5-b827-557766553333')}
+                            className={planButtonClass(getPlanAction('INTERVIEW', 'ENHANCE'), 'bg-[#10B981] hover:bg-[#059669] text-white')}
+                            disabled={getPlanAction('INTERVIEW', 'ENHANCE').disabled}
+                            onClick={() => handlePlanSelection('INTERVIEW', 'ENHANCE', '880f9501-f30c-52e5-b827-557766553333')}
                         >
-                            Nâng cấp
+                            {getPlanAction('INTERVIEW', 'ENHANCE').label}
                         </Button>
                     </div>
                 </div>
@@ -540,12 +572,12 @@ const PricingPage = () => {
                                 <div className="text-[#10B981] md:table-cell"><CheckCircle size={18} className="mx-auto"/></div>
                             </div>
                             <div className="grid grid-cols-1 md:table-row">
-                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Ghi
-                                    hình
+                                <div className="py-4 px-6 text-left font-medium border-r border-slate-300 text-[#0F172A] bg-slate-100 md:bg-transparent md:table-cell">Ghi lại
+                                    hội thoại
                                 </div>
                                 <div className="md:table-cell">–</div>
-                                <div className="md:table-cell">3 lần</div>
-                                <div className="md:table-cell">6 lần</div>
+                                <div className="md:table-cell">3 lượt</div>
+                                <div className="md:table-cell">6 lượt</div>
                             </div>
                             </div>
                         </div>
