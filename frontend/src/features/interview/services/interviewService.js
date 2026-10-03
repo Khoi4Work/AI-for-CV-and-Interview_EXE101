@@ -23,6 +23,10 @@ export const interviewService = {
     await apiClient.post(`/interview/sessions/${sessionId}/evaluate`),
   ),
 
+  getSessionDetail: async (sessionId) => resultOf(
+    await apiClient.get(`/interview/sessions/${sessionId}`),
+  ),
+
   finishSession: async (sessionId) => resultOf(
     await apiClient.post(`/interview/sessions/${sessionId}/finish`, {}, { timeout: 10000 }),
   ),

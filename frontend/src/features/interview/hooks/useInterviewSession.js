@@ -101,6 +101,14 @@ function toFeedback(evaluation, state) {
   };
 }
 
+function normalizeSavedAnswers(savedAnswers = []) {
+  return savedAnswers.map((answer) => ({
+    qid: answer.questionId,
+    text: answer.answerText || '',
+    skipped: Boolean(answer.isSkipped),
+  }));
+}
+
 export function useInterviewSession() {
   const [data, setData] = useState(loadSession);
   const dataRef = useRef(data);
@@ -254,9 +262,13 @@ export function useInterviewSession() {
     if (!data.backendSessionId) return Promise.reject(new Error('Không tìm thấy interview session trên máy chủ.'));
 
     evaluatePromiseRef.current = interviewService.evaluateSession(data.backendSessionId)
-      .then((evaluation) => {
-        const feedback = toFeedback(evaluation, data);
-        const next = { ...data, feedback, endedAt: Date.now(), sessionError: null };
+      .then(async (evaluation) => {
+        // The backend is the source of truth for answers used during evaluation.
+        // Browser session storage can be stale after navigation or a refresh.
+        const detail = await interviewService.getSessionDetail(data.backendSessionId);
+        const answers = normalizeSavedAnswers(detail.answers);
+        const feedback = toFeedback(evaluation, { ...data, answers });
+        const next = { ...data, answers, feedback, endedAt: Date.now(), sessionError: null };
         dataRef.current = next;
         saveSession(next);
         setData(next);
