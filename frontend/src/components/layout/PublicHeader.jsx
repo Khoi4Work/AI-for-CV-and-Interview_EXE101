@@ -1,13 +1,17 @@
 import {useState, useEffect, useRef} from 'react';
 import {Link, useLocation, useNavigate} from 'react-router-dom';
 import {User, Shield, CreditCard, Clock, FileText, LogOut, Menu, X} from 'lucide-react';
+import {createPortal} from 'react-dom';
 import {useAuth} from "../../features/auth/contexts/AuthContext.jsx";
 import logo from '../../assets/logo.jpg';
 
 export function Header() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const dropdownMenuRef = useRef(null);
+    const avatarRef = useRef(null);
     const location = useLocation();
     const isHome = location.pathname === '/home' || location.pathname === '/';
     const isInterview = location.pathname === '/interview';
@@ -18,7 +22,8 @@ export function Header() {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            if (!dropdownRef.current?.contains(event.target)
+                && !dropdownMenuRef.current?.contains(event.target)) {
                 setDropdownOpen(false);
             }
         };
@@ -29,6 +34,25 @@ export function Header() {
     useEffect(() => {
         setDropdownOpen(false);
     }, [location.pathname]);
+
+    useEffect(() => {
+        if (!dropdownOpen) return undefined;
+
+        const updateDropdownPosition = () => {
+            const anchor = avatarRef.current?.getBoundingClientRect();
+            if (!anchor) return;
+            const top = Math.max(8, Math.min(anchor.bottom + 8, window.innerHeight - 160));
+            setDropdownPosition({top, right: Math.max(8, window.innerWidth - anchor.right)});
+        };
+
+        updateDropdownPosition();
+        window.addEventListener('resize', updateDropdownPosition);
+        window.addEventListener('scroll', updateDropdownPosition, true);
+        return () => {
+            window.removeEventListener('resize', updateDropdownPosition);
+            window.removeEventListener('scroll', updateDropdownPosition, true);
+        };
+    }, [dropdownOpen]);
 
     const logout = async () => {
         await handleLogout();
@@ -94,17 +118,30 @@ export function Header() {
                 </button>
 
                 <div className="relative" ref={dropdownRef}>
-                    <div
-                        className="w-10 h-10 rounded-full overflow-hidden border border-outline-variant bg-surface-container cursor-pointer hover:ring-2 ring-primary transition-all"
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                    <button
+                        ref={avatarRef}
+                        type="button"
+                        aria-label="Mở menu tài khoản"
+                        aria-haspopup="menu"
+                        aria-expanded={dropdownOpen}
+                        className="block w-10 h-10 rounded-full overflow-hidden border border-outline-variant bg-surface-container cursor-pointer hover:ring-2 ring-primary transition-all"
+                        onClick={() => setDropdownOpen((open) => !open)}
                     >
                         <img alt="User avatar" className="w-full h-full object-cover"
                              src="https://i.postimg.cc/TPSD2BTv/avatar.avif"/>
-                    </div>
+                    </button>
 
-                    {dropdownOpen && (
+                    {dropdownOpen && dropdownPosition && createPortal(
                         <div
-                            className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-64 bg-surface-container/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-outline-variant py-2 z-[60] animate-fade-in">
+                            ref={dropdownMenuRef}
+                            role="menu"
+                            style={{
+                                position: 'fixed',
+                                top: dropdownPosition.top,
+                                right: dropdownPosition.right,
+                                maxHeight: `calc(100dvh - ${dropdownPosition.top}px - 16px)`,
+                            }}
+                            className="w-64 max-w-[calc(100vw-2rem)] overflow-y-auto bg-surface-container/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-outline-variant py-2 z-[1000] animate-fade-in">
                             <div className="px-4 py-2 mb-2 border-b border-outline-variant/50">
                                 <p className="text-xs font-bold text-primary uppercase tracking-wider">Tài khoản của
                                     tôi</p>
@@ -115,6 +152,7 @@ export function Header() {
                                         key={item.path}
                                         to={item.path}
                                         onClick={() => setDropdownOpen(false)}
+                                        role="menuitem"
                                         className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all group"
                                     >
                                         <item.icon className="w-4 h-4 text-outline group-hover:text-on-primary"/>
@@ -125,6 +163,7 @@ export function Header() {
                                 <button
                                     onClick={logout}
                                     disabled={isLoggingOut}
+                                    role="menuitem"
                                     className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all group ${
                                         isLoggingOut
                                         ? 'opacity-50 cursor-not-allowed'
@@ -135,7 +174,8 @@ export function Header() {
                                     <span>{isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}</span>
                                 </button>
                             </div>
-                        </div>
+                        </div>,
+                        document.body,
                     )}
                 </div>
             </div>
