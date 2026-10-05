@@ -1,8 +1,8 @@
--- Monthly subscriptions are separate catalog products for CV and Interview.
+-- CV billing_units are one-time CV creation credits; Interview billing_units are one-time minute grants.
 INSERT INTO payment_services (id, name, category, package_code, price, billing_units, created_at)
 VALUES
-    ('550e8400-e29b-41d4-a716-446655440000', 'CV Middle', 'CV', 'MIDDLE', 39000, 5, NOW()),
-    ('660f9501-f30c-52e5-b827-557766551111', 'CV Enhance', 'CV', 'ENHANCE', 59000, 10, NOW()),
+    ('550e8400-e29b-41d4-a716-446655440000', 'CV Middle', 'CV', 'MIDDLE', 39000, 3, NOW()),
+    ('660f9501-f30c-52e5-b827-557766551111', 'CV Enhance', 'CV', 'ENHANCE', 59000, 4, NOW()),
     ('770f9501-f30c-52e5-b827-557766552222', 'Interview Middle', 'INTERVIEW', 'MIDDLE', 69000, 30, NOW()),
     ('880f9501-f30c-52e5-b827-557766553333', 'Interview Enhance', 'INTERVIEW', 'ENHANCE', 129000, 120, NOW())
 ON CONFLICT (id) DO UPDATE SET
@@ -16,7 +16,7 @@ ON CONFLICT (id) DO UPDATE SET
 INSERT INTO cv_benefit (id, service_id, max_templates, allow_semantic_sugg, allow_skill_sugg, show_pass_rate, created_at)
 VALUES
     ('a1111111-1111-1111-1111-111111111111', '550e8400-e29b-41d4-a716-446655440000', 5, true, true, false, NOW()),
-    ('a2222222-2222-2222-2222-222222222222', '660f9501-f30c-52e5-b827-557766551111', 10, true, true, true, NOW())
+    ('a2222222-2222-2222-2222-222222222222', '660f9501-f30c-52e5-b827-557766551111', 6, true, true, true, NOW())
 ON CONFLICT (id) DO UPDATE SET
     service_id = EXCLUDED.service_id,
     max_templates = EXCLUDED.max_templates,

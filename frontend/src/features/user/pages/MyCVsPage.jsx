@@ -23,6 +23,7 @@ export default function MyCVsPage() {
     const visibleCVs = cvs.map(mapCV).filter(cv => filter === 'All' || cv.status === filter);
 
     const handleDelete = async cv => {
+        if (!window.confirm(`Xóa “${cv.title}”? Lượt tạo đã dùng sẽ không được hoàn lại; bạn vẫn giữ các quota đã mua còn lại.`)) return;
         if (deletingRef.current.has(cv.id)) return;
         deletingRef.current.add(cv.id);
         setDeleting([...deletingRef.current]);
@@ -79,6 +80,7 @@ export default function MyCVsPage() {
                                 <p className="text-xs">Cập nhật: {cv.updatedLabel}</p>
                                 {cv.score != null && <p className="text-sm">Điểm CV: {cv.score}</p>}
                                 {cv.atsScore != null && <p className="text-sm">Điểm ATS: {cv.atsScore}</p>}
+                                {Number.isInteger(cv.aiAnalysisLimit) && <p className="text-xs">Còn {cv.aiAnalysisRemaining ?? 0}/{cv.aiAnalysisLimit} lượt phân tích AI</p>}
                                 <button disabled title="Chức năng mở lại CV để chỉnh sửa đang được hoàn thiện"
                                     className="w-full pt-3 border-t border-slate-300 text-xs text-slate-500 cursor-not-allowed">Chỉnh sửa nội dung (sắp có)</button>
                             </div>

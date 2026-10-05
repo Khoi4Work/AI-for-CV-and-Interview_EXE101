@@ -13,6 +13,8 @@ public class CVEvaluationResponseDTO {
     private Integer score;
     private Analysis analysis;
     private Integer atsCompatibility;
+    private Integer cvAiAnalysisLimit;
+    private Integer cvAiAnalysisRemaining;
 
     @Data
     @Builder

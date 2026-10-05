@@ -31,16 +31,19 @@ public class QuotaController {
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Account not found"));
 
         usageQuotaService.initializeDefaultQuota(account.getId());
-        usageQuotaService.refreshSubscriptionState(account.getId());
         UserUsageQuota quota = usageQuotaService.getQuota(account.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Quota not found"));
 
         QuotaResponseDTO response = QuotaResponseDTO.builder()
                 .remainingCvCount(quota.getRemainingCvCnt())
+                .remainingCvFreeCredits(quota.getRemainingCvFreeCredits())
+                .remainingCvMiddleCredits(quota.getRemainingCvMiddleCredits())
+                .remainingCvEnhanceCredits(quota.getRemainingCvEnhanceCredits())
                 .remainingInterviewMinutes(quota.getRemainingIntMin())
-                .remainingAiCvCnt(quota.getRemainingCvAiCnt())
                 .cvPlan(quota.getCvPlan())
                 .interviewPlan(quota.getInterviewPlan())
+                .cvNonExpiring(true)
+                .interviewNonExpiring(true)
                 .cvPeriodEnd(quota.getCvPeriodEnd())
                 .interviewPeriodEnd(quota.getInterviewPeriodEnd())
                 .build();

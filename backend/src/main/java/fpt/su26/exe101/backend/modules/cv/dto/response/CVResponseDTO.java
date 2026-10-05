@@ -27,6 +27,8 @@ public class CVResponseDTO {
     @Builder.Default
     private String status = "DRAFT";
     private String image;
+    private Integer aiAnalysisLimit;
+    private Integer aiAnalysisRemaining;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -164,14 +164,18 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public QuotaResponseDTO getCurrentQuota(UUID accountId) {
-        usageQuotaService.refreshSubscriptionState(accountId);
+        usageQuotaService.initializeDefaultQuota(accountId);
         return usageQuotaService.getQuota(accountId)
                 .map(quota -> QuotaResponseDTO.builder()
                         .remainingCvCount(quota.getRemainingCvCnt())
+                        .remainingCvFreeCredits(quota.getRemainingCvFreeCredits())
+                        .remainingCvMiddleCredits(quota.getRemainingCvMiddleCredits())
+                        .remainingCvEnhanceCredits(quota.getRemainingCvEnhanceCredits())
                         .remainingInterviewMinutes(quota.getRemainingIntMin())
-                        .remainingAiCvCnt(quota.getRemainingCvAiCnt())
                         .cvPlan(quota.getCvPlan())
                         .interviewPlan(quota.getInterviewPlan())
+                        .cvNonExpiring(true)
+                        .interviewNonExpiring(true)
                         .cvPeriodEnd(quota.getCvPeriodEnd())
                         .interviewPeriodEnd(quota.getInterviewPeriodEnd())
                         .build())
@@ -184,11 +188,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         UserPlan plan = UserPlan.valueOf(service.getPackageCode().name());
         if (service.getCategory() == PaymentServiceEntity.ServiceCategory.CV) {
-            usageQuotaService.activateCvSubscription(accountId, plan, service.getBillingUnits());
+            usageQuotaService.grantCvPackage(accountId, plan, service.getBillingUnits());
         } else if (service.getCategory() == PaymentServiceEntity.ServiceCategory.INTERVIEW) {
-            usageQuotaService.activateInterviewSubscription(accountId, plan, service.getBillingUnits());
+            usageQuotaService.grantInterviewPackage(accountId, plan, service.getBillingUnits());
         }
-        log.info("[PAYMENT] Monthly subscription activated | accountId={} | category={} | plan={} | includedUnits={}",
+        log.info("[PAYMENT] Package granted | accountId={} | category={} | plan={} | includedUnits={}",
                 accountId, service.getCategory(), plan, service.getBillingUnits());
     }
 

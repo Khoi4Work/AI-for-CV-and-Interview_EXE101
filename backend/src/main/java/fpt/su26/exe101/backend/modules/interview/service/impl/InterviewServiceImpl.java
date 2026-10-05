@@ -74,6 +74,7 @@ public class InterviewServiceImpl implements InterviewService {
     @Transactional
     public CreateInterviewSessionResponseDTO createSession(CreateInterviewSessionRequestDTO request) {
         Gallery gallery = galleryService.getCurrentGallery();
+        usageQuotaService.initializeDefaultQuota(gallery.getAccountId());
         InterviewType type = parseInterviewType(request.getInterviewType());
         ExperienceLevel level = parseExperienceLevel(request.getExperienceLevel());
         validateSessionOptions(request);
@@ -89,8 +90,6 @@ public class InterviewServiceImpl implements InterviewService {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION,
                     "Your current plan allows interviews up to " + maxDuration + " minutes.");
         }
-        usageQuotaService.refreshSubscriptionState(gallery.getAccountId());
-
         CV cv = request.getCvId() == null ? null : cvPipelineService.getCVForInterview(request.getCvId(), gallery);
         JobDescription jd = resolveJobDescription(request, gallery);
         int requestedQuestionCount = switch (request.getDurationMinutes()) {
@@ -183,9 +182,6 @@ public class InterviewServiceImpl implements InterviewService {
         snapshot.put("questions", questionSnapshot);
 
         usageQuotaService.consumeInterviewMinutes(gallery.getAccountId(), request.getDurationMinutes());
-        LocalDateTime interviewPeriodStart = usageQuotaService.getQuota(gallery.getAccountId())
-                .map(fpt.su26.exe101.backend.modules.quota.entity.UserUsageQuota::getInterviewPeriodStart)
-                .orElse(null);
         InterviewSession session = InterviewSession.builder()
                 .gallery(gallery)
                 .cv(cv)
@@ -197,7 +193,6 @@ public class InterviewServiceImpl implements InterviewService {
                 .sessionDate(LocalDateTime.now())
                 .interviewStartedAt(LocalDateTime.now())
                 .reservedInterviewMinutes(request.getDurationMinutes())
-                .quotaPeriodStartAtReservation(interviewPeriodStart)
                 .status(InterviewSessionStatus.IN_PROGRESS)
                 .build();
         InterviewSession saved = sessionRepository.save(session);
@@ -397,8 +392,7 @@ public class InterviewServiceImpl implements InterviewService {
             actualMinutes = Math.min(Math.max(1, actualMinutes), session.getReservedInterviewMinutes());
         }
         int unusedMinutes = session.getReservedInterviewMinutes() - actualMinutes;
-        if (unusedMinutes > 0) usageQuotaService.refundInterviewMinutes(accountId, unusedMinutes,
-                session.getQuotaPeriodStartAtReservation());
+        if (unusedMinutes > 0) usageQuotaService.refundInterviewMinutes(accountId, unusedMinutes);
         session.setReservedInterviewMinutes(actualMinutes);
         session.setInterviewQuotaSettled(true);
         log.info("[INTERVIEW] Reserved minutes settled | sessionId={} | chargedMinutes={} | refundedMinutes={}",

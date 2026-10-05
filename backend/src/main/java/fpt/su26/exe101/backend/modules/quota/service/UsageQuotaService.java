@@ -11,12 +11,12 @@ public interface UsageQuotaService {
     UserPlan getCvPlan(UUID accountId);
     UserPlan getInterviewPlan(UUID accountId);
     Optional<UserUsageQuota> getQuota(UUID accountId);
-    void consumeCvCreation(UUID accountId);
-    void consumeCvAiAnalysis(UUID accountId);
-    void refundCvAiAnalysis(UUID accountId);
+    void requireCvCreationCredit(UUID accountId);
+    CvCreationQuota consumeCvCreation(UUID accountId);
     void consumeInterviewMinutes(UUID accountId, int minutes);
-    void refundInterviewMinutes(UUID accountId, int minutes, java.time.LocalDateTime periodStart);
-    void activateCvSubscription(UUID accountId, UserPlan plan, int cvCount);
-    void activateInterviewSubscription(UUID accountId, UserPlan plan, int interviewMinutes);
-    void refreshSubscriptionState(UUID accountId);
+    void refundInterviewMinutes(UUID accountId, int minutes);
+    void grantCvPackage(UUID accountId, UserPlan plan, int cvCount);
+    void grantInterviewPackage(UUID accountId, UserPlan plan, int interviewMinutes);
+
+    record CvCreationQuota(UserPlan plan, int aiAnalysisLimit, int aiAnalysisRemaining) {}
 }

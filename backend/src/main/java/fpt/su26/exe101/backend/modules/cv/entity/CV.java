@@ -51,4 +51,12 @@ public class CV extends BaseEntity {
 
     @Column(name = "source_hash", length = 64)
     private String sourceHash;
+
+    @Builder.Default
+    @Column(name = "ai_analysis_limit", nullable = false)
+    private int aiAnalysisLimit = 1;
+
+    @Builder.Default
+    @Column(name = "ai_analysis_remaining", nullable = false)
+    private int aiAnalysisRemaining = 1;
 }

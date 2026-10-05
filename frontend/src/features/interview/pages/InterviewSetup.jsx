@@ -32,6 +32,7 @@ export default function InterviewSetup() {
   const maxDuration = quota?.interviewPlan === 'ENHANCE' ? 15 : quota?.interviewPlan === 'MIDDLE' ? 10 : 5;
   const remainingMinutes = Number(quota?.remainingInterviewMinutes ?? 0);
   const canChooseDuration = (minutes) => minutes <= maxDuration && minutes <= remainingMinutes;
+  const hasAvailableDuration = DURATIONS.some((item) => canChooseDuration(item.value));
 
   useEffect(() => {
     if (!quota || canChooseDuration(Number(duration))) return;
@@ -151,6 +152,25 @@ export default function InterviewSetup() {
                       </button>
                     ))}
                   </div>
+                  {quota && !hasAvailableDuration && (
+                    <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3" role="status">
+                      <p className="text-sm font-semibold text-amber-900">
+                        {remainingMinutes <= 0
+                          ? 'Bạn đã dùng hết quota Interview.'
+                          : `Bạn còn ${remainingMinutes} phút, chưa đủ cho buổi phỏng vấn tối thiểu 5 phút.`}
+                      </p>
+                      <p className="mt-1 text-xs text-amber-800">
+                        Mua thêm phút để tiếp tục. Quota mới sẽ được cộng vào số phút hiện có và không hết hạn.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/pricing#interview-plans')}
+                        className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-amber-900 underline underline-offset-2"
+                      >
+                        Mua thêm quota Interview <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
