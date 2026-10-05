@@ -14,8 +14,8 @@ public class AIChatClientConfig {
         return ChatClient.builder(model).build();
     }
 
-    @Bean("deepSeekChatClient")
-    ChatClient deepSeekChatClient(OpenAiChatModel model) {
+    @Bean("groqChatClient")
+    ChatClient groqChatClient(OpenAiChatModel model) {
         return ChatClient.builder(model).build();
     }
 }
