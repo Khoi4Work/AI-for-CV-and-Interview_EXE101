@@ -11,6 +11,7 @@ import fpt.su26.exe101.backend.modules.gallery.entity.*;
 import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
 import fpt.su26.exe101.backend.modules.gallery.repository.GalleryRepository;
 import fpt.su26.exe101.backend.modules.gallery.repository.JobDescriptionRepository;
+import fpt.su26.exe101.backend.modules.gallery.entity.enums.JobDescriptionSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -69,7 +70,8 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
     @Override
     public JobDescription findJobDescription(UUID id, Gallery gallery) {
         return jdRepository.findById(id)
-                .filter(jd -> jd.getGallery().getId().equals(gallery.getId()))
+                .filter(jd -> jd.getSource() == JobDescriptionSource.USER
+                        && jd.getGallery() != null && jd.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Job Description not found"));
     }
 
@@ -88,14 +90,15 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
             throw new IllegalStateException("SHA-256 is unavailable", e);
         }
         return jdRepository.findByGalleryIdAndContentHash(gallery.getId(), hash).orElseGet(() ->
-                jdRepository.save(JobDescription.builder().gallery(gallery).title("User provided JD")
-                        .content(jdText.trim()).contentHash(hash).build()));
+                jdRepository.save(JobDescription.builder().gallery(gallery).source(JobDescriptionSource.USER)
+                        .title("User provided JD").content(jdText.trim()).contentHash(hash).build()));
     }
 
     @Override
     public List<JDResponseDTO> getJobDescriptionsForCurrentGallery() {
         Gallery gallery = getGalleryForCurrentUser();
-        List<JobDescription> jds = jdRepository.findByGalleryId(gallery.getId());
+        List<JobDescription> jds = jdRepository.findByGalleryId(gallery.getId()).stream()
+                .filter(jd -> jd.getSource() == JobDescriptionSource.USER).toList();
         return galleryMapper.jdsToJDResponses(jds);
     }
 
@@ -106,6 +109,7 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
 
         JobDescription jd = JobDescription.builder()
                 .gallery(gallery)
+                .source(JobDescriptionSource.USER)
                 .title(request.getTitle())
                 .content(request.getContent())
                 .companyName(request.getCompanyName())
@@ -124,7 +128,8 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Job Description not found"));
 
         Gallery gallery = getGalleryForCurrentUser();
-        if (!jd.getGallery().getId().equals(gallery.getId())) {
+        if (jd.getSource() != JobDescriptionSource.USER || jd.getGallery() == null
+                || !jd.getGallery().getId().equals(gallery.getId())) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
 
@@ -145,7 +150,8 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Job Description not found"));
 
         Gallery gallery = getGalleryForCurrentUser();
-        if (!jd.getGallery().getId().equals(gallery.getId())) {
+        if (jd.getSource() != JobDescriptionSource.USER || jd.getGallery() == null
+                || !jd.getGallery().getId().equals(gallery.getId())) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
 

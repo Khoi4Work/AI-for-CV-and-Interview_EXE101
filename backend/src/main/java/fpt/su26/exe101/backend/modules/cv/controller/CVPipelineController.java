@@ -12,6 +12,7 @@ import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
+import fpt.su26.exe101.backend.modules.cv.service.JDRecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
@@ -32,6 +34,7 @@ public class CVPipelineController {
     private static final long MAX_CV_FILE_SIZE = 5L * 1024 * 1024;
     private final CVPipelineService cvPipelineService;
     private final GalleryService galleryService;
+    private final JDRecommendationService jdRecommendationService;
 
     // --- Import ---
     @PostMapping(value = "/extract", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -49,6 +52,12 @@ public class CVPipelineController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
                 cvPipelineService.importCV(file.getBytes(), file.getContentType(), filename, currentGallery()),
                 "IMPORT SUCCESS"));
+    }
+
+    @GetMapping("/{id}/jd-recommendations")
+    public ResponseEntity<ApiResponse<List<JDRecommendationResponseDTO>>> recommendJDs(@PathVariable UUID id) {
+        Gallery gallery = currentGallery();
+        return ResponseEntity.ok(ApiResponse.success(jdRecommendationService.recommend(id, gallery.getId())));
     }
 
     private void validateCVUpload(MultipartFile file) {
