@@ -82,7 +82,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenRefreshResponseDTO refresh(RefreshTokenRequestDTO request) {
-        Token token = tokenRepository.findByRefreshToken(request.getRefreshToken())
+        if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Invalid or expired refresh token");
+        }
+        String refreshToken = request.getRefreshToken().trim();
+        if (!tokenProvider.validateRefreshToken(refreshToken)) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Invalid or expired refresh token");
+        }
+        Token token = tokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new ApiException(ErrorCode.INVALID_INPUT, "Invalid or expired refresh token"));
 
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -95,6 +102,7 @@ public class AuthServiceImpl implements AuthService {
                 account.getEmail(),
                 Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + account.getRole().name()))
         );
+        log.info("[AUTH] Access token refreshed | accountId={}", account.getId());
 
         return TokenRefreshResponseDTO.builder()
                 .accessToken(accessToken)
