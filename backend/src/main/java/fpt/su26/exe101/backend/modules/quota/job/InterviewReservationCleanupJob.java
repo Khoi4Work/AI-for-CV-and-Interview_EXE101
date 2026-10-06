@@ -1,4 +1,4 @@
-package fpt.su26.exe101.backend.modules.quota.service.impl;
+package fpt.su26.exe101.backend.modules.quota.job;
 
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewSession;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSessionStatus;

@@ -8,7 +8,7 @@ import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.cv.entity.CVTemplate;
 import fpt.su26.exe101.backend.modules.cv.repository.CVTemplateRepository;
-import fpt.su26.exe101.backend.modules.cv.service.TemplateAccessPolicy;
+import fpt.su26.exe101.backend.modules.cv.policy.TemplateAccessPolicy;
 import fpt.su26.exe101.backend.modules.cv.entity.CVFeedback;
 import fpt.su26.exe101.backend.modules.cv.entity.CVOptimizationJob;
 import fpt.su26.exe101.backend.modules.cv.entity.CVOptimizationLog;

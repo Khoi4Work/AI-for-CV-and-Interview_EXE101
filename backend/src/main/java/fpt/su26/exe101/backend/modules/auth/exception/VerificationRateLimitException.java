@@ -1,4 +1,4 @@
-package fpt.su26.exe101.backend.modules.auth.service;
+package fpt.su26.exe101.backend.modules.auth.exception;
 
 import fpt.su26.exe101.backend.base.exception.*;
 

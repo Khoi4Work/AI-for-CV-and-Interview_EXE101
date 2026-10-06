@@ -34,6 +34,7 @@ import fpt.su26.exe101.backend.modules.interview.repository.InterviewSessionRepo
 import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewQuestionRelevanceService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

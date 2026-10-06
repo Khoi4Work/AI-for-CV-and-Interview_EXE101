@@ -1,6 +1,7 @@
 package fpt.su26.exe101.backend.modules.auth.controller;
 
 import fpt.su26.exe101.backend.base.exception.*;
+import fpt.su26.exe101.backend.modules.auth.exception.VerificationRateLimitException;
 import fpt.su26.exe101.backend.modules.auth.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

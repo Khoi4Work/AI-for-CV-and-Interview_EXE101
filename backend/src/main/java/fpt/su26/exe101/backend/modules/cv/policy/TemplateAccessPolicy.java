@@ -1,4 +1,4 @@
-package fpt.su26.exe101.backend.modules.cv.service;
+package fpt.su26.exe101.backend.modules.cv.policy;
 
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.modules.cv.entity.enums.TemplateAccessLevel;

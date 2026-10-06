@@ -1,7 +1,7 @@
 package fpt.su26.exe101.backend.base.security;
 
 import fpt.su26.exe101.backend.base.config.CorsConfig;
-import fpt.su26.exe101.backend.modules.auth.service.CustomOAuth2UserService;
+import fpt.su26.exe101.backend.modules.auth.security.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,6 +62,7 @@ public class DevSecurityConfig {
                                 "/api/auth/verify-email",
                                 "/api/auth/resend-verification",
                                 "/api/auth/tokens",
+                                "/api/auth/tokens/refresh",
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/api/auth/oauth/**",

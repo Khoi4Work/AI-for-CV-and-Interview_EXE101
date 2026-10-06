@@ -1,4 +1,6 @@
-package fpt.su26.exe101.backend.modules.auth.service;
+package fpt.su26.exe101.backend.modules.auth.job;
+
+import fpt.su26.exe101.backend.modules.auth.service.PendingAccountCleanupService;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
