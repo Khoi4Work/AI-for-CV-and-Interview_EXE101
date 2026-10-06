@@ -31,10 +31,11 @@ export const interviewService = {
     await apiClient.post(`/interview/sessions/${sessionId}/finish`, {}, { timeout: 10000 }),
   ),
 
-  getQuestionAudio: async (questionId, signal) => {
+  getQuestionAudio: async (questionId, transition = 'START', signal) => {
     const response = await apiClient.get(`/interview/questions/${questionId}/audio`, {
       responseType: 'blob',
       signal,
+      params: {transition},
     });
     return response.data;
   },

@@ -13,6 +13,7 @@ const initialState = () => ({
   careerGoal: '',
   interviewConfig: null,
   audioTestPassed: false,
+  audioRecordingEnabled: false,
   videoSetupConfirmed: false,
   backendSessionId: null,
   sessionError: null,

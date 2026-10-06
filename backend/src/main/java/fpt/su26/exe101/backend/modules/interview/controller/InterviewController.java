@@ -5,6 +5,7 @@ import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.modules.interview.dto.request.CreateInterviewSessionRequestDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.request.SubmitInterviewAnswerRequestDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.InterviewSpeechTransition;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluationResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionDetailResponseDTO;
@@ -78,9 +79,11 @@ public class InterviewController {
     }
 
     @GetMapping("/questions/{questionId}/audio")
-    public ResponseEntity<byte[]> getQuestionAudio(@PathVariable UUID questionId) {
+    public ResponseEntity<byte[]> getQuestionAudio(
+            @PathVariable UUID questionId,
+            @RequestParam(defaultValue = "START") InterviewSpeechTransition transition) {
         return ResponseEntity.ok()
                 .contentType(MediaType.valueOf("audio/mpeg"))
-                .body(interviewVoiceService.synthesizeQuestionAudio(questionId));
+                .body(interviewVoiceService.synthesizeQuestionAudio(questionId, transition));
     }
 }

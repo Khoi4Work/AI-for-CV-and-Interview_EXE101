@@ -1,18 +1,33 @@
-import {useEffect} from 'react';
-import {Sparkles, FileText, RotateCcw} from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {Sparkles, FileText, RotateCcw, Download} from 'lucide-react';
 import {Header} from '../../../components/layout/PublicHeader.jsx';
 import {Footer} from '../../../components/layout/Footer.jsx';
 import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
 import {TAG_DEFINITIONS} from '../constants/feedbackInterviewRubric.js';
+import {getLocalInterviewRecording} from '../services/localInterviewRecording.js';
+import {downloadInterviewTranscript, downloadLocalInterviewAudio} from '../services/interviewExports.js';
+import './interview-result.css';
 
 export function InterviewResults() {
     const navigate = useNavigate();
     const {data, update} = useInterviewSession();
+    const [localAudioRecording, setLocalAudioRecording] = useState(null);
+    const [recordingError, setRecordingError] = useState('');
 
     useEffect(() => {
         update({step: 10});
     }, [update]);
+
+    useEffect(() => {
+        let active = true;
+        setLocalAudioRecording(null);
+        if (!data.backendSessionId || !data.audioRecordingEnabled) return () => { active = false; };
+        getLocalInterviewRecording(data.backendSessionId)
+            .then((recording) => { if (active) setLocalAudioRecording(recording); })
+            .catch((error) => { if (active) setRecordingError(error?.message || 'Không đọc được bản ghi cục bộ.'); });
+        return () => { active = false; };
+    }, [data.backendSessionId, data.audioRecordingEnabled]);
 
     const feedback = data.feedback;
 
@@ -30,11 +45,23 @@ export function InterviewResults() {
     const improveCount = transcript.filter((t) => t.status === 'improve').length;
     const skippedCount = transcript.filter((t) => t.status === 'skipped').length;
 
+    const exportPdf = () => {
+        const previousTitle = document.title;
+        document.title = `Bao-cao-phong-van-${String(data.backendSessionId || 'ket-qua').slice(0, 8)}`;
+        window.print();
+        window.setTimeout(() => { document.title = previousTitle; }, 1000);
+    };
+
+    const exportAudio = () => {
+        if (!localAudioRecording || !data.backendSessionId) return;
+        downloadLocalInterviewAudio(localAudioRecording, data.backendSessionId, data.interviewConfig?.language || 'vi');
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-interview-radial text-on-surface font-sans selection:bg-primary-container/20">
             <Header/>
 
-            <main className="flex-1 w-full max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6">
+            <main id="interview-report" className="interview-report flex-1 w-full max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6">
                 {/* Left Column */}
                 <div className="space-y-6">
                     {/* HR Persona Card */}
@@ -160,10 +187,29 @@ export function InterviewResults() {
                         </div>
                     </div>
 
-                    <div className="p-4 border-t border-outline-variant bg-interview-card-bg/50 flex justify-end shrink-0">
+                    <div className="p-4 border-t border-outline-variant bg-interview-card-bg/50 flex flex-wrap justify-end gap-3 shrink-0 no-print">
                         <button
-                            onClick={() => alert('Chức năng xuất PDF (mock)')}
-                            className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm"
+                            type="button"
+                            onClick={() => downloadInterviewTranscript(data, feedback)}
+                            className="flex items-center gap-2 rounded-lg border border-[#70cbb2] bg-[#e5f7f2] px-4 py-2.5 text-sm font-semibold text-[#005845] transition-colors hover:border-[#39b794] hover:bg-[#c8efe2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12c999]"
+                        >
+                            <FileText size={16}/> Tải hội thoại (.txt)
+                        </button>
+                        <button
+                            type="button"
+                            disabled={!localAudioRecording}
+                            onClick={exportAudio}
+                            title={localAudioRecording ? 'Tải bản ghi hội thoại đang lưu trên thiết bị này' : 'Chưa có bản ghi cục bộ cho buổi phỏng vấn này'}
+                            className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12c999] disabled:cursor-not-allowed ${localAudioRecording
+                                ? 'border-[#70cbb2] bg-[#e5f7f2] text-[#005845] hover:border-[#39b794] hover:bg-[#c8efe2]'
+                                : 'border-[#cbd5e1] bg-[#e2e8f0] text-[#475569]'
+                            }`}
+                        >
+                            <Download size={16}/> Tải bản ghi âm
+                        </button>
+                        <button
+                            onClick={exportPdf}
+                            className="flex items-center gap-2 rounded-lg border border-[#12c999] bg-[#12c999] px-5 py-2.5 text-sm font-semibold text-[#003828] shadow-sm transition-colors hover:border-[#0dab80] hover:bg-[#0dab80] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12c999]"
                         >
                             <FileText size={16}/> Xuất báo cáo PDF
                         </button>
@@ -171,14 +217,19 @@ export function InterviewResults() {
                 </div>
             </main>
 
+            <div className="mx-auto mb-6 w-full max-w-7xl px-6 text-xs text-on-surface-variant no-print" role="status">
+                {localAudioRecording
+                    ? 'Bản ghi gồm tiếng micro và giọng đọc câu hỏi TTS; file được lưu cục bộ trên thiết bị này.'
+                    : data.audioRecordingEnabled
+                        ? (recordingError || data.localAudioRecordingError || data.localAudioRecordingWarning || 'Không tìm thấy file ghi âm cục bộ. Transcript vẫn có thể tải về.')
+                        : 'Bạn chưa bật ghi âm cục bộ; có thể tải transcript văn bản và báo cáo PDF.'}
+                <span className="ml-1">Khi xuất PDF, chọn “Save as PDF/Lưu dưới dạng PDF” trong hộp thoại in của trình duyệt.</span>
+                {localAudioRecording && data.localAudioRecordingWarning && <span className="mt-2 block text-amber-800">{data.localAudioRecordingWarning}</span>}
+                {localAudioRecording && data.localAudioRecordingError && <span className="mt-2 block text-amber-800">{data.localAudioRecordingError}</span>}
+            </div>
+
             <Footer/>
 
-            <style dangerouslySetInnerHTML={{__html: `
-                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: var(--color-surface-container); }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-outline); border-radius: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--color-on-surface-variant); }
-            `.replace(/var\(--color-outline\)/g, '#cbd5e1')}}/>
         </div>
     );
 }
