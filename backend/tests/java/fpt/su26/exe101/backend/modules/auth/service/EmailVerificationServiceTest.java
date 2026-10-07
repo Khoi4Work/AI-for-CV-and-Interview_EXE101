@@ -5,6 +5,8 @@ import fpt.su26.exe101.backend.modules.auth.entity.*;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider;
 import fpt.su26.exe101.backend.modules.auth.event.AccountCreatedEvent;
 import fpt.su26.exe101.backend.modules.auth.repository.*;
+import fpt.su26.exe101.backend.modules.auth.service.impl.EmailVerificationServiceImpl;
+import fpt.su26.exe101.backend.modules.auth.service.impl.VerificationRateLimiterImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -25,7 +27,7 @@ class EmailVerificationServiceTest {
     Account account;
 
     @BeforeEach void setup() {
-        service = new EmailVerificationService(accounts, outbox, limiter, events);
+        service = new EmailVerificationServiceImpl(accounts, outbox, limiter, events);
         account = Account.builder().email("user@example.com").provider(AccountProvider.LOCAL)
                 .status("PENDING_VERIFICATION").build();
         account.setId(UUID.randomUUID());
@@ -37,7 +39,7 @@ class EmailVerificationServiceTest {
         verify(outbox).save(mail.capture());
         assertEquals(43, mail.getValue().getToken().length());
         assertNotEquals(mail.getValue().getToken(), account.getVerificationToken());
-        assertEquals(EmailVerificationService.hash(mail.getValue().getToken()), account.getVerificationToken());
+        assertEquals(EmailVerificationServiceImpl.hash(mail.getValue().getToken()), account.getVerificationToken());
         assertTrue(account.getVerificationExpiresAt().isAfter(LocalDateTime.now().plusHours(23)));
         assertNotNull(account.getVerificationManagedAt());
         assertEquals("PENDING_VERIFICATION", account.getStatus());
@@ -47,7 +49,7 @@ class EmailVerificationServiceTest {
     @Test void expiredLinkCannotActivate() {
         String raw = "a".repeat(43);
         account.setVerificationExpiresAt(LocalDateTime.now().minusSeconds(1));
-        when(accounts.findLockedByVerificationToken(EmailVerificationService.hash(raw))).thenReturn(Optional.of(account));
+        when(accounts.findLockedByVerificationToken(EmailVerificationServiceImpl.hash(raw))).thenReturn(Optional.of(account));
         assertThrows(ApiException.class, () -> service.verify(raw));
         assertEquals("PENDING_VERIFICATION", account.getStatus());
         verifyNoInteractions(events);
@@ -56,9 +58,9 @@ class EmailVerificationServiceTest {
 
     @Test void validLinkConsumesTokenAndProvisionsExactlyOnce() {
         String raw = "b".repeat(43);
-        account.setVerificationToken(EmailVerificationService.hash(raw));
+        account.setVerificationToken(EmailVerificationServiceImpl.hash(raw));
         account.setVerificationExpiresAt(LocalDateTime.now().plusHours(1));
-        when(accounts.findLockedByVerificationToken(EmailVerificationService.hash(raw))).thenReturn(Optional.of(account));
+        when(accounts.findLockedByVerificationToken(EmailVerificationServiceImpl.hash(raw))).thenReturn(Optional.of(account));
         service.verify(raw);
         assertEquals("ACTIVE", account.getStatus());
         assertNull(account.getVerificationToken());
@@ -99,7 +101,7 @@ class EmailVerificationServiceTest {
     }
 
     @Test void limiterEnforcesCooldownForNonexistentEmailsAndIpLimit() {
-        VerificationRateLimiter realLimiter = new VerificationRateLimiter();
+        VerificationRateLimiter realLimiter = new VerificationRateLimiterImpl();
         realLimiter.check("first@example.com", "127.0.0.1");
         assertThrows(ApiException.class, () -> realLimiter.check("first@example.com", "127.0.0.2"));
         for (int i = 1; i < 20; i++) realLimiter.check("other" + i + "@example.com", "127.0.0.1");

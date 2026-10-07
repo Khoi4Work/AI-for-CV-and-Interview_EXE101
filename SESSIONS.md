@@ -1,5 +1,13 @@
 # Session History
 
+## 2026-10-07 — Interview voice/export, token refresh, and service layering
+
+- Added scripted interview voice transitions with expression-tag and generated-script logging; moved Vietnamese speech phrases to UTF-8 YAML configuration.
+- Added interview transcript/audio downloads, local mixed audio capture, audio test guidance, and printable interview reports.
+- Fixed the refresh endpoint access rule and enforced access-versus-refresh JWT types while allowing still-valid legacy refresh tokens.
+- Refactored service contracts into interfaces with implementations under `service/impl`, and moved jobs, policies, security adapters, and exceptions into focused packages.
+- Validation: backend Maven compile succeeded; tests were not run.
+
 ## 2026-10-03 — DeepSeek and Gemini chat provider integration
 
 - Added DeepSeek as the default chat provider and Gemini as the fallback for CV and interview AI operations.

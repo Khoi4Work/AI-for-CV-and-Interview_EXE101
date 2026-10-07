@@ -3,6 +3,7 @@ package fpt.su26.exe101.backend.modules.auth.controller;
 import fpt.su26.exe101.backend.modules.auth.dto.request.*;
 import fpt.su26.exe101.backend.modules.auth.dto.response.*;
 import fpt.su26.exe101.backend.modules.auth.entity.Account;
+import fpt.su26.exe101.backend.modules.auth.exception.VerificationRateLimitException;
 import fpt.su26.exe101.backend.modules.auth.service.*;
 import fpt.su26.exe101.backend.base.response.ApiResponse;
 import lombok.RequiredArgsConstructor;

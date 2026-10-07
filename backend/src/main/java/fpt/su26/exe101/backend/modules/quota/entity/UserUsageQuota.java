@@ -25,6 +25,18 @@ public class UserUsageQuota extends BaseEntity {
     @Column(nullable = false, columnDefinition = "integer default 0")
     private int remainingCvAiCnt;
 
+    @Builder.Default
+    @Column(name = "remaining_cv_free_credits", nullable = false, columnDefinition = "integer default 0")
+    private int remainingCvFreeCredits = 0;
+
+    @Builder.Default
+    @Column(name = "remaining_cv_middle_credits", nullable = false, columnDefinition = "integer default 0")
+    private int remainingCvMiddleCredits = 0;
+
+    @Builder.Default
+    @Column(name = "remaining_cv_enhance_credits", nullable = false, columnDefinition = "integer default 0")
+    private int remainingCvEnhanceCredits = 0;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "cv_plan", nullable = false, length = 20, columnDefinition = "varchar(20) default 'FREE'")
     @Builder.Default

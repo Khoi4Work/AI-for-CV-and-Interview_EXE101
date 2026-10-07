@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
-import {ArrowLeft, Check, LoaderCircle, Sparkles} from 'lucide-react';
+import {ArrowLeft, Check, FileText, LoaderCircle, Sparkles} from 'lucide-react';
 import {MainLayout} from '../components/MainLayout.jsx';
 import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import {interviewService} from '../services/interviewService.js';
+import {downloadInterviewTranscript} from '../services/interviewExports.js';
 
 export function VideoReview() {
     const navigate = useNavigate();
@@ -68,7 +69,7 @@ export function VideoReview() {
 
                 <div className="rounded-xl border border-outline-variant bg-interview-card-bg p-4 mb-5 flex items-start gap-3">
                     <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <p className="text-sm text-black/70">Âm thanh được gửi đến BE để phiên âm. File âm thanh thô không được lưu; BE dùng transcript để đánh giá.</p>
+                    <p className="text-sm text-black/70">Transcript câu hỏi và trả lời được lưu trên hệ thống. Nếu bật ghi âm cục bộ, âm thanh micro và giọng đọc câu hỏi TTS sẽ được ghép và lưu trong trình duyệt để tải về; file không gửi lên máy chủ. Trường hợp trình duyệt phải dùng giọng đọc dự phòng thì giọng đó không thể đưa vào file.</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
@@ -94,14 +95,23 @@ export function VideoReview() {
                     >
                         <ArrowLeft size={17} /> Thoát
                     </button>
-                    <button
-                        onClick={handleSendFeedback}
-                        disabled={isEvaluating}
-                        className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-bold text-on-primary shadow-md transition-colors hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
-                    >
-                        {isEvaluating ? <LoaderCircle size={18} className="animate-spin" /> : <Sparkles size={18} />}
-                        {isEvaluating ? 'Đang đánh giá...' : 'Nhận kết quả phản hồi'}
-                    </button>
+                    <div className="flex flex-wrap justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => downloadInterviewTranscript({...data, answers: [...answers.values()]})}
+                            className="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-2.5 font-semibold text-on-surface hover:bg-surface-container"
+                        >
+                            <FileText size={17} /> Tải hội thoại (.txt)
+                        </button>
+                        <button
+                            onClick={handleSendFeedback}
+                            disabled={isEvaluating}
+                            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-bold text-on-primary shadow-md transition-colors hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                        >
+                            {isEvaluating ? <LoaderCircle size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                            {isEvaluating ? 'Đang đánh giá...' : 'Nhận kết quả phản hồi'}
+                        </button>
+                    </div>
                 </div>
                 {error && <p role="alert" className="error-alert mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
             </div>

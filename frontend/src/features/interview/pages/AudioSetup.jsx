@@ -1,5 +1,5 @@
 // /src/pages/interview/AudioSetup.jsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, Mic, AudioLines, ArrowLeft, Square, ArrowRight} from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
@@ -9,7 +9,7 @@ import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
 
 export function AudioSetup() {
   const navigate = useNavigate();
-  const { update, setStep } = useInterviewSession();
+  const { data, update, setStep } = useInterviewSession();
   const {
     isRecording,
     isRecorded,
@@ -22,6 +22,7 @@ export function AudioSetup() {
     stopAudio,
     stopAllTracks
   } = useMediaDevices();
+  const [recordingError, setRecordingError] = useState('');
 
   useEffect(() => {
     setStep(6);
@@ -31,6 +32,18 @@ export function AudioSetup() {
     stopAllTracks();
     update({ audioTestPassed: true });
     navigate('/video-setup');
+  };
+
+  const handleRecordingClick = async () => {
+    setRecordingError('');
+    try {
+      if (isRecording) stopRecording();
+      else await startRecording();
+    } catch (error) {
+      setRecordingError(error?.name === 'NotAllowedError'
+        ? 'Bạn cần cho phép trình duyệt truy cập microphone để test âm thanh.'
+        : 'Không thể ghi âm thử. Hãy kiểm tra microphone và thử lại.');
+    }
   };
 
   const handleBack = () => {
@@ -53,9 +66,15 @@ export function AudioSetup() {
           <div className="text-center mb-6">
             <h1 className="text-2xl font-display font-semibold mb-2 text-black">Kiểm tra âm thanh trước khi bắt đầu</h1>
             <p className="text-black/60 text-sm">
-              Hãy đảm bảo microphone của bạn hoạt động ổn định để có trải nghiệm phỏng vấn tốt nhất.
+              Làm theo các bước dưới đây để kiểm tra micro trước khi tiếp tục.
             </p>
           </div>
+
+          <ol className="mb-6 space-y-2 rounded-lg bg-primary/5 p-4 text-sm text-black/75 list-decimal list-inside">
+            <li>Ấn <strong>Test recording</strong> và cho phép trình duyệt dùng microphone nếu được hỏi.</li>
+            <li>Nói thử vài câu, sau đó ấn <strong>Dừng test</strong>.</li>
+            <li>Ấn <strong>Phát lại</strong> để nghe và kiểm tra âm lượng, độ rõ.</li>
+          </ol>
 
           <div className="flex justify-center mb-6">
             <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary text-on-primary rounded-full text-sm font-medium">
@@ -87,7 +106,7 @@ export function AudioSetup() {
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button
-                onClick={isRecording ? stopRecording : startRecording}
+                onClick={handleRecordingClick}
                 className={`flex items-center justify-center gap-2 py-2.5 border rounded-lg font-medium transition-colors ${
                     isRecording
                       ? 'border-red-500 text-red-500 hover:bg-red-50'
@@ -120,8 +139,20 @@ export function AudioSetup() {
             </button>
           </div>
 
+          {recordingError && <p role="alert" className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">{recordingError}</p>}
+
+          <label className="mb-6 flex cursor-pointer items-start gap-3 rounded-lg border border-outline-variant p-4 text-sm text-black/75">
+            <input
+              type="checkbox"
+              checked={Boolean(data.audioRecordingEnabled)}
+              onChange={(event) => update({audioRecordingEnabled: event.target.checked})}
+              className="mt-0.5 h-4 w-4 accent-primary"
+            />
+            <span><strong>Cho phép ghi âm cuộc phỏng vấn để tải về sau.</strong> Bản ghi ghép giọng đọc câu hỏi của hệ thống với âm thanh microphone và chỉ lưu trong trình duyệt trên thiết bị này; không gửi lên máy chủ. Bạn có thể bỏ chọn nếu chỉ muốn lưu transcript.</span>
+          </label>
+
           <p className="text-center text-sm text-black/60 mb-8 flex items-center justify-center gap-2">
-            <Mic size={14} className="text-black/40" /> Chúng tôi cam kết không lưu trữ bản ghi âm của bạn.
+            <Mic size={14} className="text-black/40" /> Test recording chỉ dùng để bạn nghe thử và không được lưu sau khi rời bước này.
           </p>
 
           <div className="flex flex-col gap-3 pt-2">

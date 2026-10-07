@@ -9,6 +9,7 @@ import fpt.su26.exe101.backend.modules.cv.entity.*;
 import fpt.su26.exe101.backend.modules.cv.entity.enums.TemplateAccessLevel;
 import fpt.su26.exe101.backend.modules.cv.mapper.*;
 import fpt.su26.exe101.backend.modules.cv.repository.*;
+import fpt.su26.exe101.backend.modules.cv.policy.TemplateAccessPolicy;
 import fpt.su26.exe101.backend.modules.cv.service.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;

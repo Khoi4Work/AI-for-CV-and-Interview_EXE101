@@ -2,7 +2,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { fetchElevenLabsAudio } from '../services/elevenLabsService';
 
-export function useElevenLabsTTS(onAudioEnd) {
+export function useElevenLabsTTS(onAudioEnd, {onAudioElement, onFallback} = {}) {
     const audioRef = useRef(null);
     const audioUrlRef = useRef(null);
     const requestControllerRef = useRef(null);
@@ -21,14 +21,14 @@ export function useElevenLabsTTS(onAudioEnd) {
         window.speechSynthesis.cancel(); // Tắt luôn cả giọng mặc định nếu đang chạy
     }, []);
 
-    const playTTS = useCallback(async (text, questionId, language = 'vi') => {
+    const playTTS = useCallback(async (text, questionId, language = 'vi', transition = 'START') => {
         stopAudio(); // Dừng âm thanh cũ (nếu có) trước khi phát cái mới
         const requestController = new AbortController();
         requestControllerRef.current = requestController;
 
         try {
             if (!questionId) throw new Error('Question audio requires a backend question ID.');
-            const url = await fetchElevenLabsAudio(questionId, requestController.signal);
+            const url = await fetchElevenLabsAudio(questionId, transition, requestController.signal);
             if (requestController.signal.aborted || requestControllerRef.current !== requestController) {
                 URL.revokeObjectURL(url);
                 return;
@@ -36,6 +36,7 @@ export function useElevenLabsTTS(onAudioEnd) {
             audioUrlRef.current = url;
             const audio = new Audio(url);
             audioRef.current = audio;
+            onAudioElement?.(audio);
 
             audio.onended = () => {
                 if (onAudioEnd) onAudioEnd();
@@ -47,6 +48,7 @@ export function useElevenLabsTTS(onAudioEnd) {
             if (requestController.signal.aborted || error?.code === 'ERR_CANCELED') return;
             console.error("Backend TTS lỗi, dùng giọng mặc định:", error);
             stopAudio();
+            onFallback?.();
 
             // Fallback: Web Speech API
             const utterance = new SpeechSynthesisUtterance(text);
@@ -57,7 +59,7 @@ export function useElevenLabsTTS(onAudioEnd) {
             };
             window.speechSynthesis.speak(utterance);
         }
-    }, [stopAudio, onAudioEnd]);
+    }, [stopAudio, onAudioEnd, onAudioElement, onFallback]);
 
     // Tự động dọn dẹp khi component chứa hook này bị hủy (unmount)
     useEffect(() => {

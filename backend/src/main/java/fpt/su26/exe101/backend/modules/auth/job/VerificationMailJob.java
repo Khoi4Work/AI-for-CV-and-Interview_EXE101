@@ -1,5 +1,6 @@
-package fpt.su26.exe101.backend.modules.auth.service;
+package fpt.su26.exe101.backend.modules.auth.job;
 
+import fpt.su26.exe101.backend.modules.auth.service.VerificationMailDelivery;
 import fpt.su26.exe101.backend.modules.auth.repository.VerificationMailOutboxRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

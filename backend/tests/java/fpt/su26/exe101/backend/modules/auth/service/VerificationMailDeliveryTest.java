@@ -3,6 +3,7 @@ package fpt.su26.exe101.backend.modules.auth.service;
 import fpt.su26.exe101.backend.base.service.EmailService;
 import fpt.su26.exe101.backend.modules.auth.entity.*;
 import fpt.su26.exe101.backend.modules.auth.repository.*;
+import fpt.su26.exe101.backend.modules.auth.service.impl.VerificationMailDeliveryImpl;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +27,7 @@ class VerificationMailDeliveryTest {
     UUID id = UUID.randomUUID();
 
     @BeforeEach void setup() {
-        delivery = new VerificationMailDelivery(accounts, outbox, email);
+        delivery = new VerificationMailDeliveryImpl(accounts, outbox, email);
         ReflectionTestUtils.setField(delivery, "entityManager", entityManager);
         account = Account.builder().email("user@example.com").status("PENDING_VERIFICATION").verificationToken("hash").build();
         account.setId(UUID.randomUUID());

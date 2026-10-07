@@ -1,11 +1,11 @@
 import React from 'react';
 
 // Common Card Component
-export const Card = ({ children, className = '' }) => {
+export const Card = ({ children, className = '', ...props }) => {
     const hasBg = className.includes('bg-');
     const bgClass = hasBg ? '' : 'bg-[#E2E8F0]';
     return (
-        <div className={`${bgClass} rounded-xl overflow-hidden shadow-sm ${className}`}>
+        <div className={`${bgClass} rounded-xl overflow-hidden shadow-sm ${className}`} {...props}>
             {children}
         </div>
     );

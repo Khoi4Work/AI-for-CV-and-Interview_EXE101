@@ -24,39 +24,39 @@ import java.util.concurrent.TimeoutException;
 public class AIChatCompletionService {
     private static final Logger log = LoggerFactory.getLogger(AIChatCompletionService.class);
 
-    private final ChatClient deepSeekClient;
+    private final ChatClient groqClient;
     private final ChatClient geminiClient;
     private final String primaryProvider;
-    private final String deepSeekModel;
+    private final String groqModel;
     private final String geminiModel;
 
     public AIChatCompletionService(
-            @Qualifier("deepSeekChatClient") ChatClient deepSeekClient,
+            @Qualifier("groqChatClient") ChatClient groqClient,
             @Qualifier("geminiChatClient") ChatClient geminiClient,
-            @Value("${ai.provider:deepseek}") String primaryProvider,
-            @Value("${spring.ai.openai.chat.options.model}") String deepSeekModel,
+            @Value("${ai.provider:groq}") String primaryProvider,
+            @Value("${spring.ai.openai.chat.options.model}") String groqModel,
             @Value("${spring.ai.google.genai.chat.options.model}") String geminiModel) {
         String normalized = primaryProvider.trim().toLowerCase(Locale.ROOT);
-        if (!normalized.equals("deepseek") && !normalized.equals("google") && !normalized.equals("gemini")) {
-            throw new IllegalArgumentException("AI_PROVIDER must be either 'deepseek' or 'google'.");
+        if (!normalized.equals("groq") && !normalized.equals("google") && !normalized.equals("gemini")) {
+            throw new IllegalArgumentException("AI_PROVIDER must be 'groq', 'gemini', or 'google'.");
         }
-        this.deepSeekClient = deepSeekClient;
+        this.groqClient = groqClient;
         this.geminiClient = geminiClient;
         this.primaryProvider = normalized.equals("google") ? "gemini" : normalized;
-        this.deepSeekModel = deepSeekModel;
+        this.groqModel = groqModel;
         this.geminiModel = geminiModel;
     }
 
     @PostConstruct
     void logConfiguredProviders() {
-        String fallbackProvider = primaryProvider.equals("deepseek") ? "gemini" : "deepseek";
+        String fallbackProvider = primaryProvider.equals("groq") ? "gemini" : "groq";
         log.info("[AI] Providers configured | primaryProvider={} | primaryModel={} | fallbackProvider={} | fallbackModel={}",
                 primaryProvider, modelFor(primaryProvider), fallbackProvider, modelFor(fallbackProvider));
     }
 
     public String generateJson(String prompt, String geminiResponseSchema, int maxTokens,
                                String module, String operation) {
-        String fallbackProvider = primaryProvider.equals("deepseek") ? "gemini" : "deepseek";
+        String fallbackProvider = primaryProvider.equals("groq") ? "gemini" : "groq";
         try {
             log.info("[AI] Request started | provider={} | model={} | module={} | operation={}",
                     primaryProvider, modelFor(primaryProvider), module, operation);
@@ -82,13 +82,13 @@ public class AIChatCompletionService {
     }
 
     private String modelFor(String provider) {
-        return provider.equals("deepseek") ? deepSeekModel : geminiModel;
+        return provider.equals("groq") ? groqModel : geminiModel;
     }
 
     private String request(String provider, String prompt, String geminiResponseSchema, int maxTokens) {
-        ChatClient client = provider.equals("deepseek") ? deepSeekClient : geminiClient;
+        ChatClient client = provider.equals("groq") ? groqClient : geminiClient;
         ChatClient.ChatClientRequestSpec request = client.prompt(prompt);
-        if (provider.equals("deepseek")) {
+        if (provider.equals("groq")) {
             request.options(OpenAiChatOptions.builder()
                     .maxTokens(maxTokens)
                     .build());

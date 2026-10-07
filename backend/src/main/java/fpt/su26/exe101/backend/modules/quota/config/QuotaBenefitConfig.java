@@ -21,11 +21,10 @@ public class QuotaBenefitConfig {
     private final Map<UserPlan, QuotaBenefit> benefits = new EnumMap<>(UserPlan.class);
 
     public QuotaBenefitConfig() {
-        // FREE: 1 lượt tạo CV, 1 lượt AI CV.
+        // CV creation units are one-time credits; aiCvCnt is analyses per CV.
         benefits.put(UserPlan.FREE, new QuotaBenefit(1, 1));
-        // CV AI analysis limits match the monthly packages shown in PricingPage.
-        benefits.put(UserPlan.MIDDLE, new QuotaBenefit(5, 5));
-        benefits.put(UserPlan.ENHANCE, new QuotaBenefit(10, 10));
+        benefits.put(UserPlan.MIDDLE, new QuotaBenefit(3, 3));
+        benefits.put(UserPlan.ENHANCE, new QuotaBenefit(4, 5));
     }
 
     public QuotaBenefit getBenefit(UserPlan plan) {

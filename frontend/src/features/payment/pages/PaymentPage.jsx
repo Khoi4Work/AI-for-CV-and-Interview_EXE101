@@ -5,7 +5,7 @@ import { UpgradeInfo } from '../components/UpgradeInfo';
 import { PaymentMethods } from '../components/PaymentMethods';
 import { PaymentNotes } from '../components/PaymentNotes';
 import { OrderSummary } from '../components/OrderSummary';
-import { paymentService } from '../../../services/paymentService';
+import { paymentService } from '../services/paymentService';
 import { getPaymentServiceInfo } from '../components/paymentServiceInfo';
 
 export function PaymentPage() {

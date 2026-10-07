@@ -2,6 +2,7 @@ package fpt.su26.exe101.backend.modules.interview.service.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestion;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewQuestionRelevanceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -13,7 +14,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class InterviewQuestionRelevanceService {
+public class InterviewQuestionRelevanceServiceImpl implements InterviewQuestionRelevanceService {
     private static final int MAX_RERANK_DOCUMENTS = 1000;
 
     private final RestClient cohereClient;
@@ -21,7 +22,7 @@ public class InterviewQuestionRelevanceService {
     private final String model;
     private final double minimumRelevance;
 
-    public InterviewQuestionRelevanceService(
+    public InterviewQuestionRelevanceServiceImpl(
             @Value("${cohere.api-key:}") String apiKey,
             @Value("${interview.questions.rerank-model:rerank-v4.0-fast}") String model,
             @Value("${interview.questions.minimum-relevance:0.15}") double minimumRelevance) {

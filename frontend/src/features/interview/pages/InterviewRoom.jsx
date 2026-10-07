@@ -8,6 +8,7 @@ import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
 import { END_PHRASES_VN, END_PHRASES_EN } from '../constants/questionBank.js';
 import { useElevenLabsTTS } from '../hooks/useElevenLabsTTS';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { saveLocalInterviewRecording } from '../services/localInterviewRecording.js';
 
 const PROCESSING_DURATION = 1200;
 const IN_QUESTION_TIMEOUT = 600000;
@@ -69,6 +70,90 @@ export function InterviewRoom() {
     const recognitionRef = useRef(null);
     const processingRef = useRef(false);
     const firstSpokeAtRef = useRef(null);
+    const interviewRecorderRef = useRef(null);
+    const interviewAudioChunksRef = useRef([]);
+    const recordingStopResolverRef = useRef(null);
+    const recordingAudioContextRef = useRef(null);
+    const recordingAudioDestinationRef = useRef(null);
+    const ttsAudioSourcesRef = useRef(new WeakMap());
+
+    const startLocalInterviewRecording = useCallback(async (stream) => {
+        if (!data.audioRecordingEnabled || interviewRecorderRef.current) return;
+        if (!window.MediaRecorder) {
+            update({localAudioRecordingError: 'Trình duyệt này không hỗ trợ lưu bản ghi âm.'});
+            return;
+        }
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) throw new Error('Trình duyệt này không hỗ trợ trộn âm thanh để ghi lại cuộc phỏng vấn.');
+            const audioContext = new AudioContextClass();
+            const destination = audioContext.createMediaStreamDestination();
+            audioContext.createMediaStreamSource(stream).connect(destination);
+            await audioContext.resume();
+            recordingAudioContextRef.current = audioContext;
+            recordingAudioDestinationRef.current = destination;
+
+            const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4']
+                .find((type) => MediaRecorder.isTypeSupported?.(type));
+            const recorder = mimeType ? new MediaRecorder(destination.stream, {mimeType}) : new MediaRecorder(destination.stream);
+            interviewAudioChunksRef.current = [];
+            recorder.ondataavailable = (event) => {
+                if (event.data?.size) interviewAudioChunksRef.current.push(event.data);
+            };
+            recorder.onstop = async () => {
+                const blob = new Blob(interviewAudioChunksRef.current, {type: recorder.mimeType || 'audio/webm'});
+                interviewRecorderRef.current = null;
+                if (blob.size > 0 && data.backendSessionId) {
+                    try {
+                        await saveLocalInterviewRecording(data.backendSessionId, blob);
+                        update({localAudioRecordingAvailable: true, localAudioRecordingError: null});
+                    } catch (error) {
+                        update({localAudioRecordingAvailable: false, localAudioRecordingError: error?.message || 'Không lưu được bản ghi trên thiết bị.'});
+                    }
+                }
+                recordingAudioContextRef.current?.close();
+                recordingAudioContextRef.current = null;
+                recordingAudioDestinationRef.current = null;
+                recordingStopResolverRef.current?.();
+                recordingStopResolverRef.current = null;
+            };
+            recorder.start(1000);
+            interviewRecorderRef.current = recorder;
+            update({localAudioRecordingError: null});
+        } catch (error) {
+            update({localAudioRecordingError: error?.message || 'Không thể bắt đầu ghi âm trên trình duyệt này.'});
+        }
+    }, [data.audioRecordingEnabled, data.backendSessionId, update]);
+
+    const attachTtsAudioToRecording = useCallback((audio) => {
+        const context = recordingAudioContextRef.current;
+        const destination = recordingAudioDestinationRef.current;
+        if (!data.audioRecordingEnabled || !context || !destination || ttsAudioSourcesRef.current.has(audio)) return;
+        try {
+            const source = context.createMediaElementSource(audio);
+            source.connect(context.destination);
+            source.connect(destination);
+            ttsAudioSourcesRef.current.set(audio, source);
+            context.resume().catch(() => {});
+        } catch (error) {
+            update({localAudioRecordingError: error?.message || 'Không thể ghép giọng đọc câu hỏi vào bản ghi.'});
+        }
+    }, [data.audioRecordingEnabled, update]);
+
+    const handleTtsFallback = useCallback(() => {
+        if (data.audioRecordingEnabled) {
+            update({localAudioRecordingWarning: 'Trình đọc dự phòng của trình duyệt không thể được thu vào bản ghi. Câu hỏi vẫn có trong transcript, còn bản ghi âm gồm micro và các câu hỏi phát bằng TTS của hệ thống.'});
+        }
+    }, [data.audioRecordingEnabled, update]);
+
+    const stopLocalInterviewRecording = useCallback(() => {
+        const recorder = interviewRecorderRef.current;
+        if (!recorder || recorder.state === 'inactive') return Promise.resolve();
+        return new Promise((resolve) => {
+            recordingStopResolverRef.current = resolve;
+            recorder.stop();
+        });
+    }, []);
 
     useEffect(() => {
         phaseRef.current = phase;
@@ -138,6 +223,7 @@ export function InterviewRoom() {
 
     const endInterview = useCallback(async () => {
         setPhase('done');
+        await stopLocalInterviewRecording();
         stopAllTracks();
         stopSTT();
         try {
@@ -146,7 +232,7 @@ export function InterviewRoom() {
             console.error('Could not finalize interview quota:', error);
         }
         setTimeout(() => navigate('/interview/review'), 200);
-    }, [finishInterview, navigate, stopAllTracks, stopSTT]);
+    }, [finishInterview, navigate, stopAllTracks, stopSTT, stopLocalInterviewRecording]);
 
     const transitionToNext = useCallback(() => {
         let nextIndex = currentIndex + 1;
@@ -229,7 +315,8 @@ export function InterviewRoom() {
         setFinalTranscript('');
 
         try {
-            await ensureStream();
+            const stream = await ensureStream();
+            await startLocalInterviewRecording(stream);
             setMicState('active');
             startAudioAnalysis();
             await startSTT();
@@ -243,10 +330,13 @@ export function InterviewRoom() {
         inQuestionTimerRef.current = setTimeout(() => {
             if (phaseRef.current === 'recording') transitionToProcessing();
         }, IN_QUESTION_TIMEOUT);
-    }, [ensureStream, startAudioAnalysis, startSTT, transitionToProcessing, addTranscript, currentQ]);
+    }, [ensureStream, startAudioAnalysis, startSTT, transitionToProcessing, addTranscript, currentQ, startLocalInterviewRecording]);
 
     const onQuestionAudioEnd = useCallback(() => setPhase('recording'), []);
-    const { playTTS, stopAudio } = useElevenLabsTTS(onQuestionAudioEnd);
+    const { playTTS, stopAudio } = useElevenLabsTTS(onQuestionAudioEnd, {
+        onAudioElement: attachTtsAudioToRecording,
+        onFallback: handleTtsFallback,
+    });
 
     useEffect(() => {
         let recordingTimeout;
@@ -260,10 +350,25 @@ export function InterviewRoom() {
                     // Defer the request until after commit. React StrictMode replays effects
                     // in development; starting the request synchronously here lets the first
                     // pass cleanup abort it before the replay can start playback.
-                    questionAudioTimeout = setTimeout(() => {
+                    questionAudioTimeout = setTimeout(async () => {
                         if (audioQuestionIdRef.current === currentQ.id) return;
                         audioQuestionIdRef.current = currentQ.id;
-                        playTTS(currentQ.text, currentQ.id, data.interviewConfig?.language);
+                        const previousQuestion = currentIndex > 0 ? questions[currentIndex - 1] : null;
+                        const previousAnswer = previousQuestion
+                            ? data.answers.find((answer) => answer.qid === previousQuestion.id)
+                            : null;
+                        const transition = !previousQuestion
+                            ? 'START'
+                            : previousAnswer?.skipped ? 'SKIPPED' : 'ANSWERED';
+                        if (data.audioRecordingEnabled) {
+                            try {
+                                const stream = await ensureStream();
+                                await startLocalInterviewRecording(stream);
+                            } catch (error) {
+                                update({localAudioRecordingError: error?.message || 'Không thể truy cập microphone để ghi lại cuộc phỏng vấn.'});
+                            }
+                        }
+                        playTTS(currentQ.text, currentQ.id, data.interviewConfig?.language, transition);
                     }, 0);
                 }
             } else {
@@ -286,7 +391,7 @@ export function InterviewRoom() {
             if (recordingTimeout) clearTimeout(recordingTimeout);
             if (questionAudioTimeout) clearTimeout(questionAudioTimeout);
         };
-    }, [phase, questions, currentQ, startListening, playTTS, data.interviewConfig?.language]);
+    }, [phase, questions, currentQ, currentIndex, data.answers, startListening, playTTS, data.interviewConfig?.language, data.audioRecordingEnabled, ensureStream, startLocalInterviewRecording, update]);
 
     useEffect(() => {
         if (phase !== 'recording') return;
@@ -360,14 +465,15 @@ export function InterviewRoom() {
         }
     }, [data.skipStreak, endInterview]);
 
-    const cleanupRefs = useRef({ stopAllTracks, stopSTT, stopAudio });
+    const cleanupRefs = useRef({ stopAllTracks, stopSTT, stopAudio, stopLocalInterviewRecording });
 
     useEffect(() => {
-        cleanupRefs.current = { stopAllTracks, stopSTT, stopAudio };
-    }, [stopAllTracks, stopSTT, stopAudio]);
+        cleanupRefs.current = { stopAllTracks, stopSTT, stopAudio, stopLocalInterviewRecording };
+    }, [stopAllTracks, stopSTT, stopAudio, stopLocalInterviewRecording]);
 
     useEffect(() => {
         return () => {
+            cleanupRefs.current.stopLocalInterviewRecording();
             cleanupRefs.current.stopAllTracks();
             cleanupRefs.current.stopSTT();
             cleanupRefs.current.stopAudio();
@@ -412,9 +518,11 @@ export function InterviewRoom() {
                     <span className="w-2 h-2 rounded-full bg-primary"></span>
                     <span className="text-sm font-semibold text-primary tracking-wide">PHÒNG PHỎNG VẤN</span>
                 </div>
-                <div className="flex items-center gap-2 text-on-surface-variant font-medium text-sm">
-                    <Clock size={16}/>
-                    <span>Thời gian: {formatTime(elapsed)}</span>
+                <div className="flex items-center gap-4 text-on-surface-variant font-medium text-sm">
+                    {data.audioRecordingEnabled && <span className="flex items-center gap-1.5 text-rose-600" title="Đang ghi âm micro và giọng đọc câu hỏi vào thiết bị này">
+                        <Mic size={15} /> Ghi âm hội thoại
+                    </span>}
+                    <span className="flex items-center gap-2"><Clock size={16}/><span>Thời gian: {formatTime(elapsed)}</span></span>
                 </div>
             </header>
             <main className="flex-1 relative flex flex-col items-center justify-center p-6 text-on-surface">

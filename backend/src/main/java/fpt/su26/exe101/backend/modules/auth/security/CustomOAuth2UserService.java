@@ -1,4 +1,4 @@
-package fpt.su26.exe101.backend.modules.auth.service;
+package fpt.su26.exe101.backend.modules.auth.security;
 
 import fpt.su26.exe101.backend.base.security.JwtTokenProvider;
 import fpt.su26.exe101.backend.modules.auth.service.AccountService;

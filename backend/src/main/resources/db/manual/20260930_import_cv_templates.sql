@@ -45,4 +45,9 @@ UPDATE cv_templates SET minimum_plan = 'ENHANCE' WHERE minimum_plan = 'PREMIUM';
 -- Đổi PRO thành MIDDLE để khớp với Enum Java
 UPDATE cv_templates SET minimum_plan = 'MIDDLE' WHERE minimum_plan = 'PRO';
 
-UPDATE cv_templates SET minimum_plan = 'FREE';
+UPDATE cv_templates SET minimum_plan = 'FREE'
+WHERE id IN ('the-standard', 'portfolio-hybrid', 'cloud-expert');
+UPDATE cv_templates SET minimum_plan = 'MIDDLE'
+WHERE id IN ('boardroom-ready', 'security-analyst');
+UPDATE cv_templates SET minimum_plan = 'ENHANCE'
+WHERE id = 'data-scientist';

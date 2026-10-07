@@ -13,7 +13,7 @@ import fpt.su26.exe101.backend.modules.cv.dto.response.CVTemplateResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.response.TemplateFeedbackResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.mapper.CVMapper;
 import fpt.su26.exe101.backend.modules.cv.service.TemplateService;
-import fpt.su26.exe101.backend.modules.cv.service.TemplateAccessPolicy;
+import fpt.su26.exe101.backend.modules.cv.policy.TemplateAccessPolicy;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import lombok.RequiredArgsConstructor;

@@ -1,0 +1,12 @@
+interview:
+  voice:
+    delivery:
+      phrases:
+        vi:
+          opening: "Chào bạn, cảm ơn bạn đã tham gia buổi phỏng vấn. Chúng ta bắt đầu nhé."
+          after-answer: "Cảm ơn bạn đã chia sẻ. Vậy thì,|Được rồi, mình chuyển sang câu tiếp theo nhé.|Cảm ơn bạn. Tiếp theo, mình muốn hỏi về điều này:"
+          after-skip: "Không sao, mình chuyển sang câu tiếp theo nhé."
+        en:
+          opening: "Hello, and thank you for joining. Let's get started."
+          after-answer: "Thank you for sharing that. Let's move on to the next question.|All right, let's continue with another question.|Thanks for that. I'd like to ask you about this next:"
+          after-skip: "No problem, let's move on to the next question."

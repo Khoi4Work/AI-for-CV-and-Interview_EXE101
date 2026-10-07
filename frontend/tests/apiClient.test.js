@@ -9,7 +9,7 @@ const server = await createServer({
 });
 const { default: apiClient } = await server.ssrLoadModule('/src/service/apiClient.js');
 const { default: galleryService } = await server.ssrLoadModule('/src/service/galleryService.js');
-const { paymentService } = await server.ssrLoadModule('/src/services/paymentService.js');
+const { paymentService } = await server.ssrLoadModule('/src/features/payment/services/paymentService.js');
 const savedStorage = globalThis.localStorage;
 const savedWindow = globalThis.window;
 after(async () => {

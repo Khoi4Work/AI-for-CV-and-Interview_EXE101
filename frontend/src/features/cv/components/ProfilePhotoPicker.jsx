@@ -3,6 +3,7 @@ import {ImagePlus, Trash2, UserRound} from 'lucide-react';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
 import {prepareProfilePhoto} from '../utils/profilePhoto.js';
+import {supportsProfilePhoto} from '../utils/templateCapabilities.js';
 
 export default function ProfilePhotoPicker({variant = 'field', className = '', photo: suppliedPhoto}) {
     const inputRef = useRef(null);
@@ -10,6 +11,8 @@ export default function ProfilePhotoPicker({variant = 'field', className = '', p
     const {showToast} = useApp();
     const {cvData, updateProfilePhoto, readOnly} = useCV();
     const profilePhoto = suppliedPhoto ?? cvData.profilePhoto ?? '';
+
+    if (!supportsProfilePhoto(cvData.selectedTemplateId)) return null;
 
     if (readOnly) return <div className={`relative overflow-hidden bg-slate-200 text-slate-400 ${className}`}>
         {profilePhoto ? <img src={profilePhoto} alt="Ảnh hồ sơ" className="h-full w-full object-cover" />

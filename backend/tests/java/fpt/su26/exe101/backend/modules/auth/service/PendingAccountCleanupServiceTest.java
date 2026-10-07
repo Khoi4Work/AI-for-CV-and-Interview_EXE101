@@ -1,7 +1,8 @@
-package fpt.su26.exe101.backend.modules.auth.service;
+package fpt.su26.exe101.backend.modules.auth.service.impl;
 
 import fpt.su26.exe101.backend.modules.auth.entity.Account;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider;
+import fpt.su26.exe101.backend.modules.auth.service.PendingAccountCleanupService;
 import fpt.su26.exe101.backend.modules.quota.config.QuotaBenefitConfig;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -22,12 +23,12 @@ class PendingAccountCleanupServiceTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
     private final LocalDateTime now = LocalDateTime.of(2026, 10, 3, 3, 0);
     private final UUID id = UUID.randomUUID();
-    private PendingAccountCleanupService service;
+    private PendingAccountCleanupServiceImpl service;
     private Account account;
 
     @BeforeEach
     void setup() {
-        service = new PendingAccountCleanupService(em, jdbc, new QuotaBenefitConfig(), 2, 24);
+        service = new PendingAccountCleanupServiceImpl(em, jdbc, new QuotaBenefitConfig(), 2, 24);
         account = Account.builder().provider(AccountProvider.LOCAL).status("PENDING_VERIFICATION")
                 .verificationManagedAt(now.minusDays(2)).build();
         account.setId(id);
