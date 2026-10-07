@@ -7,7 +7,7 @@ import { Footer } from '../../../components/layout/Footer.jsx';
 import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../constants/interviewTypes.js';
 import { COMPANIES } from '../constants/companies.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
-import { paymentService } from '../../../services/paymentService.js';
+import { paymentService } from '../../payment/services/paymentService.js';
 
 export default function InterviewSetup() {
   const navigate = useNavigate();

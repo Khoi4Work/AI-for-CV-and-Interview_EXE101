@@ -17,7 +17,7 @@ import {useCV} from '../contexts/CVContext.jsx';
 import {Header} from "../../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from "../../../components/layout/Footer.jsx";
-import {paymentService} from '../../../services/paymentService.js';
+import {paymentService} from '../../payment/services/paymentService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
 

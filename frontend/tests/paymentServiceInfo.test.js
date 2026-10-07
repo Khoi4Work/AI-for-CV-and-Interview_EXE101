@@ -2,20 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getPaymentServiceInfo } from '../src/features/payment/components/paymentServiceInfo.js';
 
-test('maps all monthly catalog products using backend field names', () => {
-    for (const [category, name, billingUnits, price] of [
-        ['CV', 'CV Middle', 5, 39000],
-        ['CV', 'CV Enhance', 10, 59000],
-        ['INTERVIEW', 'Interview Middle', 30, 69000],
-        ['INTERVIEW', 'Interview Enhance', 120, 129000],
+test('maps one-time catalog products with non-expiring quotas', () => {
+    for (const [category, name, packageCode, billingUnits, price] of [
+        ['CV', 'CV Middle', 'MIDDLE', 3, 39000],
+        ['CV', 'CV Enhance', 'ENHANCE', 4, 59000],
+        ['INTERVIEW', 'Interview Middle', 'MIDDLE', 30, 69000],
+        ['INTERVIEW', 'Interview Enhance', 'ENHANCE', 120, 129000],
     ]) {
-        const info = getPaymentServiceInfo({ id: name, name, category, billingUnits, price, benefits: ['Benefit'] });
+        const info = getPaymentServiceInfo({ id: name, name, category, packageCode, billingUnits, price, benefits: ['Benefit'] });
         assert.equal(info.id, name);
         assert.equal(info.name, name);
-        assert.equal(info.duration, '1 tháng');
+        assert.equal(info.duration, 'Không hết hạn');
         assert.equal(info.quotaLabel, category === 'CV'
-            ? `${billingUnits} lượt phân tích CV / tháng`
-            : `${billingUnits} phút phỏng vấn / tháng`);
+            ? `${billingUnits} lượt tạo CV · tối đa ${packageCode === 'ENHANCE' ? 5 : 3} lượt phân tích/CV · không hết hạn`
+            : `${billingUnits} phút phỏng vấn · mua một lần, không hết hạn`);
         assert.equal(info.formattedPrice, new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price));
         assert.deepEqual(info.benefits, ['Benefit']);
     }

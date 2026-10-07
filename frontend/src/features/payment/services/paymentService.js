@@ -1,5 +1,5 @@
 import axios from 'axios';
-import apiClient from '../service/apiClient.js';
+import apiClient from '../../../service/apiClient.js';
 
 const API_BASE_URL = import.meta.env.VITE_BE_URL  || 'http://localhost:8080/api';
 

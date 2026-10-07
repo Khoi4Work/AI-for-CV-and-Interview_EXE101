@@ -19,7 +19,7 @@ import {Footer} from "../../../components/layout/Footer.jsx";
 import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
-import {paymentService} from '../../../services/paymentService.js';
+import {paymentService} from '../../payment/services/paymentService.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
 import galleryService from '../../../service/galleryService.js';
 
@@ -60,21 +60,20 @@ export default function CVBuilder() {
     const [showSavedCVPicker, setShowSavedCVPicker] = useState(false);
     const [isLoadingSavedCVs, setIsLoadingSavedCVs] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [quotaState, setQuotaState] = useState({ loading: true, error: '', exhausted: false });
-    const [quotaRetry, setQuotaRetry] = useState(0);
+    const [quotaState, setQuotaState] = useState({ loading: false, error: '', exhausted: false });
     const totalSteps = 5;
 
-    useEffect(() => {
-        let active = true;
-        checkBuilderQuota(() => paymentService.getCurrentQuota()).then(() => {
-            if (active) setQuotaState({ loading: false, error: '', exhausted: false });
-        }).catch(error => {
-            if (active) setQuotaState({ loading: false,
+    const handleRetryQuota = async () => {
+        setQuotaState({ loading: true, error: '', exhausted: false });
+        try {
+            await checkBuilderQuota(() => paymentService.getCurrentQuota());
+            setQuotaState({ loading: false, error: '', exhausted: false });
+        } catch (error) {
+            setQuotaState({ loading: false,
                 error: getApiErrorMessage(error, 'Không kiểm tra được lượt tạo CV. Vui lòng thử lại.'),
                 exhausted: error.code === 'CV_CREATION_QUOTA_EXCEEDED' });
-        });
-        return () => { active = false; };
-    }, [quotaRetry]);
+        }
+    };
 
     const handleFileUpload = () => {
         document.getElementById('cv-upload-input').click();
@@ -107,7 +106,7 @@ export default function CVBuilder() {
         if (isSaving || quotaState.loading || quotaState.error) return;
         setIsSaving(true);
         try {
-            // Refresh before navigating: quota may have changed in another tab.
+            // Check only when the user continues to the editor.
             await checkBuilderQuota(() => paymentService.getCurrentQuota());
             setHasCV(true);
             showToast('Thông tin CV đã sẵn sàng. Bạn có thể chỉnh sửa và tải file ở bước tiếp theo.', 'success');
@@ -258,10 +257,7 @@ export default function CVBuilder() {
                                     {!quotaState.loading && quotaState.error && (
                                         <div className="mt-3 flex flex-wrap gap-4">
                                             {quotaState.exhausted && <button onClick={() => navigate('/pricing')} className="font-semibold underline">Nâng cấp gói CV</button>}
-                                            <button onClick={() => {
-                                                setQuotaState({ loading: true, error: '', exhausted: false });
-                                                setQuotaRetry(value => value + 1);
-                                            }} className="font-semibold underline">Kiểm tra lại</button>
+                                            <button onClick={handleRetryQuota} className="font-semibold underline">Kiểm tra lại</button>
                                         </div>
                                     )}
                                 </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Copy, ChevronDown } from 'lucide-react';
-import { paymentService } from '../../../services/paymentService.js';
+import { paymentService } from '../../payment/services/paymentService.js';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
