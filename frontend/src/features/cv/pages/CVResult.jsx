@@ -10,7 +10,7 @@ import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { mapCVDataToTemplate, mapImportedCVData } from '../mapper/cv-data-mapper.js';
 import TemplateRenderer from '../components/TemplateRenderer.jsx';
 import { TEMPLATES_DATA } from '../constants/templates.js';
-import { paymentService } from '../../../services/paymentService.js';
+import { paymentService } from '../../payment/services/paymentService.js';
 
 export function CVResult() {
     const navigate = useNavigate();

@@ -19,7 +19,7 @@ import {Footer} from "../../../components/layout/Footer.jsx";
 import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
-import {paymentService} from '../../../services/paymentService.js';
+import {paymentService} from '../../payment/services/paymentService.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
 import galleryService from '../../../service/galleryService.js';
 

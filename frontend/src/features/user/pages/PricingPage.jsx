@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Badge} from '../components/Layout.jsx';
-import {paymentService} from '../../../services/paymentService.js';
+import {paymentService} from '../../payment/services/paymentService.js';
 import PaymentHistory from '../components/PaymentHistory.jsx';
 
 const PricingPage = () => {
