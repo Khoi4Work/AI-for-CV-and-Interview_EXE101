@@ -1,5 +1,11 @@
 # Session History
 
+## 2026-10-07 — Wait for interview question audio before listening
+
+- Removed the fixed 15-second transition from asking to recording, which could enable the candidate microphone while longer TTS questions were still playing.
+- Kept the post-answer transition delay in a dedicated processing timer and clear it on unmount.
+- Validation: frontend production build succeeded; `git diff --check` passed.
+
 ## 2026-10-07 — Interview voice/export, token refresh, and service layering
 
 - Added scripted interview voice transitions with expression-tag and generated-script logging; moved Vietnamese speech phrases to UTF-8 YAML configuration.
