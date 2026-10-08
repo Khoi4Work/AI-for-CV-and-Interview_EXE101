@@ -64,7 +64,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
                 .remainingCvCnt(freeBenefit.getCvCnt())
                 .remainingCvAiCnt(0)
                 .remainingCvFreeCredits(freeBenefit.getCvCnt())
-                .remainingIntMin(0)
+                .remainingIntMin(QuotaBenefitConfig.FREE_INTERVIEW_MINUTES)
                 .build();
     }
 

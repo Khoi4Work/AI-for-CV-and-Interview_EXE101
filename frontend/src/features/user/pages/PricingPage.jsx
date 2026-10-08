@@ -23,11 +23,11 @@ const cvComparisonRows = [
 ];
 
 const interviewComparisonRows = [
-    ['Phút phỏng vấn được cấp', '0 phút', '30 phút / lần mua', '120 phút / lần mua'],
-    ['Thời lượng mỗi buổi', 'Cần mua phút để bắt đầu', 'Tối đa 10 phút', 'Tối đa 15 phút'],
-    ['Cấp độ câu hỏi', 'Cần mua phút để bắt đầu', 'Intern, Fresher, Junior', 'Intern, Fresher, Junior'],
-    ['Nhận xét sau phỏng vấn', 'Không hỗ trợ', 'Điểm tổng quan, điểm mạnh và điểm cần cải thiện', 'Nhận xét cơ bản, điểm theo tiêu chí và đề xuất cải thiện'],
-    ['Ghi âm cuộc phỏng vấn', 'Cần mua phút để bắt đầu', 'Tùy chọn ghi âm, lưu trên thiết bị', 'Tùy chọn ghi âm, lưu trên thiết bị'],
+    ['Phút phỏng vấn được cấp', '5 phút miễn phí một lần', '30 phút / lần mua', '120 phút / lần mua'],
+    ['Thời lượng mỗi buổi', 'Tối đa 5 phút', 'Tối đa 10 phút', 'Tối đa 15 phút'],
+    ['Cấp độ câu hỏi', 'Intern, Fresher, Junior', 'Intern, Fresher, Junior', 'Intern, Fresher, Junior'],
+    ['Nhận xét sau phỏng vấn', 'Điểm tổng quan, điểm mạnh và điểm cần cải thiện', 'Điểm tổng quan, điểm mạnh và điểm cần cải thiện', 'Nhận xét cơ bản, điểm theo tiêu chí và đề xuất cải thiện'],
+    ['Ghi âm cuộc phỏng vấn', 'Tùy chọn ghi âm, lưu trên thiết bị', 'Tùy chọn ghi âm, lưu trên thiết bị', 'Tùy chọn ghi âm, lưu trên thiết bị'],
     ['Thời hạn quota', 'Không hết hạn', 'Không hết hạn', 'Không hết hạn'],
 ];
 
@@ -378,24 +378,23 @@ const PricingPage = () => {
                     {/* Basic */}
                     <div className="p-5 border border-slate-200 rounded-xl bg-[#DFE6E2] relative flex flex-col h-full">
                         <h4 className="font-bold text-[#0F172A] mb-1">Cơ bản</h4>
-                        <div className="text-2xl font-bold text-[#0F172A] mb-1">0 VNĐ <span
-                            className="text-sm font-normal text-[#475569]">/ vĩnh viễn</span></div>
+                        <div className="text-2xl font-bold text-[#0F172A] mb-1">0 VNĐ</div>
+                        <p className="text-xs text-[#475569]">5 phút trải nghiệm miễn phí một lần · Không cần thanh toán</p>
                         <ul className="space-y-2 my-6 text-sm text-[#475569]">
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/>Chưa có phút phỏng vấn; cần mua gói để bắt đầu
+                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/>Luyện phỏng vấn với AI, tối đa 5 phút/buổi
                             </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Chưa
-                                hỗ trợ nhận xét (Feedback)
+                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Nhận điểm tổng quan, điểm mạnh và điểm cần cải thiện
                             </li>
                             <li className="flex items-start gap-2"><CheckCircle size={16}
-                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Chưa
-                                hỗ trợ ghi lại hội thoại
+                                                                                className="!text-[#065F46] shrink-0 mt-0.5"/> Tùy chọn ghi âm cuộc phỏng vấn, lưu trên thiết bị
                             </li>
                         </ul>
-                        <Button variant="outline" disabled
-                                className={`w-full mt-auto !bg-transparent border !text-slate-600 cursor-default ${quota?.interviewPlan === 'FREE' ? '!border-slate-400' : '!border-slate-300'}`}>
-                            {quota?.interviewPlan === 'FREE' ? 'Đang sử dụng gói này' : 'Gói miễn phí'}
+                        <Button variant="outline"
+                                onClick={() => navigate('/interview/job-selection')}
+                                className="w-full mt-auto !bg-transparent !border-[#065F46] !text-[#065F46]">
+                            Luyện phỏng vấn ngay
                         </Button>
                     </div>
 

@@ -1,5 +1,13 @@
 # Session History
 
+## 2026-10-08 — Enable the free Interview trial
+
+- Grant new Free accounts five one-time interview minutes and provide a manual migration for existing Free accounts.
+- Allow basic interview feedback and saved feedback access for Free accounts while keeping enhanced criteria and recommendations restricted.
+- Update pricing benefits and the practice button; remove the lifetime price suffix.
+- Align pending-account cleanup with the new default quota.
+- Validation: frontend production build and four targeted Interview tests passed; `git diff --check` passed. Full backend tests failed during context initialization because the test environment lacks an AI API key. Database migrations were not executed.
+
 ## 2026-10-07 — Wait for interview question audio before listening
 
 - Removed the fixed 15-second transition from asking to recording, which could enable the candidate microphone while longer TTS questions were still playing.

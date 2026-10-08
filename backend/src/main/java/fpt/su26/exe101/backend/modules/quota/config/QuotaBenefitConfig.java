@@ -10,6 +10,7 @@ import java.util.Map;
 
 @Component
 public class QuotaBenefitConfig {
+    public static final int FREE_INTERVIEW_MINUTES = 5;
 
     @Getter
     @RequiredArgsConstructor

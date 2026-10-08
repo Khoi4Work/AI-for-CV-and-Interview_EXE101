@@ -42,7 +42,7 @@ public class InterviewAIProviderImpl implements InterviewAIProvider {
     }
 
     private void enforcePlanFields(InterviewEvaluationResponseDTO evaluation, UserPlan plan) {
-        if (evaluation != null && plan == UserPlan.MIDDLE) {
+        if (evaluation != null && plan != UserPlan.ENHANCE) {
             // The plan, not model compliance, controls which feedback fields are exposed.
             evaluation.setRecommendations(java.util.List.of());
             evaluation.setCriteria(java.util.List.of());
@@ -92,9 +92,9 @@ public class InterviewAIProviderImpl implements InterviewAIProvider {
                 || evaluation.getCriteria() == null || evaluation.getQuestionFeedback() == null) {
             throw new IllegalStateException("AI returned incomplete interview evaluation data.");
         }
-        if (plan == UserPlan.MIDDLE && (!evaluation.getCriteria().isEmpty()
+        if (plan != UserPlan.ENHANCE && (!evaluation.getCriteria().isEmpty()
                 || !evaluation.getRecommendations().isEmpty())) {
-            throw new IllegalStateException("AI returned feedback fields outside the MIDDLE plan tier.");
+            throw new IllegalStateException("AI returned feedback fields outside the basic feedback tier.");
         }
         boolean invalidScore = evaluation.getCriteria().stream().anyMatch(item -> item.getScore() == null
                 || item.getScore() < 0 || item.getScore() > 100)
