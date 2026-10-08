@@ -1,5 +1,11 @@
 # Session History
 
+## 2026-10-08 — Add curated FPT IT job descriptions
+
+- Add an idempotent manual SQL seed with five IT-only FPT Telecom and FPT Play JD summaries, including source links and experience levels.
+- Keep all records in the shared SYSTEM catalog and identify the source posting and reference date in each summary.
+- Validation: checked the five seed records in H2 for required fields, unique catalog keys, IT industries, source links, and SYSTEM scope. The SQL has not been run against the configured database.
+
 ## 2026-10-08 — Enable the free Interview trial
 
 - Grant new Free accounts five one-time interview minutes and provide a manual migration for existing Free accounts.
