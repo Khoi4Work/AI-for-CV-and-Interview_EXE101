@@ -330,9 +330,6 @@ public class InterviewServiceImpl implements InterviewService {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
         UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
-        if (plan == UserPlan.FREE) {
-            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Interview feedback is available on MIDDLE and ENHANCE plans.");
-        }
         if (session.getFeedbackJson() != null) {
             InterviewEvaluationResponseDTO saved = objectMapper.convertValue(
                     session.getFeedbackJson(), InterviewEvaluationResponseDTO.class);
@@ -413,11 +410,8 @@ public class InterviewServiceImpl implements InterviewService {
         InterviewSessionResponseDTO sessionInfo = interviewMapper
                 .sessionsToSessionResponses(List.of(session)).getFirst();
         List<InterviewAnswerResponseDTO> answers = mapHistoryAnswers(session);
-        UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
         InterviewEvaluationResponseDTO evaluation = null;
-        if (plan == UserPlan.FREE) {
-            sessionInfo.setFeedbackJson(null);
-        } else if (session.getFeedbackJson() != null) {
+        if (session.getFeedbackJson() != null) {
             evaluation = objectMapper.convertValue(session.getFeedbackJson(), InterviewEvaluationResponseDTO.class);
             evaluation.setSessionId(session.getId());
         }
@@ -433,9 +427,6 @@ public class InterviewServiceImpl implements InterviewService {
         Gallery gallery = galleryService.getCurrentGallery();
         List<InterviewSessionResponseDTO> sessions = interviewMapper
                 .sessionsToSessionResponses(sessionRepository.findByGallery(gallery));
-        if (usageQuotaService.getInterviewPlan(gallery.getAccountId()) == UserPlan.FREE) {
-            sessions.forEach(session -> session.setFeedbackJson(null));
-        }
         return sessions;
     }
 

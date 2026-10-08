@@ -131,10 +131,10 @@ public class PendingAccountCleanupServiceImpl implements PendingAccountCleanupSe
                   cv_plan <> 'FREE' OR interview_plan <> 'FREE' OR remaining_cv_cnt <> ?
                   OR remaining_cv_ai_cnt <> 0 OR remaining_cv_free_credits <> ?
                   OR remaining_cv_middle_credits <> 0 OR remaining_cv_enhance_credits <> 0
-                  OR remaining_int_min <> 0
+                  OR remaining_int_min <> ?
                   OR cv_period_start IS NOT NULL OR cv_period_end IS NOT NULL
                   OR interview_period_start IS NOT NULL OR interview_period_end IS NOT NULL))
-                """, Boolean.class, id, free.getCvCnt(), free.getCvCnt());
+                """, Boolean.class, id, free.getCvCnt(), free.getCvCnt(), QuotaBenefitConfig.FREE_INTERVIEW_MINUTES);
         return !Boolean.FALSE.equals(changedQuota);
     }
 }

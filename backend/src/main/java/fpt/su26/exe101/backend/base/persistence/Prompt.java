@@ -206,8 +206,7 @@ public class Prompt {
 
     public static String interviewEvaluation(String transcriptJson, UserPlan plan) {
         String tierInstructions = switch (plan) {
-            case FREE -> throw new IllegalArgumentException("Free plan is not entitled to interview feedback.");
-            case MIDDLE -> "Provide a standard evaluation: overall score, concise summary, strengths, improvement areas, "
+            case FREE, MIDDLE -> "Provide a standard evaluation: overall score, concise summary, strengths, improvement areas, "
                     + "and one concise assessment for each answered question. For each questionFeedback item, use the exact questionId "
                     + "from the transcript, give a score based only on that answer, summarize what was effective or missing in assessment, "
                     + "and give one practical improvementSuggestion. Omit skipped or unanswered questions from questionFeedback. "
@@ -219,8 +218,7 @@ public class Prompt {
                     + "Do not replace or omit any MIDDLE fields when adding ENHANCE detail.";
         };
         String schema = switch (plan) {
-            case FREE -> throw new IllegalArgumentException("Free plan is not entitled to interview feedback.");
-            case MIDDLE -> "{\"overallScore\":0,\"summary\":\"\",\"strengths\":[\"\"],"
+            case FREE, MIDDLE -> "{\"overallScore\":0,\"summary\":\"\",\"strengths\":[\"\"],"
                     + "\"improvementAreas\":[\"\"],\"recommendations\":[],\"criteria\":[],"
                     + "\"questionFeedback\":[{\"questionId\":\"uuid from transcript\",\"score\":0,\"assessment\":\"\","
                     + "\"improvementSuggestion\":\"\"}]}";

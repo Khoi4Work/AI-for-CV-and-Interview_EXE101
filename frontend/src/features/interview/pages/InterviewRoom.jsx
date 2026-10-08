@@ -55,7 +55,7 @@ export function InterviewRoom() {
     // 'apiSTT' | 'webspeech' | 'none'
     const [sttEngine, setSttEngine] = useState('none');
 
-    const phaseTimerRef = useRef(null);
+    const processingTimerRef = useRef(null);
     const audioQuestionIdRef = useRef(null);
     const inQuestionTimerRef = useRef(null);
     const lastSpokeAtRef = useRef(null);
@@ -288,10 +288,9 @@ export function InterviewRoom() {
         lastSpeechActivityAtRef.current = null;
         setShowCurrent(false);
 
-        if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
         if (inQuestionTimerRef.current) clearTimeout(inQuestionTimerRef.current);
 
-        phaseTimerRef.current = setTimeout(() => {
+        processingTimerRef.current = setTimeout(() => {
             processingRef.current = false;
             transitionToNext();
         }, PROCESSING_DURATION);
@@ -377,10 +376,6 @@ export function InterviewRoom() {
                 }, 0)
             }
 
-            if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
-            phaseTimerRef.current = setTimeout(() => {
-                setPhase('recording');
-            }, 15000);
         } else if (phase === 'recording') {
             recordingTimeout = setTimeout(() => {
                 startListening().catch(console.error);
@@ -477,8 +472,8 @@ export function InterviewRoom() {
             cleanupRefs.current.stopAllTracks();
             cleanupRefs.current.stopSTT();
             cleanupRefs.current.stopAudio();
-            if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
             if (inQuestionTimerRef.current) clearTimeout(inQuestionTimerRef.current);
+            if (processingTimerRef.current) clearTimeout(processingTimerRef.current);
         };
     }, []);
 

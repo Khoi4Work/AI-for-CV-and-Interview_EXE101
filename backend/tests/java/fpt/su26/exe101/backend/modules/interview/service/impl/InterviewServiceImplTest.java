@@ -48,7 +48,6 @@ class InterviewServiceImplTest {
     void getInterviewHistoryQueriesSessionsForCurrentGallery() {
         Gallery gallery = gallery(UUID.randomUUID());
         when(galleryService.getCurrentGallery()).thenReturn(gallery);
-        when(usageQuotaService.getInterviewPlan(gallery.getAccountId())).thenReturn(UserPlan.FREE);
 
         interviewService.getInterviewHistory();
 
