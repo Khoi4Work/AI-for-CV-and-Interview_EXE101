@@ -12,6 +12,7 @@ import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
 import fpt.su26.exe101.backend.modules.gallery.repository.GalleryRepository;
 import fpt.su26.exe101.backend.modules.gallery.repository.JobDescriptionRepository;
 import fpt.su26.exe101.backend.modules.gallery.entity.enums.JobDescriptionSource;
+import fpt.su26.exe101.backend.modules.gallery.service.JobDescriptionTitleExtractor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +34,7 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
     private final JobDescriptionRepository jdRepository;
     private final GalleryMapper galleryMapper;
     private final AccountRepository accountRepository;
+    private final JobDescriptionTitleExtractor jobDescriptionTitleExtractor;
 
     private Gallery getGalleryForCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -81,24 +83,28 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
         if (jdText == null || jdText.isBlank()) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "JD text must not be blank.");
         }
-        String normalized = jdText.trim().replaceAll("\\s+", " ");
-        String hash;
-        try {
-            hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(normalized.getBytes(StandardCharsets.UTF_8)));
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is unavailable", e);
+        String hash = contentHash(jdText);
+        JobDescription jd = jdRepository.findByGalleryIdAndContentHash(gallery.getId(), hash).orElse(null);
+        if (jd != null) {
+            if (isGenericTitle(jd.getTitle())) {
+                jd.setTitle(extractTitleOrFallback(jd.getContent()));
+            }
+            if (!jd.isActive()) jd.setActive(true);
+            return jdRepository.save(jd);
         }
-        return jdRepository.findByGalleryIdAndContentHash(gallery.getId(), hash).orElseGet(() ->
-                jdRepository.save(JobDescription.builder().gallery(gallery).source(JobDescriptionSource.USER)
-                        .title("User provided JD").content(jdText.trim()).contentHash(hash).build()));
+        return jdRepository.save(JobDescription.builder().gallery(gallery).source(JobDescriptionSource.USER)
+                .title(extractTitleOrFallback(jdText)).content(jdText.trim()).contentHash(hash).build());
     }
 
     @Override
+    @Transactional
     public List<JDResponseDTO> getJobDescriptionsForCurrentGallery() {
         Gallery gallery = getGalleryForCurrentUser();
         List<JobDescription> jds = jdRepository.findByGalleryId(gallery.getId()).stream()
-                .filter(jd -> jd.getSource() == JobDescriptionSource.USER).toList();
+                .filter(jd -> jd.getSource() == JobDescriptionSource.USER && jd.isActive()).toList();
+        List<JobDescription> missingTitles = jds.stream().filter(jd -> isGenericTitle(jd.getTitle())).toList();
+        missingTitles.forEach(jd -> jd.setTitle(extractTitleOrFallback(jd.getContent())));
+        if (!missingTitles.isEmpty()) jdRepository.saveAll(missingTitles);
         return galleryMapper.jdsToJDResponses(jds);
     }
 
@@ -110,7 +116,7 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
         JobDescription jd = JobDescription.builder()
                 .gallery(gallery)
                 .source(JobDescriptionSource.USER)
-                .title(request.getTitle())
+                .title(specificTitleOrExtract(request.getTitle(), request.getContent()))
                 .content(request.getContent())
                 .companyName(request.getCompanyName())
                 .build();
@@ -124,6 +130,10 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
     @Override
     @Transactional
     public JDResponseDTO updateJobDescription(UUID id, JDUpdateRequestDTO request) {
+        if (request == null || request.getTitle() == null || request.getTitle().isBlank()
+                || request.getContent() == null || request.getContent().isBlank()) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "JD title and content must not be blank.");
+        }
         JobDescription jd = jdRepository.findById(id)
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Job Description not found"));
 
@@ -133,9 +143,18 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
 
-        jd.setTitle(request.getTitle());
-        jd.setContent(request.getContent());
-        jd.setCompanyName(request.getCompanyName());
+        String updatedContentHash = contentHash(request.getContent());
+        jdRepository.findByGalleryIdAndContentHash(gallery.getId(), updatedContentHash)
+                .filter(existing -> !existing.getId().equals(jd.getId()))
+                .ifPresent(existing -> {
+                    throw new ApiException(ErrorCode.INVALID_INPUT,
+                            "Một JD khác trong danh sách đã có nội dung này.");
+                });
+        jd.setTitle(request.getTitle().trim());
+        jd.setContent(request.getContent().trim());
+        jd.setContentHash(updatedContentHash);
+        jd.setCompanyName(request.getCompanyName() == null || request.getCompanyName().isBlank()
+                ? null : request.getCompanyName().trim());
 
         JobDescription updatedJd = jdRepository.save(jd);
         log.info("[GALLERY] Job description updated | galleryId={} | jdId={}",
@@ -155,8 +174,37 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION);
         }
 
-        jdRepository.delete(jd);
-        log.info("[GALLERY] Job description deleted | galleryId={} | jdId={}", gallery.getId(), id);
+        jd.setActive(false);
+        jdRepository.save(jd);
+        log.info("[GALLERY] Job description hidden | galleryId={} | jdId={}", gallery.getId(), id);
+    }
+
+    private String specificTitleOrExtract(String requestedTitle, String content) {
+        if (requestedTitle != null && !requestedTitle.isBlank() && !isGenericTitle(requestedTitle)) {
+            return requestedTitle.trim();
+        }
+        return extractTitleOrFallback(content);
+    }
+
+    private String extractTitleOrFallback(String content) {
+        String extracted = jobDescriptionTitleExtractor.extractTitle(content);
+        return extracted.isBlank() ? "JD chưa có tiêu đề" : extracted;
+    }
+
+    private String contentHash(String content) {
+        String normalized = content.trim().replaceAll("\\s+", " ");
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(normalized.getBytes(StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is unavailable", exception);
+        }
+    }
+
+    private boolean isGenericTitle(String title) {
+        if (title == null || title.isBlank()) return true;
+        return title.trim().equalsIgnoreCase("User provided JD")
+                || title.trim().equalsIgnoreCase("JD do người dùng cung cấp");
     }
 
 }

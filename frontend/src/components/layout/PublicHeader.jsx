@@ -1,6 +1,6 @@
 import {useState, useEffect, useRef} from 'react';
 import {Link, useLocation, useNavigate} from 'react-router-dom';
-import {User, Shield, CreditCard, Clock, FileText, LogOut, Menu, X} from 'lucide-react';
+import {User, Shield, CreditCard, Clock, FileText, Briefcase, LogOut, Menu, X} from 'lucide-react';
 import {createPortal} from 'react-dom';
 import {useAuth} from "../../features/auth/contexts/AuthContext.jsx";
 import logo from '../../assets/logo.jpg';
@@ -67,6 +67,7 @@ export function Header() {
         {path: '/pricing', label: 'Gói dịch vụ', icon: CreditCard},
         {path: '/history', label: 'Lịch sử', icon: Clock},
         {path: '/my-cvs', label: 'CV của tôi', icon: FileText},
+        {path: '/my-jds', label: 'JD của tôi', icon: Briefcase},
     ];
 
     return (

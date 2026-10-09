@@ -1,6 +1,6 @@
 import React from 'react';
 import {NavLink, useNavigate} from 'react-router-dom';
-import {User, Shield, CreditCard, Clock, FileText, Settings, LogOut, HelpCircle} from 'lucide-react';
+import {User, Shield, CreditCard, Clock, FileText, Briefcase, Settings, LogOut, HelpCircle} from 'lucide-react';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import logo from '../../../assets/logo.jpg';
 
@@ -19,6 +19,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         {path: '/pricing', label: 'Gói dịch vụ', icon: CreditCard},
         {path: '/history', label: 'Lịch sử', icon: Clock},
         {path: '/my-cvs', label: 'CV của tôi', icon: FileText},
+        {path: '/my-jds', label: 'JD của tôi', icon: Briefcase},
         // {path: '/help', label: 'Trợ giúp', icon: HelpCircle},
         {onClick: onLogoutClick, label: 'Đăng xuất', icon: LogOut, variant: 'danger'}
     ];

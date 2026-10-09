@@ -16,6 +16,7 @@ import PersonalInfoPage from '../../features/user/pages/PersonalInfoPage.jsx';
 import SecurityPage from '../../features/user/pages/SecurityPage.jsx';
 import PricingPage from '../../features/user/pages/PricingPage.jsx';
 import MyCVsPage from '../../features/user/pages/MyCVsPage.jsx';
+import MyJDsPage from '../../features/user/pages/MyJDsPage.jsx';
 import HistoryPage from '../../features/user/pages/HistoryPage.jsx';
 import InterviewLanding from '../../features/interview/pages/InterviewLanding.jsx';
 import JobSelection from '../../features/interview/pages/JobSelection.jsx';
@@ -271,6 +272,8 @@ function AppLayout() {
                                                                         element={<PricingPage/>}/>
                                                                 <Route path="my-cvs"
                                                                         element={<MyCVsPage/>}/>
+                                                                <Route path="my-jds"
+                                                                        element={<MyJDsPage/>}/>
                                                                 <Route path="history"
                                                                         element={<HistoryPage/>}/>
                                                             </Routes>

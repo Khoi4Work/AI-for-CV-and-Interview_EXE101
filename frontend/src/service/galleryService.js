@@ -26,6 +26,26 @@ const galleryService = {
         }
     },
 
+    async deleteJD(id) {
+        try {
+            const response = await apiClient.delete(`/gallery/jd/${id}`);
+            return response.data?.result;
+        } catch (error) {
+            console.error(`[GalleryService] Error deleting JD ${id}:`, error);
+            throw error;
+        }
+    },
+
+    async updateJD(id, payload) {
+        try {
+            const response = await apiClient.put(`/gallery/jd/${id}`, payload);
+            return response.data?.result;
+        } catch (error) {
+            console.error(`[GalleryService] Error updating JD ${id}:`, error);
+            throw error;
+        }
+    },
+
     async getTemplates() {
         try {
             const response = await apiClient.get('/templates', { publicRequest: true });

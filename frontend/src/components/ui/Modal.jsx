@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, solid = false }) => {
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape') onClose();
@@ -30,21 +30,22 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             <div
                 role="dialog"
                 aria-modal="true"
-                className="relative w-full min-w-0 max-w-3xl shrink-0 glass-panel rounded-2xl shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
+                className={`relative w-full min-w-0 max-w-3xl shrink-0 rounded-2xl shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh] ${solid ? 'border border-slate-200 bg-white' : 'glass-panel'}`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant bg-surface-container-low">
-                    <h3 className="text-sm font-bold text-on-surface">{title}</h3>
+                <div className={`flex items-center justify-between px-6 py-4 border-b ${solid ? 'border-slate-200 bg-slate-50' : 'border-outline-variant bg-surface-container-low'}`}>
+                    <h3 className={`text-sm font-bold ${solid ? 'text-slate-900' : 'text-on-surface'}`}>{title}</h3>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
+                        aria-label="Đóng"
+                        className={`p-1.5 rounded-lg transition-colors ${solid ? 'text-slate-600 hover:bg-slate-200 hover:text-slate-900' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'}`}
                     >
                         <X className="w-4 h-4" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto text-on-surface-variant">
+                <div className={`p-6 overflow-y-auto ${solid ? 'bg-white text-slate-700' : 'text-on-surface-variant'}`}>
                     {children}
                 </div>
             </div>

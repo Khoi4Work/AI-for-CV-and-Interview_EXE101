@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Bell, HelpCircle, Menu, User, Shield, CreditCard, Clock, FileText, LogOut, ChevronDown } from 'lucide-react';
+import { Bell, HelpCircle, Menu, User, Shield, CreditCard, Clock, FileText, Briefcase, LogOut, ChevronDown } from 'lucide-react';
 import {createPortal} from 'react-dom';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
@@ -21,6 +21,7 @@ const Header = ({ onHelpClick, onMenuClick }) => {
     {path: '/pricing', label: 'Gói dịch vụ', icon: CreditCard},
     {path: '/history', label: 'Lịch sử', icon: Clock},
     {path: '/my-cvs', label: 'CV của tôi', icon: FileText},
+    {path: '/my-jds', label: 'JD của tôi', icon: Briefcase},
   ];
 
   const getTabTitle = (path) => {
@@ -35,6 +36,8 @@ const Header = ({ onHelpClick, onMenuClick }) => {
         return 'Lịch sử';
       case '/my-cvs':
         return 'CV của tôi';
+      case '/my-jds':
+        return 'JD của tôi';
       default:
         return 'Thông tin';
     }
