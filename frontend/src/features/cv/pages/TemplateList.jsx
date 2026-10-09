@@ -1,6 +1,6 @@
 import {useState, useMemo, useEffect, useCallback} from 'react';
 import {Lock,Search, ChevronDown, ChevronLeft, ChevronRight, Upload, X, FileText, Star, Download, Eye} from 'lucide-react';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import TemplateCard from '../components/TemplateCard.jsx';
 import Sidebar from "../components/Sidebar.jsx";
 import {Header} from "../../../components/layout/PublicHeader.jsx";
@@ -16,6 +16,7 @@ export default function TemplateList() {
     const {isLoggedIn, profile} = useAuth();
     const {showToast} = useApp();
     const navigate = useNavigate();
+    const location = useLocation();
 
     // API States
     const [templates, setTemplates] = useState([]);
@@ -65,7 +66,7 @@ export default function TemplateList() {
             navigate('/login', { state: { from: { pathname } } });
             return;
         }
-        navigate(pathname);
+        navigate(pathname, {state: location.state});
     };
 
     const handleRateTemplate = (id) => {
@@ -299,7 +300,7 @@ export default function TemplateList() {
                                                 </button>
                                                 <button
                                                     disabled={!selectedFile}
-                                                    onClick={() => navigate('/builder')}
+                                                    onClick={() => navigate('/builder', {state: location.state})}
                                                     className="flex-1 py-3 rounded-xl font-semibold text-white bg-green-700 hover:bg-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-md"
                                                 >
                                                     Xác nhận

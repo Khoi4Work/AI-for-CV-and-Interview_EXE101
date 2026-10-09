@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import TopNagivationToolBar from '../components/TopNagivationToolBar.jsx';
 import { useCV } from '../contexts/CVContext.jsx';
 import TemplateRenderer from '../components/TemplateRenderer.jsx';
@@ -13,6 +13,7 @@ import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from
 export default function CVEditor() {
     const { cvData, setTemplate, currentCvId, setCurrentCvId, setHasCV } = useCV();
     const navigate = useNavigate();
+    const location = useLocation();
     const [zoom, setZoom] = useState(100);
     const [cvName, setCvName] = useState(() => `CV ${cvData.personalInfo?.name || 'của tôi'}`.slice(0, 100));
     const [templates, setTemplates] = useState([]);
@@ -60,6 +61,12 @@ export default function CVEditor() {
                 setCurrentCvId(result.id); setHasCV(true);
                 setLastSaved(JSON.stringify({ name: payload.name, content: payload.content }));
                 setMessage('Đã lưu CV vào tài khoản của bạn.');
+                if (location.state?.returnToCVEvaluation) {
+                    navigate('/cv-evaluation', {
+                        replace: true,
+                        state: {createdCV: {cvId: result.id, cvName: payload.name, extractedData: payload.content}},
+                    });
+                }
             } });
         } catch (error) {
             setSaveError(getApiErrorMessage(error, error.message || 'Không thể lưu CV. Vui lòng thử lại.'));

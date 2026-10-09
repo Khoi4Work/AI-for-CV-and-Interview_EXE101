@@ -22,6 +22,9 @@ export function CVResult() {
     const [activeSkillIndex, setActiveSkillIndex] = useState(null);
     const [addedSkills, setAddedSkills] = useState([]);
     const [inputValue, setInputValue] = useState('');
+    const [alternativeJDs, setAlternativeJDs] = useState([]);
+    const [isLoadingAlternativeJDs, setIsLoadingAlternativeJDs] = useState(false);
+    const [alternativeJDLoadFailed, setAlternativeJDLoadFailed] = useState(false);
     const optimizationResult = location.state?.optimizationResult;
     const evaluationResult = location.state?.evaluationResult;
     const [isOptimizing, setIsOptimizing] = useState(false);
@@ -34,6 +37,36 @@ export function CVResult() {
             .catch(() => {});
         return () => { active = false; };
     }, []);
+
+    useEffect(() => {
+        const cvId = location.state?.cvId;
+        const currentJdId = evaluationResult?.jdId || location.state?.jdId;
+        const currentScore = evaluationResult?.score;
+        if (!evaluationResult || !cvId || !currentJdId || !Number.isFinite(currentScore)) return undefined;
+
+        let active = true;
+        Promise.resolve()
+            .then(() => {
+                if (active) {
+                    setAlternativeJDLoadFailed(false);
+                    setIsLoadingAlternativeJDs(true);
+                }
+                return cvPipelineService.recommendHigherScoringOtherRoles(cvId, currentJdId, currentScore);
+            })
+            .then((recommendations) => {
+                if (active) setAlternativeJDs(recommendations || []);
+            })
+            .catch(() => {
+                if (active) {
+                    setAlternativeJDs([]);
+                    setAlternativeJDLoadFailed(true);
+                }
+            })
+            .finally(() => {
+                if (active) setIsLoadingAlternativeJDs(false);
+            });
+        return () => { active = false; };
+    }, [evaluationResult, location.state?.cvId, location.state?.jdId]);
 
     useEffect(() => {
         const content = optimizationResult?.optimizedContent;
@@ -144,9 +177,10 @@ export function CVResult() {
     const apiFeedback = location.state?.feedback?.feedback || {};
     const apiSections = Array.isArray(apiFeedback.sectionAnalysis) ? apiFeedback.sectionAnalysis : [];
     const sectionNameVi = (name) => {
-        const normalized = String(name || '').trim().toLowerCase();
+        const normalized = String(name || '').replace(/([a-z])([A-Z])/g, '$1 $2').trim().toLowerCase();
         if (normalized.includes('professional summary') || normalized.includes('summary')) return 'Tóm tắt chuyên môn';
         if (normalized.includes('work experience') || normalized.includes('experience')) return 'Kinh nghiệm làm việc';
+        if (normalized.includes('personal info') || normalized.includes('personal information')) return 'Thông tin cá nhân';
         if (normalized.includes('skill')) return 'Kỹ năng';
         if (normalized.includes('education')) return 'Học vấn';
         if (normalized.includes('project')) return 'Dự án';
@@ -155,7 +189,8 @@ export function CVResult() {
     };
     const apiData = evaluationResult ? {
         jd: {
-            title: 'Mô tả công việc',
+            title: location.state?.jdTitle || 'JD bạn đã cung cấp',
+            companyName: location.state?.jdCompany || '',
             description: {overview: location.state?.jdText || '', details: []},
         },
         analysis: {
@@ -173,7 +208,10 @@ export function CVResult() {
             atsOptimization: apiAnalysis.suggestions || [],
             aiSuggestions: {
                 professionalSummary: (apiFeedback.swot?.opportunities || []).join(' ') || (apiAnalysis.strengths || []).join(' '),
-                workExperience: apiSections.map(section => `${sectionNameVi(section.sectionName)}: ${(section.suggestions || []).join(' ')}`).join('\n'),
+                workExperience: apiSections.map(section => ({
+                    title: sectionNameVi(section.sectionName),
+                    suggestions: (section.suggestions || []).filter(suggestion => typeof suggestion === 'string' && suggestion.trim()),
+                })).filter(section => section.suggestions.length > 0),
             },
         },
     } : null;
@@ -234,24 +272,6 @@ export function CVResult() {
                 </div>
             </div>
 
-            {evaluationResult && cvPlan && (
-                <div className="mb-6 flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <p className="font-bold">Kết quả đánh giá dùng cùng tiêu chí ở mọi gói.</p>
-                        <p className="mt-1 text-sm">
-                            Các gói khác nhau về mức độ chi tiết của phần giải thích. Tối ưu nội dung CV tự động cần gói ENHANCE.
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/pricing')}
-                        className="shrink-0 rounded-lg bg-amber-900 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800"
-                    >
-                        Xem các gói CV
-                    </button>
-                </div>
-            )}
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Left & Middle Flow (Col 1 Span 2) */}
@@ -295,7 +315,8 @@ export function CVResult() {
                             </div>
 
                             <div className="h-32 bg-cv-result-inner-bg rounded-lg p-3 text-sm text-cv-result-inner-text overflow-y-auto custom-scrollbar border border-outline-variant">
-                                <p className="font-semibold text-cv-result-inner-text mb-1">{jd.title}</p>
+                                    <p className="font-semibold text-cv-result-inner-text mb-1">{jd.title}</p>
+                                    {jd.companyName && <p className="mb-2 text-xs text-cv-result-inner-text">{jd.companyName}</p>}
                                 <p className="leading-relaxed">
                                     {jd.description.overview} {jd.description.details.map(d => ` ${d.title}: ${d.bullets.join(', ')}`).join('. ')}
                                 </p>
@@ -312,39 +333,43 @@ export function CVResult() {
                         <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-black">
                             <div>
                                 <h4 className="text-xs font-bold text-outline uppercase tracking-wider mb-4">KỸ NĂNG HIỆN CÓ</h4>
-                                <ul className="space-y-3">
-                                    {analysis.gapAnalysis.matchedSkills.map((skill, idx) => (
-                                        <li key={idx} className="flex justify-between items-center bg-cv-result-matched-bg border border-outline-variant rounded-lg px-3 py-2">
-                                            <span className="flex items-center gap-2 text-sm font-medium text-cv-result-skill-name"><CheckCircle2 size={16} className="text-cv-result-matched-text" /> {skill.name}</span>
-                                            <span className="text-[10px] uppercase font-bold bg-cv-result-matched-badge-bg text-cv-result-matched-text px-1.5 py-0.5 rounded">{skill.level}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="custom-scrollbar max-h-80 overflow-y-auto rounded-lg border border-outline-variant p-2 pr-1">
+                                    <ul className="space-y-3">
+                                        {analysis.gapAnalysis.matchedSkills.map((skill, idx) => (
+                                            <li key={idx} className="flex justify-between items-center bg-cv-result-matched-bg border border-outline-variant rounded-lg px-3 py-2">
+                                                <span className="flex items-center gap-2 text-sm font-medium text-cv-result-skill-name"><CheckCircle2 size={16} className="text-cv-result-matched-text" /> {skill.name}</span>
+                                                <span className="text-[10px] uppercase font-bold bg-cv-result-matched-badge-bg text-cv-result-matched-text px-1.5 py-0.5 rounded">{skill.level}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             </div>
                             <div>
                                 <h4 className="text-xs font-bold text-outline uppercase tracking-wider mb-4">KỸ NĂNG CÒN THIẾU</h4>
-                                <ul className="space-y-3">
-                                    {analysis.gapAnalysis.missingSkills.map((skill, idx) => (
-                                        <li key={idx} className="flex justify-between items-center bg-cv-result-missing-bg border border-outline-variant rounded-lg px-3 py-2">
-                                            <span className={`flex items-center gap-2 text-sm font-medium ${addedSkills.includes(idx) ? 'text-cv-result-added-skill' : 'text-black'}`}>
-                                                <AlertCircle size={16} className={addedSkills.includes(idx) ? 'text-cv-result-added-icon' : 'text-cv-result-missing-text'} />
-                                                {skill.name}
-                                            </span>
-                                            {addedSkills.includes(idx) ? (
-                                                <span className="flex items-center gap-1 text-[10px] uppercase font-bold bg-primary-container text-cv-result-added-text px-2 py-1 rounded border border-primary-container">
-                                                    <CheckCircle2 size={10} className="text-cv-result-added-icon" /> Đã thêm
+                                <div className="custom-scrollbar max-h-80 overflow-y-auto rounded-lg border border-outline-variant p-2 pr-1">
+                                    <ul className="space-y-3">
+                                        {analysis.gapAnalysis.missingSkills.map((skill, idx) => (
+                                            <li key={idx} className="flex justify-between items-center bg-cv-result-missing-bg border border-outline-variant rounded-lg px-3 py-2">
+                                                <span className={`flex items-center gap-2 text-sm font-medium ${addedSkills.includes(idx) ? 'text-cv-result-added-skill' : 'text-black'}`}>
+                                                    <AlertCircle size={16} className={addedSkills.includes(idx) ? 'text-cv-result-added-icon' : 'text-cv-result-missing-text'} />
+                                                    {skill.name}
                                                 </span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => openModal(idx)}
-                                                    className="flex items-center gap-1 text-[10px] uppercase font-bold bg-cv-result-add-bg hover:opacity-90 text-cv-result-add-text px-2 py-1 rounded transition-colors"
-                                                >
-                                                    <Plus size={10} /> Thêm
-                                                </button>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ul>
+                                                {addedSkills.includes(idx) ? (
+                                                    <span className="flex items-center gap-1 text-[10px] uppercase font-bold bg-primary-container text-cv-result-added-text px-2 py-1 rounded border border-primary-container">
+                                                        <CheckCircle2 size={10} className="text-cv-result-added-icon" /> Đã thêm
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => openModal(idx)}
+                                                        className="flex items-center gap-1 text-[10px] uppercase font-bold bg-cv-result-add-bg hover:opacity-90 text-cv-result-add-text px-2 py-1 rounded transition-colors"
+                                                    >
+                                                        <Plus size={10} /> Thêm
+                                                    </button>
+                                                )}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -373,14 +398,15 @@ export function CVResult() {
                 <div className="space-y-6">
 
                     {/* Score Card */}
-                    <div className="rounded-xl border border-outline-variant shadow-sm p-6 flex flex-col items-center text-center"
-                         style={{ background: `linear-gradient(to bottom, var(--color-cv-result-score-gradient-start), var(--color-cv-result-score-gradient-end))` }}>
+                    <div className="bg-cv-result-card-bg rounded-xl border border-outline-variant shadow-sm p-6 flex flex-col items-center text-center">
                         <div className="relative w-32 h-32 flex items-center justify-center mb-4">
                             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="42" fill="transparent" stroke="#B91C1C" strokeWidth="10" />
+                                <circle cx="50" cy="50" r="43" fill="transparent" stroke="#94A3B8" strokeWidth="1.5" />
+                                <circle cx="50" cy="50" r="42" fill="transparent" stroke="#E2E8F0" strokeWidth="10" />
+                                <circle cx="50" cy="50" r="36.5" fill="transparent" stroke="#CBD5E1" strokeWidth="1" />
                                 <circle
                                     cx="50" cy="50" r="42" fill="transparent"
-                                    stroke="var(--color-primary)" strokeWidth="10"
+                                    stroke={score >= 80 ? '#0F766E' : score >= 50 ? '#B45309' : '#B42318'} strokeWidth="10"
                                     strokeDasharray="264"
                                     strokeDashoffset={offset}
                                     strokeLinecap="round"
@@ -389,19 +415,19 @@ export function CVResult() {
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
                                 <span className="text-3xl font-display font-bold text-black leading-none">{score}%</span>
-                                <span className="text-[10px] font-bold text-primary mt-1 uppercase tracking-wider">Matching</span>
+                                <span className="mt-1 max-w-[92px] text-center text-[10px] font-semibold leading-tight text-slate-600">Điểm đánh giá CV–JD</span>
                             </div>
                         </div>
 
                         <div className={`inline-block px-3 py-1 font-semibold text-xs rounded-full mb-3 border ${
-                            score >= 80 ? 'bg-primary-container text-primary border-primary-container' :
-                            score >= 50 ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                            'bg-red-500/10 text-red-500 border-red-500/20'
+                            score >= 80 ? 'bg-teal-50 text-teal-800 border-teal-200' :
+                            score >= 50 ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                            'bg-rose-50 text-rose-800 border-rose-200'
                         }`}>
-                            <span className="text-red-500">{analysis.statusLabel}</span>
+                            {analysis.statusLabel}
                         </div>
-                        <h3 className="text-lg font-bold text-black mb-2">{analysis.status}</h3>
-                        <p className="text-sm text-black/70 mb-6">{analysis.overallFeedback}</p>
+                        <h3 className="text-lg font-bold text-slate-900 mb-2">{analysis.status}</h3>
+                        <p className="text-sm leading-relaxed text-slate-700 mb-6">{analysis.overallFeedback}</p>
                         {evaluationResult && Number.isInteger(evaluationResult.cvAiAnalysisLimit) && (
                             <p className="w-full mb-4 rounded-lg bg-white/60 px-3 py-2 text-xs text-slate-700">
                                 CV này còn {evaluationResult.cvAiAnalysisRemaining ?? 0}/{evaluationResult.cvAiAnalysisLimit} lượt phân tích AI.
@@ -451,15 +477,78 @@ export function CVResult() {
                                 </p>
                             </div>
                             <div>
-                                <h5 className="text-sm font-semibold text-cv-result-card-text mb-1">Kinh nghiệm làm việc</h5>
-                                <p className="text-sm text-cv-result-ai-desc leading-relaxed">
-                                    {analysis.aiSuggestions.workExperience}
-                                </p>
+                                <h5 className="text-sm font-semibold text-cv-result-card-text mb-1">Gợi ý theo từng phần CV</h5>
+                                {Array.isArray(analysis.aiSuggestions.workExperience) ? (
+                                    <div className="space-y-2 text-sm text-cv-result-ai-desc leading-relaxed">
+                                        {analysis.aiSuggestions.workExperience.map((section, index) => (
+                                            <p key={`${section.title}-${index}`}>
+                                                <span className="font-medium text-cv-result-card-text">{section.title}: </span>
+                                                {section.suggestions.join(' ')}
+                                            </p>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="whitespace-pre-line text-sm text-cv-result-ai-desc leading-relaxed">
+                                        {analysis.aiSuggestions.workExperience}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {evaluationResult && (
+                <section className="mt-6 rounded-xl border border-outline-variant bg-cv-result-card-bg p-6 shadow-sm" aria-label="Gợi ý JD ở vị trí khác">
+                    <div className="mb-4 flex items-start gap-3 text-cv-result-card-text">
+                        <BriefcaseIcon />
+                        <div>
+                            <h2 className="font-bold leading-5">Gợi ý vị trí khác</h2>
+                            <p className="mt-1 text-sm font-normal text-slate-600">Chỉ gợi ý JD có điểm đánh giá CV cao hơn vị trí hiện tại.</p>
+                        </div>
+                    </div>
+                    {isLoadingAlternativeJDs ? (
+                        <p className="text-sm text-slate-600">Đang tìm JD phù hợp...</p>
+                    ) : alternativeJDs.length > 0 ? (
+                        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            {alternativeJDs.map((recommendation) => (
+                                <li key={`${recommendation.source}-${recommendation.id}`} className="flex h-full flex-col rounded-lg border border-outline-variant bg-surface-container p-4">
+                                    <h3 className="font-semibold text-slate-900">{recommendation.title}</h3>
+                                    <p className="mt-1 text-xs text-slate-600">
+                                        {[recommendation.companyName, recommendation.industry, recommendation.experienceLevel]
+                                            .filter(Boolean).join(' · ') || 'JD hệ thống'}
+                                    </p>
+                                    <details className="mt-3">
+                                        <summary className="cursor-pointer text-sm font-semibold text-primary">Xem JD đầy đủ</summary>
+                                        <p className="mt-2 max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-outline-variant bg-cv-result-card-bg p-3 text-sm leading-relaxed text-slate-700 custom-scrollbar">
+                                            {recommendation.content || 'JD này chưa có nội dung chi tiết.'}
+                                        </p>
+                                    </details>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/cv-evaluation', {state: {
+                                            continueEvaluation: {
+                                                cv: {cvId: location.state?.cvId, cvName: cvNameFromState, extractedData: cvData},
+                                                targetRole: recommendation.title,
+                                                jdTitle: recommendation.title,
+                                                jdCompany: recommendation.companyName || '',
+                                                jdText: recommendation.content || '',
+                                            },
+                                        }})}
+                                        className="mt-4 rounded-lg bg-primary px-3 py-2 text-sm font-bold text-on-primary transition hover:opacity-90"
+                                    >
+                                        Đánh giá CV với JD này
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : alternativeJDLoadFailed ? (
+                        <p className="text-sm text-slate-600">Không thể tải gợi ý lúc này.</p>
+                    ) : (
+                        <p className="text-sm text-slate-600">Không có JD vị trí khác có điểm cao hơn.</p>
+                    )}
+                </section>
+            )}
 
             {/* Modal for adding skill */}
             {isModalOpen && (
@@ -520,6 +609,7 @@ export function CVResult() {
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-outline); border-radius: 4px; }
+      .custom-scrollbar { scrollbar-width: thin; scrollbar-color: var(--color-outline) transparent; }
       `}} />
         </MainLayout>
     );

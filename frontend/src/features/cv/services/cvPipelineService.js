@@ -9,6 +9,9 @@ export const cvPipelineService = {
     getOptimizationStatus: async (jobId) => getResult(await apiClient.get(`/cv/optimizations/${jobId}`)),
     getOptimizationResult: async (jobId) => getResult(await apiClient.get(`/cv/optimizations/${jobId}/result`)),
     recommendJDs: async (id) => getResult(await apiClient.get(`/cv/${id}/jd-recommendations`)),
+    recommendHigherScoringOtherRoles: async (id, jdId, currentScore) => getResult(await apiClient.get(
+        `/cv/${id}/jd-alternative-recommendations`, {params: {jdId, currentScore}},
+    )),
     evaluateCV: async (id, jdId) => getResult(await apiClient.get(`/cv/${id}/evaluations`, {params: {jdId}})),
     evaluateCVText: async (id, jdText) => getResult(await apiClient.get(`/cv/${id}/evaluations`, {params: {jdText}})),
     analyzeCV: async (id, jdText) => getResult(await apiClient.post(`/cv/${id}/analysis`, {jdText})),

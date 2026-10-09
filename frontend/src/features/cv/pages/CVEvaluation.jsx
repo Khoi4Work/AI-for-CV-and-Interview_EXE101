@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, FileQuestion, LoaderCircle, BrainCircuit, ClipboardCheck } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, FileQuestion, LoaderCircle, BrainCircuit } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCV } from '../contexts/CVContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
@@ -10,22 +10,33 @@ import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 
+const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
+
+function getCVTargetRole(cvContent) {
+  if (cvContent?.professionalTitle?.trim()) return cvContent.professionalTitle.trim();
+  return '';
+}
+
+function getCVFileError(file) {
+  const extension = file?.name?.split('.').pop()?.toLowerCase();
+  if (!['pdf', 'doc', 'docx'].includes(extension)) return 'Chỉ hỗ trợ CV định dạng PDF, DOC hoặc DOCX.';
+  if (file.size > MAX_CV_FILE_SIZE) return 'CV vượt quá giới hạn 5 MB. Hãy chọn tệp nhỏ hơn.';
+  return '';
+}
+
 const CVEvaluation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef(null);
-  const { hasCV, setHasCV, setCurrentCvId, setFullCVData } = useCV();
+  const { currentCvId, setCurrentCvId, setFullCVData } = useCV();
   const { showToast } = useApp();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (hasCV !== true) {
-      setIsModalOpen(true);
-    }
-  }, []); // Only check on mount to avoid re-triggering during navigation
-
+  const continuedFlow = location.state?.continueEvaluation;
+  const createdCV = location.state?.createdCV;
+  const initialCV = continuedFlow?.cv || createdCV || null;
   const [selectedFile, setSelectedFile] = useState(null);
-  const [jdText, setJdText] = useState('');
-  const [importedCV, setImportedCV] = useState(null);
+  const [jdText, setJdText] = useState(continuedFlow?.jdText || '');
+  const [importedCV, setImportedCV] = useState(initialCV);
+  const [previewRecommendation, setPreviewRecommendation] = useState(null);
   const [jdRecommendations, setJdRecommendations] = useState([]);
   const [selectedRecommendationKey, setSelectedRecommendationKey] = useState(null);
   const [isFindingJDs, setIsFindingJDs] = useState(false);
@@ -34,19 +45,24 @@ const CVEvaluation = () => {
   const [evaluationStep, setEvaluationStep] = useState(0);
 
   const evaluationStages = [
-    { title: 'Chuẩn bị CV', description: 'Đang kiểm tra tệp và chuẩn bị dữ liệu CV của bạn.', icon: FileText },
-    { title: 'Đọc nội dung CV', description: 'Đang trích xuất thông tin cần thiết để phân tích.', icon: FileQuestion },
-    { title: 'Đối chiếu với công việc', description: 'AI đang so sánh kỹ năng và kinh nghiệm với mô tả công việc.', icon: BrainCircuit },
-    { title: 'Hoàn tất báo cáo', description: 'Đang tổng hợp điểm phù hợp, khoảng cách kỹ năng và gợi ý.', icon: ClipboardCheck },
+    { title: 'Đọc CV', description: 'Đang kiểm tra tệp và trích xuất nội dung CV.', icon: FileQuestion },
+    { title: 'Đánh giá CV với JD', description: 'AI đang chấm CV theo JD và tổng hợp kỹ năng, phản hồi trong cùng một lượt xử lý.', icon: BrainCircuit },
   ];
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const error = getCVFileError(file);
+      if (error) {
+        showToast(error, 'error');
+        e.target.value = '';
+        return;
+      }
       setSelectedFile(file);
       setImportedCV(null);
       setJdRecommendations([]);
       setSelectedRecommendationKey(null);
+      setJdText('');
     }
   };
 
@@ -64,12 +80,17 @@ const CVEvaluation = () => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && (file.type === 'application/pdf' || file.name.endsWith('.doc') || file.name.endsWith('.docx'))) {
-      setSelectedFile(file);
-      setImportedCV(null);
-      setJdRecommendations([]);
-      setSelectedRecommendationKey(null);
+    if (!file) return;
+    const error = getCVFileError(file);
+    if (error) {
+      showToast(error, 'error');
+      return;
     }
+    setSelectedFile(file);
+    setImportedCV(null);
+    setJdRecommendations([]);
+    setSelectedRecommendationKey(null);
+    setJdText('');
   };
 
   const removeFile = () => {
@@ -77,42 +98,57 @@ const CVEvaluation = () => {
     setImportedCV(null);
     setJdRecommendations([]);
     setSelectedRecommendationKey(null);
+    setJdText('');
+    setCurrentCvId(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
+  const selectedRecommendation = jdRecommendations.find(
+    (recommendation) => `${recommendation.source}-${recommendation.id}` === selectedRecommendationKey,
+  ) || null;
+
   const handleStartEvaluation = async () => {
     if (!selectedFile && !importedCV) {
-      alert('Vui lòng tải lên CV của bạn.');
+      showToast('Hãy tải CV lên hoặc tạo CV trước khi đánh giá.', 'error');
       return;
     }
     if (!jdText.trim()) {
-      alert('Vui lòng nhập nội dung mô tả công việc (JD).');
+      showToast('Hãy chọn JD được gợi ý hoặc dán nội dung JD cần đánh giá.', 'error');
       return;
     }
-    if (selectedFile && selectedFile.size > 5 * 1024 * 1024) {
-      showToast('CV vượt quá giới hạn 5 MB. Hãy chọn tệp nhỏ hơn.', 'error');
+    const fileError = selectedFile ? getCVFileError(selectedFile) : '';
+    if (fileError) {
+      showToast(fileError, 'error');
       return;
     }
     setIsEvaluating(true);
     setEvaluationStep(0);
     try {
-      setEvaluationStep(1);
       const imported = importedCV || await importCV(selectedFile);
-      const cvId = imported.cvId;
+      const cvId = imported.cvId || currentCvId;
       const cvName = importedCV?.cvName || selectedFile?.name || 'CV đã lưu';
       setImportedCV((current) => current || {...imported, cvName});
       setCurrentCvId(cvId);
       setFullCVData(mapImportedCVData(imported.extractedData));
       if (!cvId) throw new Error('Không xác định được CV đã lưu để đánh giá.');
-      setEvaluationStep(2);
+      setEvaluationStep(1);
       const analysis = await cvPipelineService.analyzeCV(cvId, jdText.trim());
       const evaluationResult = analysis?.evaluation;
       if (!evaluationResult?.jdId) throw new Error('API đánh giá không trả về JD đã lưu.');
       const {skillGap, feedback} = analysis;
-      setEvaluationStep(3);
-      navigate('/optimizer', {state: {cvId, cvName, jdId: evaluationResult.jdId, jdText: jdText.trim(), evaluationResult, skillGap, feedback}});
+      navigate('/optimizer', {state: {
+        cvId,
+        cvName,
+        jdId: evaluationResult.jdId,
+        jdText: jdText.trim(),
+        jdTitle: selectedRecommendation?.title || continuedFlow?.jdTitle || 'JD bạn đã cung cấp',
+        jdCompany: selectedRecommendation?.companyName || continuedFlow?.jdCompany || '',
+        evaluationResult,
+        skillGap,
+        feedback,
+      }});
     } catch (error) {
       showToast(getApiErrorMessage(error, 'Không thể hoàn tất đánh giá CV.'), 'error');
     } finally {
@@ -121,26 +157,29 @@ const CVEvaluation = () => {
   };
 
   const handleFindJDs = async () => {
-    if (!selectedFile) {
-      showToast('Tải CV lên trước để tìm JD phù hợp.', 'error');
+    if (!selectedFile && !importedCV) {
+      showToast('Hãy chọn CV ở khung bên trái trước khi tìm JD phù hợp.', 'error');
       return;
     }
-    if (selectedFile.size > 5 * 1024 * 1024) {
-      showToast('CV vượt quá giới hạn 5 MB. Hãy chọn tệp nhỏ hơn.', 'error');
+    const fileError = selectedFile ? getCVFileError(selectedFile) : '';
+    if (fileError) {
+      showToast(fileError, 'error');
       return;
     }
     setIsFindingJDs(true);
     try {
       const imported = importedCV || await importCV(selectedFile);
       if (!imported?.cvId) throw new Error('Không xác định được CV đã lưu để tìm JD.');
-      setImportedCV({...imported, cvName: selectedFile.name});
+      const cvName = importedCV?.cvName || selectedFile?.name || 'CV đã tạo';
+      setImportedCV({...imported, cvName});
       setCurrentCvId(imported.cvId);
       setFullCVData(mapImportedCVData(imported.extractedData));
       const recommendations = await cvPipelineService.recommendJDs(imported.cvId);
       setJdRecommendations(recommendations || []);
       setSelectedRecommendationKey(null);
+      setJdText('');
       if (!recommendations?.length) {
-        showToast('Chưa có JD phù hợp trong kho JD hệ thống hoặc JD bạn đã lưu. Bạn vẫn có thể dán JD riêng.', 'info');
+        showToast('Không có JD phù hợp.', 'info');
       }
     } catch (error) {
       showToast(getApiErrorMessage(error, 'Không thể tìm JD phù hợp với CV.'), 'error');
@@ -152,13 +191,13 @@ const CVEvaluation = () => {
   const selectRecommendation = (recommendation) => {
     setJdText(recommendation.content || '');
     setSelectedRecommendationKey(`${recommendation.source}-${recommendation.id}`);
+    setPreviewRecommendation(null);
     showToast(`Đã chọn JD: ${recommendation.title}`, 'success');
   };
 
   if (isEvaluating) {
-    const activeStage = evaluationStages[evaluationStep];
+    const activeStage = evaluationStages[Math.min(evaluationStep, evaluationStages.length - 1)];
     const ActiveIcon = activeStage.icon;
-    const progress = Math.round(((evaluationStep + 1) / evaluationStages.length) * 100);
 
     return (
       <main className="fixed inset-0 z-[1000] flex min-h-screen w-screen items-center justify-center overflow-y-auto bg-surface px-4 py-10 text-on-surface" style={{boxSizing: 'border-box', width: '100vw'}} aria-busy="true">
@@ -190,12 +229,9 @@ const CVEvaluation = () => {
             </div>
             <p className="mx-auto mb-8 w-full text-center text-sm leading-6 text-on-surface-variant">{activeStage.description}</p>
 
-            <div className="mb-3 flex w-full items-center justify-between text-xs font-semibold text-on-surface-variant">
-              <span>Tiến trình</span>
-              <span>{progress}%</span>
-            </div>
-            <div className="mb-5 h-2 w-full overflow-hidden rounded-full bg-surface-container-high" aria-label={`Tiến trình ${progress}%`}>
-              <div className="h-full rounded-full bg-primary transition-all duration-700 ease-out" style={{width: `${progress}%`}} />
+            <div className="mb-2 text-left text-xs font-semibold text-on-surface-variant">Trạng thái xử lý</div>
+            <div className="mb-5 h-2 w-full overflow-hidden rounded-full bg-surface-container-high" role="progressbar" aria-label={activeStage.title} aria-valuetext={activeStage.title}>
+              <div className="h-full w-1/3 animate-pulse rounded-full bg-primary" />
             </div>
             <div className="flex w-full items-center justify-between gap-2 text-[11px] text-on-surface-variant sm:text-xs">
               {evaluationStages.map((stage, index) => {
@@ -212,7 +248,7 @@ const CVEvaluation = () => {
                 );
               })}
             </div>
-            <p className="mt-7 text-xs text-on-surface-variant">Quá trình có thể mất một chút thời gian. Vui lòng không đóng trang.</p>
+            <p className="mt-7 text-xs text-on-surface-variant">Quá trình có thể mất một chút thời gian. Bạn có thể chờ trong khi AI hoàn tất đánh giá.</p>
           </div>
         </section>
       </main>
@@ -232,7 +268,7 @@ const CVEvaluation = () => {
         {/* Header Section */}
         <div className="mb-10 text-center md:text-left">
           <h1 className="text-3xl font-bold text-on-surface mb-2">Đánh giá CV AI</h1>
-          <p className="text-on-surface-variant">Tải CV lên để xem JD phù hợp, hoặc dán JD riêng rồi chọn bắt đầu đánh giá.</p>
+          <p className="text-on-surface-variant">Tải CV lên để hệ thống tìm JD phù hợp, hoặc dán JD riêng để đánh giá.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -254,7 +290,7 @@ const CVEvaluation = () => {
                 ${isDragging
                   ? 'border-primary bg-primary/10'
                   : 'border-outline-variant bg-surface-container hover:border-primary hover:bg-surface-container-low'}
-                ${selectedFile ? 'border-primary bg-primary/10' : ''}
+                ${selectedFile || importedCV ? 'border-primary bg-primary/10' : ''}
               `}
             >
               <input
@@ -265,13 +301,13 @@ const CVEvaluation = () => {
                 className="hidden"
               />
 
-              {!selectedFile ? (
+              {!selectedFile && !importedCV ? (
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-primary transition-transform group-hover:scale-110 duration-200 border border-outline-variant shadow-inner">
                     <Upload className="w-8 h-8" />
                   </div>
                   <p className="text-lg font-medium text-on-surface">Kéo thả CV vào đây hoặc <span className="text-primary font-semibold">Chọn tệp</span></p>
-                  <p className="text-sm text-on-surface-variant mt-1">Hỗ trợ định dạng PDF, DOC, DOCX</p>
+                  <p className="text-sm text-on-surface-variant mt-1">PDF, DOC, DOCX · Tối đa 5 MB</p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-4 w-full max-w-xs">
@@ -280,10 +316,10 @@ const CVEvaluation = () => {
                   </div>
                   <div className="text-center">
                     <p className="text-on-surface font-semibold truncate w-full px-2">
-                      {selectedFile.name}
+                      {selectedFile?.name || importedCV?.cvName || 'CV đã tạo'}
                     </p>
                     <p className="text-sm text-on-surface-variant mt-1">
-                      {`${(selectedFile.size / 1024).toFixed(1)} KB`}
+                      {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : 'CV đã lưu trong tài khoản'}
                     </p>
                   </div>
                   <button
@@ -296,7 +332,7 @@ const CVEvaluation = () => {
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-2xl transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Xóa tệp
+                    Bỏ CV này
                   </button>
                 </div>
               )}
@@ -317,47 +353,66 @@ const CVEvaluation = () => {
                       <button
                         type="button"
                         onClick={handleFindJDs}
-                        disabled={!selectedFile || isFindingJDs || isEvaluating}
+                        disabled={(!selectedFile && !importedCV) || isFindingJDs || isEvaluating}
                         className="w-full rounded-xl border border-primary px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {isFindingJDs ? 'Đang tải CV và tìm JD phù hợp...' : 'Tải CV lên và gợi ý JD phù hợp'}
+                        {isFindingJDs ? 'Đang đọc CV và tìm JD...' : 'Tìm JD phù hợp với CV'}
                       </button>
                       {jdRecommendations.length > 0 && (
                         <section className="space-y-2" aria-label="JD được gợi ý">
-                          <p className="text-sm font-semibold text-on-surface">Gợi ý phù hợp nhất</p>
+                          {getCVTargetRole(importedCV?.extractedData) ? (
+                            <p className="text-sm text-on-surface-variant">
+                              CV có nêu vị trí <strong className="text-on-surface">{getCVTargetRole(importedCV?.extractedData)}</strong>. Các JD dưới đây được tìm theo vị trí đó; hãy xem nội dung và chọn JD muốn đánh giá.
+                            </p>
+                          ) : (
+                            <p className="text-sm text-on-surface-variant">
+                              CV chưa nêu vị trí ứng tuyển. Dựa trên kỹ năng, kinh nghiệm và dự án trong CV, hệ thống gợi ý các vị trí dưới đây. Hãy xem JD và chọn vị trí phù hợp để tiếp tục.
+                            </p>
+                          )}
                           {jdRecommendations.map((recommendation) => (
-                            <button
+                            <article
                               key={`${recommendation.source}-${recommendation.id}`}
-                              type="button"
-                              onClick={() => selectRecommendation(recommendation)}
-                              className={`w-full rounded-xl border p-3 text-left transition-colors ${selectedRecommendationKey === `${recommendation.source}-${recommendation.id}` ? 'border-primary bg-primary/10' : 'border-outline-variant bg-surface-container hover:border-primary hover:bg-primary/5'}`}
+                              className={`w-full rounded-xl border p-3 text-left transition-colors ${selectedRecommendationKey === `${recommendation.source}-${recommendation.id}` ? 'border-primary bg-primary/10' : 'border-outline-variant bg-surface-container'}`}
                             >
-                              <span className="flex items-start justify-between gap-3">
-                                <span className="min-w-0">
-                                  <span className="block font-semibold text-on-surface">{recommendation.title}</span>
-                                  <span className="mt-1 block text-xs text-on-surface-variant">
-                                    {[recommendation.companyName, recommendation.industry, recommendation.experienceLevel]
-                                      .filter(Boolean).join(' · ') || 'JD cá nhân'}
-                                  </span>
-                                  <span className="mt-1 inline-block rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface-variant">
-                                    {recommendation.source === 'SYSTEM' ? 'JD hệ thống' : 'JD của bạn'}
-                                  </span>
-                                </span>
-                                <span className="shrink-0 text-xs font-bold text-primary">{recommendation.relevanceScore}/100</span>
+                              <h3 className="font-semibold text-on-surface">{recommendation.title}</h3>
+                              <p className="mt-1 text-xs text-on-surface-variant">
+                                {[recommendation.companyName, recommendation.industry, recommendation.experienceLevel]
+                                  .filter(Boolean).join(' · ') || 'JD cá nhân'}
+                              </p>
+                              <span className="mt-1 inline-block rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface-variant">
+                                {recommendation.source === 'SYSTEM' ? 'JD hệ thống' : 'JD của bạn'}
                               </span>
-                            </button>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewRecommendation(recommendation)}
+                                  className="rounded-lg border border-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-surface-container-high"
+                                >
+                                  Xem JD đầy đủ
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => selectRecommendation(recommendation)}
+                                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-on-primary hover:opacity-90"
+                                >
+                                  Chọn JD này
+                                </button>
+                              </div>
+                            </article>
                           ))}
-                          <p className="text-xs text-on-surface-variant">Điểm liên quan chỉ để tham khảo, không phải xác suất trúng tuyển. Bạn chọn JD trước khi hệ thống đánh giá CV.</p>
                         </section>
                       )}
                       <label htmlFor="evaluation-jd" className="text-sm font-medium text-on-surface">
-                        JD riêng / nội dung JD đã chọn
+                        JD dùng để đánh giá
                       </label>
                       <textarea
                         id="evaluation-jd"
                         value={jdText}
-                        onChange={(e) => setJdText(e.target.value)}
-                        placeholder="Chọn một JD được gợi ý hoặc dán nội dung JD riêng vào đây..."
+                        onChange={(e) => {
+                          setJdText(e.target.value);
+                          setSelectedRecommendationKey(null);
+                        }}
+                        placeholder="Chọn một JD được gợi ý hoặc dán JD riêng vào đây..."
                         className="w-full h-64 p-4 text-sm text-on-surface border border-outline-variant rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none bg-surface-container"
                       />
                   </div>
@@ -384,43 +439,30 @@ const CVEvaluation = () => {
       </div>
 
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Kiểm tra thông tin CV"
+        isOpen={Boolean(previewRecommendation)}
+        onClose={() => setPreviewRecommendation(null)}
+        title={previewRecommendation?.title || 'Nội dung JD'}
       >
-        <div className="flex flex-col items-center text-center gap-6 py-4">
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-            <FileQuestion className="w-10 h-10" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold text-on-surface">Bạn đã có CV chưa?</h3>
-            <p className="text-on-surface-variant text-sm">
-              Nếu bạn đã có CV, hãy tải lên để AI đánh giá. <br />
-              Nếu chưa, chúng tôi sẽ giúp bạn tạo một CV chuyên nghiệp.
+        {previewRecommendation && (
+          <div className="space-y-4">
+            <p className="text-sm font-medium text-on-surface">
+              {[previewRecommendation.companyName, previewRecommendation.industry, previewRecommendation.experienceLevel]
+                .filter(Boolean).join(' · ')}
             </p>
+            <div className="max-h-[55vh] overflow-y-auto whitespace-pre-wrap break-words rounded-xl border border-outline-variant bg-surface-container p-4 text-sm leading-6 text-on-surface custom-scrollbar">
+              {previewRecommendation.content || 'JD này chưa có nội dung chi tiết.'}
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => selectRecommendation(previewRecommendation)}
+                className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary hover:opacity-90"
+              >
+                Chọn JD này
+              </button>
+            </div>
           </div>
-          <div className="flex gap-4 w-full ">
-            <button
-              onClick={() => {
-                setHasCV(true);
-                setIsModalOpen(false);
-              }}
-              className="flex-1 px-6 py-3 bg-surface-container text-on-surface font-semibold rounded-2xl hover:bg-surface-container-low transition-colors border border-outline-variant"
-            >
-              Rồi, tôi có rồi
-            </button>
-            <button
-              onClick={() => {
-                setHasCV(false);
-                setIsModalOpen(false);
-                navigate('/templates');
-              }}
-              className="flex-1 px-6 py-3 bg-primary text-on-primary font-semibold rounded-2xl hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-            >
-              Chưa, tôi muốn tạo mới
-            </button>
-          </div>
-        </div>
+        )}
       </Modal>
     </div>
   );

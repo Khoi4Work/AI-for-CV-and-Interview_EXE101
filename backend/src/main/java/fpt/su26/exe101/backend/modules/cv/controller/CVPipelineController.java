@@ -55,9 +55,23 @@ public class CVPipelineController {
     }
 
     @GetMapping("/{id}/jd-recommendations")
-    public ResponseEntity<ApiResponse<List<JDRecommendationResponseDTO>>> recommendJDs(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<List<JDRecommendationResponseDTO>>> recommendJDs(
+            @PathVariable UUID id) {
         Gallery gallery = currentGallery();
         return ResponseEntity.ok(ApiResponse.success(jdRecommendationService.recommend(id, gallery.getId())));
+    }
+
+    @GetMapping("/{id}/jd-alternative-recommendations")
+    public ResponseEntity<ApiResponse<List<JDRecommendationResponseDTO>>> recommendHigherScoringOtherRoles(
+            @PathVariable UUID id,
+            @RequestParam UUID jdId,
+            @RequestParam int currentScore) {
+        if (currentScore < 0 || currentScore > 100) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "currentScore must be between 0 and 100.");
+        }
+        Gallery gallery = currentGallery();
+        return ResponseEntity.ok(ApiResponse.success(jdRecommendationService.recommendHigherScoringOtherRoles(
+                id, gallery.getId(), jdId, currentScore)));
     }
 
     private void validateCVUpload(MultipartFile file) {

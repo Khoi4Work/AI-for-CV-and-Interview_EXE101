@@ -8,7 +8,7 @@ import {
     CheckCircle2,
     LoaderCircle
 } from 'lucide-react';
-import {Link, useParams, useNavigate} from 'react-router-dom';
+import {Link, useLocation, useParams, useNavigate} from 'react-router-dom';
 import TopAction from "../components/TopAction.jsx";
 import {TEMPLATES_DATA} from '../constants/templates.js';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
@@ -24,6 +24,7 @@ import {checkBuilderQuota} from '../services/builderQuota.js';
 export default function TemplateDetail() {
     const {id} = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const {profile, isLoggedIn, toggleFavorite} = useAuth();
     const {showToast} = useApp();
     const {setTemplate} = useCV();
@@ -59,7 +60,7 @@ export default function TemplateDetail() {
         try {
             await checkBuilderQuota(() => paymentService.getCurrentQuota());
             setTemplate(id);
-            navigate('/builder');
+            navigate('/builder', {state: location.state});
         } catch (error) {
             const message = getApiErrorMessage(error, 'Không kiểm tra được lượt tạo CV. Vui lòng thử lại.');
             setQuotaError({ templateId: id, message, exhausted: error.code === 'CV_CREATION_QUOTA_EXCEEDED' });
