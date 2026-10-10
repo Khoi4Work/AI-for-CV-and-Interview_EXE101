@@ -6,12 +6,12 @@ export const INTERVIEW_TYPES = [
     desc: 'Phỏng vấn về văn hóa, kỹ năng mềm, mục tiêu nghề nghiệp.',
   },
   {
-    id: 'Technical',
+    id: 'TECHNICAL',
     title: 'Technical',
     desc: 'Kiến thức chuyên môn, giải thuật, system design.',
   },
   {
-    id: 'Behavioral',
+    id: 'STAR',
     title: 'Behavioral (STAR)',
     desc: 'Phỏng vấn tình huống hành vi theo phương pháp STAR.',
   },

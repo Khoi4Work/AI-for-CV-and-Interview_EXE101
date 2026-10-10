@@ -1,58 +1,61 @@
 package fpt.su26.exe101.backend.modules.interview.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
-import fpt.su26.exe101.backend.modules.interview.dto.request.SubmitInterviewAnswerRequestDTO;
-import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.entity.JobDescription;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
+import fpt.su26.exe101.backend.modules.interview.dto.InterviewQuestionGenerationDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.request.CreateInterviewSessionRequestDTO;
-import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.request.SubmitInterviewAnswerRequestDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.CreateInterviewSessionResponseDTO;
-import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewQuestionResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluationResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewQuestionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionDetailResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionResponseDTO;
-import fpt.su26.exe101.backend.modules.interview.dto.InterviewQuestionGenerationDTO;
-import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestion;
-import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestionBank;
-import fpt.su26.exe101.backend.modules.interview.entity.InterviewAnswer;
-import fpt.su26.exe101.backend.modules.interview.entity.InterviewSession;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.ExperienceLevel;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSessionStatus;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewType;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.QuestionContextType;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.QuestionRole;
-import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSessionStatus;
+import fpt.su26.exe101.backend.modules.interview.entity.InterviewAnswer;
+import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestion;
+import fpt.su26.exe101.backend.modules.interview.entity.InterviewQuestionBank;
+import fpt.su26.exe101.backend.modules.interview.entity.InterviewSession;
 import fpt.su26.exe101.backend.modules.interview.mapper.InterviewMapper;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewAnswerRepository;
-import fpt.su26.exe101.backend.modules.interview.repository.InterviewQuestionRepository;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewQuestionBankRepository;
+import fpt.su26.exe101.backend.modules.interview.repository.InterviewQuestionRepository;
 import fpt.su26.exe101.backend.modules.interview.repository.InterviewSessionRepository;
-import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
+import fpt.su26.exe101.backend.modules.interview.service.CompanyContextService;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
-import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewQuestionRelevanceService;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Locale;
-import java.util.UUID;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +73,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final InterviewAIProvider interviewAIProvider;
     private final InterviewVoiceService interviewVoiceService;
     private final InterviewQuestionRelevanceService questionRelevanceService;
+    private final CompanyContextService companyContextService;
 
     @Override
     @Transactional
@@ -93,6 +97,7 @@ public class InterviewServiceImpl implements InterviewService {
         }
         CV cv = request.getCvId() == null ? null : cvPipelineService.getCVForInterview(request.getCvId(), gallery);
         JobDescription jd = resolveJobDescription(request, gallery);
+        var companyContext = companyContextService.resolve(jd);
         int requestedQuestionCount = switch (request.getDurationMinutes()) {
             case 5 -> 3;
             case 10 -> 5;
@@ -108,17 +113,29 @@ public class InterviewServiceImpl implements InterviewService {
         if (cv != null && jd != null) availableContexts.add(QuestionContextType.JD_AND_CV);
         String candidateContext = cv == null ? null : buildCandidateContext(cv);
         List<InterviewQuestion> questionCandidates = findQuestionCandidates(type, level, language, availableContexts);
+        Set<String> distinctTexts = new HashSet<>();
+        questionCandidates = questionCandidates.stream().filter(q -> q.getBank() != null
+            && q.getBank().getInterviewType()==type && q.getBank().getExperienceLevel()==level)
+            .filter(q -> q.getBank().getCompany()==null || (companyContext.verified()
+                && q.getBank().getCompany().getCompanyName().equalsIgnoreCase(Objects.toString(companyContext.companyName(),""))))
+            .filter(q -> type != InterviewType.BEHAVIORAL || invitesSpecificExample(q.getQuestionText()))
+            .filter(q -> distinctTexts.add(q.getQuestionText().trim().toLowerCase(Locale.ROOT)))
+            .toList();
         List<InterviewQuestion> questions = cv == null
                 ? prioritizeQuestions(questionCandidates, false, jd != null, requestedQuestionCount)
                 : questionRelevanceService.findRelevantQuestions(questionCandidates, candidateContext,
                         requestedQuestionCount);
         log.info("[INTERVIEW QUESTIONS] Bank retrieval completed | type={} | language={} | cvProvided={} | candidateCount={} | relevantCount={} | requiredCount={}",
                 type, language, cv != null, questionCandidates.size(), questions.size(), requestedQuestionCount);
+        Set<UUID> generatedIds=new HashSet<>();
         if (questions.size() < requestedQuestionCount) {
             int missingCount = requestedQuestionCount - questions.size();
-            InterviewQuestionGenerationDTO generated = interviewAIProvider.generateQuestions(
-                    type, level, missingCount, language, candidateContext);
-            InterviewQuestionBank generalBank = questionBankRepository
+            boolean privateContext = cv!=null || jd!=null;
+            InterviewQuestionGenerationDTO generated = privateContext
+                ? interviewAIProvider.generateSessionQuestions(type,level,missingCount,language,candidateContext,
+                    jd==null?null:jd.getContent(),objectMapper.valueToTree(companyContext).toString())
+                : interviewAIProvider.generateQuestions(type,level,missingCount,language,null);
+            InterviewQuestionBank generalBank = privateContext ? null : questionBankRepository
                     .findFirstByCompanyIsNullAndInterviewTypeAndExperienceLevel(type, level)
                     .orElseGet(() -> questionBankRepository.save(InterviewQuestionBank.builder()
                             .company(null)
@@ -136,15 +153,17 @@ public class InterviewServiceImpl implements InterviewService {
                             .category(draft.getCategory())
                             .competency(draft.getCompetency())
                             .questionRole(QuestionRole.PRIMARY)
-                            .contextType(QuestionContextType.GENERAL)
+                            .contextType(cv!=null && jd!=null?QuestionContextType.JD_AND_CV:cv!=null?QuestionContextType.CV:jd!=null?QuestionContextType.JD:QuestionContextType.GENERAL)
                             .active(true)
                             .build())
                     .toList();
-            List<InterviewQuestion> savedGeneratedQuestions = questionRepository.saveAll(newQuestions);
-            if (cv == null) {
-                questionCandidates = findQuestionCandidates(type, level, language, availableContexts);
-                questions = prioritizeQuestions(questionCandidates, false, jd != null, requestedQuestionCount);
-            } else {
+            List<InterviewQuestion> savedGeneratedQuestions;
+            if(privateContext) {
+                newQuestions.forEach(question -> question.setId(UUID.randomUUID()));
+                savedGeneratedQuestions=newQuestions;
+            } else savedGeneratedQuestions = questionRepository.saveAll(newQuestions);
+            savedGeneratedQuestions.forEach(question -> generatedIds.add(question.getId()));
+            {
                 List<InterviewQuestion> completedSelection = new ArrayList<>(questions);
                 for (InterviewQuestion generatedQuestion : savedGeneratedQuestions) {
                     if (completedSelection.stream().noneMatch(question -> question.getId().equals(generatedQuestion.getId()))) {
@@ -163,6 +182,10 @@ public class InterviewServiceImpl implements InterviewService {
         Map<String, Object> snapshot = new HashMap<>();
         snapshot.put("language", language);
         snapshot.put("adaptiveMode", false);
+        snapshot.put("interviewType",type.name());snapshot.put("experienceLevel",level.name());
+        snapshot.put("durationMinutes",request.getDurationMinutes());
+        Map<String,Object> companySnapshot=objectMapper.convertValue(companyContext,new TypeReference<Map<String,Object>>(){});
+        snapshot.put("companyContext",companySnapshot);
         if (cv != null) {
             snapshot.put("cv", Map.of("id", cv.getId().toString(), "name", cv.getName(),
                     "content", objectMapper.convertValue(cv.getContent(), new TypeReference<Map<String, Object>>() {})));
@@ -178,6 +201,9 @@ public class InterviewServiceImpl implements InterviewService {
             item.put("category", question.getCategory());
             item.put("competency", question.getCompetency());
             item.put("gradingCriteria", question.getGradingCriteria());
+            item.put("source",generatedIds.contains(question.getId())?"GENERATED":"BANK");
+            item.put("interviewType",type.name());item.put("experienceLevel",level.name());item.put("language",language);
+            item.put("contextType",question.getContextType().name());
             questionSnapshot.add(item);
         }
         snapshot.put("questions", questionSnapshot);
@@ -207,6 +233,9 @@ public class InterviewServiceImpl implements InterviewService {
                         .text(question.getQuestionText())
                         .category(question.getCategory())
                         .competency(question.getCompetency())
+                        .source(generatedIds.contains(question.getId())?"GENERATED":"BANK")
+                        .interviewType(type.name())
+                        .contextType(question.getContextType().name())
                         .build())
                 .toList();
         return CreateInterviewSessionResponseDTO.builder()
@@ -217,6 +246,7 @@ public class InterviewServiceImpl implements InterviewService {
                 .language(request.getLanguage())
                 .adaptiveMode(false)
                 .questions(responseQuestions)
+                .companyContext(companySnapshot)
                 .build();
     }
 
@@ -526,6 +556,7 @@ public class InterviewServiceImpl implements InterviewService {
         ObjectNode content = objectMapper.valueToTree(cv.getContent());
         content.remove("personalInfo");
         content.remove("selectedTemplateId");
+        content.remove(List.of("sourceText","profilePhoto","targetRoleEvidence"));
         removeFields(content, "experiences", "company");
         removeFields(content, "education", "school", "gpa");
         removeFields(content, "projects", "name", "url", "period");
@@ -560,10 +591,15 @@ public class InterviewServiceImpl implements InterviewService {
 
     private InterviewType parseInterviewType(String value) {
         try {
+            if("STAR".equalsIgnoreCase(value)) return InterviewType.BEHAVIORAL;
             return InterviewType.valueOf(value.trim().replace(' ', '_').toUpperCase());
         } catch (RuntimeException exception) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "interviewType must be HR, Technical, or Behavioral.");
         }
+    }
+    private boolean invitesSpecificExample(String text) {
+        return java.util.Objects.toString(text,"").toLowerCase(Locale.ROOT)
+            .matches("(?s).*(tình huống|ví dụ|kể về|lần bạn|đã từng|dự án|a time|an example|specific|situation|star).*" );
     }
 
     private ExperienceLevel parseExperienceLevel(String value) {

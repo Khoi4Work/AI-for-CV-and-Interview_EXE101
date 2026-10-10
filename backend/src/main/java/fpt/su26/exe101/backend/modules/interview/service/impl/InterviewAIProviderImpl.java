@@ -84,6 +84,16 @@ public class InterviewAIProviderImpl implements InterviewAIProvider {
         }
     }
 
+    @Override public InterviewQuestionGenerationDTO generateSessionQuestions(InterviewType type,ExperienceLevel level,int count,
+            String language,String candidateContext,String jdContext,String companyContext) {
+        try {
+            String response=aiChatCompletionService.generateJson(Prompt.interviewSessionQuestions(type,level,count,language,candidateContext,jdContext,companyContext),
+                null,MAX_JSON_OUTPUT_TOKENS,"interview","session-question-generation");
+            var generated=objectMapper.readValue(response,InterviewQuestionGenerationDTO.class);
+            validateGeneratedQuestions(generated,count);return generated;
+        } catch(JsonProcessingException e){throw new IllegalStateException("AI returned invalid session questions.",e);}
+    }
+
     private void validateEvaluation(InterviewEvaluationResponseDTO evaluation, UserPlan plan) {
         if (evaluation == null || evaluation.getOverallScore() == null
                 || evaluation.getOverallScore() < 0 || evaluation.getOverallScore() > 100

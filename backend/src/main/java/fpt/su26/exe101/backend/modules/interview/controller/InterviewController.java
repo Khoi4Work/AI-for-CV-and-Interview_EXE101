@@ -86,4 +86,10 @@ public class InterviewController {
                 .contentType(MediaType.valueOf("audio/mpeg"))
                 .body(interviewVoiceService.synthesizeQuestionAudio(questionId, transition));
     }
+    @GetMapping("/sessions/{sessionId}/questions/{questionId}/audio")
+    public ResponseEntity<byte[]> getSessionQuestionAudio(@PathVariable UUID sessionId,@PathVariable UUID questionId,
+            @RequestParam(defaultValue="START") InterviewSpeechTransition transition) {
+        return ResponseEntity.ok().contentType(MediaType.valueOf("audio/mpeg"))
+            .body(interviewVoiceService.synthesizeSessionQuestionAudio(sessionId,questionId,transition));
+    }
 }

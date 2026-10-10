@@ -333,6 +333,7 @@ export function InterviewRoom() {
 
     const onQuestionAudioEnd = useCallback(() => setPhase('recording'), []);
     const { playTTS, stopAudio } = useElevenLabsTTS(onQuestionAudioEnd, {
+        sessionId: data.backendSessionId,
         onAudioElement: attachTtsAudioToRecording,
         onFallback: handleTtsFallback,
     });

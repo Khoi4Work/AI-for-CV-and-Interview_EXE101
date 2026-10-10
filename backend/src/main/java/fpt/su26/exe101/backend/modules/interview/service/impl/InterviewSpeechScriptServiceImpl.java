@@ -48,10 +48,10 @@ public class InterviewSpeechScriptServiceImpl implements InterviewSpeechScriptSe
         String script = (emotionTag.isBlank() ? "" : emotionTag + " ")
                 + prefix.trim() + " " + questionText;
 
-        log.info("[INTERVIEW TTS] Script composed | provider=elevenlabs | model={} | language={} | transition={} | category={} | expressionTag={} | bridge=\"{}\" | question=\"{}\" | script=\"{}\"",
+        log.info("[INTERVIEW TTS] Script composed | provider=elevenlabs | model={} | language={} | transition={} | category={} | expressionTag={} | scriptChars={}",
                 safe(modelId), language, transition == null ? InterviewSpeechTransition.START : transition,
                 safe(question.getCategory()), emotionTag.isBlank() ? "none" : emotionTag,
-                oneLine(prefix), oneLine(questionText), oneLine(script));
+                script.length());
         return script;
     }
 

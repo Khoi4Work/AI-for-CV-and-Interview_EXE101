@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "company_info")
@@ -25,4 +26,14 @@ public class CompanyInfo extends BaseEntity {
 
     @Column(name = "employee_insights", columnDefinition = "TEXT")
     private String employeeInsights;
+
+    @Column(name = "culture_source_url", length = 255)
+    private String cultureSourceUrl;
+
+    @Column(name = "culture_reference_date")
+    private LocalDate cultureReferenceDate;
+
+    @Builder.Default
+    @Column(name = "culture_verified", nullable = false)
+    private boolean cultureVerified = false;
 }

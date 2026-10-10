@@ -12,4 +12,7 @@ public class InterviewQuestionResponseDTO {
     private String text;
     private String category;
     private String competency;
+    private String source;
+    private String interviewType;
+    private String contextType;
 }

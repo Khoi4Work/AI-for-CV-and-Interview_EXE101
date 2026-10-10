@@ -18,4 +18,5 @@ public class CreateInterviewSessionResponseDTO {
     private String language;
     private Boolean adaptiveMode;
     private List<InterviewQuestionResponseDTO> questions;
+    private java.util.Map<String,Object> companyContext;
 }

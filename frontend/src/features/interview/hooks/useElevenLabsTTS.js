@@ -2,7 +2,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { fetchElevenLabsAudio } from '../services/elevenLabsService';
 
-export function useElevenLabsTTS(onAudioEnd, {onAudioElement, onFallback} = {}) {
+export function useElevenLabsTTS(onAudioEnd, {onAudioElement, onFallback, sessionId} = {}) {
     const audioRef = useRef(null);
     const audioUrlRef = useRef(null);
     const requestControllerRef = useRef(null);
@@ -28,7 +28,7 @@ export function useElevenLabsTTS(onAudioEnd, {onAudioElement, onFallback} = {}) 
 
         try {
             if (!questionId) throw new Error('Question audio requires a backend question ID.');
-            const url = await fetchElevenLabsAudio(questionId, transition, requestController.signal);
+            const url = await fetchElevenLabsAudio(questionId, transition, requestController.signal, sessionId);
             if (requestController.signal.aborted || requestControllerRef.current !== requestController) {
                 URL.revokeObjectURL(url);
                 return;
@@ -59,7 +59,7 @@ export function useElevenLabsTTS(onAudioEnd, {onAudioElement, onFallback} = {}) 
             };
             window.speechSynthesis.speak(utterance);
         }
-    }, [stopAudio, onAudioEnd, onAudioElement, onFallback]);
+    }, [stopAudio, onAudioEnd, onAudioElement, onFallback, sessionId]);
 
     // Tự động dọn dẹp khi component chứa hook này bị hủy (unmount)
     useEffect(() => {
