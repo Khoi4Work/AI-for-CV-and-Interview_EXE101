@@ -19,6 +19,10 @@ public class InvitationServiceImpl implements InvitationService {
 
     @Transactional
     public GenericResponseDTO invitePartner(UUID inviterId, InvitePartnerRequestDTO request) {
+        if (request.getRole() == null || !("ATTENDANCE".equalsIgnoreCase(request.getRole()) || "PARTNER".equalsIgnoreCase(request.getRole()))) {
+            throw new fpt.su26.exe101.backend.base.exception.ApiException(
+                    fpt.su26.exe101.backend.base.exception.ErrorCode.FORBIDDEN_ACTION, "Vai trò lời mời không hợp lệ.");
+        }
         Invitation invitation = Invitation.builder()
                 .email(request.getEmail())
                 .role(fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole.valueOf(request.getRole().toUpperCase()))

@@ -9,9 +9,21 @@ const server = await createServer({
 });
 const { default: apiClient } = await server.ssrLoadModule('/src/service/apiClient.js');
 const { default: galleryService } = await server.ssrLoadModule('/src/service/galleryService.js');
+const { adminService } = await server.ssrLoadModule('/src/features/admin/services/adminService.js');
 const { paymentService } = await server.ssrLoadModule('/src/features/payment/services/paymentService.js');
 const savedStorage = globalThis.localStorage;
 const savedWindow = globalThis.window;
+
+test('admin requests use authenticated endpoints and preserve pagination filters', async () => {
+    globalThis.localStorage = { getItem: () => 'admin-token' };
+    apiClient.defaults.adapter = async config => {
+        assert.equal(config.url, '/admin/payments');
+        assert.equal(config.headers.Authorization, 'Bearer admin-token');
+        assert.deepEqual(config.params, { page: 2, status: 'PAID', includeTest: false });
+        return { data: { result: { content: [], totalElements: 0 } }, status: 200, headers: {}, config };
+    };
+    assert.deepEqual(await adminService.get('payments', { page: 2, status: 'PAID', includeTest: false }), { content: [], totalElements: 0 });
+});
 after(async () => {
     await server.close();
     if (savedStorage === undefined) delete globalThis.localStorage;

@@ -5,6 +5,8 @@ import Sidebar from '../../features/user/components/Sidebar.jsx';
 import Header from '../../features/user/components/Header.jsx';
 import { Footer } from './Footer.jsx';
 import ProtectedRoute from '../ProtectedRoute.jsx';
+import AdminRoute from '../../features/admin/components/AdminRoute.jsx';
+import AdminArea from '../../features/admin/pages/AdminArea.jsx';
 import LandingPage from '../../pages/LandingPage.jsx';
 import Home from '../../pages/Home.jsx';
 import Login from '../../features/auth/pages/Login.jsx';
@@ -194,6 +196,7 @@ function AppLayout() {
                 <Route path="/cv-evaluation"
                        element={<PageTransition key={location.pathname}><CVEvaluation/></PageTransition>}/>
 
+                <Route path="/admin/*" element={<AdminRoute><AdminArea/></AdminRoute>}/>
                 {/* ── Protected block (Zones B + C) ───────────────── */}
                 <Route path="/*" element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
