@@ -1,5 +1,7 @@
 package fpt.su26.exe101.backend.modules.cv.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
 import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.cv.repository.CVRepository;
@@ -35,7 +37,7 @@ class JDRecommendationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new JDRecommendationServiceImpl(cvRepository, jdRepository, aiProvider, quotaService, "", "test-model");
+        service = new JDRecommendationServiceImpl(cvRepository, jdRepository, aiProvider, quotaService, "", "test-model", new RoleTaxonomyServiceImpl(new ObjectMapper()));
         gallery = Gallery.builder().accountId(UUID.randomUUID()).build();
         gallery.setId(UUID.randomUUID());
         cvId = UUID.randomUUID();
@@ -44,7 +46,7 @@ class JDRecommendationServiceImplTest {
 
     @Test
     void businessAnalystRoleFindsBusinessAnalystAndVietnameseAliases() {
-        CV cv = cv(CVContent.builder().professionalTitle("Business Analyst").build());
+        CV cv = cv(CVContent.builder().professionalTitle("Business Analyst").targetRoleOrigin("EXPLICIT").build());
         when(cvRepository.findWithGalleryById(cvId)).thenReturn(Optional.of(cv));
         when(jdRepository.findBySourceAndActiveTrue(JobDescriptionSource.SYSTEM)).thenReturn(List.of(
                 jd("User Provided JD", "Vị trí tuyển dụng: Business Analyst. Requirements elicitation and stakeholder interviews."),

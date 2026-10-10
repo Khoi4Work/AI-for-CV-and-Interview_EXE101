@@ -13,6 +13,12 @@ import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
 import fpt.su26.exe101.backend.modules.cv.service.JDRecommendationService;
+import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisService;
+import fpt.su26.exe101.backend.modules.cv.dto.request.CVAnalysisStartRequestDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.response.CVAnalysisAlternativesResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.dto.response.CVAnalysisResponseDTO;
+import fpt.su26.exe101.backend.modules.cv.entity.enums.AnalysisStatus;
+import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
@@ -35,6 +41,7 @@ public class CVPipelineController {
     private final CVPipelineService cvPipelineService;
     private final GalleryService galleryService;
     private final JDRecommendationService jdRecommendationService;
+    private final CVAnalysisService analysisService;
 
     // --- Import ---
     @PostMapping(value = "/extract", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -66,12 +73,7 @@ public class CVPipelineController {
             @PathVariable UUID id,
             @RequestParam UUID jdId,
             @RequestParam int currentScore) {
-        if (currentScore < 0 || currentScore > 100) {
-            throw new ApiException(ErrorCode.INVALID_INPUT, "currentScore must be between 0 and 100.");
-        }
-        Gallery gallery = currentGallery();
-        return ResponseEntity.ok(ApiResponse.success(jdRecommendationService.recommendHigherScoringOtherRoles(
-                id, gallery.getId(), jdId, currentScore)));
+        throw migrationRequired();
     }
 
     private void validateCVUpload(MultipartFile file) {
@@ -91,6 +93,12 @@ public class CVPipelineController {
     }
 
     // --- Lifecycle ---
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CVResponseDTO>> getCV(@PathVariable UUID id) {
+        CV cv = cvPipelineService.getCVForInterview(id, currentGallery());
+        return ResponseEntity.ok(ApiResponse.success(CVResponseDTO.builder().id(cv.getId()).name(cv.getName())
+            .content(cv.getContent()).aiAnalysisLimit(cv.getAiAnalysisLimit()).aiAnalysisRemaining(cv.getAiAnalysisRemaining()).build()));
+    }
     @PostMapping
     public ResponseEntity<ApiResponse<CVResponseDTO>> createCV(
             @RequestBody CVCreateRequestDTO request) {
@@ -127,11 +135,29 @@ public class CVPipelineController {
     // --- Evaluation & Feedback ---
     @PostMapping("/{id}/analysis")
     public ResponseEntity<ApiResponse<CVAnalysisResponseDTO>> analyzeCV(
-            @PathVariable UUID id, @RequestBody CVFeedbackRequestDTO request) {
-        if (request == null || request.getJdText() == null || request.getJdText().isBlank()) {
-            throw new ApiException(ErrorCode.INVALID_INPUT, "jdText is required.");
-        }
-        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.analyzeCV(id, request.getJdText(), currentGallery())));
+            @PathVariable UUID id,
+            @RequestHeader("Idempotency-Key") String key,
+            @RequestBody CVAnalysisStartRequestDTO request) {
+        CVAnalysisResponseDTO result = analysisService.start(id, request, key, currentGallery());
+        HttpStatus status = result.status() == AnalysisStatus.PENDING || result.status() == AnalysisStatus.PROCESSING
+            ? HttpStatus.ACCEPTED : HttpStatus.OK;
+        return ResponseEntity.status(status).body(ApiResponse.success(result));
+    }
+
+    @GetMapping({"/analyses/{analysisId}", "/analyses/{analysisId}/evidence"})
+    public ResponseEntity<ApiResponse<CVAnalysisResponseDTO>> getAnalysis(@PathVariable UUID analysisId) {
+        return ResponseEntity.ok(ApiResponse.success(analysisService.read(analysisId, currentGallery())));
+    }
+    @PostMapping("/analyses/{analysisId}/alternatives")
+    public ResponseEntity<ApiResponse<CVAnalysisAlternativesResponseDTO>> startAlternatives(@PathVariable UUID analysisId) {
+        return ResponseEntity.ok(ApiResponse.success(analysisService.startAlternatives(analysisId, currentGallery())));
+    }
+    @GetMapping("/analyses/{analysisId}/alternatives")
+    public ResponseEntity<ApiResponse<CVAnalysisAlternativesResponseDTO>> readAlternatives(@PathVariable UUID analysisId) {
+        return ResponseEntity.ok(ApiResponse.success(analysisService.readAlternatives(analysisId, currentGallery())));
+    }
+    private ApiException migrationRequired() {
+        return new ApiException(ErrorCode.INVALID_REQUEST, "Dùng POST /api/cv/{id}/analysis và đọc bằng analysisId. Endpoint cũ không tạo đánh giá.");
     }
 
     @GetMapping("/{id}/evaluations")
@@ -139,10 +165,7 @@ public class CVPipelineController {
             @PathVariable UUID id,
             @RequestParam(required = false) UUID jdId,
             @RequestParam(required = false) String jdText) {
-        Gallery gallery = currentGallery();
-        if (jdId != null) return ResponseEntity.ok(ApiResponse.success(cvPipelineService.evaluateCV(id, jdId, gallery)));
-        if (jdText != null && !jdText.isBlank()) return ResponseEntity.ok(ApiResponse.success(cvPipelineService.evaluateCV(id, jdText, gallery)));
-        throw new ApiException(ErrorCode.INVALID_INPUT, "jdId or jdText is required.");
+        throw migrationRequired();
     }
 
     @PostMapping("/{id}/feedback")
@@ -150,14 +173,7 @@ public class CVPipelineController {
             @PathVariable UUID id,
             @RequestParam(required = false) UUID jdId,
             @RequestBody(required = false) CVFeedbackRequestDTO request) {
-        Gallery gallery = currentGallery();
-        UUID resolvedJdId = jdId != null ? jdId : request == null ? null : request.getJdId();
-        if (resolvedJdId == null && request != null && request.getJdText() != null) {
-            CVEvaluationResponseDTO evaluation = cvPipelineService.evaluateCV(id, request.getJdText(), gallery);
-            resolvedJdId = evaluation.getJdId();
-        }
-        if (resolvedJdId == null) throw new ApiException(ErrorCode.INVALID_INPUT, "jdId or jdText is required.");
-        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.requestFeedback(id, resolvedJdId, gallery)));
+        throw migrationRequired();
     }
 
     @GetMapping("/{id}/feedback")
@@ -171,7 +187,7 @@ public class CVPipelineController {
     public ResponseEntity<ApiResponse<CVSkillGapResponseDTO>> analyzeSkillGap(
             @PathVariable UUID id,
             @RequestParam UUID jdId) {
-        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.analyzeSkillGap(id, jdId, currentGallery())));
+        throw migrationRequired();
     }
 
     private Gallery currentGallery() {

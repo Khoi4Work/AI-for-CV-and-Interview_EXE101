@@ -190,6 +190,13 @@ export function mapImportedCVData(data) {
     const source = data || {};
     const experiences = Array.isArray(source.experiences) ? source.experiences : [];
     return {
+        professionalTitle: source.professionalTitle || '',
+        targetRoleCode: source.targetRoleCode || null,
+        targetRoleOrigin: source.targetRoleOrigin || 'NONE',
+        targetRoleEvidence: source.targetRoleEvidence || null,
+        sourceText: source.sourceText || null,
+        sourceTruncated: Boolean(source.sourceTruncated),
+        profilePhoto: source.profilePhoto || '',
         personalInfo: {
             name: source.personalInfo?.name || '',
             email: source.personalInfo?.email || '',

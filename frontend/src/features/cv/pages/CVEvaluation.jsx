@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, FileQuestion, LoaderCircle, BrainCircuit } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -9,10 +9,13 @@ import { cvPipelineService } from '../services/cvPipelineService.js';
 import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
+import {analysisSelection, createRequestGuard, pollAnalysis} from '../services/analysisFlow.js';
+import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
 
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
 
 function getCVTargetRole(cvContent) {
+  if (cvContent?.targetRoleOrigin !== 'EXPLICIT') return '';
   if (cvContent?.professionalTitle?.trim()) return cvContent.professionalTitle.trim();
   return '';
 }
@@ -28,6 +31,11 @@ const CVEvaluation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef(null);
+  const requestGuard = useRef(createRequestGuard());
+  const analysisController = useRef(null);
+  const idempotency = useRef(null);
+  const derivedFromJdId = useRef(null);
+  const startInFlight = useRef(false);
   const { currentCvId, setCurrentCvId, setFullCVData } = useCV();
   const { showToast } = useApp();
   const continuedFlow = location.state?.continueEvaluation;
@@ -43,11 +51,28 @@ const CVEvaluation = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluationStep, setEvaluationStep] = useState(0);
+  const [evaluationPhase, setEvaluationPhase] = useState('QUEUED');
 
   const evaluationStages = [
     { title: 'Đọc CV', description: 'Đang kiểm tra tệp và trích xuất nội dung CV.', icon: FileQuestion },
-    { title: 'Đánh giá CV với JD', description: 'AI đang chấm CV theo JD và tổng hợp kỹ năng, phản hồi trong cùng một lượt xử lý.', icon: BrainCircuit },
+    { title: evaluationPhase === 'QUEUED' ? 'Đang chờ xử lý' : 'Đối chiếu CV với JD', description: evaluationPhase === 'QUEUED' ? 'Yêu cầu đánh giá đã được ghi nhận.' : 'Đang đối chiếu yêu cầu JD và kiểm tra minh chứng trong CV.', icon: BrainCircuit },
   ];
+
+  useEffect(() => {
+    const guard = requestGuard.current;
+    return () => { guard.cancel(); analysisController.current?.abort(); };
+  }, []);
+  useEffect(() => {
+    if (!initialCV?.cvId) return undefined;
+    const guard = requestGuard.current;
+    const token = guard.next();
+    Promise.resolve().then(() => setIsFindingJDs(true))
+      .then(() => cvPipelineService.recommendJDs(initialCV.cvId))
+      .then(items => {if (requestGuard.current.current(token)) setJdRecommendations(items || []);})
+      .catch(error => {if (requestGuard.current.current(token)) showToast(getApiErrorMessage(error, 'Không thể tìm JD.'), 'error');})
+      .finally(() => {if (requestGuard.current.current(token)) setIsFindingJDs(false);});
+    return () => guard.cancel();
+  }, [initialCV, showToast]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -63,6 +88,7 @@ const CVEvaluation = () => {
       setJdRecommendations([]);
       setSelectedRecommendationKey(null);
       setJdText('');
+      void findJDsForCV(file, null);
     }
   };
 
@@ -91,9 +117,12 @@ const CVEvaluation = () => {
     setJdRecommendations([]);
     setSelectedRecommendationKey(null);
     setJdText('');
+    void findJDsForCV(file, null);
   };
 
   const removeFile = () => {
+    requestGuard.current.cancel();
+    setIsFindingJDs(false);
     setSelectedFile(null);
     setImportedCV(null);
     setJdRecommendations([]);
@@ -110,6 +139,7 @@ const CVEvaluation = () => {
   ) || null;
 
   const handleStartEvaluation = async () => {
+    if (startInFlight.current) return;
     if (!selectedFile && !importedCV) {
       showToast('Hãy tải CV lên hoặc tạo CV trước khi đánh giá.', 'error');
       return;
@@ -124,6 +154,7 @@ const CVEvaluation = () => {
       return;
     }
     setIsEvaluating(true);
+    startInFlight.current=true;
     setEvaluationStep(0);
     try {
       const imported = importedCV || await importCV(selectedFile);
@@ -134,61 +165,61 @@ const CVEvaluation = () => {
       setFullCVData(mapImportedCVData(imported.extractedData));
       if (!cvId) throw new Error('Không xác định được CV đã lưu để đánh giá.');
       setEvaluationStep(1);
-      const analysis = await cvPipelineService.analyzeCV(cvId, jdText.trim());
-      const evaluationResult = analysis?.evaluation;
-      if (!evaluationResult?.jdId) throw new Error('API đánh giá không trả về JD đã lưu.');
-      const {skillGap, feedback} = analysis;
-      navigate('/optimizer', {state: {
-        cvId,
-        cvName,
-        jdId: evaluationResult.jdId,
-        jdText: jdText.trim(),
-        jdTitle: selectedRecommendation?.title || continuedFlow?.jdTitle || 'JD bạn đã cung cấp',
-        jdCompany: selectedRecommendation?.companyName || continuedFlow?.jdCompany || '',
-        evaluationResult,
-        skillGap,
-        feedback,
-      }});
+      const selection = analysisSelection(selectedRecommendation, jdText);
+      if(!selection.jdId && derivedFromJdId.current) selection.derivedFromJdId=derivedFromJdId.current;
+      const fingerprint = JSON.stringify({cvId, selection});
+      if (idempotency.current?.fingerprint !== fingerprint) idempotency.current = {fingerprint, key:crypto.randomUUID()};
+      analysisController.current = new AbortController();
+      const started = await cvPipelineService.analyzeCV(cvId, selection, idempotency.current.key);
+      if (!started?.analysisId) throw new Error('API không trả về analysisId.');
+      setEvaluationPhase(started.phase);
+      const result = started.status === 'COMPLETED' ? started : await pollAnalysis(cvPipelineService.getAnalysis, started.analysisId, {signal:analysisController.current.signal,onUpdate:state=>setEvaluationPhase(state.phase)});
+      if (result.status !== 'COMPLETED') {idempotency.current=null;throw new Error(result.error || 'Chưa có kết quả đánh giá.');}
+      navigate(`/optimizer?analysisId=${result.analysisId}`);
     } catch (error) {
       showToast(getApiErrorMessage(error, 'Không thể hoàn tất đánh giá CV.'), 'error');
     } finally {
       setIsEvaluating(false);
+      startInFlight.current=false;
     }
   };
 
-  const handleFindJDs = async () => {
-    if (!selectedFile && !importedCV) {
+  const findJDsForCV = async (file, saved) => {
+    if (!file && !saved) {
       showToast('Hãy chọn CV ở khung bên trái trước khi tìm JD phù hợp.', 'error');
       return;
     }
-    const fileError = selectedFile ? getCVFileError(selectedFile) : '';
+    const fileError = file ? getCVFileError(file) : '';
     if (fileError) {
       showToast(fileError, 'error');
       return;
     }
     setIsFindingJDs(true);
+    const token = requestGuard.current.next();
     try {
-      const imported = importedCV || await importCV(selectedFile);
+      const imported = saved || await importCV(file);
+      if (!requestGuard.current.current(token)) return;
       if (!imported?.cvId) throw new Error('Không xác định được CV đã lưu để tìm JD.');
-      const cvName = importedCV?.cvName || selectedFile?.name || 'CV đã tạo';
+      const cvName = saved?.cvName || file?.name || 'CV đã tạo';
       setImportedCV({...imported, cvName});
       setCurrentCvId(imported.cvId);
       setFullCVData(mapImportedCVData(imported.extractedData));
       const recommendations = await cvPipelineService.recommendJDs(imported.cvId);
+      if (!requestGuard.current.current(token)) return;
       setJdRecommendations(recommendations || []);
-      setSelectedRecommendationKey(null);
-      setJdText('');
       if (!recommendations?.length) {
         showToast('Không có JD phù hợp.', 'info');
       }
     } catch (error) {
-      showToast(getApiErrorMessage(error, 'Không thể tìm JD phù hợp với CV.'), 'error');
+      if (requestGuard.current.current(token)) showToast(getApiErrorMessage(error, 'Không thể tìm JD phù hợp với CV.'), 'error');
     } finally {
-      setIsFindingJDs(false);
+      if (requestGuard.current.current(token)) setIsFindingJDs(false);
     }
   };
+  const handleFindJDs = () => findJDsForCV(selectedFile, importedCV);
 
   const selectRecommendation = (recommendation) => {
+    derivedFromJdId.current=null;
     setJdText(recommendation.content || '');
     setSelectedRecommendationKey(`${recommendation.source}-${recommendation.id}`);
     setPreviewRecommendation(null);
@@ -380,7 +411,7 @@ const CVEvaluation = () => {
                                   .filter(Boolean).join(' · ') || 'JD cá nhân'}
                               </p>
                               <span className="mt-1 inline-block rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface-variant">
-                                {recommendation.source === 'SYSTEM' ? 'JD hệ thống' : 'JD của bạn'}
+                                {jdSourceLabel(recommendation.source)}
                               </span>
                               <div className="mt-3 flex flex-wrap gap-2">
                                 <button
@@ -407,14 +438,16 @@ const CVEvaluation = () => {
                       </label>
                       <textarea
                         id="evaluation-jd"
-                        value={jdText}
+                        value={selectedRecommendation ? formatJD(selectedRecommendation.content) : jdText}
                         onChange={(e) => {
                           setJdText(e.target.value);
                           setSelectedRecommendationKey(null);
                         }}
+                        readOnly={Boolean(selectedRecommendation)}
                         placeholder="Chọn một JD được gợi ý hoặc dán JD riêng vào đây..."
                         className="w-full h-64 p-4 text-sm text-on-surface border border-outline-variant rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none bg-surface-container"
                       />
+                      {selectedRecommendation && <button type="button" onClick={() => {derivedFromJdId.current=selectedRecommendation.id;setSelectedRecommendationKey(null);setJdText(formatJD(selectedRecommendation.content));}} className="text-sm font-semibold text-primary">Dùng bản sao để chỉnh JD riêng</button>}
                   </div>
               </div>
             </div>
@@ -425,7 +458,7 @@ const CVEvaluation = () => {
         <div className="mt-12 flex justify-center">
           <button
             onClick={handleStartEvaluation}
-            disabled={isEvaluating || isFindingJDs}
+            disabled={isEvaluating || isFindingJDs || !importedCV?.cvId || !jdText.trim()}
             className="
               group relative px-10 py-4 bg-primary text-on-primary font-bold text-lg rounded-2xl
               transition-all duration-200 hover:opacity-90 active:scale-95 shadow-lg shadow-primary/20
@@ -445,12 +478,13 @@ const CVEvaluation = () => {
       >
         {previewRecommendation && (
           <div className="space-y-4">
+            <p className="text-sm text-on-surface-variant">{jdSourceLabel(previewRecommendation.source)}</p>
             <p className="text-sm font-medium text-on-surface">
               {[previewRecommendation.companyName, previewRecommendation.industry, previewRecommendation.experienceLevel]
                 .filter(Boolean).join(' · ')}
             </p>
             <div className="max-h-[55vh] overflow-y-auto whitespace-pre-wrap break-words rounded-xl border border-outline-variant bg-surface-container p-4 text-sm leading-6 text-on-surface custom-scrollbar">
-              {previewRecommendation.content || 'JD này chưa có nội dung chi tiết.'}
+              {formatJD(previewRecommendation.content) || 'JD này chưa có nội dung chi tiết.'}
             </div>
             <div className="flex justify-end">
               <button

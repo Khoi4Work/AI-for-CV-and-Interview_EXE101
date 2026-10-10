@@ -2,39 +2,43 @@ package fpt.su26.exe101.backend.modules.gallery.service.impl;
 
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
-import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import fpt.su26.exe101.backend.modules.auth.entity.Account;
+import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import fpt.su26.exe101.backend.modules.gallery.dto.request.JDCreateRequestDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.request.JDUpdateRequestDTO;
 import fpt.su26.exe101.backend.modules.gallery.dto.response.JDResponseDTO;
-import fpt.su26.exe101.backend.modules.gallery.entity.*;
+import fpt.su26.exe101.backend.modules.gallery.entity.enums.JobDescriptionSource;
+import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
+import fpt.su26.exe101.backend.modules.gallery.entity.JobDescription;
 import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
 import fpt.su26.exe101.backend.modules.gallery.repository.GalleryRepository;
 import fpt.su26.exe101.backend.modules.gallery.repository.JobDescriptionRepository;
-import fpt.su26.exe101.backend.modules.gallery.entity.enums.JobDescriptionSource;
+import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
+import fpt.su26.exe101.backend.modules.gallery.service.JobDescriptionNormalizationService;
 import fpt.su26.exe101.backend.modules.gallery.service.JobDescriptionTitleExtractor;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Propagation;
-
-import java.util.List;
-import java.util.UUID;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
+import java.util.List;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.gallery.service.GalleryService {
+public class GalleryServiceImpl implements GalleryService {
     private final GalleryRepository galleryRepository;
     private final JobDescriptionRepository jdRepository;
     private final GalleryMapper galleryMapper;
     private final AccountRepository accountRepository;
     private final JobDescriptionTitleExtractor jobDescriptionTitleExtractor;
+    private final JobDescriptionNormalizationService normalization;
 
     private Gallery getGalleryForCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -72,8 +76,8 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
     @Override
     public JobDescription findJobDescription(UUID id, Gallery gallery) {
         return jdRepository.findById(id)
-                .filter(jd -> jd.getSource() == JobDescriptionSource.USER
-                        && jd.getGallery() != null && jd.getGallery().getId().equals(gallery.getId()))
+                .filter(jd -> jd.isActive() && (jd.getSource() == JobDescriptionSource.SYSTEM
+                        || (jd.getGallery() != null && jd.getGallery().getId().equals(gallery.getId()))))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Job Description not found"));
     }
 
@@ -111,6 +115,7 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
     @Override
     @Transactional
     public JDResponseDTO createJobDescription(JDCreateRequestDTO request) {
+        fpt.su26.exe101.backend.modules.cv.service.impl.CVAnalysisServiceImpl.validateJD(request.getContent());
         Gallery gallery = getGalleryForCurrentUser();
 
         JobDescription jd = JobDescription.builder()
@@ -119,9 +124,11 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
                 .title(specificTitleOrExtract(request.getTitle(), request.getContent()))
                 .content(request.getContent())
                 .companyName(request.getCompanyName())
+                .contentHash(contentHash(request.getContent()))
                 .build();
 
         JobDescription savedJd = jdRepository.save(jd);
+        normalization.normalize(savedJd,null);
         log.info("[GALLERY] Job description created | galleryId={} | jdId={}",
                 gallery.getId(), savedJd.getId());
         return galleryMapper.jdToJDResponse(savedJd);
@@ -151,12 +158,14 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
                             "Một JD khác trong danh sách đã có nội dung này.");
                 });
         jd.setTitle(request.getTitle().trim());
+        fpt.su26.exe101.backend.modules.cv.service.impl.CVAnalysisServiceImpl.validateJD(request.getContent());
         jd.setContent(request.getContent().trim());
         jd.setContentHash(updatedContentHash);
         jd.setCompanyName(request.getCompanyName() == null || request.getCompanyName().isBlank()
                 ? null : request.getCompanyName().trim());
 
         JobDescription updatedJd = jdRepository.save(jd);
+        normalization.normalize(updatedJd,null);
         log.info("[GALLERY] Job description updated | galleryId={} | jdId={}",
                 gallery.getId(), updatedJd.getId());
         return galleryMapper.jdToJDResponse(updatedJd);
@@ -196,8 +205,8 @@ public class GalleryServiceImpl implements fpt.su26.exe101.backend.modules.galle
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                     .digest(normalized.getBytes(StandardCharsets.UTF_8)));
-        } catch (java.security.NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is unavailable", exception);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new ApiException(ErrorCode.UNEXPECTED_ERROR, "Không tạo được dấu vết nội dung JD.");
         }
     }
 

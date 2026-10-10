@@ -2,7 +2,7 @@
 
 **Ngày:** 09/10/2026
 
-**Trạng thái:** Đã được người dùng đồng ý làm cơ sở triển khai ngày 09/10/2026; các phần mới chưa được triển khai.
+**Trạng thái:** Đã triển khai mã nguồn cho analysis có snapshot/minh chứng, rubric cố định, gợi ý JD nghề khác và sửa cấu hình Interview. Nghiệm thu DB do người dùng thực hiện theo yêu cầu ngày 09/10/2026; calibration và chạy provider thật còn chờ kiểm tra.
 
 **Kế hoạch thực hiện:** [Tác vụ, phụ thuộc và nghiệm thu triển khai](../plans/2026-10-09-cv-evaluation-trust-and-evidence-plan.md).
 
@@ -220,7 +220,7 @@ Trên thẻ: vị trí, công ty/nguồn, lý do chuyển đổi dựa trên k�
 - JD hệ thống có `sourceUrl`, `referenceDate` và trạng thái tin nguồn riêng. `active` chỉ thể hiện được dùng trong thư viện, không chứng minh đang tuyển.
 - Chỉ ghi “đang tuyển” khi có dữ liệu trạng thái nguồn được xác minh/cập nhật. Mặc định dùng “JD tham khảo”; không mở rộng sang công ty khác hoặc tự thêm seed khi chưa có dữ liệu được duyệt.
 - Ẩn JD tiếp tục dùng `active=false`; lịch sử dùng snapshot. Gửi lại cùng nội dung có thể khôi phục theo quy tắc hiện tại, không sửa lịch sử cũ.
-- Mọi thay đổi schema/backfill chuẩn bị thành SQL trong `backend/src/main/resources/db/manual`; không tự chạy lên database hiện có.
+- Mọi thay đổi schema/backfill chuẩn bị thành SQL trong `backend/src/main/resources/db/migrations`; dữ liệu khởi tạo nằm riêng trong `backend/src/main/resources/db/data`. Không tự chạy SQL lên database hiện có.
 
 ## 9. Chỉnh UI kết quả và bổ sung minh chứng
 
@@ -291,7 +291,8 @@ Tệp/thành phần dự kiến:
 - `backend/.../modules/cv/service` và `service/impl`: các interface/implementation cho analysis, scoring, validation, job và recommendations; không thêm service cụ thể thiếu interface.
 - `CVPipelineController.java`, `CVPipelineServiceImpl.java`, `AIProviderServiceImpl.java`, `CVAnalysisQuotaServiceImpl.java`, `JDRecommendationServiceImpl.java`: luồng analysis thống nhất, quota và baseline server.
 - `backend/.../modules/gallery`: metadata nghề/nguồn; cập nhật title extractor và JD update theo nội dung mới.
-- `backend/src/main/resources/db/manual`: migration/backfill có kiểm tra và khả năng chạy lại, do người dùng thực hiện riêng.
+- `backend/src/main/resources/db/migrations`: migration/backfill có kiểm tra và khả năng chạy lại, do người dùng thực hiện riêng.
+- `backend/src/main/resources/db/data`: dữ liệu seed/import tách biệt khỏi migration; người dùng chọn chạy trên database phù hợp.
 - `frontend/.../features/cv/pages/CVEvaluation.jsx`, `CVResult.jsx`, `features/cv/services/cvPipelineService.js`: import/tìm/chọn, analysisId và chứng cứ.
 - Một component/formatter JD dùng chung, `MyJDsPage.jsx`, `Modal.jsx`: đọc JD nhất quán và bề mặt hiển thị dễ đọc.
 - P2: `useInterviewSession.js`, `InterviewSetup.jsx`, `InterviewServiceImpl.java`, `InterviewAIProviderImpl.java`, question repository và prompt tương ứng.
@@ -337,3 +338,7 @@ Mỗi pha cập nhật spec/session log và nghiệm thu trước pha phụ thu�
 - Người kiểm thử xác nhận nghề, requirement/evidence và thứ tự phù hợp mong đợi. Kiểm tra rubric bằng ví dụ có/không có minh chứng; không chỉ so sánh số AI tự sinh với số AI khác.
 - Ghi lại số request/model call, thời gian và quota trước/sau cho đường demo. Dùng tài khoản/dữ liệu demo riêng; lỗi và hết quota phải có đường quay lại/retry rõ ràng.
 - Trước demo: backend tests chức năng mới chạy được, frontend tests/build/lint phần thay đổi qua và chạy end-to-end thực. `test-compile` hoặc build qua không thay thế kiểm thử nghiệp vụ.
+
+### Cập nhật cấu trúc DB 2026-10-10
+
+Chỉ tạo ba bảng: `cv_analyses`, `cv_analysis_requests`, `cv_alternative_jobs`. Quota tổng vẫn thuộc module quota; `quota_status` trên analysis lưu trạng thái xử lý lượt cho tính idempotent. Metadata chuẩn hóa và cache yêu cầu JD nằm trên chính `job_descriptions`, gồm hash/version, lease và claim token để chặn kết quả AI trả muộn. Nguồn/ngày tham khảo/trạng thái xác minh văn hóa nằm trên `company_info`. Các đánh giá nghề khác vẫn lưu tiến độ và analysis ID, so điểm đánh giá cùng rubric thay vì điểm liên quan.

@@ -65,6 +65,7 @@ class CVEditorSaveTest {
     }
     @Test void newDraftStoresForeignKeyAndCanonicalContentBeforeChargingOnce() {
         Gallery gallery = gallery();
+        when(quota.consumeCvCreation(gallery.getAccountId())).thenReturn(new UsageQuotaService.CvCreationQuota(UserPlan.FREE,1,1));
         CVTemplate template = CVTemplate.builder().id("free").minimumPlan(TemplateAccessLevel.FREE).build();
         when(templates.findById("free")).thenReturn(Optional.of(template));
         when(quota.getCvPlan(gallery.getAccountId())).thenReturn(UserPlan.FREE);
@@ -116,6 +117,7 @@ class CVEditorSaveTest {
         assertThrows(ApiException.class, () -> service.createCV(CVCreateRequestDTO.builder()
                 .name("CV").content(content("missing")).build(), gallery));
         verify(quota, never()).consumeCvCreation(any());
+        when(quota.consumeCvCreation(gallery.getAccountId())).thenReturn(new UsageQuotaService.CvCreationQuota(UserPlan.FREE,1,1));
         service.createCV(CVCreateRequestDTO.builder().name("Imported").content(content(null)).build(), gallery);
         verify(quota).consumeCvCreation(gallery.getAccountId());
         verify(cvs).save(any());
@@ -133,5 +135,22 @@ class CVEditorSaveTest {
         CVContent original = content("free");
         CVContent restored = json.readValue(json.writeValueAsString(original), CVContent.class);
         assertEquals(original, restored);
+    }
+    @Test void cosmeticSavePreservesImportEvidenceButContentEditInvalidatesIt() {
+        Gallery gallery=gallery();UUID id=UUID.randomUUID();
+        CVContent imported=content(null);
+        imported.setSourceText("Original extracted CV text");
+        imported.setSourceTruncated(false);imported.setTargetRoleOrigin("NONE");
+        CV existing=CV.builder().gallery(gallery).name("CV").content(imported).build();
+        when(cvs.findById(id)).thenReturn(Optional.of(existing));
+        CVContent cosmetic=content(null);cosmetic.setProfilePhoto("new photo");
+        service.updateCV(id,CVUpdateRequestDTO.builder().name("CV").content(cosmetic).build(),gallery);
+        assertEquals("Original extracted CV text",existing.getContent().getSourceText());
+        assertEquals("NONE",existing.getContent().getTargetRoleOrigin());
+        CVContent edited=content(null);edited.setSummary("New real project evidence");
+        service.updateCV(id,CVUpdateRequestDTO.builder().name("CV").content(edited).build(),gallery);
+        assertNull(existing.getContent().getSourceText());
+        assertEquals("EXPLICIT",existing.getContent().getTargetRoleOrigin());
+        verify(quota,never()).consumeCvCreation(any());
     }
 }

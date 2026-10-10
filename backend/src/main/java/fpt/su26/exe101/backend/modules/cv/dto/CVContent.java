@@ -16,6 +16,11 @@ public class CVContent {
     private PersonalInfo personalInfo;
     private String profilePhoto;
     private String professionalTitle;
+    private String targetRoleCode;
+    private String targetRoleOrigin;
+    private String targetRoleEvidence;
+    private String sourceText;
+    private Boolean sourceTruncated;
     private String summary;
     @Builder.Default
     private List<Experience> experiences = new ArrayList<>();

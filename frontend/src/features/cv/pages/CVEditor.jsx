@@ -31,12 +31,24 @@ export default function CVEditor() {
     useEffect(() => {
         let active = true;
         galleryService.getTemplates().then(data => {
-            if (active) { setTemplates(data.filter(item => TEMPLATE_COMPONENTS[item.id])); setCatalogError(''); }
+            if (active) {
+                const availableTemplates = data.filter(item => TEMPLATE_COMPONENTS[item.id]);
+                setTemplates(availableTemplates);
+                setCatalogError('');
+
+                if (location.state?.returnToCVEvaluation) {
+                    const selectedTemplate = availableTemplates.find(item => item.id === cvData.selectedTemplateId);
+                    if (selectedTemplate?.locked !== false) {
+                        const unlockedTemplate = availableTemplates.find(item => item.locked === false);
+                        if (unlockedTemplate) setTemplate(unlockedTemplate.id);
+                    }
+                }
+            }
         }).catch(error => {
             if (active) setCatalogError(getApiErrorMessage(error, 'Không tải được quyền sử dụng mẫu CV.'));
         }).finally(() => { if (active) setTemplatesLoading(false); });
         return () => { active = false; };
-    }, [retry]);
+    }, [retry, location.state?.returnToCVEvaluation, cvData.selectedTemplateId, setTemplate]);
     useEffect(() => {
         const warn = event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } };
         window.addEventListener('beforeunload', warn);

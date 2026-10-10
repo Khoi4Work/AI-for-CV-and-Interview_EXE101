@@ -2,13 +2,27 @@
 
 **Ngày:** 09/10/2026
 
-**Trạng thái:** Chưa bắt đầu triển khai; tất cả checkbox bên dưới chưa hoàn thành.
+**Trạng thái:** Mã nguồn chính đã triển khai. Unit test và frontend build/lint đã kiểm tra; schema PostgreSQL và nghiệm thu tích hợp do người dùng tự thực hiện. G6/G7 chưa đóng vì còn calibration, DB và provider thật.
 
 **Spec nguồn:** [CV–JD evaluation, scoring, and evidence](../specs/2026-10-09-cv-evaluation-trust-and-evidence-design.md).
 
 **Điểm bắt đầu:** Working tree hiện tại, bao gồm các thay đổi CV/JD chưa commit. Không reset hoặc làm lại những cải thiện đã có.
 
 Kế hoạch này chuyển spec được người dùng đồng ý thành tác vụ triển khai, phụ thuộc, tệp dự kiến, kiểm thử và điều kiện nghiệm thu. Không tự chạy SQL lên database hiện có, thêm seed, thay đổi gói dịch vụ hoặc commit trong yêu cầu viết kế hoạch.
+
+### Tiến độ mã nguồn ngày 09/10/2026
+
+| Phạm vi | Đã triển khai | Phần nghiệm thu còn lại |
+|---|---|---|
+| T00–T02 | Contract phiên bản; snapshot/charge/request/job/JD metadata; SQL thủ công và readiness flag | Áp dụng/chạy lại SQL, constraint/concurrency PostgreSQL |
+| T03–T05 | Role explicit từ CV; taxonomy theo title/nội dung; lọc cùng nghề trước rerank, tối đa hai JD | CV/JD thật có nhiều cách trình bày và OCR |
+| T06–T10 | Trích yêu cầu JD một lần theo hash; kiểm chứng quote; rubric 40/35/10/15; cache/idempotency/quota; queue/lease và API analysis | Tải đồng thời, restart/timeout với provider và DB thật |
+| T11–T12 | Request guard; chọn theo JD ID; polling thật; result theo analysisId; một viewer CV/JD/minh chứng | Đường chính với tài khoản và DB đích |
+| T13–T16 | Job tối đa năm candidate; hai nghề khác có điểm cao hơn; nguồn và snapshot; mở editor lưu CV thật | Cache/quota/history và sửa/ẩn JD trên DB đích |
+| T17 | Bộ tình huống calibration, phép tính tay, checklist DB và fixture giao diện | Người kiểm thử gắn nhãn đủ cặp CV/JD, đánh giá sai lệch, demo tích hợp |
+| T18–T19 | Fingerprint và bỏ reuse sai cấu hình; prompt theo HR/STAR/Technical; company context có nguồn; câu riêng/audio theo session | Matrix provider thật, bank hiện có và câu follow-up STAR; chưa bật adaptive mode |
+
+Chi tiết kiểm tra thủ công: [Checklist DB và nghiệm thu](2026-10-09-cv-analysis-db-checklist.md). Các checkbox dưới đây tiếp tục dùng để nghiệm thu từng yêu cầu, không tự đánh dấu một gate đạt chỉ vì mã nguồn đã có. Người dùng yêu cầu tự chạy các test DB; từ thời điểm đó không chạy thêm repository/integration DB test hay áp dụng SQL.
 
 ## 1. Các điều kiện giữ nguyên trong mọi tác vụ
 
@@ -64,8 +78,8 @@ Mỗi gate cần kết quả kiểm thử và ví dụ thực để đánh dấu
 **Tệp dự kiến:**
 
 - Sửa `backend/src/main/java/.../modules/cv/entity/CV.java`, `dto/CVContent.java`, import DTO; `modules/gallery/entity/JobDescription.java` và JD DTO.
-- Tạo trong `modules/cv/entity/`: `CVAnalysis`, `CVAnalysisQuotaCharge`, `CVAlternativeRecommendationJob`.
-- Tạo enum/DTO cho trạng thái analysis, role origin, requirement/evidence, scoring breakdown, snapshot và alternatives.
+- Tạo trong `modules/cv/entity/`: `CVAnalysis` (kèm `quotaStatus`), `CVAnalysisRequest`, `CVAlternativeRecommendationJob`.
+- Đặt enum nghiệp vụ trong `modules/cv/entity/enums`; DTO chỉ giữ request/response contract, snapshot, evidence, breakdown và alternatives.
 
 **Công việc:**
 
@@ -85,15 +99,15 @@ Mỗi gate cần kết quả kiểm thử và ví dụ thực để đánh dấu
 
 **Tệp dự kiến:**
 
-- `backend/src/main/resources/db/manual/20261009_cv_analysis_snapshots_and_jd_metadata.sql`.
-- `modules/cv/repository/CVAnalysisRepository.java`, `CVAnalysisQuotaChargeRepository.java`, `CVAlternativeRecommendationJobRepository.java`.
+- `backend/src/main/resources/db/migrations/20261009_cv_analysis_snapshots_and_jd_metadata.sql`.
+- `modules/cv/repository/CVAnalysisRepository.java`, `CVAnalysisRequestRepository.java`, `CVAlternativeRecommendationJobRepository.java`.
 - Sửa `CVRepository.java`, `JobDescriptionRepository.java`; thêm repository integration tests trong `backend/tests/java/...`.
 
 **Công việc:**
 
 - [ ] Viết migration thêm bảng/column/index trước, không xóa dữ liệu CVFeedback cũ hoặc ép legacy score thành điểm mới.
 - [ ] Cache key unique theo owner + hashes + versions; idempotency key được bind với owner và digest request. Một idempotency key dùng cho payload khác trả conflict.
-- [ ] Unique job alternatives theo analysis/version; unique charge theo analysis; index cho owner/status/createdAt và nghề JD.
+- [ ] Unique job alternatives theo analysis/version; trạng thái charge nằm trên một dòng analysis; index cho owner/status/createdAt và nghề JD.
 - [ ] Thêm queries khóa ngắn để reserve/refund quota, claim job và kiểm tra quyền; không dùng lazy entity sau khi transaction đóng.
 - [ ] Thiết kế retry: không ghi đè analysis đã completed; failed attempt được lưu/truy vết khi retry, tối đa một attempt đang chạy trên cùng cache key.
 - [ ] Chuẩn bị backfill metadata theo batch và kiểm tra trước/sau; không gọi AI để dựng minh chứng cho feedback cũ.
@@ -215,7 +229,7 @@ Mỗi gate cần kết quả kiểm thử và ví dụ thực để đánh dấu
 - [ ] Với `jdId` SYSTEM giữ JD gốc; USER phải cùng gallery. Chỉnh SYSTEM tạo USER derived copy. Custom text dùng find/create có metadata hợp lệ.
 - [ ] Canonical hash bỏ tên tệp/template/photo khi không được chấm, giữ nội dung có ý nghĩa; key không chứa plan. Cố định version/hash rules bằng test vectors.
 - [ ] Tìm completed/cache hoặc ongoing job trước khi reserve quota; double click trả cùng ID, không gọi AI hay charge hai lần.
-- [ ] Trong transaction ngắn: tạo/claim analysis và reserve một lượt với charge unique. AI chạy ngoài transaction/khóa quota.
+- [ ] Trong transaction ngắn: tạo/claim analysis và reserve một lượt và cập nhật `quotaStatus=RESERVED` trên analysis đã khóa. AI chạy ngoài transaction/khóa quota.
 - [ ] Complete/consume hoặc fail/refund bằng update có điều kiện; retry lỗi không refund hai lần, không vượt limit.
 - [ ] Analysis nội bộ cho alternatives dùng cùng snapshot/cache/scorer nhưng tính vào budget parent; không trừ thêm lượt người dùng. Người dùng mở analysis cached của ứng viên không chấm lại.
 - [ ] Sửa CV/JD tạo key mới; cache và lịch sử cũ vẫn đọc đúng snapshot. Insufficient evidence không có điểm dùng được thì hoàn reservation theo chính sách failure.
@@ -470,3 +484,7 @@ Mỗi gate ghi: tác vụ đã hoàn thành, file/migration, command và kết q
 5. Nếu rollout lỗi, tắt tạo analysis/job mới qua flag; vẫn cho đọc completed analyses và snapshot. Không chuyển sang dữ liệu mock hoặc tự chấm bằng legacy GET để che lỗi.
 6. Job đang chạy được giữ/đóng có kiểm soát để quota không mất; không drop các bảng lịch sử hoặc rewrite score completed trong rollback.
 7. P2 chỉ bắt đầu sau CV đạt G6. Việc commit/publish/deploy tuân theo yêu cầu riêng của người dùng, không suy ra từ việc đồng ý bản kế hoạch.
+
+### Điều chỉnh schema 2026-10-10
+
+Không tạo bảng riêng cho quota charge, JD normalization hay xác minh company context. Trạng thái charge nằm trong `cv_analyses.quota_status`; metadata, hash/version và lease/token trích yêu cầu nằm trên `job_descriptions`; URL/ngày tham khảo/cờ xác minh văn hóa nằm trên `company_info`. Giữ `cv_alternative_jobs` để lưu tiến độ và kết quả các đánh giá nghề khác theo cùng rubric. SQL chuyển dữ liệu bản cũ khi thêm cột lần đầu, giữ nguyên các bảng cũ để đối chiếu.

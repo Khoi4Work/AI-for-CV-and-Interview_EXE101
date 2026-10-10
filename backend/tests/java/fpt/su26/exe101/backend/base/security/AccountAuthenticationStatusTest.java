@@ -102,7 +102,7 @@ class AccountAuthenticationStatusTest {
     }
 
     private FilterChain runFilter(JwtAuthenticationFilter target) throws Exception {
-        when(tokens.validateToken("valid-token")).thenReturn(true);
+        when(tokens.validateAccessToken("valid-token")).thenReturn(true);
         when(tokens.getUsernameFromToken("valid-token")).thenReturn("user@example.com");
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer valid-token");

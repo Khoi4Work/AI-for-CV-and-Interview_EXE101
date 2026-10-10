@@ -1,5 +1,9 @@
 package fpt.su26.exe101.backend.modules.cv.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.security.NoSuchAlgorithmException;
+
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
@@ -42,6 +46,7 @@ import java.time.LocalDateTime;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
+import fpt.su26.exe101.backend.modules.cv.service.RoleTaxonomyService;
 import java.util.regex.Pattern;
 
 @Service
@@ -59,9 +64,11 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private final GalleryService galleryService;
     private final UsageQuotaService quotaService;
     private final CVAnalysisQuotaService cvAnalysisQuotaService;
+    private final RoleTaxonomyService roleTaxonomy;
     private final AIProviderService aiProvider;
     private final CVMapper cvMapper;
     private final CVFeedbackMapper feedbackMapper;
+    private final ObjectMapper objectMapper;
     private final ObjectProvider<CVPipelineServiceImpl> selfProvider;
 
     @Override
@@ -93,6 +100,9 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Override
     public CVResponseDTO createCV(CVCreateRequestDTO request, Gallery gallery) {
         validateDraft(request.getName(), request.getContent());
+        request.getContent().setSourceText(null);
+        request.getContent().setSourceTruncated(false);
+        declaredRole(request.getContent());
         CVTemplate template = resolveTemplate(request.getTemplateId(), request.getContent(), null, gallery);
         UsageQuotaService.CvCreationQuota creationQuota = quotaService.consumeCvCreation(gallery.getAccountId());
         CV cv = CV.builder()
@@ -121,6 +131,18 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         CVTemplate template = resolveTemplate(request.getTemplateId(), request.getContent(), cv.getTemplate(), gallery);
         cv.setName(request.getName().trim());
         cv.setTemplate(template);
+        if (!comparableContent(cv.getContent()).equals(comparableContent(request.getContent()))) {
+            // Edited content replaces parser text. Cosmetic edits keep the original evidence/cache.
+            request.getContent().setSourceText(null);
+            request.getContent().setSourceTruncated(false);
+            declaredRole(request.getContent());
+        } else {
+            request.getContent().setSourceText(cv.getContent().getSourceText());
+            request.getContent().setSourceTruncated(cv.getContent().getSourceTruncated());
+            request.getContent().setTargetRoleCode(cv.getContent().getTargetRoleCode());
+            request.getContent().setTargetRoleOrigin(cv.getContent().getTargetRoleOrigin());
+            request.getContent().setTargetRoleEvidence(cv.getContent().getTargetRoleEvidence());
+        }
         cv.setContent(request.getContent());
         cvRepository.save(cv);
         return cvMapper.cvToCVResponse(cv);
@@ -130,6 +152,20 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         if (name == null || name.isBlank() || name.trim().length() > 100 || content == null) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Tên CV phải có từ 1 đến 100 ký tự và nội dung không được trống.");
         }
+    }
+
+    private void declaredRole(CVContent content) {
+        String title = content.getProfessionalTitle();
+        content.setTargetRoleOrigin(title == null || title.isBlank() ? "NONE" : "EXPLICIT");
+        content.setTargetRoleEvidence(title == null || title.isBlank() ? null : title);
+        Set<String> roles = roleTaxonomy.roles(title);
+        content.setTargetRoleCode(roles.size() == 1 ? roles.iterator().next() : null);
+    }
+    private String comparableContent(CVContent content) {
+        ObjectNode tree = objectMapper.valueToTree(content);
+        tree.remove(List.of("profilePhoto","selectedTemplateId","sourceText","sourceTruncated","targetRoleCode","targetRoleOrigin","targetRoleEvidence"));
+        if(tree.path("experiences").isArray()) tree.path("experiences").forEach(e->{if(e.isObject())((com.fasterxml.jackson.databind.node.ObjectNode)e).remove("id");});
+        return tree.toString();
     }
 
     private CVTemplate resolveTemplate(String requestedId, CVContent content, CVTemplate existing, Gallery gallery) {
@@ -251,8 +287,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private String sha256(byte[] content) {
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content));
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is unavailable", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new ApiException(ErrorCode.UNEXPECTED_ERROR, "Không tạo được dấu vết tệp CV.");
         }
     }
 
@@ -456,7 +492,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
     @Override
     @Transactional
-    public CVAnalysisResponseDTO analyzeCV(UUID cvId, String jdText, Gallery gallery) {
+    public CVEvaluationBundleResponseDTO analyzeCV(UUID cvId, String jdText, Gallery gallery) {
         CV cv = cvRepository.findById(cvId)
                 .filter(item -> item.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
@@ -490,7 +526,11 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             log.info("[CV ANALYSIS] Completed | cvId={} | galleryId={} | jdId={} | score={} | durationMs={}",
                     cvId, gallery.getId(), jd.getId(), evaluation.getScore(),
                     (System.nanoTime() - startedAtNanos) / 1_000_000);
-            return CVAnalysisResponseDTO.builder().evaluation(evaluation).skillGap(skillGap).feedback(feedback).build();
+            return CVEvaluationBundleResponseDTO.builder()
+                    .evaluation(evaluation)
+                    .skillGap(skillGap)
+                    .feedback(feedback)
+                    .build();
         } catch (RuntimeException e) {
             log.error("[CV ANALYSIS] Failed | cvId={} | galleryId={} | jdId={} | errorType={} | durationMs={}",
                     cvId, gallery.getId(), jd.getId(), e.getClass().getSimpleName(),

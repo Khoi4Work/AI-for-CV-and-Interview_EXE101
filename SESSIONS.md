@@ -1,5 +1,33 @@
 # Session History
 
+## 2026-10-10 — Align CV analysis code with project conventions
+
+- Move analysis status, quota status, requirement group and assessment enums from the DTO container into `modules/cv/entity/enums`; DTO records now reference those shared enum types.
+- Replace `var` in the new CV analysis/normalization path with explicit types. Inject `RoleTaxonomyService` through its interface in the CV pipeline, parser and JD recommendation service instead of constructing the implementation directly.
+- Document the purpose of CV analysis configuration and the typed validation exception. Keep module exceptions as `ApiException` subtypes because the worker must distinguish insufficient evidence and an in-progress JD extraction from provider/system failures; both still use the shared global HTTP handler when surfaced.
+- Clarify that no database table stores these Java enums: JPA stores enum names as strings. The three SQL-created tables persist analysis snapshots/results, idempotency requests, and alternative-job queue state; they are workflow storage, not enum storage.
+- Validation: static reference checks and `git diff --check`; no tests/build or DB operations run for this correction.
+
+## 2026-10-10 — Simplify CV analysis database ownership
+
+- Merge per-analysis quota lifecycle into `cv_analyses.quota_status`; keep the existing quota module as the source of allowances, with locked once-only consumption/refunds and no charge for internal alternative analyses.
+- Store normalization metadata, input hash/version and requirement extraction lease/token on `job_descriptions`; remove the separate entity/repository. Keep provider calls outside locks and prevent old snapshot or late AI responses from replacing an edited JD cache.
+- Store culture source URL, reference date and verification flag on `company_info`; remove the separate verification entity/repository. Preserve verified-source requirements for interview context.
+- Keep only three new tables: analyses, idempotency requests and alternative jobs. Update manual SQL/readiness/spec/plan/checklist; copy earlier side-table data only when first adding the owner column and retain legacy tables for review.
+- Validation: 55 focused backend mock unit tests passed (zero failures/errors), including quota lifecycle and JD edit fencing; all test sources compiled. Initial sandbox run encountered Java loopback restrictions, then the same suite passed outside sandbox. `git diff --check` passed. No SQL, DB tests, automatic migration, commit or deployment was performed. Apply the revised SQL before running this application version, even with CV analysis disabled.
+
+## 2026-10-09 — Implement trusted CV/JD analysis and interview configuration
+
+- Implement a versioned backend analysis contract with immutable CV/JD snapshots, exact evidence checks, cached JD requirements and deterministic rubric-v1 scoring (40/35/10/15, mandatory/preferred weights, N/A groups and final rounding). Search relevance remains separate from evaluation scores.
+- Add owner-scoped cache/idempotency requests, quota charge lifecycle/refunds, persistent bounded analysis and alternative-role queues with leases/attempt fencing. Compare at most five candidate JDs using the same scoring service and show at most two higher-scoring different roles.
+- Preserve explicit versus historical CV roles; normalize generic JD titles from actual content, filter occupation before reranking, and provide opt-in metadata backfill without AI calls or new JDs.
+- Connect frontend import/select/start/poll/results to analysis IDs; provide one solid viewer for CV/JD/evidence, bounded skill lists, readable mobile score layout, bottom alternative cards with full-JD viewing and real CV editing for new evidence. Remove real-path mock fallback and client-supplied baseline scoring.
+- Fix interview configuration normalization and stale session reuse, persist question type/source/context, distinguish HR/STAR/Technical prompts and resolve company culture only with verified provenance. Personalized generated questions/audio use session snapshots instead of writing private CV data into the shared question bank.
+- Follow the user's import/exception correction: explicit imports in new production classes; CVAnalysisValidationException and JobDescriptionRequirementsPendingException extend the project ApiException. Worker distinguishes expected evidence failures from unexpected runtime/provider errors; service lookups use ErrorCode rather than generic missing-value exceptions.
+- Provide two manual SQL artifacts and a DB/acceptance checklist. SQL was not applied to the configured DB. After the user requested to handle DB tests themselves, no additional DB test or database operation was run. Keep CV_ANALYSIS_ENABLED=false until the user applies and verifies the schema.
+- Validation: 49 focused backend unit tests passed using mocked repositories/providers (no DB), 40 frontend tests passed, production build and targeted ESLint passed. Browser checks used an explicitly labeled synthetic fixture for one viewer, full-JD content, skill-list scrolling and 390px layout; this is not a live provider/DB end-to-end test. Existing frontend large-chunk warning remains.
+- Earlier broad regression attempted before the user's DB-test instruction exposed pre-existing auth/repository fixture errors; do not claim the full backend integration suite passed. PostgreSQL migration/concurrency checks, representative human calibration and real-provider interview acceptance remain pending. No commit or deployment was performed.
+
 ## 2026-10-09 — Verify and group current work for done
 
 - Review current changes and group CV evaluation/recommendations, personal JD management, and approved planning documentation into separate commits.

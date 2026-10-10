@@ -1,6 +1,7 @@
 package fpt.su26.exe101.backend.modules.cv.service.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
@@ -10,6 +11,7 @@ import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.cv.repository.CVRepository;
 import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
 import fpt.su26.exe101.backend.modules.cv.service.JDRecommendationService;
+import fpt.su26.exe101.backend.modules.cv.service.RoleTaxonomyService;
 import fpt.su26.exe101.backend.modules.gallery.repository.JobDescriptionRepository;
 import fpt.su26.exe101.backend.modules.gallery.entity.enums.JobDescriptionSource;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
@@ -21,7 +23,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,19 +55,22 @@ public class JDRecommendationServiceImpl implements JDRecommendationService {
     private final RestClient cohereClient = RestClient.builder().baseUrl("https://api.cohere.com").build();
     private final String cohereApiKey;
     private final String rerankModel;
+    private final RoleTaxonomyService taxonomy;
 
     public JDRecommendationServiceImpl(CVRepository cvRepository,
                                        JobDescriptionRepository jdRepository,
                                        AIProviderService aiProvider,
                                        UsageQuotaService quotaService,
                                        @Value("${cohere.api-key:}") String cohereApiKey,
-                                       @Value("${cv.jd-recommendations.rerank-model:rerank-v4.0-fast}") String rerankModel) {
+                                       @Value("${cv.jd-recommendations.rerank-model:rerank-v4.0-fast}") String rerankModel,
+                                       RoleTaxonomyService taxonomy) {
         this.cvRepository = cvRepository;
         this.jdRepository = jdRepository;
         this.aiProvider = aiProvider;
         this.quotaService = quotaService;
         this.cohereApiKey = cohereApiKey;
         this.rerankModel = rerankModel;
+        this.taxonomy = taxonomy;
     }
 
     @Transactional(readOnly = true)
@@ -77,18 +92,24 @@ public class JDRecommendationServiceImpl implements JDRecommendationService {
                 .forEach(candidates::add);
 
         if (candidates.isEmpty()) return List.of();
-        List<Candidate> bounded = candidates.stream().limit(MAX_CANDIDATES).toList();
         boolean roleBased = !targetRole.isBlank();
-        List<Candidate> candidatesToRank = bounded;
-        String query = roleBased ? targetRole : toCVContext(cv.getContent());
+        Set<String> targetCodes = taxonomy.roles(targetRole);
+        Set<String> hashes = new HashSet<>();
+        List<Candidate> candidatesToRank = candidates.stream()
+                .filter(c -> c.content() != null && c.content().trim().split("\\s+").length >= 6)
+                .filter(c -> !roleBased || !Collections.disjoint(targetCodes, taxonomy.jobRoles(c.title(), c.content())))
+                .filter(c -> hashes.add(CVAnalysisServiceImpl.hash(c.content().trim().replaceAll("\\s+", " "))))
+                .limit(MAX_CANDIDATES)
+                .toList();
+        if (candidatesToRank.isEmpty()) return List.of();
+        String query = toCVContext(cv.getContent());
         if (query.isBlank()) return List.of();
         List<ScoredCandidate> ranked = rankWithCohere(query, candidatesToRank, RECOMMENDATION_LIMIT);
-        if (ranked == null) ranked = roleBased
-                ? rankByRoleOverlap(targetRole, candidatesToRank)
-                : rankByTokenOverlap(query, candidatesToRank);
+        if (ranked == null) ranked = rankByTokenOverlap(query, candidatesToRank).stream()
+            .map(c -> roleBased ? new ScoredCandidate(c.candidate(), Math.max(1,c.score())) : c).toList();
 
         List<JDRecommendationResponseDTO> result = ranked.stream()
-                .filter(scored -> scored.score() > 0)
+                .filter(scored -> roleBased || scored.score() > 0)
                 .limit(RECOMMENDATION_LIMIT)
                 .map(scored -> JDRecommendationResponseDTO.builder()
                         .source(scored.candidate().source())
@@ -137,7 +158,7 @@ public class JDRecommendationServiceImpl implements JDRecommendationService {
         if (ranked == null) ranked = rankByTokenOverlap(cvContext, otherRoles);
 
         List<EvaluatedCandidate> higherScoring = new ArrayList<>();
-        var plan = quotaService.getCvPlan(cv.getGallery().getAccountId());
+        UserPlan plan = quotaService.getCvPlan(cv.getGallery().getAccountId());
         for (ScoredCandidate candidate : ranked.stream().limit(ALTERNATIVE_EVALUATION_LIMIT).toList()) {
             try {
                 CVEvaluationResponseDTO evaluation = aiProvider.evaluateCV(
@@ -220,6 +241,7 @@ public class JDRecommendationServiceImpl implements JDRecommendationService {
 
     private String toExplicitTargetRole(CVContent content) {
         if (content == null) return "";
+        if (!"EXPLICIT".equals(content.getTargetRoleOrigin())) return "";
         if (content.getProfessionalTitle() != null && !content.getProfessionalTitle().isBlank()) {
             return content.getProfessionalTitle().trim();
         }
