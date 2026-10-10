@@ -47,11 +47,11 @@ BEGIN
 
         INSERT INTO orders (
             id, account_id, service_id, amount, status, payment_status, payment_method,
-            transaction_id, checkout_url, ordered_at, created_at, updated_at, created_by
+            transaction_id, checkout_url, ordered_at, created_at, updated_at, created_by, is_test
         ) VALUES (
             order_uuid, account_uuid, service_uuid, service_price, order_state, payment_state,
             'BANK_TRANSFER', 'TEST-' || order_uuid::text, NULL,
-            event_time, event_time, event_time, account_uuid
+            event_time, event_time, event_time, account_uuid, true
         ) ON CONFLICT (id) DO NOTHING;
     END LOOP;
     RAISE NOTICE 'Payment history fixtures ready for %: 12 orders (3 per payment status). No real payment or quota change.', target_email;

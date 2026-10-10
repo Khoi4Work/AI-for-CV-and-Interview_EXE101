@@ -44,7 +44,7 @@ export default function Login() {
             setLoginSuccess(true);
             await handleLogin(null, { accessToken, refreshToken });
 
-            const origin = location.state?.from?.pathname || '/home';
+            const origin = location.state?.from?.pathname || (tokens.role === 'ADMIN' ? '/admin' : '/home');
             navigate(origin);
         } catch (err) {
             setLoginSuccess(false);
@@ -70,7 +70,7 @@ export default function Login() {
             setLoginSuccess(true);
             await handleLogin(null, tokens);
 
-            const origin = location.state?.from?.pathname || '/home';
+            const origin = location.state?.from?.pathname || (tokens.role === 'ADMIN' ? '/admin' : '/home');
             navigate(origin);
         } catch (err) {
             setLoginSuccess(false);
@@ -170,7 +170,7 @@ export default function Login() {
                                        value={emailDraft}
                                        onChange={(event) => setEmailDraft(event.target.value)}
                                        className="w-full pl-[48px] pr-sm py-sm rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary-fixed bg-surface-container-lowest transition-all outline-none text-body-md"
-                                       id="email" placeholder="email@example.com" type="email"/>
+                                       id="email" placeholder="email@example.com" type="email" autoComplete="username"/>
                             </div>
                         </div>
 

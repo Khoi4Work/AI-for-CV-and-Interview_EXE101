@@ -134,7 +134,7 @@ public class PaymentServiceImpl implements PaymentService {
             log.warn("[PAYMENT] Webhook order not found | orderCode={}", orderCode);
             return;
         }
-        if (order.getPaymentStatus() == Order.PaymentStatus.PAID) {
+        if (order.getPaymentStatus() == Order.PaymentStatus.PAID || order.getPaymentStatus() == Order.PaymentStatus.REFUNDED) {
             log.info("[PAYMENT] Duplicate successful webhook ignored | orderId={} | orderCode={}",
                     order.getId(), orderCode);
             return;
@@ -142,6 +142,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         if ("Thành công".equalsIgnoreCase(statusDesc) || "success".equalsIgnoreCase(statusDesc)) {
             order.setPaymentStatus(Order.PaymentStatus.PAID);
+            order.setPaidAt(LocalDateTime.now());
             order.setStatus("COMPLETED");
             updateUserQuota(order);
         } else {

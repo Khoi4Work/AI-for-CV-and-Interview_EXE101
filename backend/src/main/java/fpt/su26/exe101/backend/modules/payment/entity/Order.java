@@ -45,6 +45,12 @@ public class Order extends BaseEntity {
     @Column(name = "ordered_at")
     private LocalDateTime orderedAt = LocalDateTime.now();
 
+    private LocalDateTime paidAt;
+    private LocalDateTime refundedAt;
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isTest = false;
+
     public enum PaymentStatus {
         PENDING, PAID, FAILED, REFUNDED
     }
