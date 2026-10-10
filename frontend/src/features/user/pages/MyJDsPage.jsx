@@ -1,3 +1,4 @@
+import {formatJD as contentForEditor} from '../../../utils/jdContent.js';
 import { useRef, useState } from 'react';
 import { Briefcase, Building2, CalendarDays, Check, Eye, Pencil, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -12,75 +13,6 @@ function formatCreatedAt(value) {
     if (!value) return '';
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('vi-VN');
-}
-
-const JD_FIELD_LABELS = {
-    description: 'Mô tả công việc',
-    overview: 'Tổng quan',
-    details: 'Chi tiết công việc',
-    bullets: 'Nội dung',
-    responsibilities: 'Trách nhiệm',
-    requirements: 'Yêu cầu',
-    qualifications: 'Trình độ',
-    skills: 'Kỹ năng',
-    benefits: 'Quyền lợi',
-    experience: 'Kinh nghiệm',
-    experienceLevel: 'Cấp độ kinh nghiệm',
-    education: 'Học vấn',
-    location: 'Địa điểm',
-    employmentType: 'Hình thức làm việc',
-    source: 'Nguồn tham khảo',
-};
-
-function fieldLabel(key) {
-    if (JD_FIELD_LABELS[key]) return JD_FIELD_LABELS[key];
-    return key
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/[_-]+/g, ' ')
-        .replace(/^./, character => character.toUpperCase());
-}
-
-function formatStructuredValue(value, level = 0) {
-    const indent = '  '.repeat(level);
-    if (Array.isArray(value)) {
-        return value.map(item => {
-            if (item && typeof item === 'object') return formatStructuredValue(item, level);
-            return `${indent}- ${String(item)}`;
-        }).filter(Boolean).join('\n');
-    }
-    if (value && typeof value === 'object') {
-        return Object.entries(value).map(([key, nestedValue]) => {
-            if (nestedValue == null || nestedValue === '') return '';
-            if (key.toLowerCase() === 'title') {
-                return `${indent}${String(nestedValue).toLocaleUpperCase('vi-VN')}`;
-            }
-            if (key.toLowerCase() === 'bullets') {
-                return formatStructuredValue(nestedValue, level);
-            }
-            if (Array.isArray(nestedValue)) {
-                return `${indent}${fieldLabel(key)}:\n${formatStructuredValue(nestedValue, level + 1)}`;
-            }
-            if (nestedValue && typeof nestedValue === 'object') {
-                return `${indent}${fieldLabel(key)}:\n${formatStructuredValue(nestedValue, level + 1)}`;
-            }
-            return `${indent}${fieldLabel(key)}: ${String(nestedValue)}`;
-        }).filter(Boolean).join('\n\n');
-    }
-    return value == null ? '' : `${indent}${String(value)}`;
-}
-
-function contentForEditor(content) {
-    if (!content) return '';
-    try {
-        const parsed = JSON.parse(content);
-        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return content;
-        return Object.entries(parsed)
-            .filter(([key, value]) => !['title', 'company'].includes(key.toLowerCase()) && value != null && value !== '')
-            .map(([key, value]) => `${fieldLabel(key)}\n${formatStructuredValue(value)}`)
-            .join('\n\n') || content;
-    } catch {
-        return content;
-    }
 }
 
 function structuredMetadata(content) {
