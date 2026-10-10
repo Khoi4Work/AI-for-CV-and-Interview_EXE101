@@ -6,7 +6,7 @@ BEGIN;
 
 INSERT INTO job_descriptions (
     id, created_at, updated_at, gallery_id, source, catalog_key,
-    title, company_name, industry, experience_level, content, active
+    title, company_name, industry, experience_level, content, active, extraction_status
 )
 VALUES
 (
@@ -16,7 +16,7 @@ VALUES
 Nhiệm vụ: Phát triển dashboard dữ liệu thiết bị CPE, Wi-Fi, mạng và QoE. Xử lý dữ liệu từ cơ sở dữ liệu, biểu diễn bằng biểu đồ và xây dựng API hoặc script phục vụ hệ thống nội bộ.
 Yêu cầu: Trên 2 năm sử dụng React và TypeScript; đã xây dựng dashboard hoặc ứng dụng có khối lượng dữ liệu lớn, phức tạp.
 Nguồn: https://fptjobs.com/frontend-developer-react-26358
-Tham khảo ngày 08/10/2026. Bản tóm tắt dùng để đánh giá CV và luyện phỏng vấn; xem nguồn để kiểm tra thông tin tuyển dụng.$jd$, true
+Tham khảo ngày 08/10/2026. Bản tóm tắt dùng để đánh giá CV và luyện phỏng vấn; xem nguồn để kiểm tra thông tin tuyển dụng.$jd$, true, 'IDLE'
 ),
 (
     gen_random_uuid(), NOW(), NOW(), NULL, 'SYSTEM', 'fptjobs-26359-backend-iot',
@@ -26,7 +26,7 @@ Nhiệm vụ: Xây dựng backend Camera AI, kết nối camera/IoT và dịch v
 Yêu cầu: Tốt nghiệp CNTT hoặc ngành liên quan; từ 2 năm backend, ưu tiên Python/Go. Nắm REST, WebSocket, JWT/OAuth2, PostgreSQL/MySQL, Redis, Clean Architecture và Git. Sử dụng công cụ lập trình AI; có kinh nghiệm LLM API, streaming, retry, function calling, structured output và kiểm tra đầu ra.
 Ưu tiên: RTSP/WebRTC/HLS, MQTT, agent/MCP, Docker, CI/CD, Kubernetes và monorepo.
 Nguồn: https://fptjobs.com/backend-engineer-iot-26359
-Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyện phỏng vấn; trạng thái tuyển dụng xem tại nguồn.$jd$, true
+Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyện phỏng vấn; trạng thái tuyển dụng xem tại nguồn.$jd$, true, 'IDLE'
 ),
 (
     gen_random_uuid(), NOW(), NOW(), NULL, 'SYSTEM', 'fptplay-19729-frontend-middle',
@@ -35,7 +35,7 @@ Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyệ
 Nhiệm vụ: Làm công cụ web nội bộ bằng React 19, TypeScript, Vite, TailwindCSS. Xây dựng wizard, rule builder, dashboard và phân quyền; phối hợp API với backend, tối ưu bảng lớn và cải tiến UX.
 Yêu cầu: 2–4 năm frontend React; TypeScript trong production. Vững JavaScript, CSS, HTTP; quản lý state/data fetching, form nhiều bước và validation. Biết component library, visualization hoặc drag-and-drop, cùng kiểm thử bằng Vitest, React Testing Library, Playwright.
 Nguồn: https://fptplay.fptjobs.com/front-end-developer-middle-19729
-Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyện phỏng vấn; trạng thái tuyển dụng xem tại nguồn.$jd$, true
+Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyện phỏng vấn; trạng thái tuyển dụng xem tại nguồn.$jd$, true, 'IDLE'
 ),
 (
     gen_random_uuid(), NOW(), NOW(), NULL, 'SYSTEM', 'fptplay-19730-data-engineer-middle',
@@ -44,7 +44,7 @@ Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyệ
 Nhiệm vụ: Đưa dữ liệu Kafka/batch vào warehouse; tối ưu mô hình ClickHouse. Vận hành Airflow DAG, xuất dữ liệu có bảo vệ PII; kiểm thử, giám sát pipeline và viết tài liệu thiết kế.
 Yêu cầu: 2–4 năm data engineering. Vững SQL, execution plan; đã dùng analytical database và PostgreSQL/MySQL. Hiểu orchestration, backfill, idempotency; có Kubernetes, CI/CD, Infrastructure as Code, Spark/Flink hoặc xử lý dữ liệu lớn. Có kinh nghiệm sản phẩm B2C và bảo vệ dữ liệu cá nhân.
 Nguồn: https://fptplay.fptjobs.com/data-engineer-middle-19730
-Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyện phỏng vấn; trạng thái tuyển dụng xem tại nguồn.$jd$, true
+Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyện phỏng vấn; trạng thái tuyển dụng xem tại nguồn.$jd$, true, 'IDLE'
 ),
 (
     gen_random_uuid(), NOW(), NOW(), NULL, 'SYSTEM', 'fptplay-19704-qc-engineer',
@@ -53,7 +53,7 @@ Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyệ
 Nhiệm vụ: Phân tích yêu cầu, thiết kế kế hoạch và ca kiểm thử; kiểm thử chức năng website, API qua Postman. Viết SQL/script hỗ trợ kiểm thử, báo cáo và theo dõi lỗi; đóng góp tài liệu chức năng, phát triển và hướng dẫn sử dụng.
 Yêu cầu: Tốt nghiệp đại học CNTT; ứng viên ngành khác có kiến thức và kinh nghiệm kiểm thử cũng được xem xét. Hiểu kiểm soát chất lượng và quy trình phát triển phần mềm; làm việc độc lập và phối hợp nhóm.
 Nguồn: https://fptplay.fptjobs.com/chuyen-vien-kiem-thu-phan-mem-qc-engineer-19704
-Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyện phỏng vấn; trạng thái tuyển dụng xem tại nguồn.$jd$, true
+Tham khảo ngày 08/10/2026. Bản tóm tắt phục vụ đánh giá CV/luyện phỏng vấn; trạng thái tuyển dụng xem tại nguồn.$jd$, true, 'IDLE'
 )
 ON CONFLICT (catalog_key) DO UPDATE SET
     title = EXCLUDED.title,
