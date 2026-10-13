@@ -11,6 +11,7 @@ import java.util.UUID;
 public class CVImportResponseDTO {
     private CVContent extractedData;
     private UUID cvId;
+    private String cvName;
     private String sourceHash;
     private boolean duplicate;
 }

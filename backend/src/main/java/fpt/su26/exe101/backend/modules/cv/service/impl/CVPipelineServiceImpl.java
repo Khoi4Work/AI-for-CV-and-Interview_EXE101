@@ -99,6 +99,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Transactional
     @Override
     public CVResponseDTO createCV(CVCreateRequestDTO request, Gallery gallery) {
+        normalizeLanguageSkills(request.getContent());
         validateDraft(request.getName(), request.getContent());
         request.getContent().setSourceText(null);
         request.getContent().setSourceTruncated(false);
@@ -127,6 +128,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
 
+        normalizeLanguageSkills(request.getContent());
         validateDraft(request.getName(), request.getContent());
         CVTemplate template = resolveTemplate(request.getTemplateId(), request.getContent(), cv.getTemplate(), gallery);
         cv.setName(request.getName().trim());
@@ -193,46 +195,56 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         Optional<CV> existing = cvRepository.findByGalleryIdAndSourceHash(gallery.getId(), sourceHash);
         if (existing.isPresent()) {
             CV cv = existing.get();
+            if (normalizeLanguageSkills(cv.getContent())) {
+                cvRepository.save(cv);
+            }
             log.info("[CV] Import completed | cvId={} | galleryId={} | duplicate=true",
                     cv.getId(), gallery.getId());
-            return CVImportResponseDTO.builder().cvId(cv.getId()).sourceHash(sourceHash).duplicate(true)
+            return CVImportResponseDTO.builder().cvId(cv.getId()).cvName(cv.getName())
+                    .sourceHash(sourceHash).duplicate(true)
                     .extractedData(cv.getContent()).build();
         }
-        quotaService.requireCvCreationCredit(gallery.getAccountId());
         CVImportModelResponseDTO parsed = aiProvider.parseCVFile(fileContent, contentType);
         CVContent extractedData = parsed == null ? null : parsed.getExtractedData();
         if (parsed == null || !Boolean.TRUE.equals(parsed.getIsCV()) || extractedData == null) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Tệp tải lên không được nhận diện là CV hợp lệ.");
         }
+        normalizeLanguageSkills(extractedData);
         if (!hasCVContent(extractedData)) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV không có đủ thông tin cá nhân, học vấn hoặc kinh nghiệm để nhập.");
         }
-        UsageQuotaService.CvCreationQuota creationQuota = quotaService.consumeCvCreation(gallery.getAccountId());
         String cvName = filename == null || filename.isBlank() ? "Imported CV" : filename;
         if (cvName.length() > 100) cvName = cvName.substring(0, 100);
+        int analysisLimit = quotaService.getCvAiAnalysisLimit(gallery.getAccountId());
         CV draft = CV.builder().name(cvName).content(extractedData).gallery(gallery)
                 .sourceHash(sourceHash).optimizationState(OptimizationState.DRAFT).status("DRAFT")
-                .aiAnalysisLimit(creationQuota.aiAnalysisLimit())
-                .aiAnalysisRemaining(creationQuota.aiAnalysisRemaining()).build();
+                .aiAnalysisLimit(analysisLimit)
+                .aiAnalysisRemaining(analysisLimit).build();
         cvRepository.save(draft);
         log.info("[CV] Import completed | cvId={} | galleryId={} | duplicate=false",
                 draft.getId(), gallery.getId());
         return CVImportResponseDTO.builder()
                 .extractedData(extractedData)
                 .cvId(draft.getId())
+                .cvName(draft.getName())
                 .sourceHash(sourceHash)
                 .duplicate(false)
                 .build();
     }
 
     @Override
+    @Transactional
     public CVContent extractCV(byte[] fileContent, String contentType, Gallery gallery) {
         String sourceHash = sha256(fileContent);
         Optional<CV> existing = cvRepository.findByGalleryIdAndSourceHash(gallery.getId(), sourceHash);
         if (existing.isPresent()) {
+            CV existingCV = existing.get();
+            if (normalizeLanguageSkills(existingCV.getContent())) {
+                cvRepository.save(existingCV);
+            }
             log.info("[CV] Reused saved CV content for builder import | cvId={} | galleryId={}",
-                    existing.get().getId(), gallery.getId());
-            return existing.get().getContent();
+                    existingCV.getId(), gallery.getId());
+            return existingCV.getContent();
         }
 
         CVImportModelResponseDTO parsed = aiProvider.parseCVFile(fileContent, contentType);
@@ -240,10 +252,35 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         if (parsed == null || !Boolean.TRUE.equals(parsed.getIsCV()) || extractedData == null) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Tệp tải lên không được nhận diện là CV hợp lệ.");
         }
+        normalizeLanguageSkills(extractedData);
         if (!hasCVContent(extractedData)) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV không có đủ thông tin cá nhân, học vấn hoặc kinh nghiệm để điền.");
         }
         return extractedData;
+    }
+
+    static boolean normalizeLanguageSkills(CVContent content) {
+        if (content == null || content.getSkills() == null || content.getSkills().isEmpty()
+                || content.getLanguages() == null || content.getLanguages().isEmpty()) {
+            return false;
+        }
+
+        Set<String> languageNames = new HashSet<>();
+        for (CVContent.Language language : content.getLanguages()) {
+            if (language != null && language.getName() != null && !language.getName().isBlank()) {
+                languageNames.add(normalizeLanguageName(language.getName()));
+            }
+        }
+        if (languageNames.isEmpty()) {
+            return false;
+        }
+
+        return content.getSkills().removeIf(skill -> skill != null && skill.getName() != null && !skill.getName().isBlank()
+                && languageNames.contains(normalizeLanguageName(skill.getName())));
+    }
+
+    private static String normalizeLanguageName(String value) {
+        return value.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 
     private boolean hasCVContent(CVContent data) {
@@ -304,8 +341,6 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
 
-        cvAnalysisQuotaService.consume(gallery.getAccountId(), cv.getId());
-
         String jobId = UUID.randomUUID().toString();
         CVOptimizationJob job = CVOptimizationJob.builder()
                 .jobId(jobId)
@@ -339,8 +374,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         CVOptimizationJob job = jobRepository.findByJobId(jobId)
                 .orElse(null);
         if (job == null) {
-            cvAnalysisQuotaService.refund(accountId, cvId);
-            log.error("[CV OPTIMIZATION] Job record not found; quota refunded | cvId={} | galleryId={} | jobId={}",
+            log.error("[CV OPTIMIZATION] Job record not found | cvId={} | galleryId={} | jobId={}",
                     cvId, galleryId, jobId);
             return;
         }
@@ -404,7 +438,6 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             log.error("[CV OPTIMIZATION] Failed | cvId={} | galleryId={} | jobId={} | errorType={} | durationMs={}",
                     cvId, galleryId, jobId, e.getClass().getSimpleName(),
                     (System.nanoTime() - startedAtNanos) / 1_000_000, e);
-            cvAnalysisQuotaService.refund(accountId, cvId);
             job.setStatus("FAILED");
             job.setErrorMessage(e.getMessage());
             jobRepository.save(job);

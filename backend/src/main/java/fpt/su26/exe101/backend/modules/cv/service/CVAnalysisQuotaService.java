@@ -6,4 +6,5 @@ public interface CVAnalysisQuotaService {
     void consume(UUID accountId, UUID cvId);
 
     void refund(UUID accountId, UUID cvId);
+
 }

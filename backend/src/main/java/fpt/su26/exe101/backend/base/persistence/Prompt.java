@@ -133,6 +133,10 @@ public class Prompt {
             Skill "level" must be exactly one of "BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT",
             or null. Only assign a skill level when the CV explicitly states it; otherwise use null.
             Language "level" is a string from the CV, or an empty string if absent.
+            Put spoken or written languages (for example, English or Vietnamese) only in "languages"
+            with their proficiency in "level" when stated. Do not also include those languages as
+            entries in "skills". Reserve "skills" for competencies, methods, tools, technologies,
+            and other capabilities; never use a language name as a skill category.
 
             <document_text>
             """.formatted(CV_CONTENT_SCHEMA);

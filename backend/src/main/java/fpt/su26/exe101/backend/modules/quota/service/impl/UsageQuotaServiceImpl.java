@@ -101,9 +101,13 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
         int available = quota == null ? benefitConfig.getBenefit(UserPlan.FREE).getCvCnt()
                 : quota.getRemainingCvFreeCredits() + quota.getRemainingCvMiddleCredits()
                     + quota.getRemainingCvEnhanceCredits();
-        if (available <= 0) {
-            throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
-        }
+        if (available <= 0) throw new ApiException(ErrorCode.QUOTA_EXCEEDED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getCvAiAnalysisLimit(UUID accountId) {
+        return benefitConfig.getBenefit(getCvPlan(accountId)).getAiCvCnt();
     }
 
     @Override @Transactional
@@ -144,7 +148,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
         }
         quota.setRemainingCvCnt(quota.getRemainingCvFreeCredits() + quota.getRemainingCvMiddleCredits()
                 + quota.getRemainingCvEnhanceCredits());
-        // Kept as a legacy aggregate field for old clients; new CV usage is tracked per CV.
+        // Analysis credits are assigned to a CV when that CV is created, as before.
         quota.setRemainingCvAiCnt(0);
         log.info("[QUOTA] CV package granted | accountId={} | plan={} | cvCredits={} | effectivePlan={}",
                 accountId, plan, cvCount, effectivePlan);
