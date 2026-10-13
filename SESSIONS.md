@@ -126,3 +126,10 @@
 - Added Gemini fallback when DeepSeek reports an exhausted balance (HTTP 402 / insufficient balance).
 - Added CV result notices that identify MIDDLE for detailed evaluation and ENHANCE for automatic optimization.
 - Validation: `git diff --check` passed. Build and tests were not run.
+
+## 2026-10-14 — Unify CV PDF export and empty-section rendering
+
+- Replaced browser HTML/CSS export with a client-side React PDF renderer shared by all six CV templates, preserving template-specific layouts and styling.
+- Added canonical CV data mapping and visibility helpers so empty or whitespace-only sections are omitted without inferring links between independent projects and work experience.
+- Propagated the empty-content behavior to the JSX previews, filtered blank skill entries, and added renderer/mapping regression tests.
+- Validation: frontend production build, 52 frontend tests, targeted ESLint for changed template and skill-list files, and `git diff --check` passed. Full frontend lint still reports existing errors in unrelated files; PDF visual comparison remains a manual check.

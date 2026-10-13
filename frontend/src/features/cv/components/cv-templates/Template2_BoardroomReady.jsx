@@ -2,6 +2,7 @@ import { Briefcase, Globe, Mail, MapPin, Phone, Wrench, Calendar } from 'lucide-
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
 import SkillCategoryList from '../SkillCategoryList.jsx';
+import { hasAnyField, hasSkills, hasText } from './templateDataUtils.js';
 
 export default function Template2_BoardroomReady({ data }) {
 
@@ -18,6 +19,8 @@ export default function Template2_BoardroomReady({ data }) {
 
     const { title, skills } = data || {};
     const { personalInfo, summary, experiences, projects } = cvData;
+    const visibleExperiences = experiences?.map((experience, index) => ({ experience, index }))
+        .filter(({ experience }) => hasAnyField(experience, ['role', 'company', 'period', 'details'])) || [];
 
     return (
         <div className="overflow-x-auto w-full">
@@ -31,12 +34,12 @@ export default function Template2_BoardroomReady({ data }) {
                                 onChange={(val) => updatePersonalInfo({name: val})}
                             />
                         </h1>
-                        <h2 className="text-[15px] font-semibold tracking-widest uppercase text-slate-500">
+                        {hasText(title) && <h2 className="text-[15px] font-semibold tracking-widest uppercase text-slate-500">
                             <EditableText
                                 value={title || "Professional Title"}
                                 onChange={() => {}}
                             />
-                        </h2>
+                        </h2>}
                     </div>
                     <div className="flex min-w-0 flex-col gap-1.5 text-[13px] text-slate-600 font-medium pt-2">
                         <div className="flex items-center gap-2"><Phone size={14} /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
@@ -47,32 +50,32 @@ export default function Template2_BoardroomReady({ data }) {
                     </div>
                 </div>
 
-                <div className="mb-8 pl-1">
+                {hasText(summary) && <div className="mb-8 pl-1">
                     <EditableText
                         multiline
                         value={summary}
                         onChange={updateSummary}
                         className="text-[14px] leading-relaxed text-slate-700"
                     />
-                </div>
+                </div>}
 
-                <div className="mb-8">
+                {hasSkills(skills) && <div className="mb-8">
                     <div className="flex items-center gap-3 bg-slate-100 p-2 rounded mb-6">
                         <div className="bg-slate-700 text-white p-1 rounded"><Wrench size={18} /></div>
                         <h3 className="text-lg font-bold text-slate-800">SKILL</h3>
                     </div>
 
                     <SkillCategoryList skills={skills} layout="rows" className="px-2 text-[14px]" />
-                </div>
+                </div>}
 
-                <div className="mb-8">
+                {visibleExperiences.length > 0 && <div className="mb-8">
                     <div className="flex items-center gap-3 bg-slate-100 p-2 rounded mb-6">
                         <div className="bg-slate-700 text-white p-1 rounded"><Briefcase size={18} /></div>
                         <h3 className="text-lg font-bold text-slate-800">WORK EXPERIENCE</h3>
                     </div>
 
                     <div className="px-2">
-                        {experiences?.map((exp, idx) => (
+                        {visibleExperiences.map(({ experience: exp, index: idx }) => (
                             <div key={exp.id} className="mb-8">
                                 <div className="flex justify-between font-bold border-b border-slate-200 pb-2 mb-4 bg-slate-50 p-2 text-[15px]">
                                     <div className="text-slate-700">
@@ -98,7 +101,7 @@ export default function Template2_BoardroomReady({ data }) {
                                 ))}
                                 </ul>
 
-                                {projects && projects[idx] && (
+                                {projects?.[idx] && hasAnyField(projects[idx], ['name', 'period', 'details']) && (
                                     <div className="mb-6">
                                         <div className="uppercase font-bold text-[13px] mb-3 tracking-wider">PROJECT:</div>
                                         <div className="mb-4">
@@ -144,7 +147,7 @@ export default function Template2_BoardroomReady({ data }) {
                             </div>
                         ))}
                     </div>
-                </div>
+                </div>}
             </div>
         </div>
     );

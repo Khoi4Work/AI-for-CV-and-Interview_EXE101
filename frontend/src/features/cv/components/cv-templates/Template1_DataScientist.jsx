@@ -2,6 +2,7 @@ import { Globe, Mail, MapPin, Phone, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
 import SkillCategoryList from '../SkillCategoryList.jsx';
+import { hasAnyField, hasSkills, hasText } from './templateDataUtils.js';
 
 export default function Template1_DataScientist({ data }) {
 
@@ -18,6 +19,8 @@ export default function Template1_DataScientist({ data }) {
 
     const { title, skills } = data || {};
     const { personalInfo, summary, experiences, education } = cvData;
+    const visibleExperiences = experiences?.filter((item) => hasAnyField(item, ['role', 'company', 'period', 'details'])) || [];
+    const visibleEducation = education?.filter((item) => hasAnyField(item, ['school', 'degree', 'gpa', 'year'])) || [];
     const contactItems = [
         {field: 'phone', value: personalInfo.phone, Icon: Phone},
         {field: 'email', value: personalInfo.email, Icon: Mail},
@@ -37,13 +40,13 @@ export default function Template1_DataScientist({ data }) {
                             className="text-center"
                         />
                     </h1>
-                    <h2 className="text-sm font-semibold tracking-[0.2em] uppercase text-slate-600 mb-6">
+                    {hasText(title) && <h2 className="text-sm font-semibold tracking-[0.2em] uppercase text-slate-600 mb-6">
                         <EditableText
                             value={title || "Professional Title"}
                             onChange={() => {}}
                             className="text-center"
                         />
-                    </h2>
+                    </h2>}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-3 text-left text-[13px] text-slate-600">
                         {contactItems.map(({field, value, Icon}) => (
                             <div key={field} className="flex min-w-0 items-start gap-2">
@@ -58,7 +61,7 @@ export default function Template1_DataScientist({ data }) {
                     </div>
                 </div>
 
-                <div className="mb-8">
+                {hasText(summary) && <div className="mb-8">
                     <h3 className="text-lg font-bold uppercase border-b-[3px] border-slate-900 mb-4 pb-1">About Me</h3>
                     <EditableText
                         multiline
@@ -66,12 +69,12 @@ export default function Template1_DataScientist({ data }) {
                         onChange={updateSummary}
                         className="text-[14px] leading-relaxed text-justify"
                     />
-                </div>
+                </div>}
 
-                <div className="mb-8">
+                {visibleExperiences.length > 0 && <div className="mb-8">
                     <h3 className="text-lg font-bold uppercase border-b-[3px] border-slate-900 mb-4 pb-1">Work Experience</h3>
                     <div className="flex flex-col gap-6">
-                        {experiences?.map(exp => (
+                        {visibleExperiences.map(exp => (
                             <div key={exp.id}>
                                 <div className="flex justify-between font-bold mb-2 text-sm">
                                     <div className="flex flex-col">
@@ -98,12 +101,14 @@ export default function Template1_DataScientist({ data }) {
                             </div>
                         ))}
                     </div>
-                </div>
+                </div>}
 
-                <div className="mb-8">
+                {visibleEducation.length > 0 && <div className="mb-8">
                     <h3 className="text-lg font-bold uppercase border-b-[3px] border-slate-900 mb-4 pb-1">Education</h3>
                     <div className="flex flex-col gap-6">
-                        {education?.map((edu, idx) => (
+                        {visibleEducation.map((edu) => {
+                            const idx = education.indexOf(edu);
+                            return (
                             <div key={idx} className="flex justify-between text-[14px]">
                                 <div className="flex flex-col">
                                     <div className="font-bold text-[15px] mb-1">
@@ -120,14 +125,14 @@ export default function Template1_DataScientist({ data }) {
                                     <EditableText value={edu.year} onChange={(val) => updateEducation(idx, 'year', val)} />
                                 </div>
                             </div>
-                        ))}
+                        )})}
                     </div>
-                </div>
+                </div>}
 
-                <div className="mb-8">
+                {hasSkills(skills) && <div className="mb-8">
                     <h3 className="text-lg font-bold uppercase border-b-[3px] border-slate-900 mb-4 pb-1">Skill</h3>
                     <SkillCategoryList skills={skills} layout="rows" className="text-[14px]" />
-                </div>
+                </div>}
             </div>
         </div>
     );

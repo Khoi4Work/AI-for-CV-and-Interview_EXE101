@@ -13,6 +13,8 @@ function formatCategory(category) {
     return category;
 }
 
+const hasText = (value) => value !== null && value !== undefined && String(value).trim().length > 0;
+
 const VARIANTS = {
     neutral: {
         label: 'font-bold text-slate-700',
@@ -42,7 +44,9 @@ export default function SkillCategoryList({
     variant = 'neutral',
     className = '',
 }) {
-    const groups = Object.entries(skills || {}).filter(([, items]) => Array.isArray(items) && items.length > 0);
+    const groups = Object.entries(skills || {})
+        .map(([category, items]) => [category, Array.isArray(items) ? items.filter(hasText) : []])
+        .filter(([, items]) => items.length > 0);
     if (!groups.length) return null;
 
     const styles = VARIANTS[variant] || VARIANTS.neutral;

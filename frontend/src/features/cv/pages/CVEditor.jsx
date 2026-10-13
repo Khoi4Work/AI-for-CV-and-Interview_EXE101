@@ -107,55 +107,13 @@ export default function CVEditor() {
     };
     const handleExport = async () => {
         if (!allowed || saving || exporting) return;
-        setExporting(true); setSaveError('');
+        setExporting(true); setSaveError(''); setMessage('');
         try {
             await validateAccess(selectedTemplate);
-            const images = Array.from(document.querySelectorAll('.cv-page-container img'));
-            await Promise.all(images.map(image => (
-                typeof image.decode === 'function'
-                    ? image.decode().catch(() => {})
-                    : image.complete
-                        ? Promise.resolve()
-                        : new Promise(resolve => {
-                            image.addEventListener('load', resolve, {once: true});
-                            image.addEventListener('error', resolve, {once: true});
-                        })
-            )));
-            if (document.fonts?.ready) await document.fonts.ready;
-
-            const page = document.querySelector('.cv-page-container');
-            if (!page) throw new Error('Không tìm thấy nội dung CV để xuất PDF.');
-
-            const styles = Array.from(document.styleSheets).map(sheet => {
-                try {
-                    return Array.from(sheet.cssRules, rule => rule.cssText).join('\n');
-                } catch {
-                    return '';
-                }
-            }).filter(Boolean).join('\n');
-            const printablePage = page.cloneNode(true);
-            printablePage.querySelectorAll('.cv-editable-field').forEach(field => field.remove());
-            printablePage.querySelectorAll('.cv-print-text').forEach(field => {
-                field.style.display = 'inline-block';
-            });
             const safeTitle = cvName.trim() || 'CV';
-            const escapedTitle = safeTitle.replace(/[&<>"']/g, character => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-            })[character]);
-            const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${escapedTitle}</title><style>${styles}\n@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}.cv-editor-shell,.cv-editor-preview{display:block!important;width:210mm!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important}.cv-page-container{display:block!important;width:210mm!important;max-width:none!important;height:auto!important;margin:0!important;transform:none!important;transition:none!important}.cv-editable-field{display:none!important}.cv-print-text{display:inline-block!important}</style></head><body><main class="cv-editor-shell"><div class="cv-editor-preview"><div class="cv-page-container">${printablePage.innerHTML}</div></div></main></body></html>`;
-            const response = await cvPipelineService.exportPdf({
-                html,
-                fileName: safeTitle,
-                templateId: selectedTemplate,
-            });
-            const downloadUrl = URL.createObjectURL(new Blob([response.data], {type: 'application/pdf'}));
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = `${safeTitle.replace(/[\\/:*?"<>|]/g, '_')}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            URL.revokeObjectURL(downloadUrl);
+            const { downloadCvPdf } = await import('../pdf-renderer/exportCvPdf.js');
+            await downloadCvPdf(cvData, safeTitle, selectedTemplate);
+            setMessage('Đã xuất CV thành PDF.');
         } catch (error) {
             setSaveError(getApiErrorMessage(error, error.message));
         } finally { setExporting(false); }
@@ -186,6 +144,7 @@ export default function CVEditor() {
                     catch (error) { setSaveError(error.message); }
                 }}
                 selectedTemplateId={selectedTemplate}
+                exportLabel="Tải PDF"
             />
             <div className="cv-editor-toolbar px-6 py-2 text-sm text-on-surface-variant" aria-live="polite">
                 {templatesLoading ? 'Đang tải quyền sử dụng mẫu CV…' : catalogError ? <>

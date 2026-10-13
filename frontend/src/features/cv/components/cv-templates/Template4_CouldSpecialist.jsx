@@ -3,6 +3,7 @@ import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
 import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
 import SkillCategoryList from '../SkillCategoryList.jsx';
+import { hasAnyField, hasSkills, hasText } from './templateDataUtils.js';
 
 export default function Template4({ data }) {
 
@@ -20,6 +21,10 @@ export default function Template4({ data }) {
     if (!cvData) return null;
     const { title, skills, profilePhoto } = data || {};
     const { personalInfo, summary, education, experiences, certificates, projects } = cvData;
+    const visibleEducation = education?.map((item, index) => ({ item, index })).filter(({ item }) => hasAnyField(item, ['school', 'degree', 'year', 'gpa'])) || [];
+    const visibleExperiences = experiences?.slice(0, 2).map((experience, index) => ({ experience, index })).filter(({ experience }) => hasAnyField(experience, ['role', 'company', 'period', 'details'])) || [];
+    const visibleCertificates = certificates?.map((certificate, index) => ({ certificate, index })).filter(({ certificate }) => hasAnyField(certificate, ['name', 'issuer', 'date'])) || [];
+    const visibleProjects = projects?.map((project, index) => ({ project, index })).filter(({ project }) => hasAnyField(project, ['name', 'period', 'details', 'url'])) || [];
 
     return (
         <div className="overflow-x-auto w-full">
@@ -36,27 +41,27 @@ export default function Template4({ data }) {
                                 className="text-white"
                             />
                         </h1>
-                        <h2 className="text-xs tracking-widest text-[#A2CAEA] uppercase">
+                        {hasText(title) && <h2 className="text-xs tracking-widest text-[#A2CAEA] uppercase">
                             <EditableText
                                 value={title || "Professional Title"}
                                 onChange={() => {}}
                                 className="text-[#A2CAEA]"
                             />
-                        </h2>
+                        </h2>}
                     </div>
 
                     <div className="px-8 flex flex-col gap-6 text-[13px]">
                         <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2"><Phone size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                            <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0 text-[#A2CAEA]" /> <span className="min-w-0 flex-1"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-words" /></span></div>
-                            <div className="flex items-center gap-2"><Calendar size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
-                            <div className="flex items-center gap-2"><MapPin size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
-                            {personalInfo.linkedin?.trim() && <div className="flex items-center gap-2"><Globe size={14} className="text-[#A2CAEA]" /> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} className="break-all" /></span></div>}
+                            {hasText(personalInfo.phone) && <div className="flex items-center gap-2"><Phone size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>}
+                            {hasText(personalInfo.email) && <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0 text-[#A2CAEA]" /> <span className="min-w-0 flex-1"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-words" /></span></div>}
+                            {hasText(personalInfo.dob) && <div className="flex items-center gap-2"><Calendar size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>}
+                            {hasText(personalInfo.address) && <div className="flex items-center gap-2"><MapPin size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>}
+                            {hasText(personalInfo.linkedin) && <div className="flex items-center gap-2"><Globe size={14} className="text-[#A2CAEA]" /> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} className="break-all" /></span></div>}
                         </div>
 
-                        <div className="pt-4">
+                        {visibleEducation.length > 0 && <div className="pt-4">
                             <h3 className="font-bold text-sm tracking-wider uppercase mb-4 text-[#A2CAEA]">Education</h3>
-                            {education?.map((edu, idx) => (
+                            {visibleEducation.map(({ item: edu, index: idx }) => (
                                 <div key={idx} className="mb-3">
                                     <div className="font-bold mb-1 leading-snug">
                                         <EditableText value={edu.school} onChange={(val) => updateEducation(idx, 'school', val)} />
@@ -70,16 +75,16 @@ export default function Template4({ data }) {
                                     <div className="text-white/60 text-[11px]">GPA <EditableText value={edu.gpa} onChange={(val) => updateEducation(idx, 'gpa', val)} /></div>
                                 </div>
                             ))}
-                        </div>
+                        </div>}
 
-                        <div className="pt-4">
+                        {hasSkills(skills) && <div className="pt-4">
                             <h3 className="font-bold text-sm tracking-wider uppercase mb-4 text-[#A2CAEA]">Skill</h3>
                             <SkillCategoryList skills={skills} layout="stacked" variant="blue" className="text-[12px]" />
-                        </div>
+                        </div>}
 
-                        <div className="pt-4">
+                        {visibleCertificates.length > 0 && <div className="pt-4">
                             <h3 className="font-bold text-sm tracking-wider uppercase mb-4 text-[#A2CAEA]">Certificate</h3>
-                            {certificates?.map((cert, idx) => (
+                            {visibleCertificates.map(({ certificate: cert, index: idx }) => (
                                 <div key={idx} className="mb-3">
                                     <div className="font-bold mb-1">
                                         <EditableText
@@ -113,30 +118,30 @@ export default function Template4({ data }) {
                                     </div>
                                 </div>
                             ))}
-                        </div>
+                        </div>}
                     </div>
                 </div>
 
                 {/* Right Column */}
                 <div className="w-[65%] p-10 bg-white">
 
-                    <div className="flex gap-6 mb-8 items-start">
+                    {(hasText(summary) || profilePhoto) && <div className="flex gap-6 mb-8 items-start">
                         <div className="flex-1">
-                            <h3 className="font-bold text-slate-800 uppercase text-sm mb-2 border-b border-slate-200 pb-1">About Me</h3>
-                            <EditableText
+                            {hasText(summary) && <h3 className="font-bold text-slate-800 uppercase text-sm mb-2 border-b border-slate-200 pb-1">About Me</h3>}
+                            {hasText(summary) && <EditableText
                                 multiline
                                 value={summary}
                                 onChange={updateSummary}
                                 className="text-[13px] text-slate-600 leading-relaxed text-justify"
-                            />
+                            />}
                         </div>
                         <ProfilePhotoPicker variant="frame" photo={profilePhoto} className="w-24 h-24 rounded-full shrink-0 overflow-hidden" />
-                    </div>
+                    </div>}
 
-                    <div className="mb-8">
+                    {visibleExperiences.length > 0 && <div className="mb-8">
                         <h3 className="font-bold text-slate-800 uppercase text-sm mb-4 border-b border-slate-200 pb-1">Work Experience</h3>
                         <div className="flex flex-col gap-6 border-l-2 border-slate-200 ml-1 pl-4">
-                            {experiences?.slice(0,2).map(exp => (
+                            {visibleExperiences.map(({ experience: exp }) => (
                                 <div key={exp.id} className="relative">
                                     <div className="absolute w-2 h-2 rounded-full bg-blue-600 -left-[21px] top-1"></div>
                                     <div className="text-[13px] font-bold text-blue-600 mb-1">
@@ -152,12 +157,12 @@ export default function Template4({ data }) {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </div>}
 
-                    <div>
+                    {visibleProjects.length > 0 && <div>
                         <h3 className="font-bold text-slate-800 uppercase text-sm mb-4 border-b border-slate-200 pb-1">Personal Project</h3>
                         <div className="flex flex-col gap-5 border-l-2 border-slate-200 ml-1 pl-4">
-                            {projects?.map((proj, idx) => (
+                            {visibleProjects.map(({ project: proj, index: idx }) => (
                                 <div key={idx} className="relative">
                                     <div className="absolute w-2 h-2 rounded-full bg-[#0B2039] -left-[21px] top-1"></div>
                                     <div className="text-[13px] font-bold text-slate-800 mb-1">
@@ -196,7 +201,7 @@ export default function Template4({ data }) {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </div>}
 
                 </div>
 

@@ -3,6 +3,7 @@ import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
 import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
 import SkillCategoryList from '../SkillCategoryList.jsx';
+import { hasAnyField, hasSkills, hasText } from './templateDataUtils.js';
 
 export default function Template3_SecurityAnalyst({ data }) {
 
@@ -22,6 +23,15 @@ export default function Template3_SecurityAnalyst({ data }) {
     // Use a mix of passed data and context to maintain the template's specific layout logic
     const { title, skills, profilePhoto } = data || {};
     const { personalInfo, summary, experiences, education, projects, certificates } = cvData;
+    const contactFields = ['phone', 'email', 'dob', 'address', 'linkedin'];
+    const visibleExperiences = experiences?.map((experience, index) => ({ experience, index }))
+        .filter(({ experience }) => hasAnyField(experience, ['role', 'company', 'period', 'details'])) || [];
+    const visibleEducation = education?.map((item, index) => ({ item, index }))
+        .filter(({ item }) => hasAnyField(item, ['school', 'degree', 'year'])) || [];
+    const visibleProjects = projects?.map((project, index) => ({ project, index }))
+        .filter(({ project }) => hasAnyField(project, ['name', 'period', 'details', 'url'])) || [];
+    const visibleCertificates = certificates?.map((certificate, index) => ({ certificate, index }))
+        .filter(({ certificate }) => hasAnyField(certificate, ['name', 'issuer', 'date', 'url'])) || [];
 
     return (
         <div className="overflow-x-auto w-full">
@@ -29,39 +39,39 @@ export default function Template3_SecurityAnalyst({ data }) {
 
                 {/* Left Column */}
                 <div className="w-[35%] p-10 bg-slate-50 border-r border-slate-200">
-                    <div className="mb-10 pt-4">
+                    {contactFields.some((field) => hasText(personalInfo[field])) && <div className="mb-10 pt-4">
                         <h3 className="text-[#dc2626] font-bold text-[15px] uppercase mb-4 tracking-wider">PERSONAL DETAILS</h3>
                         <div className="flex flex-col gap-3 text-[13px] font-medium">
-                            <div className="flex items-center gap-2">
+                            {hasText(personalInfo.phone) && <div className="flex items-center gap-2">
                                 <Phone size={14} className="text-slate-500 shrink-0" />
                                 <EditableText
                                     value={personalInfo.phone}
                                     onChange={(val) => updatePersonalInfo({phone: val})}
                                 />
-                            </div>
-                            <div className="flex min-w-0 items-center gap-2">
+                            </div>}
+                            {hasText(personalInfo.email) && <div className="flex min-w-0 items-center gap-2">
                                 <Mail size={14} className="text-slate-500 shrink-0" />
                                 <EditableText
                                     value={personalInfo.email}
                                     onChange={(val) => updatePersonalInfo({email: val})}
                                     className="min-w-0 flex-1 break-words"
                                 />
-                            </div>
-                            <div className="flex items-center gap-2">
+                            </div>}
+                            {hasText(personalInfo.dob) && <div className="flex items-center gap-2">
                                 <Calendar size={14} className="text-slate-500 shrink-0" />
                                 <EditableText
                                     value={personalInfo.dob}
                                     onChange={(val) => updatePersonalInfo({dob: val})}
                                 />
-                            </div>
-                            <div className="flex items-center gap-2">
+                            </div>}
+                            {hasText(personalInfo.address) && <div className="flex items-center gap-2">
                                 <MapPin size={14} className="text-slate-500 shrink-0" />
                                 <EditableText
                                     value={personalInfo.address}
                                     onChange={(val) => updatePersonalInfo({address: val})}
                                 />
-                            </div>
-                            {personalInfo.linkedin?.trim() && <div className="flex items-center gap-2 items-start pt-1">
+                            </div>}
+                            {hasText(personalInfo.linkedin) && <div className="flex items-center gap-2 items-start pt-1">
                                 <Globe size={14} className="text-slate-500 shrink-0" />
                                 <EditableText
                                     multiline
@@ -71,9 +81,9 @@ export default function Template3_SecurityAnalyst({ data }) {
                                 />
                             </div>}
                         </div>
-                    </div>
+                    </div>}
 
-                    <div className="mb-10">
+                    {hasText(summary) && <div className="mb-10">
                         <h3 className="text-[#dc2626] font-bold text-[15px] uppercase mb-4 tracking-wider">ABOUT ME</h3>
                         <EditableText
                             multiline
@@ -81,11 +91,11 @@ export default function Template3_SecurityAnalyst({ data }) {
                             onChange={updateSummary}
                             className="text-[13px] leading-relaxed text-slate-700 text-left"
                         />
-                    </div>
+                    </div>}
 
-                    <div className="mb-10">
+                    {visibleEducation.length > 0 && <div className="mb-10">
                         <h3 className="text-[#dc2626] font-bold text-[15px] uppercase mb-4 tracking-wider">EDUCATION</h3>
-                        {education?.map((edu, idx) => (
+                        {visibleEducation.map(({ item: edu, index: idx }) => (
                             <div key={idx} className="mb-4 group relative">
                                 <div className="font-bold text-[14px] leading-snug mb-1">
                                     <EditableText
@@ -109,13 +119,13 @@ export default function Template3_SecurityAnalyst({ data }) {
                                 </div>
                             </div>
                         ))}
-                    </div>
+                    </div>}
 
-                    <div className="mb-10">
+                    {hasSkills(skills) && <div className="mb-10">
                         <h3 className="text-[#dc2626] font-bold text la-[16px] uppercase mb-4 tracking-wider">SKILL</h3>
 
                         <SkillCategoryList skills={skills} layout="stacked" variant="red" className="text-[12px]" />
-                    </div>
+                    </div>}
                 </div>
 
                 {/* Right Column */}
@@ -129,20 +139,20 @@ export default function Template3_SecurityAnalyst({ data }) {
                                     onChange={(val) => updatePersonalInfo({name: val})}
                                 />
                             </h1>
-                            <h2 className="text-[14px] font-bold tracking-[0.1em] text-slate-600 uppercase">
+                            {hasText(title) && <h2 className="text-[14px] font-bold tracking-[0.1em] text-slate-600 uppercase">
                                 <EditableText
                                     value={title || "Professional Title"}
                                     onChange={() => {}} // Title not yet in CVContext
                                 />
-                            </h2>
+                            </h2>}
                         </div>
                         <ProfilePhotoPicker variant="frame" photo={profilePhoto} className="w-[100px] h-[100px] rounded-full shrink-0 mt-2 overflow-hidden border-4 border-slate-100 shadow-sm" />
                     </div>
 
-                    <div className="mb-8">
+                    {visibleExperiences.length > 0 && <div className="mb-8">
                         <h3 className="text-[#dc2626] font-bold text la-[16px] uppercase mb-5 tracking-wider">WORK EXPERIENCE</h3>
                         <div className="flex flex-col gap-6">
-                            {experiences?.map(exp => (
+                            {visibleExperiences.map(({ experience: exp }) => (
                                 <div key={exp.id} className="group">
                                     <div className="flex justify-between font-bold text-[14px] mb-1 uppercase text-slate-800">
                                         <EditableText
@@ -176,12 +186,12 @@ export default function Template3_SecurityAnalyst({ data }) {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </div>}
 
-                    <div className="mb-8">
+                    {visibleProjects.length > 0 && <div className="mb-8">
                         <h3 className="text-[#dc262 la-[16px] uppercase mb-5 tracking-wider">PERSONAL PROJECT</h3>
                         <div className="flex flex-col gap-6">
-                            {projects?.map((proj, idx) => (
+                            {visibleProjects.map(({ project: proj, index: idx }) => (
                                 <div key={idx}>
                                     <div className="flex justify-between font-bold text-[14px] mb-2 text-slate-800">
                                         <EditableText
@@ -232,11 +242,11 @@ export default function Template3_SecurityAnalyst({ data }) {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </div>}
 
-                    <div className="mb-8">
+                    {visibleCertificates.length > 0 && <div className="mb-8">
                         <h3 className="text-[#dc262 la-[16px] uppercase mb-5 tracking-wider">CERTIFICATE</h3>
-                        {certificates?.map((cert, idx) => (
+                        {visibleCertificates.map(({ certificate: cert, index: idx }) => (
                             <div key={idx} className="mb-4">
                                 <div className="flex justify-between font-bold text-[14px] mb-1 text-slate-800">
                                     <EditableText
@@ -283,7 +293,7 @@ export default function Template3_SecurityAnalyst({ data }) {
                                 </div>
                             </div>
                         ))}
-                    </div>
+                    </div>}
                 </div>
             </div>
         </div>
