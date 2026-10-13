@@ -1,5 +1,14 @@
 # Session History
 
+## 2026-10-13 — Finish CV import, template, evaluation and PDF work
+
+- Separate file import from CV-creation quota consumption; assign the existing per-CV analysis allowance from the user's plan and keep Enhance optimization from consuming analysis quota.
+- Preserve source-provided skill categories in all CV templates, keep languages out of the skills list, and allow users to resize editable CV text fields.
+- Correct alternative-JD failure counts and preserve the selected JD when returning to evaluation after adding CV evidence.
+- Replace device print-to-PDF with a server-side Chromium export that renders the selected template HTML/CSS and verifies extractable text with Apache Tika. Install/configure Chromium in the backend Docker runtime; PDF export does not consume CV quotas.
+- Set production Hibernate DDL mode explicitly to `none`.
+- Validation: 46 frontend tests and the frontend production build passed. Backend Maven packaging could not be verified because Maven could not open its local repository lock in the sandbox. A Chromium PDF smoke test and deployment runtime validation remain unverified; no database operation was run.
+
 ## 2026-10-10 — Align CV analysis code with project conventions
 
 - Move analysis status, quota status, requirement group and assessment enums from the DTO container into `modules/cv/entity/enums`; DTO records now reference those shared enum types.
