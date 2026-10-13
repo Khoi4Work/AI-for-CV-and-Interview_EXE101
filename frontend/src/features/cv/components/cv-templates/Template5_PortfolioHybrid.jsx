@@ -2,6 +2,7 @@ import { Globe, Mail, MapPin, Phone, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
 import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
+import SkillCategoryList from '../SkillCategoryList.jsx';
 
 export default function Template5_PortfolioHybrid({ data }) {
     const {
@@ -32,7 +33,7 @@ export default function Template5_PortfolioHybrid({ data }) {
 
                     <div className="flex flex-col gap-4 text-[12px] font-medium text-teal-50">
                         <div className="flex items-center gap-3"><Phone size={14} className="text-white" /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                        <div className="flex min-w-0 items-center gap-3"><Mail size={14} className="shrink-0 text-white" /> <span className="min-w-0 break-all"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-all" /></span></div>
+                        <div className="flex min-w-0 items-center gap-3"><Mail size={14} className="shrink-0 text-white" /> <span className="min-w-0 flex-1"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-words" /></span></div>
                         <div className="flex items-center gap-3"><Calendar size={14} className="text-white" /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
                         <div className="flex items-center gap-3"><MapPin size={14} className="text-white" /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
                         {personalInfo.linkedin?.trim() && <div className="flex items-center gap-3"><Globe size={14} className="text-white" /> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></span></div>}
@@ -41,32 +42,7 @@ export default function Template5_PortfolioHybrid({ data }) {
                     <div className="border-t border-teal-700 pt-8">
                         <h3 className="font-bold text-[16px] tracking-widest uppercase mb-6 text-white border-l-4 border-white pl-3 leading-none">SKILL</h3>
 
-                        <div className="mb-6">
-                            <div className="font-bold text-teal-100 mb-2 text-[13px]">Back-end</div>
-                            <div className="flex flex-wrap gap-1.5">
-                                {skills?.backend?.map(s => <span key={s} className="border border-teal-600 px-2 py-1 rounded text-[11px] font-medium bg-teal-800/50">{s}</span>)}
-                            </div>
-                        </div>
-
-                        <div className="mb-6">
-                            <div className="font-bold text-teal-100 mb-2 text-[13px]">Front-end</div>
-                            <div className="flex flex-wrap gap-1.5">
-                                {skills?.frontend?.map(s => <span key={s} className="border border-teal-600 px-2 py-1 rounded text-[11px] font-medium bg-teal-800/50">{s}</span>)}
-                            </div>
-                        </div>
-
-                        <div>
-                            <div className="font-bold text-teal-100 mb-2 text-[13px]">Soft Skills</div>
-                            <ul className="list-disc ml-4 text-[12px] flex flex-col gap-1 text-teal-50">
-                                {skills?.soft?.map((s,i) => <li key={i}>{s}</li>)}
-                            </ul>
-                        </div>
-                        {skills?.other?.length > 0 && <div className="mt-6">
-                            <div className="font-bold text-teal-100 mb-2 text-[13px]">Other skills</div>
-                            <div className="flex flex-wrap gap-1.5">
-                                {skills.other.map((s, i) => <span key={i} className="border border-teal-600 px-2 py-1 rounded text-[11px] font-medium bg-teal-800/50">{s}</span>)}
-                            </div>
-                        </div>}
+                        <SkillCategoryList skills={skills} layout="stacked" variant="teal" className="text-[12px]" />
                     </div>
 
                     <div className="border-t border-teal-700 pt-8 mt-auto">
@@ -109,7 +85,7 @@ export default function Template5_PortfolioHybrid({ data }) {
                     <div className="mb-10">
                         <h3 className="text-lg font-bold uppercase mb-6 pb-2 text-[#1b5e60] tracking-widest border-b-[3px] border-slate-100">WORK EXPERIENCE</h3>
                         <div className="flex flex-col gap-8">
-                            {experiences?.slice(0,2).map((exp, idx) => (
+                            {experiences?.slice(0,2).map(exp => (
                                 <div key={exp.id} className="relative">
                                     <div className="flex justify-between font-bold text-[14px] text-slate-800 mb-1 bg-slate-50 p-2 rounded">
                                         <div className="flex items-center gap-1">

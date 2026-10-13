@@ -1,6 +1,7 @@
 import { Briefcase, Globe, Mail, MapPin, Phone, Wrench, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
+import SkillCategoryList from '../SkillCategoryList.jsx';
 
 export default function Template2_BoardroomReady({ data }) {
 
@@ -39,7 +40,7 @@ export default function Template2_BoardroomReady({ data }) {
                     </div>
                     <div className="flex min-w-0 flex-col gap-1.5 text-[13px] text-slate-600 font-medium pt-2">
                         <div className="flex items-center gap-2"><Phone size={14} /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                        <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0" /> <EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-all" /></div>
+                        <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0" /> <EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 flex-1 break-words" /></div>
                         <div className="flex items-center gap-2"><Calendar size={14} /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
                         <div className="flex items-center gap-2"><MapPin size={14} /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
                         {personalInfo.linkedin?.trim() && <div className="flex items-center gap-2"><Globe size={14} /> <EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></div>}
@@ -61,26 +62,7 @@ export default function Template2_BoardroomReady({ data }) {
                         <h3 className="text-lg font-bold text-slate-800">SKILL</h3>
                     </div>
 
-                    <div className="grid grid-cols-[140px_1fr] gap-y-4 text-[14px] px-2">
-                        <div className="font-bold pt-1">Back-end</div>
-                        <div className="flex flex-wrap gap-2">
-                            {skills?.backend?.map(s => <span key={s} className="bg-slate-200 px-3 py-1 rounded-sm text-[13px] font-medium text-slate-800">{s}</span>)}
-                        </div>
-                        <div className="font-bold pt-1">Front-end</div>
-                        <div className="flex flex-wrap gap-2">
-                            {skills?.frontend?.map(s => <span key={s} className="bg-slate-200 px-3 py-1 rounded-sm text-[13px] font-medium text-slate-800">{s}</span>)}
-                        </div>
-                        <div className="font-bold pt-1">Soft Skills</div>
-                        <ul className="list-disc ml-5 flex flex-col gap-1.5">
-                            {skills?.soft?.map((s, i) => <li key={i}>{s}</li>)}
-                        </ul>
-                        {skills?.other?.length > 0 && <>
-                            <div className="font-bold pt-1">Other skills</div>
-                            <div className="flex flex-wrap gap-2">
-                                {skills.other.map((s, i) => <span key={i} className="bg-slate-200 px-3 py-1 rounded-sm text-[13px] font-medium text-slate-800">{s}</span>)}
-                            </div>
-                        </>}
-                    </div>
+                    <SkillCategoryList skills={skills} layout="rows" className="px-2 text-[14px]" />
                 </div>
 
                 <div className="mb-8">

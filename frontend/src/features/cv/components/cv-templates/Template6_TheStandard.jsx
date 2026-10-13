@@ -2,6 +2,7 @@ import { Globe, Mail, MapPin, Phone, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
 import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
+import SkillCategoryList from '../SkillCategoryList.jsx';
 
 export default function Template6_TheStandard({ data }) {
 
@@ -13,7 +14,6 @@ export default function Template6_TheStandard({ data }) {
         updateExperienceDetail,
         updateEducation,
         updateProjects,
-        updateLanguages,
         updateAwards,
         updateCertificates
     } = useCV();
@@ -57,26 +57,7 @@ export default function Template6_TheStandard({ data }) {
                     <div className="p-10 pt-8 bg-white flex-1">
                         <div className="mb-8">
                             <h3 className="text-lg font-bold uppercase tracking-widest text-[#564234] border-b-2 border-slate-100 pb-2 mb-6">SKILL</h3>
-                            <div className="grid grid-cols-[100px_1fr] gap-y-5 text-[13px]">
-                                <div className="font-bold pt-1 text-slate-700">Back-end</div>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {skills?.backend?.map(s => <span key={s} className="bg-slate-100 px-3 py-1 rounded-full text-xs font-semibold">{s}</span>)}
-                                </div>
-                                <div className="font-bold pt-1 text-slate-700">Front-end</div>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {skills?.frontend?.map(s => <span key={s} className="bg-slate-100 px-3 py-1 rounded-full text-xs font-semibold">{s}</span>)}
-                                </div>
-                                <div className="font-bold pt-1 text-slate-700">Soft Skills</div>
-                                <ul className="list-disc ml-4 flex flex-col gap-1.5">
-                                    {skills?.soft?.map((s,i) => <li key={i}>{s}</li>)}
-                                </ul>
-                                {skills?.other?.length > 0 && <>
-                                    <div className="font-bold pt-1 text-slate-700">Other skills</div>
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {skills.other.map((s, i) => <span key={i} className="bg-slate-100 px-3 py-1 rounded-full text-xs font-semibold">{s}</span>)}
-                                    </div>
-                                </>}
-                            </div>
+                            <SkillCategoryList skills={skills} layout="rows" className="grid-cols-[100px_1fr] text-[13px]" />
                         </div>
 
                         <div>
@@ -161,7 +142,7 @@ export default function Template6_TheStandard({ data }) {
 
                     <div className="flex flex-col gap-4 text-[13px] font-medium text-slate-600">
                         <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><Phone size={14} className="text-slate-500" /></div> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                        <div className="flex min-w-0 items-center gap-3"><div className="shrink-0 border border-slate-300 p-1.5 rounded-full bg-white"><Mail size={14} className="text-slate-500" /></div> <span className="min-w-0 break-all"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-all" /></span></div>
+                        <div className="flex min-w-0 items-center gap-3"><div className="shrink-0 border border-slate-300 p-1.5 rounded-full bg-white"><Mail size={14} className="text-slate-500" /></div> <span className="min-w-0 flex-1"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-words" /></span></div>
                         <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><Calendar size={14} className="text-slate-500" /></div> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
                         <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><MapPin size={14} className="text-slate-500" /></div> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
                         {personalInfo.linkedin?.trim() && <div className="flex items-center gap-3"><div className="border border-slate-300 p-1.5 rounded-full bg-white"><Globe size={14} className="text-slate-500" /></div> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} /></span></div>}

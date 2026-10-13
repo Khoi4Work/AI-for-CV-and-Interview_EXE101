@@ -2,6 +2,7 @@ import { Globe, Mail, MapPin, Phone, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
 import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
+import SkillCategoryList from '../SkillCategoryList.jsx';
 
 export default function Template3_SecurityAnalyst({ data }) {
 
@@ -19,15 +20,8 @@ export default function Template3_SecurityAnalyst({ data }) {
     if (!cvData) return null;
 
     // Use a mix of passed data and context to maintain the template's specific layout logic
-    const { title, skillsGrouped, profilePhoto } = data || {};
+    const { title, skills, profilePhoto } = data || {};
     const { personalInfo, summary, experiences, education, projects, certificates } = cvData;
-    const skillLevels = [
-        ['Expert', skillsGrouped?.expert],
-        ['Advanced', skillsGrouped?.advanced],
-        ['Intermediate', skillsGrouped?.intermediate],
-        ['Beginner', skillsGrouped?.beginner],
-        ['Level not specified', skillsGrouped?.unspecified],
-    ].filter(([, skills]) => skills?.length);
 
     return (
         <div className="overflow-x-auto w-full">
@@ -45,12 +39,12 @@ export default function Template3_SecurityAnalyst({ data }) {
                                     onChange={(val) => updatePersonalInfo({phone: val})}
                                 />
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex min-w-0 items-center gap-2">
                                 <Mail size={14} className="text-slate-500 shrink-0" />
                                 <EditableText
                                     value={personalInfo.email}
                                     onChange={(val) => updatePersonalInfo({email: val})}
-                                    className="min-w-0 break-all"
+                                    className="min-w-0 flex-1 break-words"
                                 />
                             </div>
                             <div className="flex items-center gap-2">
@@ -120,14 +114,7 @@ export default function Template3_SecurityAnalyst({ data }) {
                     <div className="mb-10">
                         <h3 className="text-[#dc2626] font-bold text la-[16px] uppercase mb-4 tracking-wider">SKILL</h3>
 
-                        {skillLevels.map(([label, skills]) => (
-                            <div className="mb-4" key={label}>
-                                <div className="font-bold text-[14px] mb-2">{label}</div>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {skills.map(skill => <span key={skill} className="border border-slate-300 px-2 py-0.5 rounded text-[12px] bg-white">{skill}</span>)}
-                                </div>
-                            </div>
-                        ))}
+                        <SkillCategoryList skills={skills} layout="stacked" variant="red" className="text-[12px]" />
                     </div>
                 </div>
 
@@ -145,7 +132,7 @@ export default function Template3_SecurityAnalyst({ data }) {
                             <h2 className="text-[14px] font-bold tracking-[0.1em] text-slate-600 uppercase">
                                 <EditableText
                                     value={title || "Professional Title"}
-                                    onChange={(val) => {}} // Title not yet in CVContext
+                                    onChange={() => {}} // Title not yet in CVContext
                                 />
                             </h2>
                         </div>
@@ -155,7 +142,7 @@ export default function Template3_SecurityAnalyst({ data }) {
                     <div className="mb-8">
                         <h3 className="text-[#dc2626] font-bold text la-[16px] uppercase mb-5 tracking-wider">WORK EXPERIENCE</h3>
                         <div className="flex flex-col gap-6">
-                            {experiences?.map((exp, idx) => (
+                            {experiences?.map(exp => (
                                 <div key={exp.id} className="group">
                                     <div className="flex justify-between font-bold text-[14px] mb-1 uppercase text-slate-800">
                                         <EditableText

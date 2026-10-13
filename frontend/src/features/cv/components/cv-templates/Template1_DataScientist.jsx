@@ -1,6 +1,7 @@
 import { Globe, Mail, MapPin, Phone, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
+import SkillCategoryList from '../SkillCategoryList.jsx';
 
 export default function Template1_DataScientist({ data }) {
 
@@ -70,7 +71,7 @@ export default function Template1_DataScientist({ data }) {
                 <div className="mb-8">
                     <h3 className="text-lg font-bold uppercase border-b-[3px] border-slate-900 mb-4 pb-1">Work Experience</h3>
                     <div className="flex flex-col gap-6">
-                        {experiences?.map((exp, idx) => (
+                        {experiences?.map(exp => (
                             <div key={exp.id}>
                                 <div className="flex justify-between font-bold mb-2 text-sm">
                                     <div className="flex flex-col">
@@ -125,26 +126,7 @@ export default function Template1_DataScientist({ data }) {
 
                 <div className="mb-8">
                     <h3 className="text-lg font-bold uppercase border-b-[3px] border-slate-900 mb-4 pb-1">Skill</h3>
-                    <div className="grid grid-cols-[140px_1fr] gap-y-6 text-[14px]">
-                        <div className="font-bold pt-1">Back-end</div>
-                        <div className="flex flex-wrap gap-2">
-                            {skills?.backend?.map(s => <span key={s} className="bg-slate-100 px-3 py-1.5 text-xs font-semibold rounded">{s}</span>)}
-                        </div>
-                        <div className="font-bold pt-1">Front-end</div>
-                        <div className="flex flex-wrap gap-2">
-                            {skills?.frontend?.map(s => <span key={s} className="bg-slate-200 px-3 py-1 rounded-sm text-[13px] font-medium text-slate-800">{s}</span>)}
-                        </div>
-                        <div className="font-bold pt-1">Soft skills</div>
-                        <ul className="list-disc ml-5 flex flex-col gap-1.5">
-                            {skills?.soft?.map((s, i) => <li key={i}>{s}</li>)}
-                        </ul>
-                        {skills?.other?.length > 0 && <>
-                            <div className="font-bold pt-1">Other skills</div>
-                            <div className="flex flex-wrap gap-2">
-                                {skills.other.map((s, i) => <span key={i} className="bg-slate-100 px-3 py-1.5 text-xs font-semibold rounded">{s}</span>)}
-                            </div>
-                        </>}
-                    </div>
+                    <SkillCategoryList skills={skills} layout="rows" className="text-[14px]" />
                 </div>
             </div>
         </div>

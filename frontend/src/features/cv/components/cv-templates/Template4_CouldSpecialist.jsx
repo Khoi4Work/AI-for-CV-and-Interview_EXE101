@@ -2,6 +2,7 @@ import { Mail, MapPin, Phone, Globe, Calendar } from 'lucide-react';
 import { useCV } from '../../contexts/CVContext.jsx';
 import EditableText from '../EditableText.jsx';
 import ProfilePhotoPicker from '../ProfilePhotoPicker.jsx';
+import SkillCategoryList from '../SkillCategoryList.jsx';
 
 export default function Template4({ data }) {
 
@@ -17,15 +18,8 @@ export default function Template4({ data }) {
     } = useCV();
 
     if (!cvData) return null;
-    const { title, skillsGrouped, profilePhoto } = data || {};
+    const { title, skills, profilePhoto } = data || {};
     const { personalInfo, summary, education, experiences, certificates, projects } = cvData;
-    const skillLevels = [
-        ['Expert', skillsGrouped?.expert],
-        ['Advanced', skillsGrouped?.advanced],
-        ['Intermediate', skillsGrouped?.intermediate],
-        ['Beginner', skillsGrouped?.beginner],
-        ['Level not specified', skillsGrouped?.unspecified],
-    ].filter(([, skills]) => skills?.length);
 
     return (
         <div className="overflow-x-auto w-full">
@@ -54,7 +48,7 @@ export default function Template4({ data }) {
                     <div className="px-8 flex flex-col gap-6 text-[13px]">
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2"><Phone size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.phone} onChange={(val) => updatePersonalInfo({phone: val})} /></div>
-                            <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0 text-[#A2CAEA]" /> <span className="min-w-0 break-all"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-all" /></span></div>
+                            <div className="flex min-w-0 items-center gap-2"><Mail size={14} className="shrink-0 text-[#A2CAEA]" /> <span className="min-w-0 flex-1"><EditableText value={personalInfo.email} onChange={(val) => updatePersonalInfo({email: val})} className="min-w-0 break-words" /></span></div>
                             <div className="flex items-center gap-2"><Calendar size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.dob} onChange={(val) => updatePersonalInfo({dob: val})} /></div>
                             <div className="flex items-center gap-2"><MapPin size={14} className="text-[#A2CAEA]" /> <EditableText value={personalInfo.address} onChange={(val) => updatePersonalInfo({address: val})} /></div>
                             {personalInfo.linkedin?.trim() && <div className="flex items-center gap-2"><Globe size={14} className="text-[#A2CAEA]" /> <span className="break-all"><EditableText value={personalInfo.linkedin} onChange={(val) => updatePersonalInfo({linkedin: val})} className="break-all" /></span></div>}
@@ -80,14 +74,7 @@ export default function Template4({ data }) {
 
                         <div className="pt-4">
                             <h3 className="font-bold text-sm tracking-wider uppercase mb-4 text-[#A2CAEA]">Skill</h3>
-                            <div className="flex flex-col gap-3 text-[12px]">
-                                {skillLevels.map(([label, skills]) => <div key={label}>
-                                    <div className="font-semibold mb-1">{label}</div>
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {skills.map(skill => <span key={skill} className="border border-white/30 px-2 py-0.5 rounded-full">{skill}</span>)}
-                                    </div>
-                                </div>)}
-                            </div>
+                            <SkillCategoryList skills={skills} layout="stacked" variant="blue" className="text-[12px]" />
                         </div>
 
                         <div className="pt-4">
@@ -149,7 +136,7 @@ export default function Template4({ data }) {
                     <div className="mb-8">
                         <h3 className="font-bold text-slate-800 uppercase text-sm mb-4 border-b border-slate-200 pb-1">Work Experience</h3>
                         <div className="flex flex-col gap-6 border-l-2 border-slate-200 ml-1 pl-4">
-                            {experiences?.slice(0,2).map((exp, idx) => (
+                            {experiences?.slice(0,2).map(exp => (
                                 <div key={exp.id} className="relative">
                                     <div className="absolute w-2 h-2 rounded-full bg-blue-600 -left-[21px] top-1"></div>
                                     <div className="text-[13px] font-bold text-blue-600 mb-1">

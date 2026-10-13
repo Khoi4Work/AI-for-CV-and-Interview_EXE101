@@ -3,13 +3,20 @@ export function mapCVDataToTemplate(cvData) {
 
     const experiences = cvData.experiences || [];
     const skills = cvData.skills || [];
-    const skillCategory = (skill) => {
-        const category = String(skill?.category || '').trim().toLowerCase().replace(/[\s_-]/g, '');
-        if (category === 'backend') return 'backend';
-        if (category === 'frontend') return 'frontend';
-        if (['soft', 'softskill', 'softskills'].includes(category)) return 'soft';
-        return 'other';
-    };
+    const normalizeSkillName = value => String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const languageNames = new Set((cvData.languages || []).map(language => normalizeSkillName(language?.name)).filter(Boolean));
+    const skillsByCategory = skills.reduce((groups, skill) => {
+        const name = String(skill?.name || '').trim();
+        if (!name || languageNames.has(normalizeSkillName(name))) return groups;
+
+        const category = String(skill?.category || '').trim() || 'Other';
+        const existingCategory = Object.keys(groups).find(
+            value => value.toLowerCase() === category.toLowerCase()
+        );
+        const groupName = existingCategory || category;
+        groups[groupName] = [...(groups[groupName] || []), name];
+        return groups;
+    }, {});
 
     return {
         name: cvData.personalInfo?.name || "",
@@ -24,12 +31,7 @@ export function mapCVDataToTemplate(cvData) {
         },
         summary: cvData.summary || "",
         summaryAlt: cvData.summary || "",
-        skills: {
-            backend: skills.filter(s => skillCategory(s) === 'backend').map(s => s.name).filter(Boolean),
-            frontend: skills.filter(s => skillCategory(s) === 'frontend').map(s => s.name).filter(Boolean),
-            soft: skills.filter(s => skillCategory(s) === 'soft').map(s => s.name).filter(Boolean),
-            other: skills.filter(s => skillCategory(s) === 'other').map(s => s.name).filter(Boolean),
-        },
+        skills: skillsByCategory,
         skillsGrouped: {
             beginner: cvData.skills?.filter(s => s.level === 'BEGINNER').map(s => s.name) || [],
             intermediate: cvData.skills?.filter(s => s.level === 'INTERMEDIATE').map(s => s.name) || [],
@@ -153,7 +155,7 @@ export function mapMockDataToCVContext(mockData) {
             skills.map(skill => ({
                 name: skill.replace(/\s*\(.*\)/, '').trim(),
                 level: getProficiencyLevel(skill),
-                category: category === 'backend' ? 'backend' : category === 'frontend' ? 'frontend' : 'soft'
+                category: category || ''
             }))
         ),
         education: (mockData.education || []).map(edu => ({
