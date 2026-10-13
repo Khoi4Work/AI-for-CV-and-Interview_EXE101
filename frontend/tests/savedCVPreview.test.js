@@ -61,5 +61,7 @@ test('normalization preserves stored content, supplies safe arrays and prefers t
 test('regular EditableText still renders an editable textarea outside preview mode', () => {
     const html = renderToStaticMarkup(createElement(EditableText, { value: 'Editor text', onChange: () => {} }));
     assert.match(html, /<textarea/);
+    assert.match(html, /resize both overflow-auto/);
+    assert.match(html, /max-height:6em/);
     assert.ok(html.includes('Editor text'));
 });
