@@ -14,9 +14,11 @@ export default function CVEditor() {
     const { cvData, setTemplate, currentCvId, setCurrentCvId, setHasCV } = useCV();
     const navigate = useNavigate();
     const location = useLocation();
+    const returnToEvaluation = location.state?.returnToCVEvaluation;
     const [zoom, setZoom] = useState(100);
     const [cvName, setCvName] = useState(() => `CV ${cvData.personalInfo?.name || 'của tôi'}`.slice(0, 100));
     const [templates, setTemplates] = useState([]);
+    const [templateCatalogCount, setTemplateCatalogCount] = useState(0);
     const [templatesLoading, setTemplatesLoading] = useState(true);
     const [catalogError, setCatalogError] = useState('');
     const [retry, setRetry] = useState(0);
@@ -32,23 +34,29 @@ export default function CVEditor() {
         let active = true;
         galleryService.getTemplates().then(data => {
             if (active) {
-                const availableTemplates = data.filter(item => TEMPLATE_COMPONENTS[item.id]);
+                const catalog = Array.isArray(data) ? data : [];
+                const availableTemplates = catalog.filter(item => TEMPLATE_COMPONENTS[item.id]);
+                setTemplateCatalogCount(catalog.length);
                 setTemplates(availableTemplates);
                 setCatalogError('');
 
-                if (location.state?.returnToCVEvaluation) {
+                if (returnToEvaluation) {
                     const selectedTemplate = availableTemplates.find(item => item.id === cvData.selectedTemplateId);
                     if (selectedTemplate?.locked !== false) {
-                        const unlockedTemplate = availableTemplates.find(item => item.locked === false);
-                        if (unlockedTemplate) setTemplate(unlockedTemplate.id);
+                        const usableTemplate = availableTemplates.find(item => item.id === 'the-standard' && item.locked === false)
+                            || availableTemplates.find(item => item.locked === false);
+                        if (usableTemplate) setTemplate(usableTemplate.id);
                     }
                 }
             }
         }).catch(error => {
-            if (active) setCatalogError(getApiErrorMessage(error, 'Không tải được quyền sử dụng mẫu CV.'));
+            if (active) {
+                console.error('[CVEditor] Failed to load template catalog.', error);
+                setCatalogError('Chưa tải được danh sách mẫu CV.');
+            }
         }).finally(() => { if (active) setTemplatesLoading(false); });
         return () => { active = false; };
-    }, [retry, location.state?.returnToCVEvaluation, cvData.selectedTemplateId, setTemplate]);
+    }, [retry, returnToEvaluation, cvData.selectedTemplateId, setTemplate]);
     useEffect(() => {
         const warn = event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } };
         window.addEventListener('beforeunload', warn);
@@ -57,11 +65,18 @@ export default function CVEditor() {
     const selectedTemplate = cvData.selectedTemplateId;
     const selectedOption = templates.find(template => template.id === selectedTemplate);
     const allowed = !templatesLoading && !catalogError && selectedOption?.locked === false;
+    const retryTemplateCatalog = () => {
+        setTemplatesLoading(true);
+        setCatalogError('');
+        setRetry(value => value + 1);
+    };
     const templateName = selectedOption?.name || 'CV';
     const templateData = mapCVDataToTemplate(cvData);
     const validateAccess = async id => {
         const catalog = await galleryService.getTemplates();
-        setTemplates(catalog.filter(item => TEMPLATE_COMPONENTS[item.id]));
+        const templatesFromApi = Array.isArray(catalog) ? catalog : [];
+        setTemplateCatalogCount(templatesFromApi.length);
+        setTemplates(templatesFromApi.filter(item => TEMPLATE_COMPONENTS[item.id]));
         getAllowedEditorTemplate(catalog, id);
     };
     const handleSave = async () => {
@@ -73,10 +88,16 @@ export default function CVEditor() {
                 setCurrentCvId(result.id); setHasCV(true);
                 setLastSaved(JSON.stringify({ name: payload.name, content: payload.content }));
                 setMessage('Đã lưu CV vào tài khoản của bạn.');
-                if (location.state?.returnToCVEvaluation) {
+                if (returnToEvaluation) {
                     navigate('/cv-evaluation', {
                         replace: true,
-                        state: {createdCV: {cvId: result.id, cvName: payload.name, extractedData: payload.content}},
+                        state: {continueEvaluation: {
+                            cv: {cvId: result.id, cvName: payload.name, extractedData: payload.content},
+                            jdId: returnToEvaluation.jdId,
+                            jdTitle: returnToEvaluation.jdTitle,
+                            jdText: returnToEvaluation.jdText,
+                            jdSource: returnToEvaluation.jdSource,
+                        }},
                     });
                 }
             } });
@@ -100,7 +121,41 @@ export default function CVEditor() {
                             image.addEventListener('error', resolve, {once: true});
                         })
             )));
-            window.print();
+            if (document.fonts?.ready) await document.fonts.ready;
+
+            const page = document.querySelector('.cv-page-container');
+            if (!page) throw new Error('Không tìm thấy nội dung CV để xuất PDF.');
+
+            const styles = Array.from(document.styleSheets).map(sheet => {
+                try {
+                    return Array.from(sheet.cssRules, rule => rule.cssText).join('\n');
+                } catch {
+                    return '';
+                }
+            }).filter(Boolean).join('\n');
+            const printablePage = page.cloneNode(true);
+            printablePage.querySelectorAll('.cv-editable-field').forEach(field => field.remove());
+            printablePage.querySelectorAll('.cv-print-text').forEach(field => {
+                field.style.display = 'inline-block';
+            });
+            const safeTitle = cvName.trim() || 'CV';
+            const escapedTitle = safeTitle.replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+            })[character]);
+            const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${escapedTitle}</title><style>${styles}\n@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}.cv-editor-shell,.cv-editor-preview{display:block!important;width:210mm!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important}.cv-page-container{display:block!important;width:210mm!important;max-width:none!important;height:auto!important;margin:0!important;transform:none!important;transition:none!important}.cv-editable-field{display:none!important}.cv-print-text{display:inline-block!important}</style></head><body><main class="cv-editor-shell"><div class="cv-editor-preview"><div class="cv-page-container">${printablePage.innerHTML}</div></div></main></body></html>`;
+            const response = await cvPipelineService.exportPdf({
+                html,
+                fileName: safeTitle,
+                templateId: selectedTemplate,
+            });
+            const downloadUrl = URL.createObjectURL(new Blob([response.data], {type: 'application/pdf'}));
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `${safeTitle.replace(/[\\/:*?"<>|]/g, '_')}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(downloadUrl);
         } catch (error) {
             setSaveError(getApiErrorMessage(error, error.message));
         } finally { setExporting(false); }
@@ -116,7 +171,11 @@ export default function CVEditor() {
                 templatesLoading={templatesLoading || exporting}
                 cvName={cvName}
                 onNameChange={setCvName}
-                onClose={() => { if (!dirty || window.confirm('CV có thay đổi chưa lưu. Bạn vẫn muốn rời trang?')) navigate('/home'); }}
+                onClose={() => {
+                    if (dirty && !window.confirm('CV có thay đổi chưa lưu. Bạn vẫn muốn rời trang?')) return;
+                    if (returnToEvaluation?.analysisId) navigate(`/optimizer?analysisId=${returnToEvaluation.analysisId}`);
+                    else navigate('/home');
+                }}
                 templateName={templateName}
                 zoom={zoom}
                 onZoomIn={() => setZoom(prev => Math.min(prev + 10, 200))}
@@ -130,8 +189,15 @@ export default function CVEditor() {
             />
             <div className="cv-editor-toolbar px-6 py-2 text-sm text-on-surface-variant" aria-live="polite">
                 {templatesLoading ? 'Đang tải quyền sử dụng mẫu CV…' : catalogError ? <>
-                    {catalogError} <button className="underline" onClick={() => { setTemplatesLoading(true); setRetry(value => value + 1); }}>Thử lại</button>
-                </> : !allowed ? 'Mẫu đang chọn chưa được mở khóa. Hãy chọn mẫu phù hợp với gói CV của bạn.' : dirty ? 'Có thay đổi chưa lưu' : message || 'Đã lưu'}
+                    {catalogError} <button className="ml-2 font-semibold text-primary underline" onClick={retryTemplateCatalog}>Tải lại</button>
+                </> : !allowed && templates.length === 0 && templateCatalogCount > 0
+                    ? <>Hiện chưa thể mở trình chỉnh sửa CV. Vui lòng thử tải lại danh sách mẫu. <button className="ml-2 font-semibold text-primary underline" onClick={retryTemplateCatalog}>Tải lại</button></>
+                    : !allowed && templateCatalogCount === 0
+                        ? <>Chưa có mẫu CV để chỉnh sửa lúc này. Vui lòng thử tải lại danh sách mẫu. <button className="ml-2 font-semibold text-primary underline" onClick={retryTemplateCatalog}>Tải lại</button></>
+                        : !allowed && !templates.some(item => item.locked === false)
+                            ? <>Hiện chưa có mẫu CV khả dụng cho tài khoản của bạn. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.</>
+                    : !allowed ? 'Mẫu CV đang chọn chưa khả dụng với gói hiện tại. Hãy chọn mẫu khác để tiếp tục.'
+                        : dirty ? 'Có thay đổi chưa lưu' : message || 'Đã lưu'}
                 {saveError && <p role="alert" className="text-red-500">{saveError}</p>}
             </div>
             <main className="cv-editor-preview flex-1 overflow-y-auto flex justify-center p-12 relative">

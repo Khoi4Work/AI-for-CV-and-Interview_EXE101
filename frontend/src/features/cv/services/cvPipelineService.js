@@ -5,6 +5,7 @@ const getResult = (response) => response.data?.result;
 export const cvPipelineService = {
     createCV: async (payload) => getResult(await apiClient.post('/cv', payload)),
     updateCV: async (id, payload) => getResult(await apiClient.put(`/cv/${id}`, payload)),
+    exportPdf: async (payload) => apiClient.post('/cv/export/pdf', payload, {responseType: 'blob'}),
     startOptimization: async (id, payload) => getResult(await apiClient.post(`/cv/${id}/optimizations`, payload)),
     getOptimizationStatus: async (jobId) => getResult(await apiClient.get(`/cv/optimizations/${jobId}`)),
     getOptimizationResult: async (jobId) => getResult(await apiClient.get(`/cv/optimizations/${jobId}/result`)),

@@ -30,7 +30,7 @@ test('save and print actions are disabled while saving or access is unresolved',
     for (const props of [{ saving: true }, { actionsDisabled: true, templatesLoading: true }]) {
         const html = render(props);
         const actionButtons = [...html.matchAll(/<button[^>]*>.*?<\/button>/g)]
-            .map(match => match[0]).filter(button => /Lưu CV|Đang lưu|Lưu PDF/.test(button));
+            .map(match => match[0]).filter(button => /Lưu CV|Đang lưu|Tải PDF/.test(button));
         assert.equal(actionButtons.length, 2);
         assert.ok(actionButtons.every(button => button.includes('disabled=""')));
     }
