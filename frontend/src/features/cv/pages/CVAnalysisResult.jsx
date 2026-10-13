@@ -71,8 +71,16 @@ export default function CVAnalysisResult({analysisId}) {
         setEditing(true);
         try {
             const current = await cvPipelineService.getCV(analysis.cvId);
-            setFullCVData(mapImportedCVData(current.content)); setCurrentCvId(analysis.cvId);
-            navigate('/editor',{state:{returnToCVEvaluation:true}});
+            const editableCV = mapImportedCVData(current.content);
+            editableCV.selectedTemplateId = current.content?.selectedTemplateId || 'the-standard';
+            setFullCVData(editableCV); setCurrentCvId(analysis.cvId);
+            navigate('/editor',{state:{returnToCVEvaluation:{
+                analysisId,
+                jdId:analysis.snapshot.jdId,
+                jdTitle:analysis.snapshot.jdTitle,
+                jdText:analysis.snapshot.jdText,
+                jdSource:analysis.snapshot.source,
+            }}});
         } catch(e) {setError(getApiErrorMessage(e,'Không tải được CV để bổ sung.'));}
         finally {setEditing(false);}
     };
@@ -195,7 +203,7 @@ export default function CVAnalysisResult({analysisId}) {
         </section>
         <section><h2 className="text-xl font-bold">JD vị trí khác có điểm đánh giá cao hơn</h2>
             {alternativesError ? <p role="alert" className="mt-3">{alternativesError}</p> : !alternatives || alternatives.status==='PENDING'?<p className="mt-3">Đang đánh giá các JD vị trí khác...</p>:alternatives.status==='FAILED'?<p role="alert" className="mt-3">Không thể hoàn tất đánh giá JD vị trí khác.</p>:alternatives.status==='INSUFFICIENT_EVIDENCE'?<p className="mt-3">Chưa đủ cơ sở để so sánh vị trí khác từ kết quả này.</p>:!alternatives.items.length?<p className="mt-3">Không tìm thấy JD vị trí khác có điểm cao hơn trong những JD đã đánh giá.</p>:<div className="mt-4 grid gap-4 md:grid-cols-2">{alternatives.items.map(item=><article key={item.analysisId} className="rounded-xl border border-outline-variant bg-surface-container p-5"><h3 className="font-bold">{item.title}</h3><p>{item.companyName}</p><p className="text-sm">{jdSourceLabel(item.source)}</p><p className="mt-3">{item.reason}</p><button disabled={loadingJD} onClick={()=>viewSuggestedJD(item.analysisId)} className="mt-4 mr-3 rounded-xl border border-outline-variant px-4 py-2">Xem JD</button><button onClick={()=>navigate(`/optimizer?analysisId=${item.analysisId}`)} className="mt-4 rounded-xl bg-primary px-4 py-2 font-semibold text-on-primary">Xem đánh giá với JD này</button></article>)}</div>}
-            {alternatives?.failedCount > 0 && <p className="mt-3 text-sm" role="status">Có {alternatives.failedCount} JD chưa đánh giá được. Kết quả gợi ý hiện chỉ dựa trên các JD đã đánh giá thành công.</p>}
+            {alternatives?.failedCount > 0 && <p className="mt-3 text-sm" role="status">Không có kết quả đánh giá cho {alternatives.failedCount} JD. Danh sách gợi ý chỉ gồm các JD đã có kết quả hoàn tất.</p>}
         </section>
         <Modal solid isOpen={Boolean(viewer)} onClose={()=>setViewer(null)} title={viewer==='evidence'?'Cách tính và minh chứng':viewer==='cv'?'CV đã đánh giá':viewer==='suggested-jd'?suggestedJD?.jdTitle:'JD đã chọn'} size={viewer==='evidence'||viewer==='cv'||viewer==='jd'||viewer==='suggested-jd'?'wide':'default'} resizable={viewer==='evidence'}>
             {viewer==='suggested-jd'&&<div className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-800">{formatJD(suggestedJD?.jdText)}</div>}

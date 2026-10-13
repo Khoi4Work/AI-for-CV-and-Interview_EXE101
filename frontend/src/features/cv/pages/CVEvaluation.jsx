@@ -43,6 +43,8 @@ const CVEvaluation = () => {
   const initialCV = continuedFlow?.cv || createdCV || null;
   const [selectedFile, setSelectedFile] = useState(null);
   const [jdText, setJdText] = useState(continuedFlow?.jdText || '');
+  const [continuedJdId, setContinuedJdId] = useState(continuedFlow?.jdId || null);
+  const [continuedJdTitle] = useState(continuedFlow?.jdTitle || '');
   const [importedCV, setImportedCV] = useState(initialCV);
   const [previewRecommendation, setPreviewRecommendation] = useState(null);
   const [jdRecommendations, setJdRecommendations] = useState([]);
@@ -88,6 +90,7 @@ const CVEvaluation = () => {
       setJdRecommendations([]);
       setSelectedRecommendationKey(null);
       setJdText('');
+      setContinuedJdId(null);
       void findJDsForCV(file, null);
     }
   };
@@ -117,6 +120,7 @@ const CVEvaluation = () => {
     setJdRecommendations([]);
     setSelectedRecommendationKey(null);
     setJdText('');
+    setContinuedJdId(null);
     void findJDsForCV(file, null);
   };
 
@@ -128,6 +132,7 @@ const CVEvaluation = () => {
     setJdRecommendations([]);
     setSelectedRecommendationKey(null);
     setJdText('');
+    setContinuedJdId(null);
     setCurrentCvId(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -159,13 +164,18 @@ const CVEvaluation = () => {
     try {
       const imported = importedCV || await importCV(selectedFile);
       const cvId = imported.cvId || currentCvId;
-      const cvName = importedCV?.cvName || selectedFile?.name || 'CV đã lưu';
+      const cvName = imported.cvName || importedCV?.cvName || selectedFile?.name || 'CV đã lưu';
+      if (!importedCV && imported.duplicate) {
+        showToast(`Tệp này đã được nhập trước đó. Đang dùng CV "${cvName}" đã lưu; lượt phân tích sẽ tính trên CV này.`, 'info');
+      }
       setImportedCV((current) => current || {...imported, cvName});
       setCurrentCvId(cvId);
       setFullCVData(mapImportedCVData(imported.extractedData));
       if (!cvId) throw new Error('Không xác định được CV đã lưu để đánh giá.');
       setEvaluationStep(1);
-      const selection = analysisSelection(selectedRecommendation, jdText);
+      const selection = continuedJdId
+        ? { jdId: continuedJdId }
+        : analysisSelection(selectedRecommendation, jdText);
       if(!selection.jdId && derivedFromJdId.current) selection.derivedFromJdId=derivedFromJdId.current;
       const fingerprint = JSON.stringify({cvId, selection});
       if (idempotency.current?.fingerprint !== fingerprint) idempotency.current = {fingerprint, key:crypto.randomUUID()};
@@ -200,7 +210,10 @@ const CVEvaluation = () => {
       const imported = saved || await importCV(file);
       if (!requestGuard.current.current(token)) return;
       if (!imported?.cvId) throw new Error('Không xác định được CV đã lưu để tìm JD.');
-      const cvName = saved?.cvName || file?.name || 'CV đã tạo';
+      const cvName = saved?.cvName || imported.cvName || file?.name || 'CV đã tạo';
+      if (!saved && imported.duplicate) {
+        showToast(`Tệp này đã được nhập trước đó. Đang dùng CV "${cvName}" đã lưu.`, 'info');
+      }
       setImportedCV({...imported, cvName});
       setCurrentCvId(imported.cvId);
       setFullCVData(mapImportedCVData(imported.extractedData));
@@ -220,6 +233,7 @@ const CVEvaluation = () => {
 
   const selectRecommendation = (recommendation) => {
     derivedFromJdId.current=null;
+    setContinuedJdId(null);
     setJdText(recommendation.content || '');
     setSelectedRecommendationKey(`${recommendation.source}-${recommendation.id}`);
     setPreviewRecommendation(null);
@@ -433,6 +447,18 @@ const CVEvaluation = () => {
                           ))}
                         </section>
                       )}
+                      {continuedJdId && (
+                        <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm text-on-surface">
+                          <p>Đang giữ JD đã dùng ở lần đánh giá trước{continuedJdTitle ? `: ${continuedJdTitle}` : ''}. Bổ sung minh chứng vào CV rồi chọn “Bắt đầu đánh giá” để tạo kết quả mới.</p>
+                          <button
+                            type="button"
+                            onClick={() => setContinuedJdId(null)}
+                            className="mt-2 font-semibold text-primary underline underline-offset-2"
+                          >
+                            Chỉnh sửa JD thành nội dung riêng
+                          </button>
+                        </div>
+                      )}
                       <label htmlFor="evaluation-jd" className="text-sm font-medium text-on-surface">
                         JD dùng để đánh giá
                       </label>
@@ -443,7 +469,7 @@ const CVEvaluation = () => {
                           setJdText(e.target.value);
                           setSelectedRecommendationKey(null);
                         }}
-                        readOnly={Boolean(selectedRecommendation)}
+                        readOnly={Boolean(selectedRecommendation || continuedJdId)}
                         placeholder="Chọn một JD được gợi ý hoặc dán JD riêng vào đây..."
                         className="w-full h-64 p-4 text-sm text-on-surface border border-outline-variant rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none bg-surface-container"
                       />

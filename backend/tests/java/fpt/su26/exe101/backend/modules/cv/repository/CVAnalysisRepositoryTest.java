@@ -8,6 +8,7 @@ import fpt.su26.exe101.backend.modules.cv.dto.AnalysisContract.*;
 import fpt.su26.exe101.backend.modules.cv.entity.enums.*;
 import fpt.su26.exe101.backend.modules.cv.entity.*;
 import fpt.su26.exe101.backend.modules.cv.service.*;
+import fpt.su26.exe101.backend.modules.cv.mapper.CVMapper;
 import fpt.su26.exe101.backend.modules.cv.service.impl.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.*;
 import fpt.su26.exe101.backend.modules.gallery.repository.*;
@@ -35,6 +36,7 @@ class CVAnalysisRepositoryTest {
     @TestConfiguration static class Config {
         @Bean ObjectMapper objectMapper(){return new ObjectMapper();}
         @Bean TransactionTemplate transactionTemplate(PlatformTransactionManager manager){return new TransactionTemplate(manager);}
+        @Bean CVMapper cvMapper(){return org.mapstruct.factory.Mappers.getMapper(CVMapper.class);}
     }
     @Autowired CVAnalysisServiceImpl service;
     @Autowired CVAnalysisWorkerImpl worker;
@@ -98,7 +100,8 @@ class CVAnalysisRepositoryTest {
         var read=service.read(result.analysisId(),owner);
         assertEquals(original,read.snapshot().jdText());assertEquals(score,read.result().score());
         assertEquals(AnalysisQuotaStatus.CONSUMED,analyses.findById(result.analysisId()).orElseThrow().getQuotaStatus());
-        assertEquals(1,cvs.findById(cv.getId()).orElseThrow().getAiAnalysisRemaining());verify(evidence,times(1)).extract(any());
+        assertEquals(1,cvs.findById(cv.getId()).orElseThrow().getAiAnalysisRemaining());
+        verify(evidence,times(1)).extract(any());
     }
     @Test void cosmeticCVChangesKeepCacheAndEvidenceChangesCreateNewKey() {
         var first=service.start(cv.getId(),new CVAnalysisStartRequestDTO(jd.getId(),null,null),"first",owner);

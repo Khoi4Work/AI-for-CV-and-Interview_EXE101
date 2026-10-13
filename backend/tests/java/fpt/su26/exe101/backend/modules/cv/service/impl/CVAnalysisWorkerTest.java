@@ -2,8 +2,10 @@ package fpt.su26.exe101.backend.modules.cv.service.impl;
 
 import fpt.su26.exe101.backend.modules.cv.entity.enums.AnalysisStatus;
 import fpt.su26.exe101.backend.modules.cv.dto.AnalysisContract.Result;
+import fpt.su26.exe101.backend.modules.cv.dto.AnalysisContract.Snapshot;
 import java.util.List;
 import fpt.su26.exe101.backend.modules.cv.entity.CVAnalysis;
+import fpt.su26.exe101.backend.modules.cv.entity.CVAlternativeRecommendationJob;
 import fpt.su26.exe101.backend.modules.cv.exception.CVAnalysisValidationException;
 import fpt.su26.exe101.backend.modules.cv.repository.CVAlternativeRecommendationJobRepository;
 import fpt.su26.exe101.backend.modules.cv.entity.enums.AnalysisQuotaStatus;
@@ -13,6 +15,8 @@ import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisQuotaService;
 import fpt.su26.exe101.backend.modules.cv.service.CVEvidenceService;
 import fpt.su26.exe101.backend.modules.cv.service.CVScoringService;
 import fpt.su26.exe101.backend.modules.gallery.exception.JobDescriptionRequirementsPendingException;
+import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
+import fpt.su26.exe101.backend.modules.gallery.entity.JobDescription;
 import fpt.su26.exe101.backend.modules.gallery.repository.GalleryRepository;
 import fpt.su26.exe101.backend.modules.gallery.repository.JobDescriptionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,11 +28,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -53,8 +60,8 @@ class CVAnalysisWorkerTest {
 
     @BeforeEach void setup() {
         analysis=new CVAnalysis();analysis.setId(UUID.randomUUID());analysis.setCvId(UUID.randomUUID());analysis.setAccountId(UUID.randomUUID());
-        when(analyses.lock(analysis.getId())).thenReturn(Optional.of(analysis));
-        when(transaction.execute(any())).thenAnswer(invocation -> ((TransactionCallback<?>)invocation.getArgument(0)).doInTransaction(mock(TransactionStatus.class)));
+        lenient().when(analyses.lock(analysis.getId())).thenReturn(Optional.of(analysis));
+        lenient().when(transaction.execute(any())).thenAnswer(invocation -> ((TransactionCallback<?>)invocation.getArgument(0)).doInTransaction(mock(TransactionStatus.class)));
         lenient().doAnswer(invocation -> {
             Consumer<TransactionStatus> callback=invocation.getArgument(0);
             callback.accept(mock(TransactionStatus.class));return null;
@@ -109,5 +116,34 @@ class CVAnalysisWorkerTest {
         worker.process(analysis.getId());
         assertEquals(AnalysisStatus.COMPLETED,analysis.getStatus());assertEquals(80,analysis.getScore());
         verifyNoInteractions(quota);
+    }
+
+    @Test void skippedAlternativeJdsAreNotCountedAsFailedEvaluations() {
+        UUID jobId = UUID.randomUUID();
+        UUID jdId = UUID.randomUUID();
+        CVAlternativeRecommendationJob job = new CVAlternativeRecommendationJob();
+        job.setId(jobId);
+        job.setAnalysisId(analysis.getId());
+        job.setCandidateIds(List.of(jdId));
+        CVAnalysis parent = new CVAnalysis();
+        parent.setId(analysis.getId());
+        parent.setGalleryId(UUID.randomUUID());
+        parent.setSnapshot(mock(Snapshot.class));
+        JobDescription jd = mock(JobDescription.class);
+        when(jd.isActive()).thenReturn(true);
+        Snapshot incompatibleSnapshot = mock(Snapshot.class);
+        when(incompatibleSnapshot.roleCodes()).thenReturn(Set.of());
+        when(jobs.findById(jobId)).thenReturn(Optional.of(job));
+        when(jobs.lock(jobId)).thenReturn(Optional.of(job));
+        when(analyses.findById(analysis.getId())).thenReturn(Optional.of(parent));
+        when(galleries.lock(parent.getGalleryId())).thenReturn(Optional.of(mock(Gallery.class)));
+        when(jds.findById(jdId)).thenReturn(Optional.of(jd));
+        when(service.snapshot(any(Snapshot.class), eq(jd))).thenReturn(incompatibleSnapshot);
+
+        ReflectionTestUtils.invokeMethod(worker, "advanceAlternatives", jobId);
+
+        assertEquals(0, job.getFailedCount());
+        assertEquals("COMPLETED", job.getStatus());
+        assertEquals(List.of(), job.getAnalysisIds());
     }
 }

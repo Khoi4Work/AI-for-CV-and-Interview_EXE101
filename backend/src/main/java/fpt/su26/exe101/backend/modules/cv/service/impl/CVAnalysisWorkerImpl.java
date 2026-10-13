@@ -259,7 +259,6 @@ public class CVAnalysisWorkerImpl implements CVAnalysisWorker {
                 }
                 job.setAnalysisIds(childIds);
             }
-            failed += job.getCandidateIds().size() - job.getAnalysisIds().size();
             for (UUID childId : job.getAnalysisIds()) {
                 CVAnalysis child = analyses.findById(childId).orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
                 if (child.getStatus() == AnalysisStatus.PENDING || child.getStatus() == AnalysisStatus.PROCESSING)
@@ -279,7 +278,7 @@ public class CVAnalysisWorkerImpl implements CVAnalysisWorker {
                 return true;
             }).limit(2).toList());
             job.setFailedCount(failed);
-            if (!pending) job.setStatus(failed == job.getCandidateIds().size() && failed > 0 ? "FAILED" : "COMPLETED");
+            if (!pending) job.setStatus(failed == job.getAnalysisIds().size() && failed > 0 ? "FAILED" : "COMPLETED");
         });
     }
 

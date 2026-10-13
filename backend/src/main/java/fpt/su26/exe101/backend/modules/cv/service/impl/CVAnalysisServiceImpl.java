@@ -304,13 +304,17 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
     }
 
     private CVAnalysisAlternativesResponseDTO alternatives(CVAlternativeRecommendationJob j) {
-        int completed = (int) j.getAnalysisIds().stream().map(analyses::findById).filter(Optional::isPresent)
-                .map(Optional::get).filter(a -> a.getStatus() == AnalysisStatus.COMPLETED).count();
+        List<AnalysisStatus> statuses = j.getAnalysisIds().stream()
+                .map(id -> analyses.findById(id).map(CVAnalysis::getStatus).orElse(AnalysisStatus.FAILED))
+                .toList();
+        int completed = (int) statuses.stream().filter(status -> status == AnalysisStatus.COMPLETED).count();
+        int failed = (int) statuses.stream().filter(status -> status != AnalysisStatus.COMPLETED
+                && status != AnalysisStatus.PENDING && status != AnalysisStatus.PROCESSING).count();
         List<CVAlternativeRecommendationItemDTO> items = j.getItems().stream()
                 .map(cvMapper::toAlternativeResponse)
                 .toList();
         return new CVAnalysisAlternativesResponseDTO(
-                j.getAnalysisId(), j.getStatus(), items, completed, j.getFailedCount());
+                j.getAnalysisId(), j.getStatus(), items, completed, failed);
     }
 
     private int overlap(String a, String b) {
