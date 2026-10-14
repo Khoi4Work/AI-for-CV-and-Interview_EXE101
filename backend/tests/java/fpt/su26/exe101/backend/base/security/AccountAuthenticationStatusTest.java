@@ -4,6 +4,7 @@ import fpt.su26.exe101.backend.modules.auth.entity.Account;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
 import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,22 +37,45 @@ class AccountAuthenticationStatusTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"PENDING_VERIFICATION", "SUSPENDED", "UNKNOWN"})
-    void disabledAccountCannotUsePreviouslyIssuedJwt(String status) throws Exception {
+    void inactiveAccountCannotFallBackToGuestWithPreviouslyIssuedJwt(String status) throws Exception {
         when(repository.findByEmail("user@example.com")).thenReturn(Optional.of(account(status)));
-        FilterChain chain = runFilter();
+        FilterRun run = runFilter(filter, "valid-token", true);
+
         assertNull(SecurityContextHolder.getContext().getAuthentication());
-        verify(chain).doFilter(any(), any());
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, run.response().getStatus());
+        verify(run.chain(), never()).doFilter(any(), any());
         assertFalse(detailsService.loadUserByUsername("user@example.com").isEnabled());
     }
 
     @Test
-    void removedAccountContinuesFilterChainWithoutAuthentication() throws Exception {
+    void removedAccountCannotFallBackToGuestWithPreviouslyIssuedJwt() throws Exception {
         when(repository.findByEmail("user@example.com")).thenReturn(Optional.empty());
-        FilterChain chain = runFilter();
+        FilterRun run = runFilter(filter, "valid-token", true);
+
         assertNull(SecurityContextHolder.getContext().getAuthentication());
-        verify(chain).doFilter(any(), any());
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, run.response().getStatus());
+        verify(run.chain(), never()).doFilter(any(), any());
         assertThrows(UsernameNotFoundException.class,
                 () -> detailsService.loadUserByUsername("user@example.com"));
+    }
+
+    @Test
+    void missingBearerTokenContinuesAsAnonymousForPublicEndpoints() throws Exception {
+        FilterRun run = runFilter(filter, null, false);
+
+        assertEquals(HttpServletResponse.SC_OK, run.response().getStatus());
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(run.chain()).doFilter(any(), any());
+    }
+
+    @Test
+    void invalidBearerTokenIsRejectedInsteadOfFallingBackToGuest() throws Exception {
+        when(tokens.validateAccessToken("expired-token")).thenReturn(false);
+        FilterRun run = runFilter(filter, "expired-token", true);
+
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, run.response().getStatus());
+        assertEquals("Bearer error=\"invalid_token\"", run.response().getHeader("WWW-Authenticate"));
+        verify(run.chain(), never()).doFilter(any(), any());
     }
 
     @Test
@@ -59,10 +83,12 @@ class AccountAuthenticationStatusTest {
         Account account = account("ACTIVE");
         account.setPasswordHash(null);
         when(repository.findByEmail("user@example.com")).thenReturn(Optional.of(account));
-        runFilter();
+        FilterRun run = runFilter(filter, "valid-token", true);
+
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
         assertTrue(SecurityContextHolder.getContext().getAuthentication().isAuthenticated());
         assertEquals("user@example.com", SecurityContextHolder.getContext().getAuthentication().getName());
+        verify(run.chain()).doFilter(any(), any());
     }
 
     @Test
@@ -78,7 +104,7 @@ class AccountAuthenticationStatusTest {
     }
 
     @Test
-    void lockedAndExpiredDetailsCannotAuthenticateWithJwt() throws Exception {
+    void lockedAndExpiredDetailsCannotFallBackToGuestWithJwt() throws Exception {
         for (int invalidFlag = 0; invalidFlag < 3; invalidFlag++) {
             CustomUserDetailsService service = mock(CustomUserDetailsService.class);
             UserDetails details = mock(UserDetails.class);
@@ -87,8 +113,11 @@ class AccountAuthenticationStatusTest {
             when(details.isAccountNonExpired()).thenReturn(invalidFlag != 1);
             when(details.isCredentialsNonExpired()).thenReturn(invalidFlag != 2);
             when(service.loadUserByUsername("user@example.com")).thenReturn(details);
-            runFilter(new JwtAuthenticationFilter(tokens, service));
+            FilterRun run = runFilter(new JwtAuthenticationFilter(tokens, service), "valid-token", true);
+
             assertNull(SecurityContextHolder.getContext().getAuthentication());
+            assertEquals(HttpServletResponse.SC_UNAUTHORIZED, run.response().getStatus());
+            verify(run.chain(), never()).doFilter(any(), any());
         }
     }
 
@@ -97,17 +126,19 @@ class AccountAuthenticationStatusTest {
                 .role(AccountRole.ATTENDANCE).status(status).build();
     }
 
-    private FilterChain runFilter() throws Exception {
-        return runFilter(filter);
+    private FilterRun runFilter(JwtAuthenticationFilter target, String token, boolean includeToken) throws Exception {
+        if ("valid-token".equals(token)) {
+            when(tokens.validateAccessToken("valid-token")).thenReturn(true);
+            when(tokens.getUsernameFromToken("valid-token")).thenReturn("user@example.com");
+        }
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        if (includeToken) request.addHeader("Authorization", "Bearer " + token);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+        target.doFilter(request, response, chain);
+        return new FilterRun(chain, response);
     }
 
-    private FilterChain runFilter(JwtAuthenticationFilter target) throws Exception {
-        when(tokens.validateAccessToken("valid-token")).thenReturn(true);
-        when(tokens.getUsernameFromToken("valid-token")).thenReturn("user@example.com");
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer valid-token");
-        FilterChain chain = mock(FilterChain.class);
-        target.doFilter(request, new MockHttpServletResponse(), chain);
-        return chain;
-    }
+    private record FilterRun(FilterChain chain, MockHttpServletResponse response) {}
 }

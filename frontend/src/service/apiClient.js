@@ -52,7 +52,13 @@ apiClient.interceptors.response.use(
             } catch (refreshError) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                window.location.href = '/login';
+                const currentRoute = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+                const loginUrl = new URL('/login', window.location.origin);
+                loginUrl.searchParams.set('sessionExpired', 'true');
+                if (currentRoute && window.location.pathname !== '/login') {
+                    loginUrl.searchParams.set('redirect', currentRoute);
+                }
+                window.location.assign(`${loginUrl.pathname}${loginUrl.search}`);
                 return Promise.reject(refreshError);
             }
         }
