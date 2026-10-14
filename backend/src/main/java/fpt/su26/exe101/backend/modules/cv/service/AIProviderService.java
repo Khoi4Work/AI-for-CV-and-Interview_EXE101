@@ -10,6 +10,4 @@ public interface AIProviderService {
     CVImportModelResponseDTO parseCVFile(byte[] fileContent, String contentType);
     CompletableFuture<CVOptimizationResultResponseDTO> optimizeCV(CVContent cvContent, String jdText);
     CVEvaluationResponseDTO evaluateCV(CVContent cvContent, String jdText, UserPlan plan);
-    CVFeedbackResponseDTO generateFeedback(CVContent cvContent, String jdText);
-    CVSkillGapResponseDTO analyzeSkillGap(CVContent cvContent, String jdText);
 }
