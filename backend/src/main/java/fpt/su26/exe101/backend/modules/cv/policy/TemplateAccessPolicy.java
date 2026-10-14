@@ -8,6 +8,15 @@ public final class TemplateAccessPolicy {
 
     public static boolean canUse(UserPlan plan, TemplateAccessLevel required) {
         UserPlan minimum = required == null ? UserPlan.FREE : UserPlan.valueOf(required.name());
-        return (plan == null ? UserPlan.FREE : plan).ordinal() >= minimum.ordinal();
+        UserPlan current = plan == null ? UserPlan.FREE : plan;
+        return rank(current) >= rank(minimum);
+    }
+
+    private static int rank(UserPlan plan) {
+        return switch (plan) {
+            case FREE -> 0;
+            case MIDDLE -> 1;
+            case ENHANCE -> 2;
+        };
     }
 }

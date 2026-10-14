@@ -144,12 +144,12 @@ public class CVPipelineController {
 
     @GetMapping("/optimizations/{jobId}")
     public ResponseEntity<ApiResponse<CVOptimizationStatusResponseDTO>> getOptimizationStatus(@PathVariable String jobId) {
-        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.getOptimizationStatus(jobId)));
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.getOptimizationStatus(jobId, currentGallery())));
     }
 
     @GetMapping("/optimizations/{jobId}/result")
     public ResponseEntity<ApiResponse<CVOptimizationResultResponseDTO>> getOptimizationResult(@PathVariable String jobId) {
-        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.getOptimizationResult(jobId)));
+        return ResponseEntity.ok(ApiResponse.success(cvPipelineService.getOptimizationResult(jobId, currentGallery())));
     }
 
     // --- Evaluation & Feedback ---

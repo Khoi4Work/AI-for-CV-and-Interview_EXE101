@@ -1,11 +1,13 @@
-import {useEffect} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {CheckCircle2} from 'lucide-react';
 import {MainLayout} from '../../interview/components/MainLayout.jsx';
 import {useNavigate,useLocation} from 'react-router-dom';
 import {useCV} from '../contexts/CVContext.jsx';
 import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
 import CvPdfPreview from '../components/CvPdfPreview.jsx';
-import {TEMPLATES_DATA} from '../constants/templates.js';
+import galleryService from '../../../service/galleryService.js';
+import {PDF_TEMPLATE_LOADERS} from '../pdf-renderer/templateRegistry.js';
+import {formatOptimizationSectionName} from '../utils/optimizationSectionName.js';
 import CVAnalysisResult from './CVAnalysisResult.jsx';
 
 export function CVResult() {
@@ -21,6 +23,11 @@ function OptimizationResult() {
     const navigate=useNavigate();
     const {cvData,setFullCVData,setCurrentCvId,setTemplate}=useCV();
     const optimizationResult=location.state?.optimizationResult;
+    const [templateCatalog, setTemplateCatalog] = useState([]);
+    const [templatesLoading, setTemplatesLoading] = useState(true);
+    const [templateError, setTemplateError] = useState('');
+    const availableTemplates = useMemo(() => templateCatalog.filter(template =>
+        template.locked === false && PDF_TEMPLATE_LOADERS[template.id]), [templateCatalog]);
     useEffect(()=>{
         const content=optimizationResult?.optimizedContent;
         if(content && typeof content==='object') {
@@ -28,6 +35,21 @@ function OptimizationResult() {
             if(location.state?.cvId) setCurrentCvId(location.state.cvId);
         }
     },[optimizationResult,location.state?.cvId,setFullCVData,setCurrentCvId]);
+    useEffect(() => {
+        let active = true;
+        galleryService.getTemplates()
+            .then(templates => { if (active) setTemplateCatalog(Array.isArray(templates) ? templates : []); })
+            .catch(() => { if (active) setTemplateError('Chưa tải được danh sách mẫu CV. Hãy thử tải lại trang.'); })
+            .finally(() => { if (active) setTemplatesLoading(false); });
+        return () => { active = false; };
+    }, []);
+    useEffect(() => {
+        if (templatesLoading || !availableTemplates.length) return;
+        if (!availableTemplates.some(template => template.id === cvData.selectedTemplateId)) {
+            setTemplate(availableTemplates[0].id);
+        }
+    }, [availableTemplates, cvData.selectedTemplateId, setTemplate, templatesLoading]);
+    const selectedTemplate = availableTemplates.find(template => template.id === cvData.selectedTemplateId);
     if (optimizationResult) {
         return (
             <MainLayout>
@@ -41,8 +63,11 @@ function OptimizationResult() {
                     </div>
                     <div className="grid gap-5 md:grid-cols-[180px_1fr] mb-6">
                         <div className="rounded-2xl border border-outline-variant p-6 text-center">
-                            <p className="text-sm text-on-surface-variant">Điểm dự kiến</p>
-                            <p className="text-4xl font-bold text-primary">{optimizationResult.predictedScore ?? '—'}</p>
+                            <p className="text-sm text-on-surface-variant">Điểm theo rubric sau tối ưu</p>
+                            <p className="text-4xl font-bold text-primary">
+                                {optimizationResult.postOptimizationScore ?? '—'}{optimizationResult.postOptimizationScore != null ? '/100' : ''}
+                            </p>
+                            <p className="mt-2 text-xs text-on-surface-variant">{optimizationResult.scoreNote || 'Chấm lại nội dung đề xuất theo JD đã chọn.'}</p>
                         </div>
                         <div className="rounded-2xl border border-outline-variant p-6">
                             <h2 className="font-bold mb-2">Tóm tắt cải thiện</h2>
@@ -55,7 +80,7 @@ function OptimizationResult() {
                             <div className="space-y-4">
                                 {optimizationResult.improvements.map((item, index) => (
                                     <article key={`${index}-${item.sectionName}`} className="rounded-xl border border-outline-variant p-4">
-                                        <h3 className="mb-3 font-bold">{item.sectionName || `Chỉnh sửa ${index + 1}`}</h3>
+                                        <h3 className="mb-3 font-bold">{formatOptimizationSectionName(item.sectionName, index)}</h3>
                                         <div className="grid gap-3 md:grid-cols-2">
                                             <div className="rounded-lg bg-surface-container p-3">
                                                 <p className="mb-1 text-xs font-bold uppercase text-on-surface-variant">Trước</p>
@@ -76,22 +101,30 @@ function OptimizationResult() {
                             <span>Chọn template xem trước</span>
                             <select
                                 aria-label="Chọn template xem trước"
-                                value={cvData.selectedTemplateId || 'boardroom-ready'}
+                                value={selectedTemplate?.id || ''}
                                 onChange={(event) => setTemplate(event.target.value)}
-                                className="rounded-lg border border-outline-variant bg-surface px-3 py-2"
+                                disabled={templatesLoading || availableTemplates.length === 0}
+                                className="rounded-lg border border-outline-variant bg-surface px-3 py-2 disabled:opacity-60"
                             >
-                                {TEMPLATES_DATA.map((template) => <option key={template.id} value={template.id}>{template.title}</option>)}
+                                {availableTemplates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
                             </select>
                         </label>
-                        <button onClick={() => navigate('/editor')} className="px-6 py-3 rounded-xl bg-primary text-on-primary font-bold">
+                        <button onClick={() => navigate('/editor')} disabled={!selectedTemplate} className="px-6 py-3 rounded-xl bg-primary text-on-primary font-bold disabled:cursor-not-allowed disabled:opacity-50">
                             Mở trình chỉnh sửa
                         </button>
                     </div>
-                    {optimizationResult.optimizedContent && typeof optimizationResult.optimizedContent === 'object' ? (
+                    {templateError && <p role="alert" className="mb-3 text-sm text-error">{templateError}</p>}
+                    {!templatesLoading && !templateError && !availableTemplates.length && <p role="alert" className="mb-3 text-sm text-error">Gói hiện tại chưa mở khóa mẫu CV có thể xem trước.</p>}
+                    {templatesLoading ? <p className="mb-3 text-sm text-on-surface-variant">Đang tải mẫu CV…</p> : null}
+                    {optimizationResult.optimizedContent && typeof optimizationResult.optimizedContent === 'object' && selectedTemplate ? (
                         <div className="h-[72vh] overflow-hidden rounded-2xl border border-outline-variant bg-slate-200 p-3">
-                            <CvPdfPreview cvData={cvData} templateId={cvData.selectedTemplateId || 'boardroom-ready'} className="h-full w-full bg-white" />
+                            <CvPdfPreview cvData={cvData} templateId={selectedTemplate.id} className="h-full w-full bg-white" />
                         </div>
-                    ) : <p role="alert" className="text-error">Kết quả tối ưu không đúng định dạng CV để xem trước.</p>}
+                    ) : optimizationResult.optimizedContent && typeof optimizationResult.optimizedContent === 'object' && !templatesLoading && availableTemplates.length > 0
+                        ? <p role="alert" className="text-error">Không tìm thấy mẫu CV hợp lệ để xem trước.</p>
+                        : !optimizationResult.optimizedContent || typeof optimizationResult.optimizedContent !== 'object'
+                            ? <p role="alert" className="text-error">Kết quả tối ưu không đúng định dạng CV để xem trước.</p>
+                            : null}
                 </div>
             </MainLayout>
         );

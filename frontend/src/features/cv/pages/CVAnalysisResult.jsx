@@ -163,7 +163,7 @@ export default function CVAnalysisResult({analysisId}) {
                 <button onClick={startInterview} className="inline-flex items-center gap-2 rounded-xl border border-outline-variant px-4 py-2.5 font-semibold text-on-surface hover:bg-surface-container-high">
                     Luyện phỏng vấn với JD này <ArrowRight className="h-4 w-4"/>
                 </button>
-                <p className="basis-full text-sm text-on-surface-variant">Tối ưu CV cần gói Enhance và sử dụng lượt tối ưu theo quota hiện tại.</p>
+                <p className="basis-full text-sm text-on-surface-variant">Tối ưu CV dành cho gói Enhance và không trừ lượt phân tích CV.</p>
                 {optimizationError&&<p className="basis-full text-sm text-error" role="alert">{optimizationError}</p>}
             </div>
         </section>

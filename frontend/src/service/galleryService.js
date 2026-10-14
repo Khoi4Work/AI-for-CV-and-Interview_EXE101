@@ -48,7 +48,13 @@ const galleryService = {
 
     async getTemplates() {
         try {
-            const response = await apiClient.get('/templates', { publicRequest: true });
+            // The catalog is public, so an expired bearer token can otherwise be treated as a guest
+            // and silently return FREE locks. Validate/refresh a signed-in session first.
+            const accessToken = localStorage.getItem('accessToken');
+            if (accessToken && accessToken !== 'undefined' && accessToken !== 'null') {
+                await apiClient.get('/auth/me');
+            }
+            const response = await apiClient.get('/templates');
             const data = response.data?.result;
             if (!data || (Array.isArray(data) && data.length === 0)) {
                 console.log('[GalleryService] No data found for templates');

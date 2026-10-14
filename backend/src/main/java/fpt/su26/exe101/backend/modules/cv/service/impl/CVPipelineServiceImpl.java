@@ -31,6 +31,7 @@ import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
 import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisQuotaService;
+import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +65,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private final GalleryService galleryService;
     private final UsageQuotaService quotaService;
     private final CVAnalysisQuotaService cvAnalysisQuotaService;
+    private final CVAnalysisService cvAnalysisService;
     private final RoleTaxonomyService roleTaxonomy;
     private final AIProviderService aiProvider;
     private final CVMapper cvMapper;
@@ -337,6 +339,11 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Override
     public CVOptimizationJobResponseDTO startOptimization(UUID cvId, CVOptimizationRequestDTO request, Gallery gallery) {
         requirePlan(gallery.getAccountId(), UserPlan.ENHANCE);
+        boolean hasJdId = request != null && request.getJdId() != null;
+        boolean hasJdText = request != null && hasText(request.getJdText());
+        if (hasJdId == hasJdText) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Chọn đúng một JD để tối ưu CV.");
+        }
         CV cv = cvRepository.findById(cvId)
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
@@ -389,43 +396,32 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             job.setProgress(10);
             jobRepository.save(job);
 
-            String jdText = (request.getJdText() != null)
-                    ? request.getJdText()
-                    : galleryService.findJobDescription(request.getJdId(), cv.getGallery()).getContent();
+            JobDescription jd = request.getJdId() != null
+                    ? galleryService.findJobDescription(request.getJdId(), cv.getGallery())
+                    : findOrCreateJD(request.getJdText(), cv.getGallery());
 
-            cv.setOptimizationState(OptimizationState.ANALYZING);
-            cvRepository.save(cv);
-
-            CVOptimizationResultResponseDTO result = aiProvider.optimizeCV(cv.getContent(), jdText).join();
+            CVOptimizationResultResponseDTO result = aiProvider.optimizeCV(cv.getContent(), jd.getContent()).join();
+            if (result.getOptimizedContent() == null) {
+                throw new ApiException(ErrorCode.INVALID_INPUT, "AI chưa tạo được nội dung CV hợp lệ.");
+            }
+            // The uploaded parser text describes the old CV. Re-evaluate the proposed structured content.
+            result.getOptimizedContent().setSourceText(null);
+            result.getOptimizedContent().setSourceTruncated(false);
+            try {
+                result.setPostOptimizationScore(cvAnalysisService.scoreOptimizedContent(
+                        cv, result.getOptimizedContent(), jd));
+                result.setScoreNote("Điểm được tính lại theo cùng rubric trên CV đề xuất và JD đã chọn.");
+            } catch (RuntimeException scoringException) {
+                log.warn("[CV OPTIMIZATION] Could not score proposed content | cvId={} | jobId={}", cvId, jobId, scoringException);
+                result.setPostOptimizationScore(null);
+                result.setScoreNote("Chưa thể tính điểm đáng tin cậy cho bản đề xuất này. Bạn vẫn có thể xem và chỉnh sửa nội dung CV.");
+            }
+            result.setPredictedScore(null);
 
             job.setProgress(70);
             jobRepository.save(job);
 
-            cv.setContent(result.getOptimizedContent());
-            cv.setOptimizationState(OptimizationState.OPTIMIZED);
-            cv.setScore(result.getPredictedScore());
-            cvRepository.save(cv);
-
-            CVOptimizationLog summaryLog = CVOptimizationLog.builder()
-                    .cv(cv)
-                    .sectionName("OVERALL")
-                    .originalText("N/A")
-                    .suggestedText(result.getImprovementSummary())
-                    .isAccepted(true)
-                    .build();
-            logRepository.save(summaryLog);
-            if (result.getImprovements() != null) {
-                result.getImprovements().stream()
-                        .filter(item -> item != null && item.getSuggestedText() != null && !item.getSuggestedText().isBlank())
-                        .limit(8)
-                        .forEach(item -> logRepository.save(CVOptimizationLog.builder()
-                                .cv(cv)
-                                .sectionName(item.getSectionName() == null || item.getSectionName().isBlank() ? "OTHER" : item.getSectionName())
-                                .originalText(item.getOriginalText() == null ? "" : item.getOriginalText())
-                                .suggestedText(item.getSuggestedText())
-                                .isAccepted(true)
-                                .build()));
-            }
+            job.setResultSnapshot(objectMapper.writeValueAsString(result));
 
             job.setStatus("COMPLETED");
             job.setProgress(100);
@@ -445,9 +441,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     @Override
-    public CVOptimizationStatusResponseDTO getOptimizationStatus(String jobId) {
-        CVOptimizationJob job = jobRepository.findByJobId(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+    public CVOptimizationStatusResponseDTO getOptimizationStatus(String jobId, Gallery gallery) {
+        CVOptimizationJob job = findOwnedOptimizationJob(jobId, gallery);
 
         return CVOptimizationStatusResponseDTO.builder()
                 .jobId(jobId)
@@ -457,16 +452,24 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     @Override
-    public CVOptimizationResultResponseDTO getOptimizationResult(String jobId) {
-        CVOptimizationJob job = jobRepository.findByJobId(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+    public CVOptimizationResultResponseDTO getOptimizationResult(String jobId, Gallery gallery) {
+        CVOptimizationJob job = findOwnedOptimizationJob(jobId, gallery);
 
         if (!"COMPLETED".equals(job.getStatus())) {
-            throw new RuntimeException("Result not ready yet");
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Kết quả tối ưu chưa sẵn sàng.");
         }
 
+        if (hasText(job.getResultSnapshot())) {
+            try {
+                return objectMapper.readValue(job.getResultSnapshot(), CVOptimizationResultResponseDTO.class);
+            } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
+                throw new ApiException(ErrorCode.UNEXPECTED_ERROR, "Không đọc được kết quả tối ưu CV.");
+            }
+        }
+
+        // Older completed jobs predate result snapshots. Keep them readable during rollout.
         CV cv = cvRepository.findById(job.getCvId())
-                .orElseThrow(() -> new RuntimeException("CV not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
         List<CVOptimizationLog> logs = logRepository.findByCvId(cv.getId()).stream()
                 .filter(log -> log.getCreatedAt() != null && !log.getCreatedAt().isBefore(job.getCreatedAt()))
                 .toList();
@@ -486,8 +489,19 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                                 .suggestedText(log.getSuggestedText())
                                 .build())
                         .toList())
-                .predictedScore(cv.getScore())
+                // Old rows stored an AI estimate here; do not present it as a rubric score.
+                .postOptimizationScore(null)
+                .scoreNote("Phiên tối ưu cũ chưa lưu điểm theo rubric. Hãy đánh giá lại CV đã lưu để xem điểm hiện tại.")
                 .build();
+    }
+
+    private CVOptimizationJob findOwnedOptimizationJob(String jobId, Gallery gallery) {
+        CVOptimizationJob job = jobRepository.findByJobId(jobId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        cvRepository.findWithGalleryById(job.getCvId())
+                .filter(cv -> cv.getGallery().getId().equals(gallery.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        return job;
     }
 
     @Override

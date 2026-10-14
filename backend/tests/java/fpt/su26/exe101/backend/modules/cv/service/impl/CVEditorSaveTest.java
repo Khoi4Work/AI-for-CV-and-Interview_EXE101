@@ -35,6 +35,7 @@ class CVEditorSaveTest {
     @Mock GalleryService galleries;
     @Mock UsageQuotaService quota;
     @Mock CVAnalysisQuotaService analysisQuota;
+    @Mock CVAnalysisService cvAnalysisService;
     @Spy RoleTaxonomyServiceImpl roleTaxonomy = new RoleTaxonomyServiceImpl(new ObjectMapper());
     @Mock AIProviderService ai;
     @Mock CVMapper mapper;
@@ -110,7 +111,7 @@ class CVEditorSaveTest {
 
         TransactionSynchronizationManager.initSynchronization();
         try {
-            service.startOptimization(cvId, CVOptimizationRequestDTO.builder().build(), gallery);
+            service.startOptimization(cvId, CVOptimizationRequestDTO.builder().jdId(UUID.randomUUID()).build(), gallery);
         } finally {
             TransactionSynchronizationManager.clearSynchronization();
         }

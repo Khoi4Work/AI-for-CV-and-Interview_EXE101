@@ -24,6 +24,8 @@ import fpt.su26.exe101.backend.modules.cv.repository.CVAnalysisRepository;
 import fpt.su26.exe101.backend.modules.cv.repository.CVAnalysisRequestRepository;
 import fpt.su26.exe101.backend.modules.cv.repository.CVRepository;
 import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisQuotaService;
+import fpt.su26.exe101.backend.modules.cv.service.CVEvidenceService;
+import fpt.su26.exe101.backend.modules.cv.service.CVScoringService;
 import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisService;
 import fpt.su26.exe101.backend.modules.cv.service.RoleTaxonomyService;
 import fpt.su26.exe101.backend.modules.gallery.entity.enums.JobDescriptionSource;
@@ -74,6 +76,8 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
     private final JobDescriptionNormalizationService normalization;
     private final ObjectMapper mapper;
     private final CVMapper cvMapper;
+    private final CVEvidenceService evidenceService;
+    private final CVScoringService scoringService;
     private final TransactionTemplate transaction;
     @Value("${cv.analysis.enabled:false}")
     private boolean enabled;
@@ -198,11 +202,20 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
     }
 
     public Snapshot snapshot(CV cv, JobDescription jd) {
-        CVContent content = mapper.convertValue(cv.getContent(), CVContent.class);
+        return snapshot(cv, mapper.convertValue(cv.getContent(), CVContent.class), jd);
+    }
+
+    private Snapshot snapshot(CV cv, CVContent content, JobDescription jd) {
         String cvText = readable(mapper.valueToTree(content));
         if (content.getSourceText() != null && !content.getSourceText().isBlank()) cvText = content.getSourceText();
         JobDescriptionNormalizationMetadata metadata = normalization.normalize(jd, null);
         return cvMapper.toAnalysisSnapshot(cv, jd, content, cvText, metadata);
+    }
+
+    @Override
+    public int scoreOptimizedContent(CV cv, CVContent content, JobDescription jd) {
+        Snapshot scoringSnapshot = snapshot(cv, content, jd);
+        return scoringService.score(scoringSnapshot, evidenceService.extract(scoringSnapshot).extraction()).score();
     }
 
     public Snapshot snapshot(Snapshot source, JobDescription jd) {
