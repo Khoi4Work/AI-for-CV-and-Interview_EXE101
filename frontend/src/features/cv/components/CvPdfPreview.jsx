@@ -155,7 +155,7 @@ export default function CvPdfPreview({ cvData, templateId, className = '' }) {
         {pages.map(page => <div key={page.pageNumber} data-pdf-page={page.pageNumber} className="mx-auto mb-4 w-fit bg-white shadow-xl last:mb-0">
             <img src={page.image} alt={`Trang ${page.pageNumber} của CV`} style={{ width: page.width, maxWidth: '100%', height: 'auto' }} className="block" />
         </div>)}
-        {isUpdating && pages.length > 0 && <div role="status" className="absolute right-2 top-2 z-10 rounded-full bg-slate-900/80 px-3 py-1 text-xs text-white">Đang cập nhật bản xem trước…</div>}
+        {isUpdating && pages.length > 0 && <span role="status" className="sr-only">Đang cập nhật bản xem trước…</span>}
         {renderError && <div role="alert" className="sticky bottom-2 mx-auto w-fit rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{renderError}</div>}
     </div>;
 }
