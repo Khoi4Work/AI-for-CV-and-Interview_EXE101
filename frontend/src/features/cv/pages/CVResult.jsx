@@ -3,8 +3,8 @@ import {CheckCircle2} from 'lucide-react';
 import {MainLayout} from '../../interview/components/MainLayout.jsx';
 import {useNavigate,useLocation} from 'react-router-dom';
 import {useCV} from '../contexts/CVContext.jsx';
-import {mapCVDataToTemplate,mapImportedCVData} from '../mapper/cv-data-mapper.js';
-import TemplateRenderer from '../components/TemplateRenderer.jsx';
+import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
+import CvPdfPreview from '../components/CvPdfPreview.jsx';
 import {TEMPLATES_DATA} from '../constants/templates.js';
 import CVAnalysisResult from './CVAnalysisResult.jsx';
 
@@ -88,13 +88,8 @@ function OptimizationResult() {
                         </button>
                     </div>
                     {optimizationResult.optimizedContent && typeof optimizationResult.optimizedContent === 'object' ? (
-                        <div className="overflow-auto rounded-2xl border border-outline-variant bg-white p-3">
-                            <div className="mx-auto min-w-[700px] max-w-[1000px]">
-                                <TemplateRenderer
-                                    templateId={cvData.selectedTemplateId || 'boardroom-ready'}
-                                    userData={mapCVDataToTemplate(cvData)}
-                                />
-                            </div>
+                        <div className="h-[72vh] overflow-hidden rounded-2xl border border-outline-variant bg-slate-200 p-3">
+                            <CvPdfPreview cvData={cvData} templateId={cvData.selectedTemplateId || 'boardroom-ready'} className="h-full w-full bg-white" />
                         </div>
                     ) : <p role="alert" className="text-error">Kết quả tối ưu không đúng định dạng CV để xem trước.</p>}
                 </div>

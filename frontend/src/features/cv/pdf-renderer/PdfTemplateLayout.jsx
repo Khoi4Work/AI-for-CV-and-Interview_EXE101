@@ -44,6 +44,21 @@ const s = StyleSheet.create({
     skillCategory: { fontSize: 8, fontWeight: 700, marginBottom: 3 },
     contact: { fontSize: 8, lineHeight: 1.35, marginBottom: 7 },
     photo: { width: 96, height: 96, objectFit: 'cover', alignSelf: 'center', marginBottom: 20 },
+    portfolioSidebarSection: { borderTopWidth: 1, borderTopColor: '#145253', paddingTop: 18, marginBottom: 18 },
+    portfolioSidebarHeadingRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 13 },
+    portfolioSidebarHeadingMark: { width: 3, height: 13, backgroundColor: '#fff', marginRight: 8 },
+    portfolioSidebarHeadingText: { fontSize: 11, color: '#fff', letterSpacing: 1.2, textTransform: 'uppercase', fontWeight: 700 },
+    portfolioSkillCategory: { color: '#ccfbf1', fontSize: 8, fontWeight: 700, marginBottom: 5 },
+    portfolioSkillChip: { backgroundColor: '#246c6d', borderWidth: 0.7, borderColor: '#438485', color: '#fff', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 3, fontSize: 7 },
+    portfolioMainHeading: { fontSize: 14, color: '#1b5e60', letterSpacing: 1.1, textTransform: 'uppercase', paddingBottom: 5, marginBottom: 12, borderBottomWidth: 2.2, borderBottomColor: '#f1f5f9' },
+    portfolioExperienceBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc', padding: 7, borderRadius: 3, marginBottom: 5 },
+    portfolioSide: { padding: 30 },
+    portfolioMain: { padding: 30, paddingTop: 36 },
+    portfolioPhoto: { borderWidth: 2, borderColor: '#fff', borderRadius: 2 },
+    portfolioRole: { fontSize: 9.5, fontWeight: 700, color: '#1e293b' },
+    portfolioCompany: { fontSize: 7.5, color: '#1b5e60', textTransform: 'uppercase' },
+    portfolioPeriod: { fontSize: 7.5, color: '#64748b' },
+    portfolioTitle: { fontSize: 12, color: '#64748b', fontWeight: 400, letterSpacing: 0, marginBottom: 15 },
 });
 
 const text = value => value === null || value === undefined ? '' : String(value).trim();
@@ -65,15 +80,19 @@ function skillsByCategory(skills = [], languages = []) {
 
 function ContactBlock({ data, color = '#475569', stacked = false }) {
     const values = [data.phone, data.email, data.dob, data.address, data.linkedin].map(text).filter(Boolean);
-    return values.length ? <View style={[s.contactLine, stacked && { flexDirection: 'column' }]}>{values.map((value, index) => <Text key={`${index}-${value}`} style={[{ color }, stacked && s.contact]}>{value}</Text>)}</View> : null;
+    if (!values.length) return null;
+    if (stacked) return <View style={{ marginTop: 7 }}>{values.map((value, index) => <Text key={`${index}-${value}`} style={[s.contact, { color, width: '100%' }]}>{value}</Text>)}</View>;
+    return <View style={s.contactLine}>{values.map((value, index) => <Text key={`${index}-${value}`} style={{ color }}>{value}</Text>)}</View>;
 }
 
-function Heading({ children, theme, light = false }) {
-    return <Text style={[s.heading, { color: light ? theme.tint : theme.accent, borderBottomColor: light ? '#64748b' : '#cbd5e1' }]}>{children}</Text>;
+function Heading({ children, theme, light = false, portfolioSidebar = false, portfolioMain = false }) {
+    if (portfolioSidebar) return <View style={s.portfolioSidebarHeadingRow}><View style={s.portfolioSidebarHeadingMark} /><Text style={s.portfolioSidebarHeadingText}>{children}</Text></View>;
+    const portfolioStyle = portfolioMain ? s.portfolioMainHeading : null;
+    return <Text style={[s.heading, portfolioStyle, !portfolioStyle && { color: light ? theme.tint : theme.accent, borderBottomColor: light ? '#64748b' : '#cbd5e1' }]}>{children}</Text>;
 }
 
-function Section({ title, theme, children, light = false }) {
-    return <View style={s.section}><Heading theme={theme} light={light}>{title}</Heading>{children}</View>;
+function Section({ title, theme, children, light = false, portfolioSidebar = false, portfolioMain = false, style }) {
+    return <View style={[s.section, portfolioSidebar && s.portfolioSidebarSection, style]}><Heading theme={theme} light={light} portfolioSidebar={portfolioSidebar} portfolioMain={portfolioMain}>{title}</Heading>{children}</View>;
 }
 
 function Summary({ data, theme, light = false, showHeading = true }) {
@@ -82,20 +101,29 @@ function Summary({ data, theme, light = false, showHeading = true }) {
     return showHeading ? <Section title="About Me" theme={theme} light={light}>{summary}</Section> : <View style={s.section}>{summary}</View>;
 }
 
-function Experience({ items = [], theme }) {
+function Experience({ items = [], theme, portfolio = false }) {
     const visible = items.filter(item => has(item.role, item.company, item.period) || item.details.some(text));
-    return visible.length ? <Section title="Work Experience" theme={theme}>
+    return visible.length ? <Section title="Work Experience" theme={theme} portfolioMain={portfolio}>
         {visible.map((item, index) => <View key={item.id || `${item.role}-${index}`} style={s.item}>
-            {has(item.role) && <Text style={[s.itemTitle, { color: theme.accent }]}>{text(item.role)}</Text>}
-            {has(item.company, item.period) && <Text style={s.muted}>{[text(item.company), text(item.period)].filter(Boolean).join('  |  ')}</Text>}
+            {portfolio ? <View style={s.portfolioExperienceBar}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', flexShrink: 1 }}>
+                    {has(item.role) && <Text style={s.portfolioRole}>{text(item.role)}</Text>}
+                    {has(item.role, item.company) && <Text style={{ color: '#94a3b8', marginHorizontal: 4 }}>|</Text>}
+                    {has(item.company) && <Text style={s.portfolioCompany}>{text(item.company)}</Text>}
+                </View>
+                {has(item.period) && <Text style={s.portfolioPeriod}>{text(item.period)}</Text>}
+            </View> : <>
+                {has(item.role) && <Text style={[s.itemTitle, { color: theme.accent }]}>{text(item.role)}</Text>}
+                {has(item.company, item.period) && <Text style={s.muted}>{[text(item.company), text(item.period)].filter(Boolean).join('  |  ')}</Text>}
+            </>}
             {item.details.filter(text).map((detail, i) => <Text key={i} style={s.bullet}>•  {text(detail)}</Text>)}
         </View>)}
     </Section> : null;
 }
 
-function Projects({ items = [], theme, title = 'Projects' }) {
+function Projects({ items = [], theme, title = 'Projects', portfolio = false }) {
     const visible = items.filter(item => has(item.name, item.period, item.url, item.techStack, item.teamSize) || item.details.some(text));
-    return visible.length ? <Section title={title} theme={theme}>
+    return visible.length ? <Section title={title} theme={theme} portfolioMain={portfolio}>
         {visible.map((item, index) => <View key={`${item.name || 'project'}-${index}`} style={s.item}>
             {has(item.name) && <Text style={[s.itemTitle, { color: theme.accent }]}>{text(item.name)}</Text>}
             {has(item.period) && <Text style={s.muted}>{text(item.period)}</Text>}
@@ -107,24 +135,29 @@ function Projects({ items = [], theme, title = 'Projects' }) {
     </Section> : null;
 }
 
-function Education({ items = [], theme, light = false }) {
+function Education({ items = [], theme, light = false, portfolioSidebar = false }) {
     const visible = items.filter(item => has(item.school, item.degree, item.year, item.period, item.gpa));
-    return visible.length ? <Section title="Education" theme={theme} light={light}>
+    return visible.length ? <Section title="Education" theme={theme} light={light} portfolioSidebar={portfolioSidebar}>
         {visible.map((item, index) => <View key={`${item.school}-${index}`} style={s.item}>
             {has(item.school) && <Text style={[s.itemTitle, light && { color: '#fff' }]}>{text(item.school)}</Text>}
-            {has(item.degree) && <Text style={[s.body, light && { color: '#e2e8f0' }]}>{text(item.degree)}</Text>}
-            {has(item.year, item.period) && <Text style={[s.muted, light && { color: '#cbd5e1' }]}>{text(item.year || item.period)}</Text>}
+            {portfolioSidebar ? <>
+                {has(item.year, item.period) && <Text style={[s.muted, light && { color: '#cbd5e1' }]}>{text(item.year || item.period)}</Text>}
+                {has(item.degree) && <Text style={[s.body, light && { color: '#e2e8f0' }]}>{text(item.degree)}</Text>}
+            </> : <>
+                {has(item.degree) && <Text style={[s.body, light && { color: '#e2e8f0' }]}>{text(item.degree)}</Text>}
+                {has(item.year, item.period) && <Text style={[s.muted, light && { color: '#cbd5e1' }]}>{text(item.year || item.period)}</Text>}
+            </>}
             {has(item.gpa) && <Text style={[s.muted, light && { color: '#cbd5e1' }]}>GPA: {text(item.gpa)}</Text>}
         </View>)}
     </Section> : null;
 }
 
-function Skills({ data, theme, light = false, chips = false }) {
+function Skills({ data, theme, light = false, chips = false, portfolioSidebar = false }) {
     const groups = skillsByCategory(data.skills, data.languages);
-    return groups.length ? <Section title="Skills" theme={theme} light={light}>
+    return groups.length ? <Section title="Skills" theme={theme} light={light} portfolioSidebar={portfolioSidebar}>
         {groups.map(([category, items]) => <View key={category} style={s.skillGroup}>
-            <Text style={[s.skillCategory, light && { color: '#fff' }]}>{category}</Text>
-            {chips ? <View style={s.chipRow}>{items.map((item, index) => <Text key={`${item}-${index}`} style={s.chip}>{item}</Text>)}</View>
+            <Text style={[s.skillCategory, light && { color: '#fff' }, portfolioSidebar && s.portfolioSkillCategory]}>{category}</Text>
+            {chips ? <View style={s.chipRow}>{items.map((item, index) => <Text key={`${item}-${index}`} style={portfolioSidebar ? { backgroundColor: '#246c6d', borderWidth: 0.7, borderColor: '#438485', color: '#fff', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 3, fontSize: 7 } : s.chip}>{item}</Text>)}</View>
                 : <Text style={[s.body, light && { color: '#e2e8f0' }]}>{items.join(' · ')}</Text>}
         </View>)}
     </Section> : null;
@@ -149,10 +182,10 @@ function OtherSections({ data, theme, light = false }) {
     </>;
 }
 
-function Header({ data, theme, centered = false, light = false, showContact = true, borderless = false }) {
+function Header({ data, theme, centered = false, light = false, showContact = true, borderless = false, portfolio = false }) {
     return <View style={[s.header, centered && s.centered, { borderBottomColor: light ? '#64748b' : '#e2e8f0' }, borderless && { borderBottomWidth: 0 }]}>
         {has(data.personalInfo.name) && <Text style={[s.name, { color: light ? '#fff' : '#1e293b' }]}>{text(data.personalInfo.name)}</Text>}
-        {has(data.professionalTitle) && <Text style={[s.title, { color: light ? theme.tint : theme.accent }]}>{text(data.professionalTitle)}</Text>}
+        {has(data.professionalTitle) && <Text style={[portfolio ? s.portfolioTitle : s.title, { color: light ? theme.tint : portfolio ? '#64748b' : theme.accent }]}>{text(data.professionalTitle)}</Text>}
         {showContact && <ContactBlock data={data.personalInfo} color={light ? '#e2e8f0' : '#475569'} />}
     </View>;
 }
@@ -195,12 +228,12 @@ function SecurityAnalyst({ data, theme }) {
 function SidebarTemplate({ data, theme, portfolio = false }) {
     return <Page size="A4" style={s.page} wrap>
         <View style={s.row}>
-            <View style={[s.side, { backgroundColor: theme.sidebar }]}>
-                {data.profilePhoto && <Image src={data.profilePhoto} style={s.photo} />}
+            <View style={[s.side, portfolio && s.portfolioSide, { backgroundColor: theme.sidebar }]}>
+                {data.profilePhoto && <Image src={data.profilePhoto} style={[s.photo, portfolio && s.portfolioPhoto]} />}
                 {portfolio ? <>
                     <ContactBlock data={data.personalInfo} color="#e6f4f1" stacked />
-                    <Skills data={data} theme={theme} light chips />
-                    <Education items={data.education} theme={theme} light />
+                    <Skills data={data} theme={theme} light chips portfolioSidebar />
+                    <Education items={data.education} theme={theme} light portfolioSidebar />
                 </> : <>
                     <Header data={data} theme={theme} light />
                     <Education items={data.education} theme={theme} light />
@@ -208,14 +241,14 @@ function SidebarTemplate({ data, theme, portfolio = false }) {
                     <OtherSections data={{ ...data, awards: [], languages: [] }} theme={theme} light />
                 </>}
             </View>
-            <View style={s.main}>
+            <View style={[s.main, portfolio && s.portfolioMain]}>
                 {portfolio && <>
-                    <Header data={data} theme={theme} showContact={false} borderless={portfolio} />
+                    <Header data={data} theme={theme} showContact={false} borderless={portfolio} portfolio={portfolio} />
                     <Summary data={data} theme={theme} showHeading={false} />
                 </>}
                 {!portfolio && <Summary data={data} theme={theme} />}
-                <Experience items={data.experiences} theme={theme} />
-                <Projects items={data.projects} theme={theme} title={portfolio ? 'Highlight Project' : 'Projects'} />
+                <Experience items={data.experiences} theme={theme} portfolio={portfolio} />
+                <Projects items={data.projects} theme={theme} title={portfolio ? 'Highlight Project' : 'Projects'} portfolio={portfolio} />
                 {!portfolio && <OtherSections data={{ ...data, certificates: [], awards: [] }} theme={theme} />}
             </View>
         </View>

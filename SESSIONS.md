@@ -133,3 +133,10 @@
 - Added canonical CV data mapping and visibility helpers so empty or whitespace-only sections are omitted without inferring links between independent projects and work experience.
 - Propagated the empty-content behavior to the JSX previews, filtered blank skill entries, and added renderer/mapping regression tests.
 - Validation: frontend production build, 52 frontend tests, targeted ESLint for changed template and skill-list files, and `git diff --check` passed. Full frontend lint still reports existing errors in unrelated files; PDF visual comparison remains a manual check.
+
+## 2026-10-14 — Use the PDF renderer for all CV previews
+
+- Replaced JSX template rendering in the CV editor, optimization result, and saved-CV preview with the same PDF renderer used for downloads.
+- Moved editing controls into a structured content panel so personal details, summary, experience, education, projects, skills, certificates, languages, and awards continue to update the live PDF preview; profile photo selection remains available in the toolbar.
+- Removed the retired JSX template components and their template-only view mapper to keep the PDF renderer as the single template source.
+- Validation: frontend production build, all 49 frontend tests, and targeted ESLint passed. The build reports the large-client-chunk advisory; in-browser visual QA is still needed.
