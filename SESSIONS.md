@@ -1,5 +1,13 @@
 # Session History
 
+## 2026-10-14 — Secure CV optimization results, template access, and session expiry
+
+- Recalculate the proposed CV score with the existing CV/JD rubric; ignore AI-predicted scores, clear stale parser text before scoring, and keep the proposal in an optimization-job snapshot until the user explicitly saves it. Scope result polling to the CV owner's gallery and document the required manual migration.
+- Resolve preview templates from the server catalog and the signed-in user's plan, unlock all catalog tiers for Enhance, and display readable CV section labels instead of JSON paths.
+- Keep anonymous catalog access when no Bearer token is sent, but return 401 for invalid, expired, disabled-account, or removed-account credentials. Let the frontend refresh a valid session and return the user to the requested route after re-login.
+- Remove the visible preview-update badge from the CV page while retaining its screen-reader status.
+- Validation: focused Maven CV optimization tests passed; `AccountAuthenticationStatusTest` passed (9 tests); frontend targeted ESLint and `git diff --check` passed. Full frontend test setup remains limited by the workspace's protected `.env` file. Apply `20261014_cv_optimization_result_snapshot.sql` manually before deploying the optimization snapshot change.
+
 ## 2026-10-13 — Finish CV import, template, evaluation and PDF work
 
 - Separate file import from CV-creation quota consumption; assign the existing per-CV analysis allowance from the user's plan and keep Enhance optimization from consuming analysis quota.
