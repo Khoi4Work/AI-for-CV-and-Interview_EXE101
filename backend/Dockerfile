@@ -14,16 +14,9 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Use Chromium's headless PDF engine so CV exports keep selectable text and do not depend on a host print driver.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates gnupg wget \
-    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends google-chrome-stable \
+    && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-
-ENV CHROME_BIN=/usr/bin/google-chrome
 
 # Copy the jar from the build stage
 COPY --from=build /app/target/*.jar app.jar

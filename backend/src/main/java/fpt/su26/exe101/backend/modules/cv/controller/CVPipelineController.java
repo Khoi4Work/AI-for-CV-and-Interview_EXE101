@@ -8,12 +8,10 @@ import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVFeedbackRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVOptimizationRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVUpdateRequestDTO;
-import fpt.su26.exe101.backend.modules.cv.dto.request.CVPdfExportRequestDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
-import fpt.su26.exe101.backend.modules.cv.service.CVPdfExportService;
 import fpt.su26.exe101.backend.modules.cv.service.JDRecommendationService;
 import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisService;
 import fpt.su26.exe101.backend.modules.cv.dto.request.CVAnalysisStartRequestDTO;
@@ -29,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -45,7 +42,6 @@ public class CVPipelineController {
     private final GalleryService galleryService;
     private final JDRecommendationService jdRecommendationService;
     private final CVAnalysisService analysisService;
-    private final CVPdfExportService pdfExportService;
 
     // --- Import ---
     @PostMapping(value = "/extract", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -63,22 +59,6 @@ public class CVPipelineController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
                 cvPipelineService.importCV(file.getBytes(), file.getContentType(), filename, currentGallery()),
                 "IMPORT SUCCESS"));
-    }
-
-    @PostMapping(value = "/export/pdf", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> exportPdf(@RequestBody CVPdfExportRequestDTO request) {
-        byte[] pdf = pdfExportService.export(request, currentGallery());
-        String fileName = request.getFileName() == null ? "CV" : request.getFileName().trim();
-        fileName = fileName.replaceAll("[\\\\/:*?\"<>|\\p{Cntrl}]", "_").replaceAll("\\s+", " ");
-        if (fileName.isBlank()) fileName = "CV";
-        if (!fileName.toLowerCase(Locale.ROOT).endsWith(".pdf")) fileName += ".pdf";
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .contentLength(pdf.length)
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
-                        org.springframework.http.ContentDisposition.attachment()
-                                .filename(fileName, StandardCharsets.UTF_8).build().toString())
-                .body(pdf);
     }
 
     @GetMapping("/{id}/jd-recommendations")
