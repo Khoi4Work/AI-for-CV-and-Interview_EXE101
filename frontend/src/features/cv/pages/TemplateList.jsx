@@ -66,6 +66,12 @@ export default function TemplateList() {
             navigate('/login', { state: { from: { pathname } } });
             return;
         }
+        const template = templates.find(item => item.id === id);
+        if (template?.locked) {
+            setPreviewTemplate(null);
+            handleLockedTemplateClick(template.name);
+            return;
+        }
         navigate(pathname, {state: location.state});
     };
 
