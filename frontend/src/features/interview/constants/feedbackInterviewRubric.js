@@ -19,26 +19,26 @@ export const TAG_DEFINITIONS = {
 };
 
 export const HR_PERSONAS = {
-  FPT: {
+  GENERAL: {
     HR: {
       name: 'Anh Minh',
-      role: 'HR — FPT Software',
+      role: 'HR — người phỏng vấn mô phỏng',
       tone: 'Chuyên nghiệp, thân thiện',
-      opener: 'Chào bạn, tôi là Minh — HR tại FPT Software. Cảm ơn bạn đã hoàn thành buổi phỏng vấn hôm nay, tôi xin chia sẻ một số nhận xét.',
-      closer: 'FPT rất mong được đồng hành cùng bạn. Hãy tiếp tục luyện tập và theo dõi email để cập nhật kết quả nhé.',
+      opener: 'Chào bạn, tôi là Minh — người phỏng vấn HR mô phỏng. Cảm ơn bạn đã hoàn thành buổi phỏng vấn hôm nay, tôi xin chia sẻ một số nhận xét.',
+      closer: 'Hãy tiếp tục luyện tập với các gợi ý từ buổi phỏng vấn mô phỏng này.',
     },
     Technical: {
       name: 'Anh Hùng',
-      role: 'Tech Lead — FPT Software',
+      role: 'Tech Lead — người phỏng vấn mô phỏng',
       tone: 'Sắc sảo, đánh giá cao tư duy',
-      opener: 'Chào bạn, tôi là Hùng — Tech Lead tại FPT. Buổi phỏng vấn kỹ thuật hôm nay có một số điểm tôi muốn phản hồi.',
-      closer: 'Cảm ơn bạn đã tham gia. Nếu qua vòng này, team sẽ liên hệ trong 3-5 ngày làm việc.',
+      opener: 'Chào bạn, tôi là Hùng — người phỏng vấn kỹ thuật mô phỏng. Buổi phỏng vấn kỹ thuật hôm nay có một số điểm tôi muốn phản hồi.',
+      closer: 'Cảm ơn bạn đã tham gia. Bạn có thể dùng các nhận xét này để luyện tập tiếp.',
     },
     Behavioral: {
       name: 'Chị Lan',
-      role: 'HR Manager — FPT Software',
+      role: 'HR Manager — người phỏng vấn mô phỏng',
       tone: 'Đồng cảm, khuyến khích',
-      opener: 'Chào bạn, tôi là Lan — HR Manager tại FPT. Phỏng vấn behavioral giúp chúng tôi hiểu cách bạn xử lý tình huống thực tế.',
+      opener: 'Chào bạn, tôi là Lan — người phỏng vấn hành vi mô phỏng. Phỏng vấn behavioral giúp chúng tôi hiểu cách bạn xử lý tình huống thực tế.',
       closer: 'Bạn đã thể hiện rất tốt. Hãy tiếp tục phát huy thế mạnh này nhé.',
     },
   },

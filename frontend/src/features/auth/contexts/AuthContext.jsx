@@ -1,121 +1,43 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useSyncExternalStore } from 'react';
 import apiClient from '../../../service/apiClient.js';
+import { createAuthSession } from '../services/authSession.js';
+import LogoutLoading from '../components/LogoutLoading.jsx';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
+const EMPTY_PROFILE = { fullName: '', email: '', phone: '', location: '', profession: '', favorites: [], membershipType: 'Free' };
 
 export function AuthProvider({ children }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
+  const [session] = useState(() => createAuthSession(apiClient, localStorage));
+  const auth = useSyncExternalStore(session.subscribe, session.getSnapshot, session.getSnapshot);
+  // Keep the current view behind the blocked logout overlay; credentials are already removed.
+  const isLoggedIn = auth.status === 'authenticated' || auth.status === 'logging-out';
+  const isLoading = auth.status === 'checking';
+  const sessionExpired = auth.sessionExpired === true;
+  const profile = auth.profile || EMPTY_PROFILE;
+  const setProfile = session.updateProfile;
+  const isLoggingOut = auth.status === 'logging-out';
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const [is2faEnabled, setIs2faEnabled] = useState(false);
-  const [profile, setProfile] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    location: '',
-    profession: '',
-    linkedin: '',
-    portfolio: '',
-    github: '',
-    membershipType: 'Free',
-    memberSince: '',
-    favorites: [], // List of template IDs
-  });
-
-  // Centralized state for history and security
   const [activityLogs, setActivityLogs] = useState([]);
   const [devices, setDevices] = useState([]);
   const [securityLogs, setSecurityLogs] = useState([]);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      let token = localStorage.getItem('accessToken');
-      const savedProfile = localStorage.getItem('userProfile');
+    const onExpired = () => session.expire(true);
+    window.addEventListener('auth:expired', onExpired);
+    session.verify().catch(() => {});
+    return () => window.removeEventListener('auth:expired', onExpired);
+  }, [session]);
 
-      if (token === 'undefined') {
-        localStorage.removeItem('accessToken');
-        token = null;
-      }
-
-      if (token) {
-        setIsLoggedIn(true);
-
-        // 1. Load cached profile immediately for fast UI response
-        if (savedProfile) {
-          try {
-            setProfile(JSON.parse(savedProfile));
-          } catch (e) {
-            console.error('Failed to parse saved profile', e);
-          }
-        }
-
-        // 2. Fetch fresh profile from Backend to ensure data is up-to-date
-        try {
-          const response = await apiClient.get('/auth/me');
-          // Support both .data and .result patterns from Backend
-          const freshProfile = response.data?.data || response.data?.result || response.data;
-          if (freshProfile) {
-            setProfile(freshProfile);
-            localStorage.setItem('userProfile', JSON.stringify(freshProfile));
-          }
-        } catch (error) {
-          console.error('Failed to fetch fresh profile:', error);
-        }
-      }
-      setIsLoading(false);
-    };
-    checkAuth();
-  }, []);
-
-  const handleLogin = async (userData, tokens) => {
-    if (tokens && tokens.accessToken && tokens.accessToken !== 'undefined') {
-      localStorage.setItem('accessToken', tokens.accessToken);
-      if (tokens.refreshToken && tokens.refreshToken !== 'undefined') {
-        localStorage.setItem('refreshToken', tokens.refreshToken);
-      }
-    }
-
-    setIsLoggedIn(true);
-
-    if (userData) {
-      setProfile(userData);
-      localStorage.setItem('userProfile', JSON.stringify(userData));
-    } else {
-      // If no userData provided, fetch it immediately from Backend
-      try {
-        // Ensure the token is fully written to localStorage before calling apiClient
-        // Although localStorage.setItem is synchronous, we want to be explicit.
-        const response = await apiClient.get('/auth/me');
-        const freshProfile = response.data?.data || response.data?.result || response.data;
-        if (freshProfile) {
-          setProfile(freshProfile);
-          localStorage.setItem('userProfile', JSON.stringify(freshProfile));
-        }
-      } catch (error) {
-        console.error('Failed to fetch profile after login:', error);
-      }
-    }
+  const handleLogin = async (_userData, tokens) => {
+    setIsSigningIn(true);
+    try { return await session.login(tokens); }
+    finally { setIsSigningIn(false); }
   };
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        await apiClient.delete('/auth/tokens', {
-          data: { refreshToken }
-        });
-      }
-    } catch (error) {
-      console.error('Logout API error:', error);
-    } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('userProfile');
-      setIsLoggedIn(false);
-      setIsLoggingOut(false);
-    }
-  };
+  const retryAuth = () => session.verify().catch(() => {});
+  const handleLogout = () => session.logout(() => navigate('/', { replace: true, state: { loggedOut: true } }));
 
   const updateProfile = async (updatedData) => {
     const response = await apiClient.patch('/auth/profile/info', updatedData);
@@ -186,8 +108,8 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       isLoggedIn,
       isLoading,
+      sessionExpired,
       isLoggingOut,
-      setIsLoggedIn,
       is2faEnabled,
       profile,
       handleLogin,
@@ -205,7 +127,15 @@ export function AuthProvider({ children }) {
       securityLogs,
       addSecurityLog
     }}>
-      {!isLoading && children}
+      {isLoggingOut && <LogoutLoading />}
+      <div inert={isLoggingOut}>
+      {isLoading && !isSigningIn ? <div role="status" className="flex min-h-screen items-center justify-center bg-surface text-on-surface">Đang xác minh tài khoản…</div>
+        : auth.status === 'error' ? <div role="alert" className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface p-6 text-center text-on-surface">
+          <p>{auth.error}</p>
+          <button onClick={retryAuth} className="rounded-xl bg-primary px-5 py-2 text-on-primary">Thử lại</button>
+          <button onClick={handleLogout} className="text-sm underline">Đăng nhập bằng tài khoản khác</button>
+        </div> : children}
+      </div>
     </AuthContext.Provider>
   );
 }

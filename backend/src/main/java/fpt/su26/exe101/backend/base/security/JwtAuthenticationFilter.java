@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,33 +25,50 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String token = resolveToken(request);
-        if (token != null && tokenProvider.validateAccessToken(token)) {
-            String username = tokenProvider.getUsernameFromToken(token);
-            try {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (userDetails.isEnabled() && userDetails.isAccountNonLocked()
-                        && userDetails.isAccountNonExpired() && userDetails.isCredentialsNonExpired()) {
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                } else {
-                    SecurityContextHolder.clearContext();
-                }
-            } catch (UsernameNotFoundException ex) {
-                // A previously issued JWT must not authenticate an account removed by cleanup.
-                SecurityContextHolder.clearContext();
+        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = resolveToken(authorizationHeader);
+        if (token == null || !tokenProvider.validateAccessToken(token)) {
+            rejectInvalidToken(response);
+            return;
+        }
+
+        String username = tokenProvider.getUsernameFromToken(token);
+        try {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (userDetails.isEnabled() && userDetails.isAccountNonLocked()
+                    && userDetails.isAccountNonExpired() && userDetails.isCredentialsNonExpired()) {
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                rejectInvalidToken(response);
+                return;
             }
+        } catch (UsernameNotFoundException ex) {
+            // A previously issued JWT must not authenticate an account removed by cleanup.
+            rejectInvalidToken(response);
+            return;
         }
         filterChain.doFilter(request, response);
     }
 
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+    private String resolveToken(String authorizationHeader) {
+        if (!authorizationHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            return null;
         }
-        return null;
+        String token = authorizationHeader.substring(7).trim();
+        return token.isEmpty() ? null : token;
+    }
+
+    private void rejectInvalidToken(HttpServletResponse response) throws IOException {
+        SecurityContextHolder.clearContext();
+        response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer error=\"invalid_token\"");
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired access token");
     }
 }

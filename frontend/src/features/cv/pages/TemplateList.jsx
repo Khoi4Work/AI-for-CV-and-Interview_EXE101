@@ -1,6 +1,6 @@
 import {useState, useMemo, useEffect, useCallback} from 'react';
 import {Lock,Search, ChevronDown, ChevronLeft, ChevronRight, Upload, X, FileText, Star, Download, Eye} from 'lucide-react';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import TemplateCard from '../components/TemplateCard.jsx';
 import Sidebar from "../components/Sidebar.jsx";
 import {Header} from "../../../components/layout/PublicHeader.jsx";
@@ -16,6 +16,7 @@ export default function TemplateList() {
     const {isLoggedIn, profile} = useAuth();
     const {showToast} = useApp();
     const navigate = useNavigate();
+    const location = useLocation();
 
     // API States
     const [templates, setTemplates] = useState([]);
@@ -65,7 +66,13 @@ export default function TemplateList() {
             navigate('/login', { state: { from: { pathname } } });
             return;
         }
-        navigate(pathname);
+        const template = templates.find(item => item.id === id);
+        if (template?.locked) {
+            setPreviewTemplate(null);
+            handleLockedTemplateClick(template.name);
+            return;
+        }
+        navigate(pathname, {state: location.state});
     };
 
     const handleRateTemplate = (id) => {
@@ -166,19 +173,19 @@ export default function TemplateList() {
                                     bởi AI</p>
                             </div>
                             <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-                                <button
-                                    onClick={() => {
-                                        if (!isLoggedIn) {
-                                            navigate('/login', { state: { from: { pathname: '/templates' } } });
-                                            return;
-                                        }
-                                        setIsUploadModalOpen(true);
-                                    }}
-                                    className="w-full sm:w-auto px-5 py-2.5 bg-white border border-green-600 text-green-600 font-semibold rounded-2xl hover:bg-green-50 transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
-                                >
-                                    <Upload className="w-4 h-4"/>
-                                    Tải lên template CV
-                                </button>
+                                {/*<button*/}
+                                {/*    onClick={() => {*/}
+                                {/*        if (!isLoggedIn) {*/}
+                                {/*            navigate('/login', { state: { from: { pathname: '/templates' } } });*/}
+                                {/*            return;*/}
+                                {/*        }*/}
+                                {/*        setIsUploadModalOpen(true);*/}
+                                {/*    }}*/}
+                                {/*    className="w-full sm:w-auto px-5 py-2.5 bg-white border border-green-600 text-green-600 font-semibold rounded-2xl hover:bg-green-50 transition-all flex items-center justify-center gap-2 text-sm shadow-sm"*/}
+                                {/*>*/}
+                                {/*    <Upload className="w-4 h-4"/>*/}
+                                {/*    Tải lên template CV*/}
+                                {/*</button>*/}
                                 <div className="relative w-full md:w-80">
                                     <input
                                         type="text"
@@ -299,7 +306,7 @@ export default function TemplateList() {
                                                 </button>
                                                 <button
                                                     disabled={!selectedFile}
-                                                    onClick={() => navigate('/builder')}
+                                                    onClick={() => navigate('/builder', {state: location.state})}
                                                     className="flex-1 py-3 rounded-xl font-semibold text-white bg-green-700 hover:bg-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-md"
                                                 >
                                                     Xác nhận

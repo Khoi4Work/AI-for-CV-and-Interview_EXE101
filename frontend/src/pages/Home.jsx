@@ -2,30 +2,16 @@ import React from 'react';
 import {Header} from '../components/layout/PublicHeader.jsx';
 import {Footer} from '../components/layout/Footer.jsx';
 import FloatingCVCard from '../features/user/components/FloatingCVCard.jsx';
-import {useAuth} from '../features/auth/contexts/AuthContext.jsx';
-import {useApp} from '../features/auth/contexts/AppContext.jsx';
 import {ArrowRight, FileText, Bot, BarChart2, MessageSquare, ExternalLink, Zap} from 'lucide-react';
 import {useNavigate} from "react-router-dom";
 import { TEMPLATES_DATA } from '../features/cv/constants/templates.js';
 
 export default function Home() {
-    const {profile, handleLogout} = useAuth();
-    const {notificationsCount, showToast} = useApp();
     const navigate = useNavigate();
-    const logout = (e) => {
-        e.preventDefault();
-        handleLogout();
-        navigate('/');
-    }
 
     return (
         <div className="flex flex-col min-h-screen w-full bg-background text-on-surface font-sans antialiased">
-            <Header
-                profile={profile}
-                notificationsCount={notificationsCount}
-                onLogout={logout}
-                onHelpClick={() => showToast('Trung tâm trợ giúp Smartfolio đang tải dữ liệu.', 'info')}
-            />
+            <Header />
             <main className="flex-grow w-full">
                 {/* Hero Section */}
                 <section

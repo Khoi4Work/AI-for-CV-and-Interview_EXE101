@@ -117,10 +117,8 @@
     --color-cv-result-ats-tag-bg: rgba(130, 131, 132, 0.1);
     --color-cv-result-ats-tag-text: #0D774B;
     --color-cv-result-ai-desc: #434653;
-    --color-cv-result-score-gradient-start: #FFFFFF;
-    --color-cv-result-score-gradient-end: #239C7C;
     --color-cv-result-score-border-bg: #C7FEF1;
-    --color-cv-result-score-btn-ai-bg: #AFDAD2;
+    --color-cv-result-score-btn-ai-bg: #0F766E;
     --color-cv-result-score-btn-int-bg: #075F4E;
 
     /*Home LandingPage*/

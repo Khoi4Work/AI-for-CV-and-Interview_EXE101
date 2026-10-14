@@ -32,6 +32,11 @@ class AccountRegistrationVerificationTest {
     @Mock UsageQuotaService quota;
     @InjectMocks AccountServiceImpl service;
 
+    @Test void registrationCannotCreateAdmin() {
+        assertThrows(ApiException.class, () -> service.register(RegisterRequestDTO.builder().role(AccountRole.ADMIN).build()));
+        verifyNoInteractions(accounts,attendance,partners,encoder,verification);
+    }
+
     @Test void pendingRegistrationQueuesVerificationWithoutProvisioningOrExposingToken() throws Exception {
         when(accounts.save(any())).thenAnswer(call -> {
             Account a = call.getArgument(0);

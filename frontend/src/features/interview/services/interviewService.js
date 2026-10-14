@@ -31,8 +31,9 @@ export const interviewService = {
     await apiClient.post(`/interview/sessions/${sessionId}/finish`, {}, { timeout: 10000 }),
   ),
 
-  getQuestionAudio: async (questionId, transition = 'START', signal) => {
-    const response = await apiClient.get(`/interview/questions/${questionId}/audio`, {
+  getQuestionAudio: async (questionId, transition = 'START', signal, sessionId) => {
+    const route=sessionId?`/interview/sessions/${sessionId}/questions/${questionId}/audio`:`/interview/questions/${questionId}/audio`;
+    const response = await apiClient.get(route, {
       responseType: 'blob',
       signal,
       params: {transition},

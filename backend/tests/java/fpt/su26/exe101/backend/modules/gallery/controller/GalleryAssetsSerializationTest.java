@@ -67,6 +67,8 @@ class GalleryAssetsSerializationTest {
     @Autowired PlatformTransactionManager transactions;
     @MockBean GalleryService galleryService;
     @MockBean UsageQuotaService quotaService;
+    @MockBean fpt.su26.exe101.backend.modules.cv.service.CVAnalysisQuotaService analysisQuotaService;
+    @MockBean fpt.su26.exe101.backend.modules.cv.service.CVAnalysisService cvAnalysisService;
     @MockBean AIProviderService aiProvider;
     @MockBean CVFeedbackMapper feedbackMapper;
 

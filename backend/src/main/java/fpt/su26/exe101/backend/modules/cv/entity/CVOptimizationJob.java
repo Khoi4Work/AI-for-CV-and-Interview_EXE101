@@ -33,4 +33,7 @@ public class CVOptimizationJob extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String errorMessage;
+
+    @Column(name = "result_snapshot", columnDefinition = "TEXT")
+    private String resultSnapshot;
 }

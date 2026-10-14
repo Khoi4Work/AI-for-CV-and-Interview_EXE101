@@ -5,6 +5,8 @@ import Sidebar from '../../features/user/components/Sidebar.jsx';
 import Header from '../../features/user/components/Header.jsx';
 import { Footer } from './Footer.jsx';
 import ProtectedRoute from '../ProtectedRoute.jsx';
+import AdminRoute from '../../features/admin/components/AdminRoute.jsx';
+import AdminArea from '../../features/admin/pages/AdminArea.jsx';
 import LandingPage from '../../pages/LandingPage.jsx';
 import Home from '../../pages/Home.jsx';
 import Login from '../../features/auth/pages/Login.jsx';
@@ -16,6 +18,7 @@ import PersonalInfoPage from '../../features/user/pages/PersonalInfoPage.jsx';
 import SecurityPage from '../../features/user/pages/SecurityPage.jsx';
 import PricingPage from '../../features/user/pages/PricingPage.jsx';
 import MyCVsPage from '../../features/user/pages/MyCVsPage.jsx';
+import MyJDsPage from '../../features/user/pages/MyJDsPage.jsx';
 import HistoryPage from '../../features/user/pages/HistoryPage.jsx';
 import InterviewLanding from '../../features/interview/pages/InterviewLanding.jsx';
 import JobSelection from '../../features/interview/pages/JobSelection.jsx';
@@ -173,7 +176,7 @@ function AppLayout() {
                 <Route
                     path="/"
                     element={!isLoggedIn
-                        ? <PageTransition key={location.pathname}><LandingPage/></PageTransition>
+                        ? <PageTransition key={location.pathname} skipEnter={location.state?.loggedOut === true}><LandingPage/></PageTransition>
                         : <Navigate to="/home" replace/>}
                 />
                 <Route path="/login"
@@ -193,6 +196,7 @@ function AppLayout() {
                 <Route path="/cv-evaluation"
                        element={<PageTransition key={location.pathname}><CVEvaluation/></PageTransition>}/>
 
+                <Route path="/admin/*" element={<AdminRoute><AdminArea/></AdminRoute>}/>
                 {/* ── Protected block (Zones B + C) ───────────────── */}
                 <Route path="/*" element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
@@ -271,6 +275,8 @@ function AppLayout() {
                                                                         element={<PricingPage/>}/>
                                                                 <Route path="my-cvs"
                                                                         element={<MyCVsPage/>}/>
+                                                                <Route path="my-jds"
+                                                                        element={<MyJDsPage/>}/>
                                                                 <Route path="history"
                                                                         element={<HistoryPage/>}/>
                                                             </Routes>

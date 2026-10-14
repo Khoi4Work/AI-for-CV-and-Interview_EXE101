@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { HR_PERSONAS, labelForScore } from '../constants/feedbackInterviewRubric.js';
 import { interviewService } from '../services/interviewService.js';
+import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../services/interviewConfiguration.js';
 
 const SESSION_KEY = 'interview_session_v1';
 
@@ -52,13 +53,10 @@ function clearSession() {
   }
 }
 
-function backendInterviewType(type) {
-  return type === 'Technical' ? 'TECHNICAL' : type === 'Behavioral' ? 'BEHAVIORAL' : 'HR';
-}
-
 function personaForType(type) {
-  const personaType = type === 'TECHNICAL' ? 'Technical' : type === 'BEHAVIORAL' ? 'Behavioral' : 'HR';
-  return HR_PERSONAS.FPT[personaType];
+  const normalized=normalizeInterviewType(type || 'HR');
+  const personaType = normalized === 'TECHNICAL' ? 'Technical' : normalized === 'BEHAVIORAL' ? 'Behavioral' : 'HR';
+  return HR_PERSONAS.GENERAL[personaType];
 }
 
 function toFeedback(evaluation, state) {
@@ -116,6 +114,7 @@ export function useInterviewSession() {
   const createPromiseRef = useRef(null);
   const evaluatePromiseRef = useRef(null);
   const initialized = useRef(false);
+  const configurationVersion=useRef(0);
 
   useEffect(() => {
     dataRef.current = data;
@@ -128,6 +127,13 @@ export function useInterviewSession() {
 
   const update = useCallback((patch) => {
     const next = { ...dataRef.current, ...patch };
+    if(['interviewConfig','experienceLevel','cvId','job'].some(key=>key in patch)) {
+      configurationVersion.current++;
+      createPromiseRef.current = null;
+      evaluatePromiseRef.current = null;
+      next.backendSessionId=null;next.questions=[];next.answers=[];next.feedback=null;
+      next.transcriptLog=[];next.configurationFingerprint=null;
+    }
     dataRef.current = next;
     saveSession(next);
     setData(next);
@@ -135,7 +141,9 @@ export function useInterviewSession() {
 
   const reset = useCallback(() => {
     clearSession();
-    setData(initialState());
+    const next=initialState();dataRef.current=next;setData(next);
+    configurationVersion.current++;
+    createPromiseRef.current=null;evaluatePromiseRef.current=null;
   }, []);
 
   const setStep = useCallback((step) => {
@@ -143,6 +151,9 @@ export function useInterviewSession() {
   }, []);
 
   const clearCurrentInterview = useCallback(() => {
+    configurationVersion.current++;
+    createPromiseRef.current = null;
+    evaluatePromiseRef.current = null;
     const next = {
       ...data,
       videoSetupConfirmed: true,
@@ -163,8 +174,6 @@ export function useInterviewSession() {
 
   const generateQuestions = useCallback(() => {
     const currentData = dataRef.current;
-    if (currentData.backendSessionId && currentData.questions.length) return Promise.resolve(currentData.questions);
-    if (createPromiseRef.current) return createPromiseRef.current;
 
     const { interviewConfig } = currentData;
     if (!interviewConfig?.type || !interviewConfig?.duration || !currentData.experienceLevel) {
@@ -172,26 +181,29 @@ export function useInterviewSession() {
       update({ sessionError: message });
       return Promise.reject(new Error(message));
     }
+    const fingerprint=interviewFingerprint(currentData);
+    const version=configurationVersion.current;
+    if (currentData.backendSessionId && currentData.questions.length && currentData.configurationFingerprint===fingerprint) return Promise.resolve(currentData.questions);
+    if (createPromiseRef.current) return createPromiseRef.current;
 
     update({ sessionError: null });
-    createPromiseRef.current = interviewService.createSession({
-      interviewType: backendInterviewType(interviewConfig.type),
-      durationMinutes: Number(interviewConfig.duration),
-      experienceLevel: currentData.experienceLevel.toUpperCase(),
-      language: interviewConfig.language || 'vi',
-      cvId: currentData.cvId || undefined,
-      jdText: interviewConfig.jd?.trim() || undefined,
-      adaptiveMode: false,
-    }).then((session) => {
+    const payload=interviewPayload(currentData);
+    const pending = interviewService.createSession(payload).then((session) => {
+      if(configurationVersion.current!==version) throw new Error('Cấu hình đã thay đổi. Hãy bắt đầu lại buổi phỏng vấn.');
       const questions = (session.questions || []).map((question) => ({
         id: question.id,
         text: question.text,
         category: question.category,
         competency: question.competency,
+        source: question.source,
+        interviewType: question.interviewType,
+        contextType: question.contextType,
       }));
       const next = {
         ...loadSession(),
         ...dataRef.current,
+        configurationFingerprint:fingerprint,
+        companyContext:session.companyContext || null,
         backendSessionId: session.id,
         sessionError: null,
         questions,
@@ -209,13 +221,13 @@ export function useInterviewSession() {
       return questions;
     }).catch((error) => {
       const message = getApiErrorMessage(error, 'Không thể tạo buổi phỏng vấn.');
-      update({ sessionError: message });
+      if(configurationVersion.current===version) update({ sessionError: message });
       throw error;
     }).finally(() => {
-      createPromiseRef.current = null;
+      if (createPromiseRef.current === pending) createPromiseRef.current = null;
     });
-
-    return createPromiseRef.current;
+    createPromiseRef.current = pending;
+    return pending;
   }, [update]);
 
   const saveAnswer = useCallback(async (questionId, answer, { audioBlob } = {}) => {
@@ -262,11 +274,13 @@ export function useInterviewSession() {
     if (evaluatePromiseRef.current) return evaluatePromiseRef.current;
     if (!data.backendSessionId) return Promise.reject(new Error('Không tìm thấy interview session trên máy chủ.'));
 
-    evaluatePromiseRef.current = interviewService.evaluateSession(data.backendSessionId)
+    const version = configurationVersion.current;
+    const pending = interviewService.evaluateSession(data.backendSessionId)
       .then(async (evaluation) => {
         // The backend is the source of truth for answers used during evaluation.
         // Browser session storage can be stale after navigation or a refresh.
         const detail = await interviewService.getSessionDetail(data.backendSessionId);
+        if (version !== configurationVersion.current) throw new Error('Buổi phỏng vấn đã thay đổi.');
         const answers = normalizeSavedAnswers(detail.answers);
         const feedback = toFeedback(evaluation, { ...data, answers });
         const next = { ...data, answers, feedback, endedAt: Date.now(), sessionError: null };
@@ -275,13 +289,14 @@ export function useInterviewSession() {
         setData(next);
         return feedback;
       }).catch((error) => {
-        update({ sessionError: getApiErrorMessage(error, 'Không thể tạo phản hồi phỏng vấn.') });
+        if (version === configurationVersion.current) update({ sessionError: getApiErrorMessage(error, 'Không thể tạo phản hồi phỏng vấn.') });
         throw error;
       }).finally(() => {
-        evaluatePromiseRef.current = null;
+        if (evaluatePromiseRef.current === pending) evaluatePromiseRef.current = null;
       });
 
-    return evaluatePromiseRef.current;
+    evaluatePromiseRef.current = pending;
+    return pending;
   }, [data, update]);
 
   const finishInterview = useCallback(async () => {

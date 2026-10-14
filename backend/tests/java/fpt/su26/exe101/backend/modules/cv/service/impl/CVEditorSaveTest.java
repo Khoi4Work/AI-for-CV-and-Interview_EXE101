@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
+import fpt.su26.exe101.backend.modules.cv.dto.response.CVImportModelResponseDTO;
 import fpt.su26.exe101.backend.modules.cv.dto.request.*;
 import fpt.su26.exe101.backend.modules.cv.entity.*;
 import fpt.su26.exe101.backend.modules.cv.entity.enums.TemplateAccessLevel;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,10 +34,14 @@ class CVEditorSaveTest {
     @Mock CVOptimizationJobRepository jobs;
     @Mock GalleryService galleries;
     @Mock UsageQuotaService quota;
+    @Mock CVAnalysisQuotaService analysisQuota;
+    @Mock CVAnalysisService cvAnalysisService;
+    @Spy RoleTaxonomyServiceImpl roleTaxonomy = new RoleTaxonomyServiceImpl(new ObjectMapper());
     @Mock AIProviderService ai;
     @Mock CVMapper mapper;
     @Mock CVFeedbackMapper feedbackMapper;
     @Mock ObjectProvider<CVPipelineServiceImpl> self;
+    @Spy ObjectMapper objectMapper = new ObjectMapper();
     @InjectMocks CVPipelineServiceImpl service;
 
     private Gallery gallery() {
@@ -65,6 +71,7 @@ class CVEditorSaveTest {
     }
     @Test void newDraftStoresForeignKeyAndCanonicalContentBeforeChargingOnce() {
         Gallery gallery = gallery();
+        when(quota.consumeCvCreation(gallery.getAccountId())).thenReturn(new UsageQuotaService.CvCreationQuota(UserPlan.FREE, 1, 1));
         CVTemplate template = CVTemplate.builder().id("free").minimumPlan(TemplateAccessLevel.FREE).build();
         when(templates.findById("free")).thenReturn(Optional.of(template));
         when(quota.getCvPlan(gallery.getAccountId())).thenReturn(UserPlan.FREE);
@@ -75,6 +82,42 @@ class CVEditorSaveTest {
         assertSame(template, saved.getValue().getTemplate());
         assertEquals("free", saved.getValue().getContent().getSelectedTemplateId());
         assertEquals("CV", saved.getValue().getName());
+    }
+    @Test void importingCVDoesNotConsumeCreationOrAnalysisQuota() {
+        Gallery gallery = gallery();
+        CVContent extracted = CVContent.builder()
+                .personalInfo(CVContent.PersonalInfo.builder().name("Test User").build())
+                .summary("Software developer")
+                .build();
+        when(ai.parseCVFile(any(), eq("application/pdf"))).thenReturn(
+                CVImportModelResponseDTO.builder().isCV(true).extractedData(extracted).build());
+        when(quota.getCvAiAnalysisLimit(gallery.getAccountId())).thenReturn(1);
+
+        service.importCV(new byte[] {1, 2, 3}, "application/pdf", "test.pdf", gallery);
+
+        verify(quota, never()).consumeCvCreation(any());
+        verify(quota).getCvAiAnalysisLimit(gallery.getAccountId());
+        ArgumentCaptor<CV> saved = ArgumentCaptor.forClass(CV.class);
+        verify(cvs).save(saved.capture());
+        assertEquals(1, saved.getValue().getAiAnalysisLimit());
+        assertEquals(1, saved.getValue().getAiAnalysisRemaining());
+    }
+    @Test void enhanceOptimizationDoesNotConsumePerCvAnalysisQuota() {
+        Gallery gallery = gallery();
+        UUID cvId = UUID.randomUUID();
+        CV cv = CV.builder().gallery(gallery).name("CV").build();
+        when(cvs.findById(cvId)).thenReturn(Optional.of(cv));
+        when(quota.getCvPlan(gallery.getAccountId())).thenReturn(UserPlan.ENHANCE);
+
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.startOptimization(cvId, CVOptimizationRequestDTO.builder().jdId(UUID.randomUUID()).build(), gallery);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        verify(quota).getCvPlan(gallery.getAccountId());
+        verify(analysisQuota, never()).consume(any(), any());
     }
     @Test void ownerUpdateChangesTemplateWithoutConsumingCreationQuota() {
         Gallery gallery = gallery();
@@ -116,6 +159,7 @@ class CVEditorSaveTest {
         assertThrows(ApiException.class, () -> service.createCV(CVCreateRequestDTO.builder()
                 .name("CV").content(content("missing")).build(), gallery));
         verify(quota, never()).consumeCvCreation(any());
+        when(quota.consumeCvCreation(gallery.getAccountId())).thenReturn(new UsageQuotaService.CvCreationQuota(UserPlan.FREE, 1, 1));
         service.createCV(CVCreateRequestDTO.builder().name("Imported").content(content(null)).build(), gallery);
         verify(quota).consumeCvCreation(gallery.getAccountId());
         verify(cvs).save(any());
@@ -133,5 +177,22 @@ class CVEditorSaveTest {
         CVContent original = content("free");
         CVContent restored = json.readValue(json.writeValueAsString(original), CVContent.class);
         assertEquals(original, restored);
+    }
+    @Test void cosmeticSavePreservesImportEvidenceButContentEditInvalidatesIt() {
+        Gallery gallery=gallery();UUID id=UUID.randomUUID();
+        CVContent imported=content(null);
+        imported.setSourceText("Original extracted CV text");
+        imported.setSourceTruncated(false);imported.setTargetRoleOrigin("NONE");
+        CV existing=CV.builder().gallery(gallery).name("CV").content(imported).build();
+        when(cvs.findById(id)).thenReturn(Optional.of(existing));
+        CVContent cosmetic=content(null);cosmetic.setProfilePhoto("new photo");
+        service.updateCV(id,CVUpdateRequestDTO.builder().name("CV").content(cosmetic).build(),gallery);
+        assertEquals("Original extracted CV text",existing.getContent().getSourceText());
+        assertEquals("NONE",existing.getContent().getTargetRoleOrigin());
+        CVContent edited=content(null);edited.setSummary("New real project evidence");
+        service.updateCV(id,CVUpdateRequestDTO.builder().name("CV").content(edited).build(),gallery);
+        assertNull(existing.getContent().getSourceText());
+        assertEquals("EXPLICIT",existing.getContent().getTargetRoleOrigin());
+        verify(quota,never()).consumeCvCreation(any());
     }
 }

@@ -13,6 +13,7 @@ public interface UsageQuotaService {
     Optional<UserUsageQuota> getQuota(UUID accountId);
     void requireCvCreationCredit(UUID accountId);
     CvCreationQuota consumeCvCreation(UUID accountId);
+    int getCvAiAnalysisLimit(UUID accountId);
     void consumeInterviewMinutes(UUID accountId, int minutes);
     void refundInterviewMinutes(UUID accountId, int minutes);
     void grantCvPackage(UUID accountId, UserPlan plan, int cvCount);

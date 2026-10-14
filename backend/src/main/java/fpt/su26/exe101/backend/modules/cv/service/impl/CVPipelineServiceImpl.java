@@ -1,5 +1,9 @@
 package fpt.su26.exe101.backend.modules.cv.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.security.NoSuchAlgorithmException;
+
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
@@ -27,6 +31,7 @@ import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
 import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisQuotaService;
+import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +47,7 @@ import java.time.LocalDateTime;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
+import fpt.su26.exe101.backend.modules.cv.service.RoleTaxonomyService;
 import java.util.regex.Pattern;
 
 @Service
@@ -59,9 +65,12 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private final GalleryService galleryService;
     private final UsageQuotaService quotaService;
     private final CVAnalysisQuotaService cvAnalysisQuotaService;
+    private final CVAnalysisService cvAnalysisService;
+    private final RoleTaxonomyService roleTaxonomy;
     private final AIProviderService aiProvider;
     private final CVMapper cvMapper;
     private final CVFeedbackMapper feedbackMapper;
+    private final ObjectMapper objectMapper;
     private final ObjectProvider<CVPipelineServiceImpl> selfProvider;
 
     @Override
@@ -92,7 +101,11 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Transactional
     @Override
     public CVResponseDTO createCV(CVCreateRequestDTO request, Gallery gallery) {
+        normalizeLanguageSkills(request.getContent());
         validateDraft(request.getName(), request.getContent());
+        request.getContent().setSourceText(null);
+        request.getContent().setSourceTruncated(false);
+        declaredRole(request.getContent());
         CVTemplate template = resolveTemplate(request.getTemplateId(), request.getContent(), null, gallery);
         UsageQuotaService.CvCreationQuota creationQuota = quotaService.consumeCvCreation(gallery.getAccountId());
         CV cv = CV.builder()
@@ -117,10 +130,23 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
 
+        normalizeLanguageSkills(request.getContent());
         validateDraft(request.getName(), request.getContent());
         CVTemplate template = resolveTemplate(request.getTemplateId(), request.getContent(), cv.getTemplate(), gallery);
         cv.setName(request.getName().trim());
         cv.setTemplate(template);
+        if (!comparableContent(cv.getContent()).equals(comparableContent(request.getContent()))) {
+            // Edited content replaces parser text. Cosmetic edits keep the original evidence/cache.
+            request.getContent().setSourceText(null);
+            request.getContent().setSourceTruncated(false);
+            declaredRole(request.getContent());
+        } else {
+            request.getContent().setSourceText(cv.getContent().getSourceText());
+            request.getContent().setSourceTruncated(cv.getContent().getSourceTruncated());
+            request.getContent().setTargetRoleCode(cv.getContent().getTargetRoleCode());
+            request.getContent().setTargetRoleOrigin(cv.getContent().getTargetRoleOrigin());
+            request.getContent().setTargetRoleEvidence(cv.getContent().getTargetRoleEvidence());
+        }
         cv.setContent(request.getContent());
         cvRepository.save(cv);
         return cvMapper.cvToCVResponse(cv);
@@ -130,6 +156,20 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         if (name == null || name.isBlank() || name.trim().length() > 100 || content == null) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Tên CV phải có từ 1 đến 100 ký tự và nội dung không được trống.");
         }
+    }
+
+    private void declaredRole(CVContent content) {
+        String title = content.getProfessionalTitle();
+        content.setTargetRoleOrigin(title == null || title.isBlank() ? "NONE" : "EXPLICIT");
+        content.setTargetRoleEvidence(title == null || title.isBlank() ? null : title);
+        Set<String> roles = roleTaxonomy.roles(title);
+        content.setTargetRoleCode(roles.size() == 1 ? roles.iterator().next() : null);
+    }
+    private String comparableContent(CVContent content) {
+        ObjectNode tree = objectMapper.valueToTree(content);
+        tree.remove(List.of("profilePhoto","selectedTemplateId","sourceText","sourceTruncated","targetRoleCode","targetRoleOrigin","targetRoleEvidence"));
+        if(tree.path("experiences").isArray()) tree.path("experiences").forEach(e->{if(e.isObject())((com.fasterxml.jackson.databind.node.ObjectNode)e).remove("id");});
+        return tree.toString();
     }
 
     private CVTemplate resolveTemplate(String requestedId, CVContent content, CVTemplate existing, Gallery gallery) {
@@ -157,46 +197,56 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         Optional<CV> existing = cvRepository.findByGalleryIdAndSourceHash(gallery.getId(), sourceHash);
         if (existing.isPresent()) {
             CV cv = existing.get();
+            if (normalizeLanguageSkills(cv.getContent())) {
+                cvRepository.save(cv);
+            }
             log.info("[CV] Import completed | cvId={} | galleryId={} | duplicate=true",
                     cv.getId(), gallery.getId());
-            return CVImportResponseDTO.builder().cvId(cv.getId()).sourceHash(sourceHash).duplicate(true)
+            return CVImportResponseDTO.builder().cvId(cv.getId()).cvName(cv.getName())
+                    .sourceHash(sourceHash).duplicate(true)
                     .extractedData(cv.getContent()).build();
         }
-        quotaService.requireCvCreationCredit(gallery.getAccountId());
         CVImportModelResponseDTO parsed = aiProvider.parseCVFile(fileContent, contentType);
         CVContent extractedData = parsed == null ? null : parsed.getExtractedData();
         if (parsed == null || !Boolean.TRUE.equals(parsed.getIsCV()) || extractedData == null) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Tệp tải lên không được nhận diện là CV hợp lệ.");
         }
+        normalizeLanguageSkills(extractedData);
         if (!hasCVContent(extractedData)) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV không có đủ thông tin cá nhân, học vấn hoặc kinh nghiệm để nhập.");
         }
-        UsageQuotaService.CvCreationQuota creationQuota = quotaService.consumeCvCreation(gallery.getAccountId());
         String cvName = filename == null || filename.isBlank() ? "Imported CV" : filename;
         if (cvName.length() > 100) cvName = cvName.substring(0, 100);
+        int analysisLimit = quotaService.getCvAiAnalysisLimit(gallery.getAccountId());
         CV draft = CV.builder().name(cvName).content(extractedData).gallery(gallery)
                 .sourceHash(sourceHash).optimizationState(OptimizationState.DRAFT).status("DRAFT")
-                .aiAnalysisLimit(creationQuota.aiAnalysisLimit())
-                .aiAnalysisRemaining(creationQuota.aiAnalysisRemaining()).build();
+                .aiAnalysisLimit(analysisLimit)
+                .aiAnalysisRemaining(analysisLimit).build();
         cvRepository.save(draft);
         log.info("[CV] Import completed | cvId={} | galleryId={} | duplicate=false",
                 draft.getId(), gallery.getId());
         return CVImportResponseDTO.builder()
                 .extractedData(extractedData)
                 .cvId(draft.getId())
+                .cvName(draft.getName())
                 .sourceHash(sourceHash)
                 .duplicate(false)
                 .build();
     }
 
     @Override
+    @Transactional
     public CVContent extractCV(byte[] fileContent, String contentType, Gallery gallery) {
         String sourceHash = sha256(fileContent);
         Optional<CV> existing = cvRepository.findByGalleryIdAndSourceHash(gallery.getId(), sourceHash);
         if (existing.isPresent()) {
+            CV existingCV = existing.get();
+            if (normalizeLanguageSkills(existingCV.getContent())) {
+                cvRepository.save(existingCV);
+            }
             log.info("[CV] Reused saved CV content for builder import | cvId={} | galleryId={}",
-                    existing.get().getId(), gallery.getId());
-            return existing.get().getContent();
+                    existingCV.getId(), gallery.getId());
+            return existingCV.getContent();
         }
 
         CVImportModelResponseDTO parsed = aiProvider.parseCVFile(fileContent, contentType);
@@ -204,10 +254,35 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         if (parsed == null || !Boolean.TRUE.equals(parsed.getIsCV()) || extractedData == null) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Tệp tải lên không được nhận diện là CV hợp lệ.");
         }
+        normalizeLanguageSkills(extractedData);
         if (!hasCVContent(extractedData)) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "CV không có đủ thông tin cá nhân, học vấn hoặc kinh nghiệm để điền.");
         }
         return extractedData;
+    }
+
+    static boolean normalizeLanguageSkills(CVContent content) {
+        if (content == null || content.getSkills() == null || content.getSkills().isEmpty()
+                || content.getLanguages() == null || content.getLanguages().isEmpty()) {
+            return false;
+        }
+
+        Set<String> languageNames = new HashSet<>();
+        for (CVContent.Language language : content.getLanguages()) {
+            if (language != null && language.getName() != null && !language.getName().isBlank()) {
+                languageNames.add(normalizeLanguageName(language.getName()));
+            }
+        }
+        if (languageNames.isEmpty()) {
+            return false;
+        }
+
+        return content.getSkills().removeIf(skill -> skill != null && skill.getName() != null && !skill.getName().isBlank()
+                && languageNames.contains(normalizeLanguageName(skill.getName())));
+    }
+
+    private static String normalizeLanguageName(String value) {
+        return value.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 
     private boolean hasCVContent(CVContent data) {
@@ -251,8 +326,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private String sha256(byte[] content) {
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content));
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is unavailable", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new ApiException(ErrorCode.UNEXPECTED_ERROR, "Không tạo được dấu vết tệp CV.");
         }
     }
 
@@ -264,11 +339,14 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     @Override
     public CVOptimizationJobResponseDTO startOptimization(UUID cvId, CVOptimizationRequestDTO request, Gallery gallery) {
         requirePlan(gallery.getAccountId(), UserPlan.ENHANCE);
+        boolean hasJdId = request != null && request.getJdId() != null;
+        boolean hasJdText = request != null && hasText(request.getJdText());
+        if (hasJdId == hasJdText) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Chọn đúng một JD để tối ưu CV.");
+        }
         CV cv = cvRepository.findById(cvId)
                 .filter(c -> c.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
-
-        cvAnalysisQuotaService.consume(gallery.getAccountId(), cv.getId());
 
         String jobId = UUID.randomUUID().toString();
         CVOptimizationJob job = CVOptimizationJob.builder()
@@ -303,8 +381,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         CVOptimizationJob job = jobRepository.findByJobId(jobId)
                 .orElse(null);
         if (job == null) {
-            cvAnalysisQuotaService.refund(accountId, cvId);
-            log.error("[CV OPTIMIZATION] Job record not found; quota refunded | cvId={} | galleryId={} | jobId={}",
+            log.error("[CV OPTIMIZATION] Job record not found | cvId={} | galleryId={} | jobId={}",
                     cvId, galleryId, jobId);
             return;
         }
@@ -319,43 +396,32 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             job.setProgress(10);
             jobRepository.save(job);
 
-            String jdText = (request.getJdText() != null)
-                    ? request.getJdText()
-                    : galleryService.findJobDescription(request.getJdId(), cv.getGallery()).getContent();
+            JobDescription jd = request.getJdId() != null
+                    ? galleryService.findJobDescription(request.getJdId(), cv.getGallery())
+                    : findOrCreateJD(request.getJdText(), cv.getGallery());
 
-            cv.setOptimizationState(OptimizationState.ANALYZING);
-            cvRepository.save(cv);
-
-            CVOptimizationResultResponseDTO result = aiProvider.optimizeCV(cv.getContent(), jdText).join();
+            CVOptimizationResultResponseDTO result = aiProvider.optimizeCV(cv.getContent(), jd.getContent()).join();
+            if (result.getOptimizedContent() == null) {
+                throw new ApiException(ErrorCode.INVALID_INPUT, "AI chưa tạo được nội dung CV hợp lệ.");
+            }
+            // The uploaded parser text describes the old CV. Re-evaluate the proposed structured content.
+            result.getOptimizedContent().setSourceText(null);
+            result.getOptimizedContent().setSourceTruncated(false);
+            try {
+                result.setPostOptimizationScore(cvAnalysisService.scoreOptimizedContent(
+                        cv, result.getOptimizedContent(), jd));
+                result.setScoreNote("Điểm được tính lại theo cùng rubric trên CV đề xuất và JD đã chọn.");
+            } catch (RuntimeException scoringException) {
+                log.warn("[CV OPTIMIZATION] Could not score proposed content | cvId={} | jobId={}", cvId, jobId, scoringException);
+                result.setPostOptimizationScore(null);
+                result.setScoreNote("Chưa thể tính điểm đáng tin cậy cho bản đề xuất này. Bạn vẫn có thể xem và chỉnh sửa nội dung CV.");
+            }
+            result.setPredictedScore(null);
 
             job.setProgress(70);
             jobRepository.save(job);
 
-            cv.setContent(result.getOptimizedContent());
-            cv.setOptimizationState(OptimizationState.OPTIMIZED);
-            cv.setScore(result.getPredictedScore());
-            cvRepository.save(cv);
-
-            CVOptimizationLog summaryLog = CVOptimizationLog.builder()
-                    .cv(cv)
-                    .sectionName("OVERALL")
-                    .originalText("N/A")
-                    .suggestedText(result.getImprovementSummary())
-                    .isAccepted(true)
-                    .build();
-            logRepository.save(summaryLog);
-            if (result.getImprovements() != null) {
-                result.getImprovements().stream()
-                        .filter(item -> item != null && item.getSuggestedText() != null && !item.getSuggestedText().isBlank())
-                        .limit(8)
-                        .forEach(item -> logRepository.save(CVOptimizationLog.builder()
-                                .cv(cv)
-                                .sectionName(item.getSectionName() == null || item.getSectionName().isBlank() ? "OTHER" : item.getSectionName())
-                                .originalText(item.getOriginalText() == null ? "" : item.getOriginalText())
-                                .suggestedText(item.getSuggestedText())
-                                .isAccepted(true)
-                                .build()));
-            }
+            job.setResultSnapshot(objectMapper.writeValueAsString(result));
 
             job.setStatus("COMPLETED");
             job.setProgress(100);
@@ -368,7 +434,6 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             log.error("[CV OPTIMIZATION] Failed | cvId={} | galleryId={} | jobId={} | errorType={} | durationMs={}",
                     cvId, galleryId, jobId, e.getClass().getSimpleName(),
                     (System.nanoTime() - startedAtNanos) / 1_000_000, e);
-            cvAnalysisQuotaService.refund(accountId, cvId);
             job.setStatus("FAILED");
             job.setErrorMessage(e.getMessage());
             jobRepository.save(job);
@@ -376,9 +441,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     @Override
-    public CVOptimizationStatusResponseDTO getOptimizationStatus(String jobId) {
-        CVOptimizationJob job = jobRepository.findByJobId(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+    public CVOptimizationStatusResponseDTO getOptimizationStatus(String jobId, Gallery gallery) {
+        CVOptimizationJob job = findOwnedOptimizationJob(jobId, gallery);
 
         return CVOptimizationStatusResponseDTO.builder()
                 .jobId(jobId)
@@ -388,16 +452,24 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     }
 
     @Override
-    public CVOptimizationResultResponseDTO getOptimizationResult(String jobId) {
-        CVOptimizationJob job = jobRepository.findByJobId(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+    public CVOptimizationResultResponseDTO getOptimizationResult(String jobId, Gallery gallery) {
+        CVOptimizationJob job = findOwnedOptimizationJob(jobId, gallery);
 
         if (!"COMPLETED".equals(job.getStatus())) {
-            throw new RuntimeException("Result not ready yet");
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Kết quả tối ưu chưa sẵn sàng.");
         }
 
+        if (hasText(job.getResultSnapshot())) {
+            try {
+                return objectMapper.readValue(job.getResultSnapshot(), CVOptimizationResultResponseDTO.class);
+            } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
+                throw new ApiException(ErrorCode.UNEXPECTED_ERROR, "Không đọc được kết quả tối ưu CV.");
+            }
+        }
+
+        // Older completed jobs predate result snapshots. Keep them readable during rollout.
         CV cv = cvRepository.findById(job.getCvId())
-                .orElseThrow(() -> new RuntimeException("CV not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
         List<CVOptimizationLog> logs = logRepository.findByCvId(cv.getId()).stream()
                 .filter(log -> log.getCreatedAt() != null && !log.getCreatedAt().isBefore(job.getCreatedAt()))
                 .toList();
@@ -417,8 +489,19 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                                 .suggestedText(log.getSuggestedText())
                                 .build())
                         .toList())
-                .predictedScore(cv.getScore())
+                // Old rows stored an AI estimate here; do not present it as a rubric score.
+                .postOptimizationScore(null)
+                .scoreNote("Phiên tối ưu cũ chưa lưu điểm theo rubric. Hãy đánh giá lại CV đã lưu để xem điểm hiện tại.")
                 .build();
+    }
+
+    private CVOptimizationJob findOwnedOptimizationJob(String jobId, Gallery gallery) {
+        CVOptimizationJob job = jobRepository.findByJobId(jobId)
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        cvRepository.findWithGalleryById(job.getCvId())
+                .filter(cv -> cv.getGallery().getId().equals(gallery.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
+        return job;
     }
 
     @Override
@@ -456,7 +539,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
 
     @Override
     @Transactional
-    public CVAnalysisResponseDTO analyzeCV(UUID cvId, String jdText, Gallery gallery) {
+    public CVEvaluationBundleResponseDTO analyzeCV(UUID cvId, String jdText, Gallery gallery) {
         CV cv = cvRepository.findById(cvId)
                 .filter(item -> item.getGallery().getId().equals(gallery.getId()))
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
@@ -490,7 +573,11 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             log.info("[CV ANALYSIS] Completed | cvId={} | galleryId={} | jdId={} | score={} | durationMs={}",
                     cvId, gallery.getId(), jd.getId(), evaluation.getScore(),
                     (System.nanoTime() - startedAtNanos) / 1_000_000);
-            return CVAnalysisResponseDTO.builder().evaluation(evaluation).skillGap(skillGap).feedback(feedback).build();
+            return CVEvaluationBundleResponseDTO.builder()
+                    .evaluation(evaluation)
+                    .skillGap(skillGap)
+                    .feedback(feedback)
+                    .build();
         } catch (RuntimeException e) {
             log.error("[CV ANALYSIS] Failed | cvId={} | galleryId={} | jdId={} | errorType={} | durationMs={}",
                     cvId, gallery.getId(), jd.getId(), e.getClass().getSimpleName(),

@@ -71,6 +71,7 @@ public class DevSecurityConfig {
                         ).permitAll()
 
                         // 3. Authenticated APIs
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/payments/checkout", "/api/v1/payments/history", "/api/v1/payments/quota").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
 

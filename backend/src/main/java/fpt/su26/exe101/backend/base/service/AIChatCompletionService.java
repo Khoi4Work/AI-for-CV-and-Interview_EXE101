@@ -56,11 +56,19 @@ public class AIChatCompletionService {
 
     public String generateJson(String prompt, String geminiResponseSchema, int maxTokens,
                                String module, String operation) {
+        return generateJsonWithMetadata(prompt, geminiResponseSchema, maxTokens, module, operation).content();
+    }
+
+    public record Completion(String content, String provider, String model, int calls) {}
+
+    public Completion generateJsonWithMetadata(String prompt, String geminiResponseSchema, int maxTokens,
+                                               String module, String operation) {
         String fallbackProvider = primaryProvider.equals("groq") ? "gemini" : "groq";
+        boolean deterministic = "cv".equals(module) && ("jd-requirements".equals(operation) || "evidence-extraction".equals(operation));
         try {
             log.info("[AI] Request started | provider={} | model={} | module={} | operation={}",
                     primaryProvider, modelFor(primaryProvider), module, operation);
-            return request(primaryProvider, prompt, geminiResponseSchema, maxTokens);
+            return new Completion(request(primaryProvider, prompt, geminiResponseSchema, maxTokens, deterministic), primaryProvider, modelFor(primaryProvider), 1);
         } catch (RuntimeException exception) {
             if (!shouldFallback(exception)) {
                 log.error("[AI] Request failed | provider={} | model={} | module={} | operation={} | reason={}",
@@ -71,7 +79,7 @@ public class AIChatCompletionService {
                     primaryProvider, modelFor(primaryProvider), fallbackProvider, modelFor(fallbackProvider),
                     module, operation, safeReason(exception));
             try {
-                return request(fallbackProvider, prompt, geminiResponseSchema, maxTokens);
+                return new Completion(request(fallbackProvider, prompt, geminiResponseSchema, maxTokens, deterministic), fallbackProvider, modelFor(fallbackProvider), 2);
             } catch (RuntimeException fallbackException) {
                 log.error("[AI] Fallback request failed | provider={} | model={} | module={} | operation={} | reason={}",
                         fallbackProvider, modelFor(fallbackProvider), module, operation, safeReason(fallbackException));
@@ -85,15 +93,17 @@ public class AIChatCompletionService {
         return provider.equals("groq") ? groqModel : geminiModel;
     }
 
-    private String request(String provider, String prompt, String geminiResponseSchema, int maxTokens) {
+    private String request(String provider, String prompt, String geminiResponseSchema, int maxTokens, boolean deterministic) {
         ChatClient client = provider.equals("groq") ? groqClient : geminiClient;
         ChatClient.ChatClientRequestSpec request = client.prompt(prompt);
         if (provider.equals("groq")) {
             request.options(OpenAiChatOptions.builder()
+                    .temperature(deterministic ? 0.0 : null)
                     .maxTokens(maxTokens)
                     .build());
         } else {
             GoogleGenAiChatOptions.Builder options = GoogleGenAiChatOptions.builder()
+                    .temperature(deterministic ? 0.0 : null)
                     .responseMimeType("application/json")
                     .maxOutputTokens(maxTokens);
             if (geminiResponseSchema != null) options.responseSchema(geminiResponseSchema);

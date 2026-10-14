@@ -4,7 +4,7 @@ const CVContext = createContext();
 
 const noop = () => {};
 const previewActions = Object.fromEntries([
-    'updatePersonalInfo', 'updateSummary', 'updateProfilePhoto', 'updateExperience',
+    'updatePersonalInfo', 'updateSummary', 'updateProfessionalTitle', 'updateProfilePhoto', 'updateExperience',
     'updateExperienceDetail', 'updateEducation', 'updateProjects', 'updateCertificates',
     'updateLanguages', 'updateAwards', 'updateSkills',
 ].map(name => [name, noop]));
@@ -27,6 +27,7 @@ const INITIAL_CV_STATE = {
         address: '',
         linkedin: '',
     },
+    professionalTitle: '',
     profilePhoto: '',
     summary: '',
     experiences: [],
@@ -73,6 +74,10 @@ export function CVProvider({children}) {
 
     const updateSummary = useCallback((summary) => {
         setCvData(prev => ({...prev, summary}));
+    }, []);
+
+    const updateProfessionalTitle = useCallback((professionalTitle) => {
+        setCvData(prev => ({...prev, professionalTitle}));
     }, []);
 
     const updateProfilePhoto = useCallback((profilePhoto) => {
@@ -173,6 +178,7 @@ export function CVProvider({children}) {
             setHasCV: setHasCVWithPersistence,
             updatePersonalInfo,
             updateSummary,
+            updateProfessionalTitle,
             updateProfilePhoto,
             addExperience,
             updateExperience,

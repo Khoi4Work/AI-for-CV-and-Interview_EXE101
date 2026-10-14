@@ -1,0 +1,21 @@
+{
+  "version": "rubric-v1",
+  "reviewStatus": "PENDING_HUMAN_REVIEW",
+  "purpose": "Synthetic IT scenarios for manual evidence and scoring calibration; not real company vacancies or AI ground truth.",
+  "cases": [
+    {"id":"BA-01","cv":"Applying for Business Analyst. Captured requirements and wrote SRS for a booking product.","jd":"Business Analyst required: requirement elicitation and SRS documentation.","expected":"Only BA suggestions; both named skills have direct evidence."},
+    {"id":"BA-02","cv":"Applying for Business Analyst. Made a Figma prototype; no SRS example.","jd":"Business Analyst required: SRS documentation; Figma preferred.","expected":"SRS NOT_EVIDENCED, Figma MET. Required missing evidence weighs twice preferred."},
+    {"id":"BA-03","cv":"Work experience: Business Analyst. Current target: Backend Developer. Built Java APIs.","jd":"Backend Developer required: Java API implementation.","expected":"Use current explicit Backend target; do not select BA from employment history."},
+    {"id":"BE-01","cv":"Applying for Backend Developer. Built Java REST APIs and SQL queries.","jd":"Backend Developer required: Java REST APIs and SQL queries.","expected":"Skill evidence MET; no invented Python or Kubernetes requirement."},
+    {"id":"BE-02","cv":"Applying for Backend Developer. Built Java APIs as an intern for three months.","jd":"Senior Backend Developer required: five years of production Java experience.","expected":"Java evidence does not prove five years; seniority requirement not MET."},
+    {"id":"BE-03","cv":"Applying for Backend Developer. Skills: Java; project details absent.","jd":"Backend Developer required: design and implement production Java APIs.","expected":"A named skill alone does not prove production delivery; reviewer decides PARTIAL versus NOT_EVIDENCED with quote."},
+    {"id":"FE-01","cv":"Target Frontend Developer. Built React UI with accessible forms.","jd":"Frontend Developer required: React and accessible forms; testing preferred.","expected":"React/forms MET; testing NOT_EVIDENCED. Do not subtract education if JD does not require it."},
+    {"id":"FE-02","cv":"Built React pages and TypeScript components. No application target stated.","jd":"Frontend Developer required: React and TypeScript components.","expected":"Suggest skill-based roles only after actual candidates are found; require user choice before scoring."},
+    {"id":"QA-01","cv":"Applying for QA Engineer. Wrote test cases and automated regression with Selenium.","jd":"QA Engineer required: test cases and Selenium regression automation.","expected":"QA suggestions only; quoted evidence matches both requirements."},
+    {"id":"QA-02","cv":"Target QA Engineer. Java API implementation project; testing evidence absent.","jd":"QA Engineer required: test automation and API testing.","expected":"Implementation is not evidence of API testing. An alternate Backend role is shown only after its actual assessment beats QA baseline."},
+    {"id":"GENERIC-01","dbTitle":"User provided JD","cv":"Applying for Business Analyst. Captured stakeholder requirements.","jd":"We recruit a Business Analyst to capture stakeholder requirements and document user stories. Work with developers.","expected":"Resolve BA from content despite generic DB title. Developer collaboration does not label the JD Backend."},
+    {"id":"WEAK-01","cv":"Applying for Backend Developer. Java project.","jd":"Join our friendly company. Many benefits and a welcoming culture.","expected":"No actual job requirements: insufficient evidence, no manufactured score, quota refunded if reserved."}
+  ],
+  "handCalculation": {"groupsPresent":["SKILLS","CLARITY"],"mandatorySkillAttainment":1,"preferredSkillAttainment":0.5,"clarityAttainment":1,"formula":"100 * (40 * ((2*1 + 1*0.5)/3) + 15 * 1) / (40+15)","unroundedScore":87.8787878788,"displayScore":88},
+  "reviewInstructions":"Replace/extend with at least 12 representative full CV/JD pairs, manually label every actual requirement and exact evidence quote, compare totals and ordering, and record disagreements before marking calibration complete. Short scenarios above do not bypass production input validation."
+}

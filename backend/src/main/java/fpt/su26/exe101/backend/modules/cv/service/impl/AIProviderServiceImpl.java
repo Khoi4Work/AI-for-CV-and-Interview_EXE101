@@ -1,29 +1,38 @@
 package fpt.su26.exe101.backend.modules.cv.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.base.persistence.Prompt;
+import fpt.su26.exe101.backend.base.service.AIChatCompletionService;
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
-import fpt.su26.exe101.backend.base.service.AIChatCompletionService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Service;
-import org.apache.tika.Tika;
-import org.apache.tika.exception.TikaException;
-
+import fpt.su26.exe101.backend.modules.cv.service.RoleTaxonomyService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import fpt.su26.exe101.backend.base.enums.UserPlan;
+import java.util.List;
+import java.util.Set;
+import java.util.Locale;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.Tika;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AIProviderServiceImpl implements AIProviderService {
 
     private static final int MAX_JSON_OUTPUT_TOKENS = 8192;
     private final AIChatCompletionService aiChatCompletionService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RoleTaxonomyService roleTaxonomy;
+    private final ObjectMapper objectMapper;
 
-    public AIProviderServiceImpl(AIChatCompletionService aiChatCompletionService) {
+    public AIProviderServiceImpl(
+            AIChatCompletionService aiChatCompletionService,
+            RoleTaxonomyService roleTaxonomy,
+            ObjectMapper objectMapper) {
         this.aiChatCompletionService = aiChatCompletionService;
+        this.roleTaxonomy = roleTaxonomy;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -50,10 +59,38 @@ public class AIProviderServiceImpl implements AIProviderService {
             CVImportModelResponseDTO result = objectMapper.readValue(json, CVImportModelResponseDTO.class);
             if (result == null)
                 throw new IllegalArgumentException("AI could not identify valid CV data in the uploaded file.");
+            if (result.getExtractedData() != null) {
+                CVContent cv = result.getExtractedData();
+                cv.setSourceText(limitedText);
+                cv.setSourceTruncated(extractedText.length() > limitedText.length());
+                String evidence = cv.getTargetRoleEvidence();
+                if (!"EXPLICIT".equals(cv.getTargetRoleOrigin()) || evidence == null || evidence.isBlank()
+                        || !limitedText.replaceAll("\\s+", " ").contains(evidence.replaceAll("\\s+", " "))
+                        || cv.getProfessionalTitle() == null || cv.getProfessionalTitle().isBlank()
+                        || historicalRoleEvidence(limitedText,evidence)) {
+                    cv.setProfessionalTitle(""); cv.setTargetRoleOrigin("NONE"); cv.setTargetRoleEvidence(null);
+                    cv.setTargetRoleCode(null);
+                } else {
+                    Set<String> roles = roleTaxonomy.roles(cv.getProfessionalTitle());
+                    cv.setTargetRoleCode(roles.size() == 1 ? roles.iterator().next() : null);
+                }
+            }
             return result;
         } catch (IOException | TikaException e) {
             throw new IllegalArgumentException("Unable to read the uploaded CV file.", e);
         }
+    }
+
+    private boolean historicalRoleEvidence(String source,String quote) {
+        String lower=source.toLowerCase(Locale.ROOT).replaceAll("\\s+"," ");
+        String target=quote.toLowerCase(Locale.ROOT).replaceAll("\\s+"," ");
+        if(target.matches("(?s).*(ứng tuyển|mong muốn|target role|applying for|desired position).*")) return false;
+        int position=lower.indexOf(target);
+        for(String heading:List.of("kinh nghiệm làm việc","work experience","employment history","professional experience")) {
+            int history=lower.indexOf(heading);
+            if(history>=0 && position>history) return true;
+        }
+        return false;
     }
 
     @Override

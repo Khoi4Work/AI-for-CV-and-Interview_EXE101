@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface JDRecommendationService {
     List<JDRecommendationResponseDTO> recommend(UUID cvId, UUID galleryId);
+    List<JDRecommendationResponseDTO> recommendHigherScoringOtherRoles(
+            UUID cvId, UUID galleryId, UUID currentJdId, int currentScore);
 }

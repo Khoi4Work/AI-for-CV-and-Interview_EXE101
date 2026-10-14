@@ -19,6 +19,7 @@ public class CVAnalysisQuotaServiceImpl implements CVAnalysisQuotaService {
     private final CVRepository cvRepository;
 
     @Transactional
+    @Override
     public void consume(UUID accountId, UUID cvId) {
         CV cv = ownedCvForUpdate(accountId, cvId);
         if (cv.getAiAnalysisRemaining() <= 0) {
@@ -32,6 +33,7 @@ public class CVAnalysisQuotaServiceImpl implements CVAnalysisQuotaService {
     }
 
     @Transactional
+    @Override
     public void refund(UUID accountId, UUID cvId) {
         CV cv = ownedCvForUpdate(accountId, cvId);
         cv.setAiAnalysisRemaining(Math.min(cv.getAiAnalysisLimit(), cv.getAiAnalysisRemaining() + 1));

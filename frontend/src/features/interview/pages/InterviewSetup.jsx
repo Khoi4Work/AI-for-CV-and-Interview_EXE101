@@ -1,23 +1,26 @@
 // /src/pages/interview/InterviewSetup.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ChevronDown, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../constants/interviewTypes.js';
-import { COMPANIES } from '../constants/companies.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { paymentService } from '../../payment/services/paymentService.js';
+import {normalizeInterviewType} from '../services/interviewConfiguration.js';
 
 export default function InterviewSetup() {
   const navigate = useNavigate();
   const { data, update, setStep } = useInterviewSession();
-  const fpt = COMPANIES[0];
 
-  const [type, setType] = useState(data.interviewConfig?.type || 'HR');
+  const [type, setType] = useState(() => {
+    try {return INTERVIEW_TYPES.find(item => normalizeInterviewType(item.id) === normalizeInterviewType(data.interviewConfig?.type || 'HR'))?.id || 'HR';}
+    catch {return 'HR';}
+  });
   const [language, setLanguage] = useState(data.interviewConfig?.language || 'vi');
   const [duration, setDuration] = useState(data.interviewConfig?.duration || 10);
   const [jd, setJd] = useState(data.interviewConfig?.jd || '');
+  const [jdId, setJdId] = useState(data.interviewConfig?.jdId || null);
   const [quota, setQuota] = useState(null);
   const [quotaError, setQuotaError] = useState('');
 
@@ -34,25 +37,21 @@ export default function InterviewSetup() {
   const canChooseDuration = (minutes) => minutes <= maxDuration && minutes <= remainingMinutes;
   const hasAvailableDuration = DURATIONS.some((item) => canChooseDuration(item.value));
 
-  useEffect(() => {
-    if (!quota || canChooseDuration(Number(duration))) return;
-    const firstAvailable = DURATIONS.find((item) => canChooseDuration(item.value));
-    if (firstAvailable) setDuration(firstAvailable.value);
-  }, [quota, duration]);
+  const chosenDuration=canChooseDuration(Number(duration))?Number(duration):DURATIONS.find(item=>canChooseDuration(item.value))?.value;
 
   useEffect(() => {
     setStep(5);
   }, [setStep]);
 
   const handleNext = () => {
-    if (!quota || !canChooseDuration(Number(duration))) return;
+    if (!quota || !canChooseDuration(Number(chosenDuration))) return;
     update({
       interviewConfig: {
         type,
         language,
-        duration,
-        company: fpt,
+        duration:chosenDuration,
         jd,
+        jdId,
       },
     });
     navigate('/audio-setup');
@@ -78,14 +77,14 @@ export default function InterviewSetup() {
 
           <div className="bg-interview-card-bg rounded-2xl border border-outline-variant shadow-xl p-8 lg:p-10 w-full z-20">
             <div className="space-y-6">
-              {/* Company (FPT cố định) */}
+              {/* Company context is resolved from the selected JD on the server. */}
               <div>
                 <label className="block text-sm font-semibold text-black mb-2">Công ty</label>
                 <div className="w-full bg-primary/15 border border-primary/30 text-black py-3 px-4 rounded-xl text-sm flex items-center justify-between">
-                  <span className="font-medium">{fpt.name} <span className="text-black/60 font-normal">— {fpt.industry}</span></span>
-                  <span className="text-xs text-black bg-interview-selection-bg px-2 py-0.5 rounded-full font-bold">Đã xác nhận</span>
+                  <span className="font-medium">Theo JD được sử dụng trong buổi phỏng vấn</span>
+                  <span className="text-xs text-black bg-interview-selection-bg px-2 py-0.5 rounded-full font-bold">Phỏng vấn mô phỏng</span>
                 </div>
-                <p className="text-xs text-black/60 mt-2 italic">"{fpt.culture}"</p>
+                <p className="text-xs text-black/60 mt-2">Khi chưa có thông tin văn hóa công ty có nguồn, câu hỏi sẽ dùng ngữ cảnh môi trường làm việc chung.</p>
               </div>
 
               {/* Interview Type */}
@@ -142,7 +141,7 @@ export default function InterviewSetup() {
                         disabled={!canChooseDuration(d.value)}
                         title={!canChooseDuration(d.value) ? (d.value > maxDuration ? `Gói hiện tại chỉ hỗ trợ tối đa ${maxDuration} phút/buổi` : 'Quota còn lại không đủ cho thời lượng này') : ''}
                         className={`py-2.5 px-1 border rounded-xl text-center transition-colors bg-interview-card-bg disabled:opacity-40 disabled:cursor-not-allowed ${
-                          duration === d.value
+                          chosenDuration === d.value
                             ? 'selection-card-selected'
                             : 'border-transparent shadow-sm hover:border-primary'
                         }`}
@@ -179,7 +178,7 @@ export default function InterviewSetup() {
                 <label className="block text-sm font-semibold text-black mb-2">Mô tả công việc (JD)</label>
                 <textarea
                   value={jd}
-                  onChange={(e) => setJd(e.target.value)}
+                  onChange={(e) => {setJd(e.target.value); setJdId(null);}}
                   rows={4}
                   className="w-full bg-interview-card-bg border border-outline-variant text-black py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none"
                   placeholder="Dán JD vào đây để AI cá nhân hóa câu hỏi (tùy chọn)..."
@@ -192,7 +191,7 @@ export default function InterviewSetup() {
                 <div>
                   <h4 className="text-sm font-bold text-black mb-1">Cá nhân hóa bằng AI</h4>
                   <p className="text-xs text-black/60 leading-relaxed">
-                    AI sẽ dựa trên cấu hình + JD của bạn để sinh bộ câu hỏi phù hợp với vị trí ứng tuyển tại FPT.
+                    AI sẽ dựa trên loại phỏng vấn, cấp độ và JD của bạn để tạo câu hỏi luyện tập.
                   </p>
                 </div>
               </div>

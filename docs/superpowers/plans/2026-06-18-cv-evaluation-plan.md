@@ -1,5 +1,7 @@
 # CV Evaluation Implementation Plan
 
+> **Historical plan.** The mocked workflow and task instructions below are retained as design history. For new work, use the [current CV–JD evaluation, scoring, and evidence spec](../specs/2026-10-09-cv-evaluation-trust-and-evidence-design.md) and the [current implementation plan](2026-10-09-cv-evaluation-trust-and-evidence-plan.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Implement a professional CV evaluation flow: Input $\rightarrow$ AI Simulation $\rightarrow$ Results.

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -17,9 +17,32 @@ export default function Login() {
     const [emailDraft, setEmailDraft] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
-    const { handleLogin } = useAuth();
-    const emailVerified = new URLSearchParams(location.search).get('verified') === 'true';
-    const verificationInvalid = new URLSearchParams(location.search).get('verification') === 'invalid';
+    const { handleLogin, isLoggedIn, sessionExpired: authSessionExpired } = useAuth();
+    const searchParams = new URLSearchParams(location.search);
+    const emailVerified = searchParams.get('verified') === 'true';
+    const verificationInvalid = searchParams.get('verification') === 'invalid';
+    const sessionExpired = searchParams.get('sessionExpired') === 'true'
+        || location.state?.sessionExpired === true
+        || authSessionExpired;
+
+    const getPostLoginDestination = () => {
+        const from = location.state?.from;
+        if (from?.pathname) return `${from.pathname}${from.search || ''}${from.hash || ''}`;
+
+        const redirect = searchParams.get('redirect');
+        if (redirect?.startsWith('/') && !redirect.startsWith('//')) {
+            try {
+                const target = new URL(redirect, window.location.origin);
+                if (target.origin === window.location.origin) {
+                    return `${target.pathname}${target.search}${target.hash}`;
+                }
+            } catch {
+                // Fall back to the regular post-login destination for malformed return paths.
+            }
+        }
+
+        return '/home';
+    };
 
     const handleIsLoggedIn = async (e) => {
         e.preventDefault();
@@ -41,11 +64,10 @@ export default function Login() {
             const { accessToken, refreshToken } = tokens;
 
             if (!accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            setLoginSuccess(true);
             await handleLogin(null, { accessToken, refreshToken });
+            setLoginSuccess(true);
 
-            const origin = location.state?.from?.pathname || '/home';
-            navigate(origin);
+            navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
             setLoginSuccess(false);
             setLoading(false);
@@ -67,11 +89,10 @@ export default function Login() {
             }, { publicRequest: true, anonymousRequest: true });
             const tokens = response.data?.result || response.data?.data || {};
             if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            setLoginSuccess(true);
             await handleLogin(null, tokens);
+            setLoginSuccess(true);
 
-            const origin = location.state?.from?.pathname || '/home';
-            navigate(origin);
+            navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
             setLoginSuccess(false);
             setLoading(false);
@@ -83,6 +104,8 @@ export default function Login() {
     const handleGoogleError = () => {
         setError('Google login failed. Please try again.');
     };
+
+    if (isLoggedIn) return <Navigate to="/home" replace />;
 
     return (
         <>
@@ -156,6 +179,11 @@ export default function Login() {
                             Đường dẫn xác thực không hợp lệ, đã hết hạn hoặc đã được sử dụng. Vui lòng yêu cầu gửi lại email bên dưới.
                         </div>
                     )}
+                    {sessionExpired && !error && (
+                        <div className="mb-md rounded-lg border border-amber-200 bg-amber-50 p-sm text-sm text-amber-800" role="status">
+                            Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.
+                        </div>
+                    )}
 
                     {/* Login Form */}
                     <form className="space-y-md" onSubmit={handleIsLoggedIn}>
@@ -170,7 +198,7 @@ export default function Login() {
                                        value={emailDraft}
                                        onChange={(event) => setEmailDraft(event.target.value)}
                                        className="w-full pl-[48px] pr-sm py-sm rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary-fixed bg-surface-container-lowest transition-all outline-none text-body-md"
-                                       id="email" placeholder="email@example.com" type="email"/>
+                                       id="email" placeholder="email@example.com" type="email" autoComplete="username"/>
                             </div>
                         </div>
 

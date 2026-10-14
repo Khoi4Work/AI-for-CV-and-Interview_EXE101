@@ -42,6 +42,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public RegisterResponseDTO register(RegisterRequestDTO request) {
+        if (request.getRole() == AccountRole.ADMIN) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Không thể đăng ký tài khoản quản trị.");
+        }
         if (request.getPassword() == null || request.getConfirmPassword() == null
                 || !Objects.equals(request.getPassword(), request.getConfirmPassword())) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Mật khẩu xác nhận không khớp");
