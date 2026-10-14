@@ -3,7 +3,7 @@
 DO
 $$
     DECLARE
-        target_email text := 'yourEmailHere'; target_id uuid;
+        target_email text := 'tuanlv.skillcetera@gmail.com'; target_id uuid;
     BEGIN
         LOCK TABLE account IN SHARE ROW EXCLUSIVE MODE;
         SELECT id INTO target_id FROM account WHERE lower(email) = lower(target_email) AND status = 'ACTIVE';

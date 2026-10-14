@@ -8,6 +8,11 @@ const server = await createServer({
     appType: 'custom',
 });
 const { default: apiClient } = await server.ssrLoadModule('/src/service/apiClient.js');
+let refreshAdapter;
+apiClient.interceptors.request.use(config => {
+    if (config.url === '/auth/tokens/refresh') config.adapter = refreshAdapter;
+    return config;
+});
 const { default: galleryService } = await server.ssrLoadModule('/src/service/galleryService.js');
 const { adminService } = await server.ssrLoadModule('/src/features/admin/services/adminService.js');
 const { paymentService } = await server.ssrLoadModule('/src/features/payment/services/paymentService.js');
@@ -30,6 +35,115 @@ after(async () => {
     else globalThis.localStorage = savedStorage;
     if (savedWindow === undefined) delete globalThis.window;
     else globalThis.window = savedWindow;
+});
+
+function sessionStorage() {
+    const values = new Map([['accessToken', 'old-access'], ['refreshToken', 'refresh'], ['userProfile', '{}']]);
+    return { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) };
+}
+function apiFailure(status, config) {
+    const error = new Error(`HTTP ${status}`);
+    error.config = config;
+    error.response = { status };
+    return error;
+}
+
+test('403 preserves credentials without refresh or redirect', async () => {
+    globalThis.localStorage = sessionStorage();
+    let refreshCalls = 0;
+    refreshAdapter = async () => { refreshCalls++; throw new Error('unexpected refresh'); };
+    apiClient.defaults.adapter = async config => { throw apiFailure(403, config); };
+    await assert.rejects(apiClient.get('/admin/users'));
+    assert.equal(refreshCalls, 0);
+    assert.equal(localStorage.getItem('accessToken'), 'old-access');
+});
+
+test('temporary refresh network failure preserves the session for retry', async () => {
+    globalThis.localStorage = sessionStorage();
+    refreshAdapter = async () => { throw new Error('network unavailable'); };
+    apiClient.defaults.adapter = async config => { throw apiFailure(401, config); };
+    await assert.rejects(apiClient.get('/auth/me'));
+    assert.equal(localStorage.getItem('refreshToken'), 'refresh');
+    assert.equal(localStorage.getItem('accessToken'), 'old-access');
+});
+
+test('refresh server failure preserves credentials rather than signing out', async () => {
+    globalThis.localStorage = sessionStorage();
+    refreshAdapter = async config => { throw apiFailure(500, config); };
+    apiClient.defaults.adapter = async config => { throw apiFailure(401, config); };
+    await assert.rejects(apiClient.get('/auth/me'));
+    assert.equal(localStorage.getItem('refreshToken'), 'refresh');
+});
+
+test('backend INVALID_INPUT refresh rejection is treated as expired authentication', async () => {
+    globalThis.localStorage = sessionStorage();
+    globalThis.window = { dispatchEvent: () => {} };
+    refreshAdapter = async config => {
+        const error = apiFailure(400, config);
+        error.response.data = { code: 4002, message: 'Invalid or expired refresh token' };
+        throw error;
+    };
+    apiClient.defaults.adapter = async config => { throw apiFailure(401, config); };
+    await assert.rejects(apiClient.get('/auth/me'), error => error.sessionExpired === true);
+    assert.equal(localStorage.getItem('refreshToken'), null);
+});
+
+test('rejected refresh clears credentials and notifies auth context without hard navigation', async () => {
+    globalThis.localStorage = sessionStorage();
+    let events = 0;
+    globalThis.window = { dispatchEvent: event => { assert.equal(event.type, 'auth:expired'); events++; } };
+    refreshAdapter = async config => { throw apiFailure(401, config); };
+    apiClient.defaults.adapter = async config => { throw apiFailure(401, config); };
+    await assert.rejects(apiClient.get('/auth/me'), error => error.sessionExpired === true);
+    assert.equal(events, 1);
+    assert.equal(localStorage.getItem('refreshToken'), null);
+    assert.equal(localStorage.getItem('userProfile'), null);
+});
+
+test('concurrent 401 requests share one refresh and retry with the new token', async () => {
+    globalThis.localStorage = sessionStorage();
+    let refreshCalls = 0;
+    refreshAdapter = async config => {
+        refreshCalls++;
+        await new Promise(resolve => setTimeout(resolve, 5));
+        return { data: { result: { accessToken: 'new-access' } }, status: 200, headers: {}, config };
+    };
+    apiClient.defaults.adapter = async config => {
+        if (config.headers.Authorization !== 'Bearer new-access') throw apiFailure(401, config);
+        return { data: {}, status: 200, headers: {}, config };
+    };
+    await Promise.all([apiClient.get('/auth/me'), apiClient.get('/gallery/assets')]);
+    assert.equal(refreshCalls, 1);
+    assert.equal(localStorage.getItem('accessToken'), 'new-access');
+});
+
+test('a second 401 after refresh ends the session instead of looping', async () => {
+    globalThis.localStorage = sessionStorage();
+    globalThis.window = { dispatchEvent: () => {} };
+    let refreshCalls = 0;
+    refreshAdapter = async config => {
+        refreshCalls++;
+        return { data: { result: { accessToken: 'new-access' } }, status: 200, headers: {}, config };
+    };
+    apiClient.defaults.adapter = async config => { throw apiFailure(401, config); };
+    await assert.rejects(apiClient.get('/auth/me'), error => error.sessionExpired === true);
+    assert.equal(refreshCalls, 1);
+    assert.equal(localStorage.getItem('accessToken'), null);
+});
+
+test('late unauthorized response from an older login cannot clear new credentials', async () => {
+    globalThis.localStorage = sessionStorage();
+    let events = 0;
+    globalThis.window = { dispatchEvent: () => { events++; } };
+    apiClient.defaults.adapter = async config => {
+        localStorage.setItem('accessToken', 'new-login');
+        localStorage.setItem('refreshToken', 'new-refresh');
+        throw apiFailure(401, config);
+    };
+    await assert.rejects(apiClient.get('/auth/me'));
+    assert.equal(localStorage.getItem('accessToken'), 'new-login');
+    assert.equal(localStorage.getItem('refreshToken'), 'new-refresh');
+    assert.equal(events, 0);
 });
 
 test('public catalog supports guests and preserves existing user credentials', async () => {

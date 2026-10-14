@@ -176,7 +176,7 @@ function AppLayout() {
                 <Route
                     path="/"
                     element={!isLoggedIn
-                        ? <PageTransition key={location.pathname}><LandingPage/></PageTransition>
+                        ? <PageTransition key={location.pathname} skipEnter={location.state?.loggedOut === true}><LandingPage/></PageTransition>
                         : <Navigate to="/home" replace/>}
                 />
                 <Route path="/login"

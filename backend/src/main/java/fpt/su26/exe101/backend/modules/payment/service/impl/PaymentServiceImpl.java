@@ -9,6 +9,7 @@ import fpt.su26.exe101.backend.modules.payment.dto.response.QuotaResponseDTO;
 import fpt.su26.exe101.backend.modules.payment.dto.response.PaymentServiceResponseDTO;
 import fpt.su26.exe101.backend.modules.payment.entity.*;
 import fpt.su26.exe101.backend.modules.payment.repository.OrderRepository;
+import fpt.su26.exe101.backend.modules.payment.repository.PaymentLogRepository;
 import fpt.su26.exe101.backend.modules.payment.repository.PaymentServiceEntityRepository;
 import fpt.su26.exe101.backend.modules.payment.repository.CVBenefitRepository;
 import fpt.su26.exe101.backend.modules.payment.repository.InterviewBenefitRepository;
@@ -40,6 +41,7 @@ import fpt.su26.exe101.backend.base.enums.UserPlan;
 public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepository;
+    private final PaymentLogRepository paymentLogRepository;
     private final PaymentServiceEntityRepository paymentServiceEntityRepository;
     private final CVBenefitRepository cvBenefitRepository;
     private final InterviewBenefitRepository interviewBenefitRepository;
@@ -98,6 +100,11 @@ public class PaymentServiceImpl implements PaymentService {
         order.setCheckoutUrl(createPayOSPaymentLink(order));
 
         Order savedOrder = orderRepository.save(order);
+        recordPaymentEvent(savedOrder, "CHECKOUT_CREATED", Map.of(
+                "orderCode", savedOrder.getTransactionId(),
+                "amount", savedOrder.getAmount(),
+                "paymentMethod", savedOrder.getPaymentMethod().name(),
+                "serviceId", paymentService.getId().toString()));
         log.info("[PAYMENT] Checkout created | orderId={} | orderCode={} | amount={} VND | accountId={}",
                 savedOrder.getId(), savedOrder.getTransactionId(), savedOrder.getAmount(), accountId);
         return mapToOrderResponseDTO(savedOrder);
@@ -135,12 +142,15 @@ public class PaymentServiceImpl implements PaymentService {
             return;
         }
         if (order.getPaymentStatus() == Order.PaymentStatus.PAID || order.getPaymentStatus() == Order.PaymentStatus.REFUNDED) {
+            recordPaymentEvent(order, "WEBHOOK_IGNORED", webhookLogPayload(data, order));
             log.info("[PAYMENT] Duplicate successful webhook ignored | orderId={} | orderCode={}",
                     order.getId(), orderCode);
             return;
         }
 
-        if ("Thành công".equalsIgnoreCase(statusDesc) || "success".equalsIgnoreCase(statusDesc)) {
+        Order.PaymentStatus previousStatus = order.getPaymentStatus();
+        boolean success = "Thành công".equalsIgnoreCase(statusDesc) || "success".equalsIgnoreCase(statusDesc);
+        if (success) {
             order.setPaymentStatus(Order.PaymentStatus.PAID);
             order.setPaidAt(LocalDateTime.now());
             order.setStatus("COMPLETED");
@@ -151,8 +161,27 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         orderRepository.save(order);
+        Map<String, Object> eventData = webhookLogPayload(data, order);
+        eventData.put("previousStatus", previousStatus == null ? null : previousStatus.name());
+        recordPaymentEvent(order, success ? "PAYMENT_SUCCEEDED" : "PAYMENT_FAILED", eventData);
         log.info("[PAYMENT] Webhook processed | orderId={} | orderCode={} | paymentStatus={}",
                 order.getId(), orderCode, order.getPaymentStatus());
+    }
+
+    private void recordPaymentEvent(Order order, String eventType, Map<String, Object> payload) {
+        // Save with the order/quota transaction: rolled-back payments must not leave a success event.
+        paymentLogRepository.save(PaymentLog.builder().order(order).eventType(eventType).payload(payload).build());
+    }
+
+    private Map<String, Object> webhookLogPayload(Map<String, Object> data, Order order) {
+        Map<String, Object> event = new LinkedHashMap<>();
+        // Keep only reconciliation fields from verified data, never signatures or bank-account details.
+        for (String key : List.of("orderCode", "amount", "code", "desc", "currency", "reference", "transactionDateTime", "paymentLinkId")) {
+            Object value = data.get(key);
+            if (value instanceof String || value instanceof Number || value instanceof Boolean) event.put(key, value);
+        }
+        event.put("paymentStatus", order.getPaymentStatus() == null ? null : order.getPaymentStatus().name());
+        return event;
     }
 
     @Override

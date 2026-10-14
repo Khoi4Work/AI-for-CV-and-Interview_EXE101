@@ -1,13 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { Bell, HelpCircle, Menu, User, Shield, CreditCard, Clock, FileText, Briefcase, LogOut, ChevronDown } from 'lucide-react';
 import {createPortal} from 'react-dom';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
+import { getHighestMembershipLabel } from '../../auth/utils/membershipLabel.js';
+
 
 const Header = ({ onHelpClick, onMenuClick }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { profile, handleLogout, isLoggingOut } = useAuth();
   const { notificationsCount } = useApp();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -84,10 +85,7 @@ const Header = ({ onHelpClick, onMenuClick }) => {
     };
   }, [dropdownOpen]);
 
-  const logout = async () => {
-    await handleLogout();
-    navigate('/');
-  };
+  const logout = handleLogout;
 
   return (
     <header className="h-16 border-b border-outline-variant glass-panel px-4 md:px-8 flex items-center justify-between sticky top-0 z-10 w-full select-none">
@@ -99,7 +97,7 @@ const Header = ({ onHelpClick, onMenuClick }) => {
         >
           <Menu size={24} />
         </button>
-        <Link to="/" className="text-lg md:text-xl font-bold text-on-surface tracking-tight hover:text-primary transition-colors">
+        <Link to="/home" className="text-lg md:text-xl font-bold text-on-surface tracking-tight hover:text-primary transition-colors">
           {getTabTitle(location.pathname)}
         </Link>
         <nav className="hidden md:flex items-center gap-4">
@@ -145,7 +143,7 @@ const Header = ({ onHelpClick, onMenuClick }) => {
             <p className="text-xs font-bold text-on-surface leading-none group-hover:text-primary transition-colors">
               {profile?.fullName}
             </p>
-            <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">{profile?.membershipType}</p>
+            <p className="text-[10px] text-on-surface-variant font-medium mt-0.5" title="Gói cao nhất giữa CV và Interview">{getHighestMembershipLabel(profile)}</p>
           </div>
           <ChevronDown size={16} className={`hidden md:block text-on-surface-variant transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
         </button>

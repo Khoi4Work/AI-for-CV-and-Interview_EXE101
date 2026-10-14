@@ -12,7 +12,7 @@ export default function TemplateCard({
                                          image,
                                          rating,
                                          downloads,
-                                         onRate,
+                                         // onRate,
                                          isLocked,
                                          onLockedClick
                                      }) {
@@ -31,6 +31,7 @@ export default function TemplateCard({
         toggleFavorite(id);
     };
 
+    /* Tạm ẩn chức năng đánh giá mẫu trên trang templates.
     const handleRateClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -40,6 +41,7 @@ export default function TemplateCard({
         }
         if (onRate) onRate(id);
     };
+    */
 
     const getBadgeStyle = () => {
         switch (badgeTheme) {
@@ -136,12 +138,14 @@ export default function TemplateCard({
                         </div>
                     </div>
 
+                    {/* Tạm ẩn nút đánh giá mẫu.
                     <button
                         onClick={handleRateClick}
                         className={`w-full py-2 text-xs font-semibold transition-colors border-t border-gray-100 ${isLocked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-700'}`}
                     >
                         {isLocked ? 'Nâng cấp để đánh giá' : 'Đánh giá mẫu'}
                     </button>
+                    */}
                 </div>
             </div>
         </Link>

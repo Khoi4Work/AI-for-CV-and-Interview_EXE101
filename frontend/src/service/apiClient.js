@@ -21,47 +21,59 @@ apiClient.interceptors.request.use((config) => {
     return config;
 }, (error) => Promise.reject(error));
 
-// Response interceptor: handle lỗi auth
+let refreshPromise;
+function expireSession(error) {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userProfile');
+    error.sessionExpired = true;
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') window.dispatchEvent(new Event('auth:expired'));
+    return error;
+}
+
+// Response interceptor: refresh 401 once; permission and temporary failures keep the session.
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
         // Catalog failures should stay on the public page, without refreshing or redirecting.
         if (originalRequest?.publicRequest) return Promise.reject(error);
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && originalRequest) {
+            const currentToken = localStorage.getItem('accessToken');
+            const requestToken = originalRequest.headers?.Authorization;
+            if (requestToken && requestToken !== `Bearer ${currentToken}`) {
+                // This response belongs to an older session; do not revoke a newer login.
+                return Promise.reject(error);
+            }
+            if (originalRequest._retry) return Promise.reject(expireSession(error));
             originalRequest._retry = true;
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (!refreshToken) return Promise.reject(expireSession(error));
             try {
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (!refreshToken) {
-                    throw new Error('No refresh token is available.');
+                if (!refreshPromise) {
+                    refreshPromise = apiClient.put('/auth/tokens/refresh', {
+                        refreshToken
+                    }, { publicRequest: true, anonymousRequest: true }).then(response => {
+                        const result = response.data?.result || response.data?.data;
+                        if (!result?.accessToken) throw new Error('Không nhận được phiên đăng nhập mới. Vui lòng thử lại.');
+                        // A late refresh must never overwrite a newer login or restore a logged-out session.
+                        if (localStorage.getItem('refreshToken') !== refreshToken) throw new Error('Phiên đăng nhập đã thay đổi.');
+                        localStorage.setItem('accessToken', result.accessToken);
+                        if (result.refreshToken) localStorage.setItem('refreshToken', result.refreshToken);
+                        return result.accessToken;
+                    }).finally(() => { refreshPromise = undefined; });
                 }
-
-                const response = await axios.put(`${apiClient.defaults.baseURL}/auth/tokens/refresh`, {
-                    refreshToken
-                });
-                const result = response.data?.result;
-                const { accessToken, refreshToken: newRefreshToken } = result || {};
-                if (!accessToken) {
-                    throw new Error('Refresh API did not return an access token.');
-                }
-                localStorage.setItem('accessToken', accessToken);
-                if (newRefreshToken) localStorage.setItem('refreshToken', newRefreshToken);
-
+                const accessToken = await refreshPromise;
                 originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                 return apiClient(originalRequest);
             } catch (refreshError) {
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                const currentRoute = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-                const loginUrl = new URL('/login', window.location.origin);
-                loginUrl.searchParams.set('sessionExpired', 'true');
-                if (currentRoute && window.location.pathname !== '/login') {
-                    loginUrl.searchParams.set('redirect', currentRoute);
-                }
-                window.location.assign(`${loginUrl.pathname}${loginUrl.search}`);
+                const status = refreshError.response?.status;
+                const invalidRefresh = status === 400 && refreshError.response?.data?.code === 4002;
+                if ((status === 401 || status === 403 || invalidRefresh) && localStorage.getItem('refreshToken') === refreshToken) expireSession(refreshError);
                 return Promise.reject(refreshError);
             }
         }
+        if (error.response?.status === 403) return Promise.reject(error);
         console.error('API Error:', error.response?.data || error.message);
         return Promise.reject(error);
     }

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -17,13 +17,15 @@ export default function Login() {
     const [emailDraft, setEmailDraft] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
-    const { handleLogin } = useAuth();
+    const { handleLogin, isLoggedIn, sessionExpired: authSessionExpired } = useAuth();
     const searchParams = new URLSearchParams(location.search);
     const emailVerified = searchParams.get('verified') === 'true';
     const verificationInvalid = searchParams.get('verification') === 'invalid';
-    const sessionExpired = searchParams.get('sessionExpired') === 'true';
+    const sessionExpired = searchParams.get('sessionExpired') === 'true'
+        || location.state?.sessionExpired === true
+        || authSessionExpired;
 
-    const getPostLoginDestination = (tokens) => {
+    const getPostLoginDestination = () => {
         const from = location.state?.from;
         if (from?.pathname) return `${from.pathname}${from.search || ''}${from.hash || ''}`;
 
@@ -39,7 +41,7 @@ export default function Login() {
             }
         }
 
-        return tokens.role === 'ADMIN' ? '/admin' : '/home';
+        return '/home';
     };
 
     const handleIsLoggedIn = async (e) => {
@@ -62,10 +64,10 @@ export default function Login() {
             const { accessToken, refreshToken } = tokens;
 
             if (!accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            setLoginSuccess(true);
             await handleLogin(null, { accessToken, refreshToken });
+            setLoginSuccess(true);
 
-            navigate(getPostLoginDestination(tokens), { replace: sessionExpired });
+            navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
             setLoginSuccess(false);
             setLoading(false);
@@ -87,10 +89,10 @@ export default function Login() {
             }, { publicRequest: true, anonymousRequest: true });
             const tokens = response.data?.result || response.data?.data || {};
             if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            setLoginSuccess(true);
             await handleLogin(null, tokens);
+            setLoginSuccess(true);
 
-            navigate(getPostLoginDestination(tokens), { replace: sessionExpired });
+            navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
             setLoginSuccess(false);
             setLoading(false);
@@ -102,6 +104,8 @@ export default function Login() {
     const handleGoogleError = () => {
         setError('Google login failed. Please try again.');
     };
+
+    if (isLoggedIn) return <Navigate to="/home" replace />;
 
     return (
         <>

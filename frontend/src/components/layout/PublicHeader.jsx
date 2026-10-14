@@ -4,6 +4,7 @@ import {User, Shield, CreditCard, Clock, FileText, Briefcase, LogOut, Menu, X} f
 import {createPortal} from 'react-dom';
 import {useAuth} from "../../features/auth/contexts/AuthContext.jsx";
 import logo from '../../assets/logo.jpg';
+import AdminEntryLink from '../../features/admin/components/AdminEntryLink.jsx';
 
 export function Header() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -17,7 +18,7 @@ export function Header() {
     const isInterview = location.pathname === '/interview';
     const isTemplates = location.pathname === '/templates';
     const isEvaluation = location.pathname === '/cv-evaluation';
-    const {handleLogout, isLoggingOut} = useAuth();
+    const {handleLogout, isLoggingOut, isLoggedIn} = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -54,10 +55,7 @@ export function Header() {
         };
     }, [dropdownOpen]);
 
-    const logout = async () => {
-        await handleLogout();
-        navigate('/');
-    }
+    const logout = handleLogout;
     const maxW = 'max-w-full';
     const bgClass = isHome || isInterview || isTemplates || isEvaluation ? 'glass-panel' : 'bg-surface';
 
@@ -75,7 +73,7 @@ export function Header() {
             className={`flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop lg:px-gutter h-[72px] sticky top-0 z-50 ${maxW} mx-auto ${bgClass}`}>
             <div className="flex items-center space-x-2">
                 <img src={logo} alt="Smartfolio Logo" className="w-8 h-8 rounded-lg object-cover select-none" />
-                <Link to="/" className="text-xl font-bold text-primary tracking-tight font-sans">Smartfolio</Link>
+                <Link to={isLoggedIn ? '/home' : '/'} className="text-xl font-bold text-primary tracking-tight font-sans">Smartfolio</Link>
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -96,7 +94,7 @@ export function Header() {
             `}>
                 <Link
                     className={`font-label-md text-label-md transition-colors ${isHome ? 'text-primary border-b-2 border-primary pb-1 md:pb-1' : 'text-on-surface-variant hover:text-primary'} py-2 md:py-0 block w-full md:w-auto`}
-                    to="/" onClick={() => setMenuOpen(false)}>Trang chủ</Link>
+                    to={isLoggedIn ? '/home' : '/'} onClick={() => setMenuOpen(false)}>Trang chủ</Link>
                 <Link
                     className={`font-label-md text-label-md transition-colors ${isInterview ? 'text-primary border-b-2 border-primary pb-1 md:pb-1' : 'text-on-surface-variant hover:text-primary'} py-2 md:py-0 block w-full md:w-auto`}
                     to="/interview" onClick={() => setMenuOpen(false)}>Phỏng vấn</Link>
@@ -109,6 +107,7 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-md relative">
+                {isHome && <AdminEntryLink />}
                 <button className="text-on-surface-variant hover:text-on-surface transition-colors p-xs"
                         aria-label="Notifications">
                     <span className="material-symbols-outlined">notifications</span>

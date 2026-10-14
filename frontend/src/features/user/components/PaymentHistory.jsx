@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Copy, ChevronDown } from 'lucide-react';
+import { Copy, ChevronDown, ReceiptText, CalendarDays } from 'lucide-react';
 import { paymentService } from '../../payment/services/paymentService.js';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
@@ -7,7 +7,30 @@ import Modal from '../../../components/ui/Modal.jsx';
 import { Card, Button } from './Layout.jsx';
 import { mapPaymentOrder, paymentStatuses } from '../utils/paymentHistory.js';
 
-function OrderRow({ order, onCopy }) {
+function OrderRow({ order, onCopy, detailed = false }) {
+    if (detailed) return <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-3">
+                <div className="rounded-xl bg-blue-50 p-2.5 text-[#0b3c8f]"><ReceiptText size={20} aria-hidden="true" /></div>
+                <div className="min-w-0">
+                    <h4 className="break-words text-base font-semibold text-slate-900">{order.serviceName}</h4>
+                    <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-600"><CalendarDays size={14} aria-hidden="true" />{order.dateLabel}</p>
+                </div>
+            </div>
+            <div className="ml-auto text-right">
+                <p className="text-lg font-bold tabular-nums text-slate-900">{order.amountLabel}</p>
+                <span className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-medium ${order.statusInfo.className}`}>{order.statusInfo.label}</span>
+            </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
+            <span className="text-xs text-slate-500">Mã đơn hàng</span>
+            <button disabled={!order.id} onClick={() => onCopy(order.id)} title={order.id || 'Chưa có mã đơn'}
+                aria-label={`Sao chép mã đơn ${order.id || ''}`}
+                className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700 hover:bg-blue-50 hover:text-[#0b3c8f] focus-visible:outline-2 focus-visible:outline-[#0b3c8f] disabled:opacity-50">
+                {order.shortId}<Copy size={14} aria-hidden="true" />
+            </button>
+        </div>
+    </article>;
     return <div className="py-4 border-b border-slate-300 last:border-0 space-y-2">
         <div className="flex flex-wrap justify-between items-start gap-2">
             <h3 className="font-semibold text-slate-900 break-words">{order.serviceName}</h3>
@@ -53,11 +76,11 @@ export default function PaymentHistory() {
         }
     };
     const filtered = state.orders.filter(order => filter === 'ALL' || order.status === filter);
-    const renderOrders = orders => {
+    const renderOrders = (orders, detailed = false) => {
         if (state.loading) return <p role="status" className="py-6 text-sm text-slate-600">Đang tải lịch sử thanh toán...</p>;
         if (state.error) return <div role="alert" className="py-4 space-y-3 text-sm text-red-700"><p>{state.error}</p><Button onClick={retry}>Thử lại</Button></div>;
         if (!orders.length) return <p className="py-6 text-sm text-slate-600">{state.orders.length ? 'Không có đơn phù hợp với bộ lọc.' : 'Bạn chưa có đơn thanh toán nào.'}</p>;
-        return orders.map(order => <OrderRow key={order.id} order={order} onCopy={copyId} />);
+        return orders.map(order => <OrderRow key={order.id} order={order} onCopy={copyId} detailed={detailed} />);
     };
     return <>
         <Card className="p-6 bg-[#B5C2BC] border-none shadow-sm">
@@ -67,15 +90,18 @@ export default function PaymentHistory() {
             </div>
             {renderOrders(state.orders.slice(0, 3))}
         </Card>
-        <Modal isOpen={open} onClose={() => setOpen(false)} title="Lịch sử thanh toán">
-            <div className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                    {[['ALL', 'Tất cả'], ...Object.entries(paymentStatuses).map(([id, info]) => [id, info.label])].map(([id, label]) =>
-                        <button key={id} onClick={() => { setFilter(id); setLimit(10); }} className={`px-3 py-2 rounded-full text-xs ${filter === id ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{label}</button>)}
+        <Modal isOpen={open} onClose={() => setOpen(false)} title="Lịch sử thanh toán" solid>
+            <div className="space-y-5">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="mb-3 text-sm text-slate-600">Theo dõi trạng thái các đơn thanh toán của bạn.</p>
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Lọc theo trạng thái thanh toán">
+                    {[['ALL', 'Tất cả'], ...Object.entries(paymentStatuses).filter(([id]) => id !== 'REFUNDED').map(([id, info]) => [id, info.label])].map(([id, label]) =>
+                        <button key={id} aria-pressed={filter === id} onClick={() => { setFilter(id); setLimit(10); }} className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[#0b3c8f] ${filter === id ? 'border-[#0b3c8f] bg-[#0b3c8f] text-white shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'}`}>{label}</button>)}
                 </div>
-                {!state.loading && !state.error && <p className="text-xs text-slate-500">{filtered.length} đơn thanh toán</p>}
-                {renderOrders(filtered.slice(0, limit))}
-                {limit < filtered.length && <Button onClick={() => setLimit(previous => previous + 10)} className="gap-2">Hiển thị thêm<ChevronDown size={16} /></Button>}
+                </div>
+                {!state.loading && !state.error && <p className="text-sm font-medium text-slate-700">{filtered.length} đơn thanh toán</p>}
+                <div className="space-y-3">{renderOrders(filtered.slice(0, limit), true)}</div>
+                {limit < filtered.length && <button onClick={() => setLimit(previous => previous + 10)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-semibold text-[#0b3c8f] hover:bg-blue-50">Hiển thị thêm<ChevronDown size={16} /></button>}
             </div>
         </Modal>
     </>;
