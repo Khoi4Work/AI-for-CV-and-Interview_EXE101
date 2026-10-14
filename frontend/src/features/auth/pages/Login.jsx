@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -17,7 +17,7 @@ export default function Login() {
     const [emailDraft, setEmailDraft] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
-    const { handleLogin } = useAuth();
+    const { handleLogin, isLoggedIn } = useAuth();
     const emailVerified = new URLSearchParams(location.search).get('verified') === 'true';
     const verificationInvalid = new URLSearchParams(location.search).get('verification') === 'invalid';
 
@@ -41,11 +41,10 @@ export default function Login() {
             const { accessToken, refreshToken } = tokens;
 
             if (!accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            setLoginSuccess(true);
             await handleLogin(null, { accessToken, refreshToken });
+            setLoginSuccess(true);
 
-            const origin = location.state?.from?.pathname || (tokens.role === 'ADMIN' ? '/admin' : '/home');
-            navigate(origin);
+            navigate('/home');
         } catch (err) {
             setLoginSuccess(false);
             setLoading(false);
@@ -67,11 +66,10 @@ export default function Login() {
             }, { publicRequest: true, anonymousRequest: true });
             const tokens = response.data?.result || response.data?.data || {};
             if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            setLoginSuccess(true);
             await handleLogin(null, tokens);
+            setLoginSuccess(true);
 
-            const origin = location.state?.from?.pathname || (tokens.role === 'ADMIN' ? '/admin' : '/home');
-            navigate(origin);
+            navigate('/home');
         } catch (err) {
             setLoginSuccess(false);
             setLoading(false);
@@ -83,6 +81,8 @@ export default function Login() {
     const handleGoogleError = () => {
         setError('Google login failed. Please try again.');
     };
+
+    if (isLoggedIn) return <Navigate to="/home" replace />;
 
     return (
         <>

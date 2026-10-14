@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import GuestHeader  from '../../../components/layout/GuestHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { ChartPie, Bot, User, Mail, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
@@ -16,7 +16,7 @@ export default function Register() {
   const glassRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { handleLogin } = useAuth();
+  const { handleLogin, isLoggedIn } = useAuth();
   const { showToast } = useApp();
   const [loading, setLoading] = useState(false);
   const [registering, setRegistering] = useState(false);
@@ -95,11 +95,10 @@ export default function Register() {
       }, { publicRequest: true, anonymousRequest: true });
       const tokens = response.data?.result || response.data?.data || {};
       if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-      setLoginSuccess(true);
       await handleLogin(null, tokens);
+      setLoginSuccess(true);
 
-      const origin = location.state?.from?.pathname || '/home';
-      navigate(origin);
+      navigate('/home');
     } catch (err) {
       setLoginSuccess(false);
       setLoading(false);
@@ -111,6 +110,8 @@ export default function Register() {
   const handleGoogleError = () => {
     setError('Google login failed. Please try again.');
   };
+
+  if (isLoggedIn) return <Navigate to="/home" replace />;
 
   return (
     <>

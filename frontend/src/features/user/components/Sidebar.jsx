@@ -8,10 +8,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     const {handleLogout, is2faEnabled, isLoggingOut} = useAuth();
     const navigate = useNavigate();
 
-    const onLogoutClick = async () => {
-        await handleLogout();
-        navigate('/home');
-    }
+    const onLogoutClick = handleLogout;
 
     const menuItems = [
         {path: '/personal-info', label: 'Thông tin cá nhân', icon: User},
