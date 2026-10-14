@@ -461,3 +461,8 @@
 ## 2026-10-03 — Commit and push centralized tests
 - User requested add, commit and push. Reviewed and staged only CONTRIBUTING.md, Maven test paths and moved tests/fixtures; all moved files were recognized as unchanged renames. Preserved local session skip-worktree and excluded backend/.claude.
 - Fetched origin/dev, confirmed no newer commits, committed the test layout with a REFACTOR prefix and pushed successfully. Prior clean JDK 21 verification passed 21 targeted tests; staged whitespace check passed.
+
+## 2026-10-14 — Remove obsolete synchronous CV analysis flow
+- Removed the unused synchronous CV evaluation, feedback-generation and skill-gap flow from CVPipelineService/AIProviderService, including its private helpers, prompts and response DTOs. Kept the asynchronous analysis flow, JD recommendation scoring, feedback-history GET path and migration stubs.
+- Static reference scan found no FE callsites for the retired service methods; old FE API wrappers remain declaration-only. A separate higher-scoring alternative-role service implementation also has no callers and remains for a separately reviewed cleanup.
+- Maven backend compile and test-source compile passed; tests were not executed. No database changes.

@@ -184,7 +184,7 @@ public class CVPipelineController {
     }
 
     @GetMapping("/{id}/skill-gap")
-    public ResponseEntity<ApiResponse<CVSkillGapResponseDTO>> analyzeSkillGap(
+    public ResponseEntity<ApiResponse<Void>> analyzeSkillGap(
             @PathVariable UUID id,
             @RequestParam UUID jdId) {
         throw migrationRequired();

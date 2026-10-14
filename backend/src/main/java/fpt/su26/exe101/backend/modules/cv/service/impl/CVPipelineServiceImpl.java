@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.modules.cv.dto.CVContent;
-import fpt.su26.exe101.backend.modules.cv.dto.CVFeedbackContent;
 import fpt.su26.exe101.backend.modules.cv.dto.response.*;
 import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.cv.entity.CVTemplate;
@@ -30,7 +29,6 @@ import fpt.su26.exe101.backend.modules.cv.mapper.CVFeedbackMapper;
 import fpt.su26.exe101.backend.modules.gallery.service.GalleryService;
 import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
-import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisQuotaService;
 import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
@@ -48,14 +46,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
 import fpt.su26.exe101.backend.modules.cv.service.RoleTaxonomyService;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CVPipelineServiceImpl implements CVPipelineService {
-
-    private static final Pattern VIETNAMESE_DIACRITICS = Pattern.compile("[\\u0102\\u0103\\u0110\\u0111\\u0128-\\u0129\\u0168-\\u0169\\u01A0-\\u01A1\\u01AF-\\u01B0\\u1EA0-\\u1EF9]");
 
     private final CVRepository cvRepository;
     private final CVTemplateRepository templateRepository;
@@ -64,7 +59,6 @@ public class CVPipelineServiceImpl implements CVPipelineService {
     private final CVOptimizationJobRepository jobRepository;
     private final GalleryService galleryService;
     private final UsageQuotaService quotaService;
-    private final CVAnalysisQuotaService cvAnalysisQuotaService;
     private final CVAnalysisService cvAnalysisService;
     private final RoleTaxonomyService roleTaxonomy;
     private final AIProviderService aiProvider;
@@ -504,141 +498,8 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         return job;
     }
 
-    @Override
-    public CVEvaluationResponseDTO evaluateCV(UUID cvId, UUID jdId, Gallery gallery) {
-        CV cv = cvRepository.findById(cvId)
-                .filter(c -> c.getGallery().getId().equals(gallery.getId()))
-                .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
-
-        JobDescription jd = galleryService.findJobDescription(jdId, gallery);
-        return evaluateAndConsume(cv, jd, gallery);
-    }
-
-    @Transactional
-    @Override
-    public CVEvaluationResponseDTO evaluateCV(UUID cvId, String jdText, Gallery gallery) {
-        CV cv = cvRepository.findById(cvId).filter(c -> c.getGallery().getId().equals(gallery.getId()))
-                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
-        JobDescription jd = findOrCreateJD(jdText, gallery);
-        return evaluateAndConsume(cv, jd, gallery);
-    }
-
-    private CVEvaluationResponseDTO evaluateAndConsume(CV cv, JobDescription jd, Gallery gallery) {
-        cvAnalysisQuotaService.consume(gallery.getAccountId(), cv.getId());
-        try {
-            CVEvaluationResponseDTO result = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), quotaService.getCvPlan(gallery.getAccountId()));
-            result.setJdId(jd.getId());
-            result.setCvAiAnalysisLimit(cv.getAiAnalysisLimit());
-            result.setCvAiAnalysisRemaining(cv.getAiAnalysisRemaining());
-            return result;
-        } catch (RuntimeException e) {
-            cvAnalysisQuotaService.refund(gallery.getAccountId(), cv.getId());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public CVEvaluationBundleResponseDTO analyzeCV(UUID cvId, String jdText, Gallery gallery) {
-        CV cv = cvRepository.findById(cvId)
-                .filter(item -> item.getGallery().getId().equals(gallery.getId()))
-                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "CV not found"));
-        JobDescription jd = findOrCreateJD(jdText, gallery);
-        long startedAtNanos = System.nanoTime();
-        boolean quotaConsumed = false;
-        log.info("[CV ANALYSIS] Started | cvId={} | galleryId={} | jdId={}",
-                cvId, gallery.getId(), jd.getId());
-        try {
-            cvAnalysisQuotaService.consume(gallery.getAccountId(), cv.getId());
-            quotaConsumed = true;
-            UserPlan plan = quotaService.getCvPlan(gallery.getAccountId());
-            CVEvaluationResponseDTO evaluation = aiProvider.evaluateCV(cv.getContent(), jd.getContent(), plan);
-            evaluation.setJdId(jd.getId());
-            evaluation.setCvAiAnalysisLimit(cv.getAiAnalysisLimit());
-            evaluation.setCvAiAnalysisRemaining(cv.getAiAnalysisRemaining());
-            CVSkillGapResponseDTO skillGap = aiProvider.analyzeSkillGap(cv.getContent(), jd.getContent());
-            Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jd.getId());
-            CVFeedbackResponseDTO feedback;
-            if (prior.isPresent() && hasVietnameseFeedback(prior.get())) {
-                feedback = toFeedbackResponse(prior.get());
-            } else {
-                feedback = aiProvider.generateFeedback(cv.getContent(), jd.getContent());
-                CVFeedback saved = prior.orElseGet(() -> CVFeedback.builder().cv(cv).jobDescription(jd).build());
-                saved.setOverallScore(feedback.getOverallScore());
-                saved.setFeedbackJson(feedback.getFeedback());
-                saved = feedbackRepository.save(saved);
-                feedback.setId(saved.getId());
-            }
-
-            log.info("[CV ANALYSIS] Completed | cvId={} | galleryId={} | jdId={} | score={} | durationMs={}",
-                    cvId, gallery.getId(), jd.getId(), evaluation.getScore(),
-                    (System.nanoTime() - startedAtNanos) / 1_000_000);
-            return CVEvaluationBundleResponseDTO.builder()
-                    .evaluation(evaluation)
-                    .skillGap(skillGap)
-                    .feedback(feedback)
-                    .build();
-        } catch (RuntimeException e) {
-            log.error("[CV ANALYSIS] Failed | cvId={} | galleryId={} | jdId={} | errorType={} | durationMs={}",
-                    cvId, gallery.getId(), jd.getId(), e.getClass().getSimpleName(),
-                    (System.nanoTime() - startedAtNanos) / 1_000_000, e);
-            if (quotaConsumed) cvAnalysisQuotaService.refund(gallery.getAccountId(), cv.getId());
-            throw e;
-        }
-    }
-
-    @Transactional
-    @Override
-    public CVFeedbackResponseDTO requestFeedback(UUID cvId, UUID jdId, Gallery gallery) {
-        CV cv = cvRepository.findById(cvId)
-                .filter(c -> c.getGallery().getId().equals(gallery.getId()))
-                .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
-
-        JobDescription jd = galleryService.findJobDescription(jdId, gallery);
-
-        Optional<CVFeedback> prior = feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jdId);
-        if (prior.isPresent() && hasVietnameseFeedback(prior.get())) return toFeedbackResponse(prior.get());
-        cvAnalysisQuotaService.consume(gallery.getAccountId(), cv.getId());
-        CVFeedbackResponseDTO feedbackResponse;
-        try { feedbackResponse = aiProvider.generateFeedback(cv.getContent(), jd.getContent()); }
-        catch (RuntimeException e) { cvAnalysisQuotaService.refund(gallery.getAccountId(), cv.getId()); throw e; }
-
-        CVFeedback feedback = prior.orElseGet(() -> CVFeedback.builder().cv(cv).jobDescription(jd).build());
-        feedback.setOverallScore(feedbackResponse.getOverallScore());
-        feedback.setFeedbackJson(feedbackResponse.getFeedback());
-        feedbackRepository.save(feedback);
-        feedbackResponse.setId(feedback.getId());
-        return feedbackResponse;
-    }
-
     private CVFeedbackResponseDTO toFeedbackResponse(CVFeedback f) {
         return feedbackMapper.toResponse(f);
-    }
-
-    private boolean hasVietnameseFeedback(CVFeedback feedback) {
-        if (feedback == null || feedback.getFeedbackJson() == null) return false;
-        CVFeedbackContent content = feedback.getFeedbackJson();
-        List<String> text = new ArrayList<>();
-        if (content.getSwot() != null) {
-            text.addAll(safeList(content.getSwot().getStrengths()));
-            text.addAll(safeList(content.getSwot().getWeaknesses()));
-            text.addAll(safeList(content.getSwot().getOpportunities()));
-            text.addAll(safeList(content.getSwot().getThreats()));
-        }
-        if (content.getSectionAnalysis() != null) {
-            content.getSectionAnalysis().forEach(section -> {
-                if (section == null) return;
-                text.add(section.getSectionName());
-                text.addAll(safeList(section.getStrengths()));
-                text.addAll(safeList(section.getWeaknesses()));
-                text.addAll(safeList(section.getSuggestions()));
-            });
-        }
-        return text.stream().filter(Objects::nonNull).anyMatch(value -> VIETNAMESE_DIACRITICS.matcher(value).find());
-    }
-
-    private List<String> safeList(List<String> values) {
-        return values == null ? List.of() : values;
     }
 
     @Override
@@ -648,21 +509,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
         galleryService.findJobDescription(jdId, gallery);
         return feedbackRepository.findByCvIdAndJobDescriptionId(cvId, jdId).map(this::toFeedbackResponse)
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND,
-                        "Feedback has not been generated for this CV and job description yet. "
-                                + "Call POST /api/cv/{id}/feedback first."));
-    }
-
-    @Override
-    public CVSkillGapResponseDTO analyzeSkillGap(UUID cvId, UUID jdId, Gallery gallery) {
-        CV cv = cvRepository.findById(cvId)
-                .filter(c -> c.getGallery().getId().equals(gallery.getId()))
-                .orElseThrow(() -> new RuntimeException("CV not found or access denied"));
-
-        String jdText = galleryService.findJobDescription(jdId, gallery).getContent();
-
-        cvAnalysisQuotaService.consume(gallery.getAccountId(), cv.getId());
-        try { return aiProvider.analyzeSkillGap(cv.getContent(), jdText); }
-        catch (RuntimeException e) { cvAnalysisQuotaService.refund(gallery.getAccountId(), cv.getId()); throw e; }
+                        "Feedback not found for this CV and job description."));
     }
 
     private void requirePlan(UUID accountId, UserPlan minimumPlan) {

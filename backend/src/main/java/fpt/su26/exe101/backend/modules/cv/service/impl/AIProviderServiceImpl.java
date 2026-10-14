@@ -115,24 +115,6 @@ public class AIProviderServiceImpl implements AIProviderService {
         }
     }
 
-    @Override
-    public CVFeedbackResponseDTO generateFeedback(CVContent cvContent, String jdText) {
-        try {
-            return objectMapper.readValue(jsonResponse(Prompt.cvFeedback(objectMapper.writeValueAsString(cvContent), jdText), null, "cv-feedback"), CVFeedbackResponseDTO.class);
-        } catch (IOException e) {
-            throw new IllegalStateException("AI returned invalid CV feedback JSON.", e);
-        }
-    }
-
-    @Override
-    public CVSkillGapResponseDTO analyzeSkillGap(CVContent cvContent, String jdText) {
-        try {
-            return objectMapper.readValue(jsonResponse(Prompt.cvSkillGap(objectMapper.writeValueAsString(cvContent), jdText), null, "cv-skill-gap"), CVSkillGapResponseDTO.class);
-        } catch (IOException e) {
-            throw new IllegalStateException("AI returned invalid skill-gap JSON.", e);
-        }
-    }
-
     private String jsonResponse(String prompt, String responseSchema, String operation) {
         return aiChatCompletionService.generateJson(prompt, responseSchema, MAX_JSON_OUTPUT_TOKENS, "cv", operation);
     }
