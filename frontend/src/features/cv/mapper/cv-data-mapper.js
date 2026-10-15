@@ -81,6 +81,10 @@ export function mapImportedCVData(data) {
         sourceText: source.sourceText || null,
         sourceTruncated: Boolean(source.sourceTruncated),
         profilePhoto: source.profilePhoto || '',
+        editorLayout: source.editorLayout ? {
+            ...source.editorLayout,
+            hiddenSections: (source.editorLayout.hiddenSections || []).filter(section => section !== 'personalInfo'),
+        } : undefined,
         personalInfo: {
             name: source.personalInfo?.name || '',
             email: source.personalInfo?.email || '',
@@ -88,6 +92,9 @@ export function mapImportedCVData(data) {
             dob: source.personalInfo?.dob || '',
             address: source.personalInfo?.address || '',
             linkedin: source.personalInfo?.linkedin || '',
+            customFields: Array.isArray(source.personalInfo?.customFields)
+                ? source.personalInfo.customFields.map(item => typeof item === 'string' ? item : item?.value || '')
+                : [],
         },
         summary: source.summary || '',
         experiences: experiences.map((item, index) => ({

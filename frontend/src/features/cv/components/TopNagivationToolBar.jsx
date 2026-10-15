@@ -2,7 +2,7 @@ import { X, FileDown, Save, LoaderCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfilePhotoPicker from './ProfilePhotoPicker.jsx';
 
-export default function TopNagivationToolBar({ onExport, onSave, saving, actionsDisabled, templatesLoading, cvName, onNameChange, onClose, zoom = 100, onZoomIn, onZoomOut, templateName, templateOptions = [], selectedTemplateId, onTemplateChange, exportLabel = 'Tải PDF' }) {
+export default function TopNagivationToolBar({ onExport, onSave, saving, exporting = false, actionsDisabled, templatesLoading, cvName, onNameChange, onClose, zoom = 100, onZoomIn, onZoomOut, templateName, templateOptions = [], selectedTemplateId, onTemplateChange, exportLabel = 'Tải PDF' }) {
     const navigate = useNavigate();
 
     return (
@@ -69,10 +69,11 @@ export default function TopNagivationToolBar({ onExport, onSave, saving, actions
                     </button>
                     <button
                         onClick={onExport}
-                        disabled={actionsDisabled || saving}
+                        disabled={actionsDisabled || saving || exporting}
+                        aria-busy={exporting}
                         className="flex items-center gap-2 bg-primary hover:bg-primary-container text-on-primary px-6 py-2.5 rounded-lg transition-all active:scale-[0.98] shadow-sm">
-                        <FileDown className="h-5 w-5"/>
-                        <span className="font-medium text-sm">{exportLabel}</span>
+                        {exporting ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <FileDown className="h-5 w-5"/>}
+                        <span className="font-medium text-sm">{exporting ? 'Đang tạo PDF…' : exportLabel}</span>
                     </button>
                 </div>
             </header>

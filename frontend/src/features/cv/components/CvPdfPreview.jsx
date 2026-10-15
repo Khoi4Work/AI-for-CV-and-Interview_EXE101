@@ -3,6 +3,7 @@ import { FileText, LoaderCircle } from 'lucide-react';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { PDF_TEMPLATE_LOADERS } from '../pdf-renderer/templateRegistry.js';
 import { mapCvDataForPdf } from '../pdf-renderer/mapCvDataForPdf.js';
+import TheStandardHtmlTemplate from '../pdf-renderer/templates/TheStandardHtmlTemplate.jsx';
 
 const PREVIEW_UPDATE_DELAY_MS = 1200;
 const PREVIEW_SCALE = 1.35;
@@ -35,7 +36,23 @@ function restoreScrollAnchor(container, anchor) {
     container.scrollLeft = anchor.scrollLeft;
 }
 
-export default function CvPdfPreview({ cvData, templateId, className = '' }) {
+export default function CvPdfPreview(props) {
+    if (props.templateId === 'the-standard') return <StandardHtmlPreview {...props}/>;
+    return <LegacyPdfPreview {...props}/>;
+}
+
+function StandardHtmlPreview({cvData, className = '', onInlineEdit, onInlineAdd, onInlineMove, onInlineRemove,
+    onInlineSectionMove, onInlineSectionReorder, onInlineSectionRemove, onInlineSkillGroupMove, onInlineSkillGroupRemove,
+    onInlineSkillRename, onInlineClear}) {
+    return <div className={`h-full w-full overflow-auto bg-white ${className}`}>
+        <TheStandardHtmlTemplate data={cvData} onEdit={onInlineEdit} onAdd={onInlineAdd} onMove={onInlineMove}
+            onRemove={onInlineRemove} onSectionMove={onInlineSectionMove} onSectionReorder={onInlineSectionReorder} onSectionRemove={onInlineSectionRemove}
+            onSkillGroupMove={onInlineSkillGroupMove} onSkillGroupRemove={onInlineSkillGroupRemove}
+            onSkillRename={onInlineSkillRename} onClear={onInlineClear}/>
+    </div>;
+}
+
+function LegacyPdfPreview({ cvData, templateId, className = '' }) {
     const [loaded, setLoaded] = useState(null);
     const [pages, setPages] = useState([]);
     const [isUpdating, setIsUpdating] = useState(false);
