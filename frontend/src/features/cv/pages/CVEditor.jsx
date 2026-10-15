@@ -11,6 +11,7 @@ import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { cvPipelineService } from '../services/cvPipelineService.js';
 import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from '../services/editorSave.js';
 import { validateCVData } from '../../../utils/inputValidation.js';
+import {getCvTemplateLayout, updateCvTemplateLayout} from '../pdf-renderer/templateSectionLayout.js';
 
 function updateValueAtPath(source, path, value) {
     const [key, ...remaining] = path.split('.');
@@ -131,13 +132,8 @@ export default function CVEditor() {
         try {
             await validateAccess(selectedTemplate);
             const safeTitle = cvName.trim() || 'CV';
-            if (selectedTemplate === 'the-standard') {
-                const { downloadStandardCvPdf } = await import('../pdf-renderer/downloadStandardCvPdf.js');
-                await downloadStandardCvPdf(cvData, safeTitle);
-            } else {
-                const { downloadCvPdf } = await import('../pdf-renderer/exportCvPdf.js');
-                await downloadCvPdf(cvData, safeTitle, selectedTemplate);
-            }
+            const {downloadCvPdfFromService} = await import('../pdf-renderer/downloadCvPdfFromService.js');
+            await downloadCvPdfFromService(cvData, safeTitle, selectedTemplate);
             setMessage('Đã xuất CV thành PDF.');
         } catch (error) {
             setSaveError(getApiErrorMessage(error, error.message));
@@ -182,27 +178,16 @@ export default function CVEditor() {
         [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
         setFullCVData(updateValueAtPath(cvData, path, reordered));
     };
-    const defaultMainOrder = ['skills', 'experiences', 'projects'];
-    const defaultSidebarOrder = ['personalInfo', 'education', 'certificates', 'languages', 'awards'];
-    const allEditableSectionKeys = [...defaultMainOrder, ...defaultSidebarOrder];
-    const getInlineSectionOrders = () => {
-        const layout = cvData.editorLayout || {};
-        const explicitMain = [...new Set(layout.mainOrder || [])].filter(item => allEditableSectionKeys.includes(item));
-        const explicitSidebar = [...new Set(layout.sidebarOrder || [])]
-            .filter(item => allEditableSectionKeys.includes(item) && !explicitMain.includes(item));
-        return {
-            main: [...explicitMain, ...defaultMainOrder.filter(item => !explicitMain.includes(item) && !explicitSidebar.includes(item))],
-            sidebar: [...explicitSidebar, ...defaultSidebarOrder.filter(item => !explicitSidebar.includes(item) && !explicitMain.includes(item))],
-        };
-    };
     const sectionLabels = {
+        name: 'Tên',
+        profilePhoto: 'Ảnh hồ sơ',
         skills: 'Kỹ năng', experiences: 'Kinh nghiệm làm việc', projects: 'Dự án',
         personalInfo: 'Thông tin cá nhân', education: 'Học vấn', certificates: 'Chứng chỉ',
         languages: 'Ngoại ngữ', awards: 'Giải thưởng',
         summary: 'Giới thiệu',
     };
     const handleInlineSectionRemove = sectionKey => {
-        if (sectionKey === 'personalInfo') return;
+        if (sectionKey === 'personalInfo' || sectionKey === 'name') return;
         const hiddenSections = new Set(cvData.editorLayout?.hiddenSections || []);
         hiddenSections.add(sectionKey);
         setFullCVData({...cvData, editorLayout: {...cvData.editorLayout, hiddenSections: [...hiddenSections]}});
@@ -212,40 +197,39 @@ export default function CVEditor() {
         setFullCVData({...cvData, editorLayout: {...cvData.editorLayout, hiddenSections}});
     };
     const handleInlineSectionMove = (sectionKey, column, direction) => {
-        const hidden = new Set((cvData.editorLayout?.hiddenSections || []).filter(item => item !== 'personalInfo'));
-        const orders = getInlineSectionOrders();
-        const orderKey = column === 'main' ? 'main' : 'sidebar';
+        const hidden = new Set((cvData.editorLayout?.hiddenSections || []).filter(item => item !== 'personalInfo' && item !== 'name'));
+        const orders = getCvTemplateLayout(cvData.editorLayout, selectedTemplate);
+        const orderKey = column === 'main' ? 'mainOrder' : 'sidebarOrder';
         const active = orders[orderKey].filter(item => !hidden.has(item));
         const index = active.indexOf(sectionKey);
         const target = index + direction;
         if (index < 0 || target < 0 || target >= active.length) return;
         [active[index], active[target]] = [active[target], active[index]];
-        setFullCVData({...cvData, editorLayout: {
-            ...cvData.editorLayout,
-            mainOrder: orderKey === 'main' ? [...active, ...orders.main.filter(item => hidden.has(item))] : orders.main,
-            sidebarOrder: orderKey === 'sidebar' ? [...active, ...orders.sidebar.filter(item => hidden.has(item))] : orders.sidebar,
-            hiddenSections: [...hidden],
-        }});
+        const nextMain = orderKey === 'mainOrder' ? [...active, ...orders.mainOrder.filter(item => hidden.has(item))] : orders.mainOrder;
+        const nextSidebar = orderKey === 'sidebarOrder' ? [...active, ...orders.sidebarOrder.filter(item => hidden.has(item))] : orders.sidebarOrder;
+        const editorLayout = updateCvTemplateLayout(cvData.editorLayout, selectedTemplate, nextMain, nextSidebar);
+        editorLayout.hiddenSections = [...hidden];
+        setFullCVData({...cvData, editorLayout});
     };
     const handleInlineSectionReorder = (sourceKey, sourceColumn, targetKey, targetColumn) => {
-        const hidden = new Set((cvData.editorLayout?.hiddenSections || []).filter(item => item !== 'personalInfo'));
+        const hidden = new Set((cvData.editorLayout?.hiddenSections || []).filter(item => item !== 'personalInfo' && item !== 'name'));
         if (!['main', 'sidebar'].includes(sourceColumn) || !['main', 'sidebar'].includes(targetColumn)) return;
-        const orders = getInlineSectionOrders();
-        const sourceOrder = orders[sourceColumn].filter(item => !hidden.has(item));
-        const targetOrder = sourceColumn === targetColumn ? sourceOrder : orders[targetColumn].filter(item => !hidden.has(item));
+        const orders = getCvTemplateLayout(cvData.editorLayout, selectedTemplate);
+        const sourceOrder = orders[sourceColumn === 'main' ? 'mainOrder' : 'sidebarOrder'].filter(item => !hidden.has(item));
+        const targetOrder = sourceColumn === targetColumn ? sourceOrder
+            : orders[targetColumn === 'main' ? 'mainOrder' : 'sidebarOrder'].filter(item => !hidden.has(item));
         const sourceIndex = sourceOrder.indexOf(sourceKey);
         if (sourceIndex < 0 || (targetKey && !targetOrder.includes(targetKey)) || sourceKey === targetKey) return;
         const [moved] = sourceOrder.splice(sourceIndex, 1);
         if (targetKey) targetOrder.splice(targetOrder.indexOf(targetKey), 0, moved);
         else targetOrder.push(moved);
-        const nextMain = sourceColumn === 'main' ? sourceOrder : targetColumn === 'main' ? targetOrder : orders.main.filter(item => !hidden.has(item));
-        const nextSidebar = sourceColumn === 'sidebar' ? sourceOrder : targetColumn === 'sidebar' ? targetOrder : orders.sidebar.filter(item => !hidden.has(item));
-        setFullCVData({...cvData, editorLayout: {
-            ...cvData.editorLayout,
-            mainOrder: [...nextMain, ...orders.main.filter(item => hidden.has(item))],
-            sidebarOrder: [...nextSidebar, ...orders.sidebar.filter(item => hidden.has(item))],
-            hiddenSections: [...hidden],
-        }});
+        const nextMain = sourceColumn === 'main' ? sourceOrder : targetColumn === 'main' ? targetOrder : orders.mainOrder.filter(item => !hidden.has(item));
+        const nextSidebar = sourceColumn === 'sidebar' ? sourceOrder : targetColumn === 'sidebar' ? targetOrder : orders.sidebarOrder.filter(item => !hidden.has(item));
+        const editorLayout = updateCvTemplateLayout(cvData.editorLayout, selectedTemplate,
+            [...nextMain, ...orders.mainOrder.filter(item => hidden.has(item))],
+            [...nextSidebar, ...orders.sidebarOrder.filter(item => hidden.has(item))]);
+        editorLayout.hiddenSections = [...hidden];
+        setFullCVData({...cvData, editorLayout});
     };
     const skillCategory = skill => String(skill?.category || '').trim() || 'Other';
     const handleInlineSkillGroupRemove = category => {
@@ -307,12 +291,12 @@ export default function CVEditor() {
                     {showContentPanel ? <PanelLeftClose size={15}/> : <PanelLeftOpen size={15}/>}
                     {showContentPanel ? 'Ẩn bảng nhập liệu' : 'Hiện bảng nhập liệu'}
                 </button>
-                {(cvData.editorLayout?.hiddenSections || []).some(sectionKey => sectionKey !== 'personalInfo') && <details className="ml-2 inline-block align-middle">
+                {(cvData.editorLayout?.hiddenSections || []).some(sectionKey => sectionKey !== 'personalInfo' && sectionKey !== 'name') && <details className="ml-2 inline-block align-middle">
                     <summary className="inline-flex cursor-pointer list-none items-center rounded-lg border border-outline-variant bg-surface px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-surface-container">
                         + Thêm lại mục
                     </summary>
                     <div className="absolute z-20 mt-1 flex min-w-44 flex-col rounded-lg border border-outline-variant bg-surface p-1 shadow-lg">
-                        {cvData.editorLayout.hiddenSections.filter(sectionKey => sectionKey !== 'personalInfo').map(sectionKey => <button key={sectionKey} type="button"
+                        {cvData.editorLayout.hiddenSections.filter(sectionKey => sectionKey !== 'personalInfo' && sectionKey !== 'name').map(sectionKey => <button key={sectionKey} type="button"
                             className="rounded px-3 py-2 text-left text-xs hover:bg-surface-container"
                             onClick={() => handleInlineSectionRestore(sectionKey)}>
                             + {sectionLabels[sectionKey] || sectionKey}
@@ -340,7 +324,7 @@ export default function CVEditor() {
                 </aside>}
                 <section aria-label="Bản xem trước CV PDF" className={`cv-editor-preview min-h-0 min-w-0 overflow-auto bg-slate-200/70 p-3 sm:p-5 ${showContentPanel ? '' : 'xl:col-span-1'}`}>
                     {allowed ? <div className="h-full min-h-[55vh] w-full origin-top transition-transform duration-200" style={{ transform: `scale(${zoom / 100})` }}>
-                        <CvPdfPreview cvData={cvData} templateId={selectedTemplate} onInlineEdit={handleInlineEdit}
+                        <CvPdfPreview cvData={cvData} templateId={selectedTemplate} showPageMarkers onInlineEdit={handleInlineEdit}
                             onInlineAdd={handleInlineAdd} onInlineMove={handleInlineMove} onInlineRemove={handleInlineRemove}
                             onInlineSectionMove={handleInlineSectionMove} onInlineSectionReorder={handleInlineSectionReorder}
                             onInlineSectionRemove={handleInlineSectionRemove}

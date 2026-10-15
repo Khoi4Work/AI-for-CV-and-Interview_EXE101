@@ -474,3 +474,24 @@
 - Added direct editing and section controls to the Standard CV template, including field add/remove, section reorder across columns, and drag/drop into gaps; preserved section and custom-field layout in editor data.
 - Routed Standard CV PDF export through the backend OpenFeign client to the separate Playwright/Chromium PDF service, with A4 print options and body margin reset for the downloaded PDF.
 - Added validation for CV builder/editor export and save flows. Targeted ESLint and `git diff --check` passed; full Vite build was blocked because the environment denies reading `frontend/.env`.
+
+## 2026-10-16 — Share CV editing across all templates
+- Replaced the Standard-only HTML editor/export path with a shared editable HTML CV template for all six templates. Added per-template section layouts and preserved each template's column structure, theme colors, typography and padding while enabling inline fields, section and field controls, skill groups, multiline bullets, drag/drop and hidden-section restore.
+- All template previews now use the shared HTML output; PDF export for every template uses the PDF service with A4/print-background options. Preserved object-based custom personal fields when editing from the content panel.
+- Verification: targeted ESLint and `git diff --check` passed. Frontend tests reported 46 passing; four test files could not initialize because the environment denies reads of `frontend/.env`. Production build not run.
+
+- Rechecked the attached Chromium PDF and found low-contrast summary text, an empty award heading, blank project labels, and page-two content starting at the top edge. Adjusted single-column print flow, made summary text readable, and suppressed empty sections/optional project labels in read-only PDF output. Export again to verify the revised layout.
+
+- Compared three newly exported PDFs (Security Analyst, Portfolio Hybrid, Cloud Expert). All had low-contrast summary/title text and column content splitting into nearly empty pages; adjusted variant text colors and dark-sidebar text, with empty sections suppressed in read-only rendering. The existing PDFs cannot reflect source changes; Chromium export needs to be rerun for final visual confirmation.
+
+- Synchronized edit outlines with the matching section/field toolbar (including keyboard focus) and clear drag/drop target outlines on drag end, so only the active area remains highlighted.
+
+- Corrected cross-column drag feedback: the dragged section keeps its existing outline and toolbar; hovered section targets show their toolbar with the existing drop outline; blank main-column space now receives drag-over/drop events. Drag end clears temporary markers.
+
+- Reviewed the latest Standard PDF: summary text was still white on white, and the project section was pushed intact onto page two. Changed summary to readable body text and allowed sections/timeline entries to fragment across pages while keeping section headings with content.
+- Added A4 page-boundary markers with page labels in the left gutter outside the CV in the editor preview. Labels stay visible while their divider line appears on label hover; markers track preview height changes and remain separate from the HTML sent to the PDF service.
+- Made the profile-photo block a movable/removable CV section in templates that support photos. It shows a silhouette placeholder when no image is set, excludes Data Scientist and Boardroom Ready, and reserves the same height with or without a photo to prevent layout shifts.
+- Removed the visible photo-section heading and its add action; its section toolbar still supports drag, reorder, and remove.
+- Set the native drag image to the full section being moved, anchored at the drag handle, so users see the actual section preview follow the pointer.
+- Added a translucent clone of the dragged section at its prospective before/after location or at the end of a blank target column. The preview is removed on drop or drag cancellation; after/before drop handling now matches the indicated location.
+- Revised the drag preview to render the cloned section in document flow so surrounding items reflow into their post-drop positions. Pointer-over-preview guards keep the insertion preview stable while the pointer is above it.

@@ -1,0 +1,1126 @@
+@page {
+    size: A4;
+    margin: 0
+}
+
+.cv-preview-page-layer {
+    position: relative
+}
+
+.cv-preview-page-marker {
+    position: absolute;
+    z-index: 30;
+    height: 0;
+    pointer-events: none
+}
+
+.cv-preview-page-marker::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    border-top: 1px dashed rgba(16, 185, 129, .8);
+    content: '';
+    opacity: 0;
+    transition: opacity .12s ease
+}
+
+.cv-preview-page-marker span {
+    position: absolute;
+    top: -12px;
+    left: -60px;
+    padding: 2px 5px;
+    background: #10b981;
+    color: #fff;
+    font: 10px/1.2 Arial, sans-serif;
+    white-space: nowrap;
+    opacity: 1;
+    pointer-events: auto;
+    cursor: pointer;
+    transition: background-color .12s ease
+}
+
+.cv-preview-page-marker.is-active::before {
+    opacity: 1
+}
+
+.cv-standard-pdf {
+    width: 210mm;
+    margin: 0 !important;
+    padding: 0 !important
+}
+
+.cv-standard-document {
+    margin: 0;
+    padding: 0;
+    background: #fff
+}
+
+.cv-standard {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns:60% 40%;
+    align-items: stretch;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background: #fff;
+    color: #1e293b;
+    font-family: CVNoto, Arial, sans-serif;
+    font-size: 9pt;
+    line-height: 1.35;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact
+}
+
+.cv-standard.cv-single-column {
+    display: block;
+    grid-template-columns: minmax(0, 1fr)
+}
+
+.cv-standard.cv-single-column .cv-standard-main {
+    display: block;
+    width: 100%
+}
+
+.cv-standard.cv-single-column .cv-standard-sidebar {
+    display: none
+}
+
+.cv-standard.cv-sidebar-first {
+    grid-template-columns: 35% 65%
+}
+
+.cv-standard.cv-sidebar-first .cv-standard-sidebar {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: 1px solid #e2e8f0;
+    border-left: 0
+}
+
+.cv-standard.cv-sidebar-first .cv-standard-main {
+    grid-column: 2;
+    grid-row: 1
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-header,
+.cv-standard.cv-template-boardroom-ready .cv-standard-header {
+    align-items: center;
+    text-align: center;
+    background: #fff;
+    color: #111827;
+    border-bottom: 2px solid #cbd5e1
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-name,
+.cv-standard.cv-template-data-scientist .cv-standard-title,
+.cv-standard.cv-template-boardroom-ready .cv-standard-name,
+.cv-standard.cv-template-boardroom-ready .cv-standard-title {
+    color: #111827
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-section-title,
+.cv-standard.cv-template-data-scientist .side-title {
+    color: #111827
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-title,
+.cv-standard.cv-template-data-scientist .timeline-item h3,
+.cv-standard.cv-template-data-scientist .cv-standard-school,
+.cv-standard.cv-template-data-scientist .cv-standard-item-title,
+.cv-standard.cv-template-data-scientist .cv-skill-category {
+    color: #111827
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-summary,
+.cv-standard.cv-template-boardroom-ready .cv-standard-summary {
+    color: #475569
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-section-title,
+.cv-standard.cv-template-boardroom-ready .cv-standard-section-title {
+    text-align: center
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-content,
+.cv-standard.cv-template-boardroom-ready .cv-standard-content {
+    padding: 42px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone
+}
+
+.cv-standard.cv-single-column .cv-standard-section {
+    break-inside: auto
+}
+
+.cv-standard.cv-single-column .cv-standard-section-heading,
+.cv-standard.cv-single-column .cv-standard-side-heading {
+    break-inside: avoid;
+    break-after: avoid
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-header,
+.cv-standard.cv-template-boardroom-ready .cv-standard-header {
+    padding: 0 0 18px;
+    margin: 0 0 23px
+}
+
+.cv-standard.cv-template-boardroom-ready {
+    font-family: Georgia, 'Times New Roman', serif
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-header {
+    border-color: #64748b
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-section-title,
+.cv-standard.cv-template-boardroom-ready .side-title {
+    color: #475569;
+    font-family: Georgia, 'Times New Roman', serif
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item h3,
+.cv-standard.cv-template-boardroom-ready .cv-standard-school,
+.cv-standard.cv-template-boardroom-ready .cv-standard-item-title,
+.cv-standard.cv-template-boardroom-ready .cv-skill-category {
+    color: #475569
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-header {
+    background: #fff;
+    color: #1e293b;
+    border-bottom: 2px solid #dc2626
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-title,
+.cv-standard.cv-template-security-analyst .cv-standard-summary {
+    color: #475569
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-name,
+.cv-standard.cv-template-security-analyst .cv-standard-section-title,
+.cv-standard.cv-template-security-analyst .side-title {
+    color: #b91c1c
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-sidebar {
+    background: #f8fafc
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-sidebar {
+    padding: 26px
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-content {
+    padding: 32px
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-section-title,
+.cv-standard.cv-template-security-analyst .side-title,
+.cv-standard.cv-template-security-analyst .timeline-item h3,
+.cv-standard.cv-template-security-analyst .cv-standard-school,
+.cv-standard.cv-template-security-analyst .cv-standard-item-title,
+.cv-standard.cv-template-security-analyst .cv-skill-category {
+    color: #b91c1c
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar {
+    background: #0b2039;
+    color: #fff
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar {
+    padding: 26px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content {
+    padding: 32px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .side-title {
+    color: #a2caea;
+    border-color: #45627f
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-muted,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-degree,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-contact-value,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-language > span,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-item-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-item-body {
+    color: #d6e7f5
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-header {
+    background: #fff;
+    color: #0b2039;
+    border-bottom-color: #a2caea
+}
+
+.cv-standard.cv-template-cloud-expert .cv-sidebar-header {
+    padding: 0 0 18px;
+    border-bottom-color: #45627f;
+    background: transparent;
+    color: #fff
+}
+
+.cv-standard.cv-template-cloud-expert .cv-sidebar-header .cv-standard-name {
+    color: #fff
+}
+
+.cv-standard.cv-template-cloud-expert .cv-sidebar-header .cv-standard-title {
+    color: #a2caea
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-summary {
+    color: #475569
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-name,
+.cv-standard.cv-template-cloud-expert .cv-standard-section-title {
+    color: #0b2039
+}
+
+.cv-standard.cv-template-cloud-expert .timeline-item h3,
+.cv-standard.cv-template-cloud-expert .cv-standard-school,
+.cv-standard.cv-template-cloud-expert .cv-standard-item-title,
+.cv-standard.cv-template-cloud-expert .cv-skill-category {
+    color: #0b2039
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar {
+    background: #1b5e60;
+    color: #fff
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar {
+    padding: 30px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content {
+    padding: 36px 30px 30px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-photo {
+    border: 2px solid #fff;
+    border-radius: 2px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-photo {
+    border-radius: 2px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-side-heading:has(> h2:empty) > h2,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-section-heading:has(> h2:empty) > h2 {
+    display: none
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contacts .cv-standard-contact-icon {
+    display: none
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contact {
+    display: block
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contact-value,
+.cv-standard.cv-template-cloud-expert .cv-standard-contact-value {
+    color: inherit
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .side-title {
+    color: #e6f4f1;
+    border-color: #438485
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-muted,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-degree,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-contact-value,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-language > span,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-item-title,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-item-body,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-skill-category {
+    color: #e6f4f1
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-header {
+    background: #fff;
+    color: #1b5e60;
+    border-bottom: 0
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-name {
+    color: #1b5e60
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-title,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-summary {
+    color: #475569
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-section-title {
+    color: #1b5e60;
+    border-bottom-width: 2px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .timeline-item h3,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-school,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-item-title,
+.cv-standard.cv-template-portfolio-hybrid .cv-skill-category {
+    color: #1b5e60
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-skill-category,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-skill-category {
+    color: #fff
+}
+
+.cv-standard * {
+    box-sizing: border-box
+}
+.cv-inline-editable[contenteditable="plaintext-only"] {
+    border-radius: 2px;
+    cursor: text;
+    outline: 1px solid transparent;
+    outline-offset: 2px;
+    transition: outline-color .12s, background-color .12s
+}
+.cv-inline-editable[contenteditable="plaintext-only"]:hover {
+    outline-color: #d6b997
+}
+.cv-inline-editable[contenteditable="plaintext-only"]:focus {
+    outline-color: #9a6b3e;
+    background: rgba(255, 255, 255, .16)
+}
+.cv-inline-editable[contenteditable="plaintext-only"]:empty:before {
+    color: #a8a29e;
+    content: attr(data-placeholder);
+    font-weight: 400;
+    opacity: .8
+}
+.cv-standard-sidebar .cv-inline-editable[contenteditable="plaintext-only"]:focus {
+    background: #fff
+}
+@media print {
+    .cv-inline-editable[contenteditable="plaintext-only"] {
+        outline: 0 !important;
+        background: transparent !important
+    }
+}
+
+.cv-standard-main {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: #fff
+}
+
+.cv-standard-header {
+    padding: 36px 30px 24px;
+    background: #564234;
+    color: #fff
+}
+
+.cv-standard-name-spacer {
+    min-height: 1.15em;
+    visibility: hidden;
+    pointer-events: none
+}
+
+.cv-standard-title-spacer {
+    min-height: 1.35em;
+    visibility: hidden;
+    pointer-events: none
+}
+
+.cv-name-section > .cv-standard-section-heading {
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0
+}
+
+.cv-name-section > .cv-standard-section-heading > h2 {
+    display: none
+}
+
+.cv-standard-content > .cv-name-section:first-child {
+    position: absolute;
+    z-index: 2;
+    top: 36px;
+    right: 30px;
+    left: 30px;
+    margin: 0
+}
+
+.cv-standard-content > .cv-name-section-moves-background:first-child {
+    position: relative;
+    z-index: auto;
+    top: auto;
+    right: auto;
+    left: auto;
+    margin: -24px -30px 26px
+}
+
+.cv-name-cluster .cv-standard-title {
+    color: #475569
+}
+
+.cv-name-section-moves-background .cv-standard-title {
+    color: #e7e5e4
+}
+
+.cv-name-section:not(:first-child) .cv-standard-name {
+    font-size: 20pt
+}
+
+.cv-standard-sidebar {
+    position: relative
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar > .cv-name-section:first-of-type {
+    position: absolute;
+    z-index: 2;
+    top: 26px;
+    right: 26px;
+    left: 26px;
+    margin: 0
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-name-cluster .cv-standard-name,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-name-cluster .cv-standard-name {
+    color: #fff
+}
+
+.cv-standard.cv-template-cloud-expert .cv-name-cluster .cv-standard-title {
+    color: #45627f
+}
+
+.cv-standard.cv-template-security-analyst .cv-name-cluster .cv-standard-title {
+    color: #475569
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-name-cluster .cv-standard-title {
+    color: #475569
+}
+
+.cv-standard-name {
+    margin: 0 0 3px;
+    font-size: 27pt;
+    line-height: 1.15;
+    text-transform: uppercase
+}
+
+.cv-standard-title {
+    margin: 0 0 16px;
+    color: #e7e5e4;
+    font-size: 10.5pt;
+    font-weight: 700;
+    letter-spacing: 1.25px;
+    text-transform: uppercase
+}
+
+.cv-standard-summary {
+    max-width: 90%;
+    color: #475569;
+    font-size: 9.75pt;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere
+}
+
+.cv-standard-content {
+    flex: 1;
+    padding: 24px 30px 30px
+}
+
+.cv-standard-section {
+    margin: 0 0 26px;
+    break-inside: auto
+}
+
+.cv-standard-section-title, .cv-standard .side-title {
+    margin: 0 0 16px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid #e2e8f0;
+    color: #564234;
+    font-size: 13.5pt;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase
+}
+
+.cv-standard-section-title {
+    break-inside: avoid;
+    break-after: avoid
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px
+}
+
+.chip {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: baseline;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #f1eeeb;
+    color: #334155;
+    font-size: 8pt;
+    line-height: 1.3;
+    break-inside: avoid
+}
+
+.cv-skill-category {
+    display: block;
+    margin-bottom: 6px;
+    color: #6b5040;
+    font-weight: 700;
+}
+
+.cv-skill-category[contenteditable="plaintext-only"] {
+    cursor: text
+}
+
+.cv-skill-level {
+    color: #64748b;
+    font-weight: 400
+}
+
+.cv-skill-item {
+    width: max-content;
+    max-width: 100%;
+    flex: 0 0 auto
+}
+
+.timeline {
+    margin-left: 2px;
+    padding-left: 15px;
+    border-left: 1.5px solid #564234
+}
+
+.timeline-item {
+    position: relative;
+    margin: 0 0 18px;
+    break-inside: auto
+}
+
+.timeline-item:before {
+    position: absolute;
+    top: 4px;
+    left: -20px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #564234;
+    content: ''
+}
+
+.timeline-item .period {
+    margin-bottom: 3px;
+    color: #64748b;
+    font-size: 8pt;
+    font-weight: 700
+}
+
+.timeline-item h3 {
+    margin: 0 0 2px;
+    color: #564234;
+    font-size: 11pt
+}
+
+.timeline-item .company {
+    margin-bottom: 7px;
+    color: #475569;
+    font-size: 9pt
+}
+
+.timeline-item .bullet, .timeline-item .project-detail {
+    margin: 0 0 5px;
+    padding-left: 10px;
+    font-size: 8.5pt;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere
+}
+
+.timeline-item .project-detail {
+    padding-left: 8px;
+    font-size: 8pt;
+    line-height: 1.35
+}
+
+.cv-standard-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    min-width: 0;
+    padding: 48px 30px 30px;
+    border-left: 1px solid #e2e8f0;
+    background: #f4f4f4
+}
+
+.cv-standard-photo-wrap {
+    min-height: 137px;
+    margin-bottom: 2px;
+    text-align: center
+}
+
+.cv-photo-section-readonly > .cv-standard-section-heading,
+.cv-photo-section-readonly > .cv-standard-side-heading {
+    display: none
+}
+
+.cv-photo-section > .cv-standard-section-heading > h2,
+.cv-photo-section > .cv-standard-side-heading > h2 {
+    display: none
+}
+
+.cv-standard-photo {
+    display: block;
+    width: 135px;
+    height: 135px;
+    margin: 0 auto;
+    border-radius: 50%;
+    object-fit: cover
+}
+
+.cv-standard-photo-placeholder {
+    position: relative;
+    width: 135px;
+    height: 135px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    background: #f3f4f6
+}
+
+.cv-standard-photo-placeholder::before {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    width: 56px;
+    height: 56px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: #a8afb7;
+    content: ''
+}
+
+.cv-standard-photo-placeholder::after {
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    width: 108px;
+    height: 61px;
+    transform: translateX(-50%);
+    border-radius: 55% 55% 0 0;
+    background: #a8afb7;
+    content: ''
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-photo-placeholder {
+    border: 2px solid #fff;
+    border-radius: 2px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-photo-placeholder {
+    border-radius: 2px
+}
+
+.cv-standard-contacts {
+    display: grid;
+    gap: 12px
+}
+
+.cv-standard-contact {
+    display: grid;
+    grid-template-columns:22px 1fr;
+    gap: 9px;
+    align-items: center
+}
+
+.cv-standard-contact-icon {
+    display: flex;
+    width: 22px;
+    height: 22px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 50%;
+    background: #fff;
+    color: #64748b;
+    font-size: 7pt;
+    font-weight: 700
+}
+
+.cv-standard-contact-value {
+    color: #475569;
+    font-size: 8.5pt;
+    line-height: 1.3;
+    overflow-wrap: anywhere
+}
+
+.cv-standard .side-title {
+    margin-bottom: 12px;
+    border-bottom-color: #cbd5e1;
+    color: #1e293b;
+    font-size: 11pt
+}
+
+.cv-standard-side-item {
+    margin: 0 0 11px;
+    break-inside: avoid
+}
+
+.cv-standard-school {
+    margin: 0 0 3px;
+    color: #564234;
+    font-size: 9.5pt;
+    font-weight: 700;
+    line-height: 1.25
+}
+
+.cv-standard-degree {
+    margin-bottom: 3px;
+    color: #334155;
+    font-size: 8.75pt;
+    font-weight: 700
+}
+
+.cv-standard-muted {
+    margin-bottom: 3px;
+    color: #64748b;
+    font-size: 8pt;
+    overflow-wrap: anywhere
+}
+
+.cv-standard-gpa {
+    display: flex;
+    align-items: baseline;
+    gap: 4px
+}
+
+.cv-standard-gpa input {
+    width: 5.5em;
+    padding: 1px 2px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit
+}
+
+.cv-standard-gpa input:hover,
+.cv-standard-gpa input:focus {
+    border-color: #d6b997;
+    background: #fff
+}
+
+.cv-standard-item-title {
+    margin: 0 0 3px;
+    color: #564234;
+    font-size: 9.25pt;
+    font-weight: 700;
+    line-height: 1.25
+}
+
+.cv-standard-item-body {
+    margin-bottom: 3px;
+    color: #334155;
+    font-size: 8.5pt;
+    font-weight: 700;
+    line-height: 1.3
+}
+
+.cv-standard-language {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 5px;
+    font-size: 8.5pt
+}
+
+.cv-standard-language span {
+    color: #64748b
+}
+
+.cv-editable-section,
+.cv-editable-item,
+.cv-optional-field {
+    position: relative
+}
+
+.cv-standard-section:hover:not(:has(.cv-editable-item:hover)),
+.cv-standard-section:focus-within:not(:has(.cv-editable-item:focus-within)),
+.cv-standard-side-section:hover:not(:has(.cv-editable-item:hover)),
+.cv-standard-side-section:focus-within:not(:has(.cv-editable-item:focus-within)),
+.cv-standard-section.cv-section-dragging,
+.cv-standard-side-section.cv-section-dragging,
+.cv-editable-item:hover:not(:has(.cv-editable-item:hover)),
+.cv-editable-item:focus-within:not(:has(.cv-editable-item:focus-within)) {
+    outline: 1px solid #d6b997;
+    outline-offset: 2px;
+    border-radius: 3px
+}
+
+.cv-standard-section-heading,
+.cv-standard-side-heading {
+    position: relative
+}
+
+.cv-item-actions,
+.cv-section-actions,
+.cv-optional-actions {
+    position: absolute;
+    z-index: 5;
+    top: -31px;
+    right: 0;
+    display: none;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
+    border-radius: 6px;
+    background: #e5e7eb;
+    box-shadow: 0 1px 4px #0002;
+}
+
+.cv-standard-section:hover:not(:has(.cv-editable-item:hover)) > .cv-standard-section-heading > .cv-section-actions,
+.cv-standard-section:focus-within:not(:has(.cv-editable-item:focus-within)) > .cv-standard-section-heading > .cv-section-actions,
+.cv-standard-side-section:hover:not(:has(.cv-editable-item:hover)) > .cv-standard-side-heading > .cv-section-actions,
+.cv-standard-side-section:focus-within:not(:has(.cv-editable-item:focus-within)) > .cv-standard-side-heading > .cv-section-actions,
+.cv-section-dragging > .cv-standard-section-heading > .cv-section-actions,
+.cv-section-dragging > .cv-standard-side-heading > .cv-section-actions,
+.cv-standard-section.cv-section-drop-target > .cv-standard-section-heading > .cv-section-actions,
+.cv-standard-side-section.cv-section-drop-target > .cv-standard-side-heading > .cv-section-actions,
+.cv-editable-item:hover:not(:has(.cv-editable-item:hover)) > .cv-item-actions,
+.cv-editable-item:focus-within:not(:has(.cv-editable-item:focus-within)) > .cv-item-actions,
+.cv-optional-field:hover > .cv-optional-actions {
+    display: inline-flex
+}
+
+.cv-item-actions {
+    top: -33px;
+    right: 2px;
+    background: #7c858e
+}
+
+.cv-item-actions button,
+.cv-section-actions button,
+.cv-optional-actions button,
+.cv-contact-clear {
+    display: inline-flex;
+    width: 27px;
+    height: 27px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 5px;
+    background: #7c858e;
+    color: #fff;
+    cursor: pointer
+}
+
+.cv-item-actions button:hover:not(:disabled),
+.cv-section-actions button:hover:not(:disabled),
+.cv-optional-actions button:hover,
+.cv-contact-clear:hover {
+    background: #59636d
+}
+
+.cv-item-actions button:disabled,
+.cv-section-actions button:disabled {
+    cursor: default;
+    opacity: .45
+}
+
+.cv-section-drag-handle {
+    cursor: grab !important
+}
+
+.cv-section-drag-handle:active {
+    cursor: grabbing !important
+}
+
+.cv-standard-section.cv-section-drop-target,
+.cv-standard-side-section.cv-section-drop-target {
+    outline: 2px dashed #16a34a;
+    outline-offset: 4px;
+    border-radius: 4px
+}
+
+.cv-section-drop-preview {
+    box-sizing: border-box;
+    border: 1px dashed #16a34a;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, .14);
+    opacity: .72;
+    pointer-events: none
+}
+
+.cv-section-drop-preview .cv-section-actions,
+.cv-section-drop-preview .cv-item-actions,
+.cv-section-drop-preview .cv-inline-add,
+.cv-section-drop-preview .cv-optional-actions,
+.cv-section-drop-preview .cv-contact-clear {
+    display: none !important
+}
+
+.cv-standard-main.cv-column-drop-target {
+    outline: 2px dashed #16a34a;
+    outline-offset: -4px
+}
+
+.cv-standard-content.cv-column-drop-target,
+.cv-standard-sidebar.cv-column-drop-target {
+    outline: 2px dashed #16a34a;
+    outline-offset: -4px
+}
+
+.cv-item-actions .cv-item-delete,
+.cv-section-actions .cv-item-delete,
+.cv-optional-actions button {
+    background: #e84b43
+}
+
+.cv-inline-add {
+    display: inline-flex;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    background: #16a34a;
+    color: #fff;
+    cursor: pointer
+}
+
+.cv-inline-add:hover {
+    background: #15803d
+}
+
+.cv-item-actions .cv-inline-add,
+.cv-section-actions .cv-inline-add {
+    background: #16a34a
+}
+
+.cv-item-actions .cv-inline-add:hover,
+.cv-section-actions .cv-inline-add:hover {
+    background: #15803d
+}
+
+.cv-standard-section-heading .cv-section-actions,
+.cv-standard-side-heading .cv-section-actions {
+    top: 0
+}
+
+.cv-standard-section-heading:hover > h2,
+.cv-standard-side-heading:hover > h2,
+.cv-standard-side-heading:hover > h2 {
+    padding-right: 108px
+}
+
+.cv-optional-actions {
+    top: -30px
+}
+
+.cv-contact-clear {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    background: #e84b43
+}
+
+.cv-standard-language {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px
+}
+
+.cv-standard-language > strong,
+.cv-standard-language > span {
+    min-width: 0
+}
+
+.cv-skill-group-row {
+    display: block;
+    width: 100%;
+    margin-bottom: 13px
+}
+
+.cv-bullet-editor {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    height: auto;
+    overflow: hidden;
+    resize: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere
+}
+
+.cv-bullet-editor:hover,
+.cv-bullet-editor:focus {
+    border-color: #d6b997;
+    outline: 0;
+    background: #fff
+}
+
+.bullet-details,
+.project-details {
+    margin: 0 0 6px;
+    padding-left: 18px;
+    font-size: 8.5pt;
+    line-height: 1.4;
+    overflow-wrap: anywhere
+}
+
+.project-details {
+    font-size: 8pt;
+    line-height: 1.35
+}
+
+.bullet-details li,
+.project-details li {
+    margin-bottom: 4px
+}
+
+@media print {
+    .cv-item-actions,
+    .cv-section-actions,
+    .cv-inline-add,
+    .cv-optional-actions,
+    .cv-contact-clear {
+        display: none !important
+    }
+
+    .cv-editable-item:hover,
+    .cv-editable-item:focus-within,
+    .cv-editable-section:hover,
+    .cv-editable-section:focus-within,
+    .cv-standard-section:hover,
+    .cv-standard-section:focus-within,
+    .cv-standard-side-section:hover,
+    .cv-standard-side-section:focus-within,
+    .cv-standard-section.cv-section-dragging,
+    .cv-standard-side-section.cv-section-dragging {
+        outline: 0
+    }
+}

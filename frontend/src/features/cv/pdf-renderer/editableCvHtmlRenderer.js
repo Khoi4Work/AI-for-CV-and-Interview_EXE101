@@ -1,7 +1,7 @@
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
-import TheStandardHtmlTemplate, {standardTemplateFontCss} from './templates/TheStandardHtmlTemplate.jsx';
-import templateCss from './templates/TheStandardHtmlTemplate.css?inline';
+import EditableCvHtmlTemplate, {cvTemplateFontCss} from './templates/EditableCvHtmlTemplate.jsx';
+import templateCss from './templates/EditableCvHtmlTemplate.css?inline';
 
 async function inlineProfilePhoto(source) {
     if (!source) return '';
@@ -29,13 +29,13 @@ function escapeHtml(value) {
     })[char]);
 }
 
-export async function buildStandardCvHtml(source = {}) {
+export async function buildEditableCvHtml(source = {}, templateId = 'the-standard') {
     const data = {...source, personalInfo: {...(source.personalInfo || {})}};
     data.profilePhoto = await inlineProfilePhoto(data.profilePhoto);
-    const content = renderToStaticMarkup(createElement(TheStandardHtmlTemplate, {data, includeStyles: false}));
-    const styles = `${standardTemplateFontCss}\n${templateCss}`;
+    const content = renderToStaticMarkup(createElement(EditableCvHtmlTemplate, {data, templateId, includeStyles: false}));
+    const styles = `${cvTemplateFontCss}\n${templateCss}`;
     if (!content.includes('cv-standard') || !styles.trim()) {
-        throw new Error('Không thể xuất PDF vì HTML/CSS của CV Standard chưa đầy đủ.');
+        throw new Error('Không thể xuất PDF vì HTML/CSS của CV template chưa đầy đủ.');
     }
     return '<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CV ' +
         escapeHtml(data.personalInfo.name) + '</title><style>' + styles + '</style></head><body class="cv-standard-pdf">' + content + '</body></html>';

@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useCV } from '../contexts/CVContext.jsx';
+import {getCvTemplateLayout, updateCvTemplateLayout} from '../pdf-renderer/templateSectionLayout.js';
 
 const inputClass = 'w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
 
@@ -53,9 +54,7 @@ function RecordList({ title, records, fields, onChange, onAdd, onRemove, onMove,
     </EditorSection>;
 }
 
-const MAIN_ORDER = ['skills', 'experiences', 'projects'];
-const SIDEBAR_ORDER = ['personalInfo', 'education', 'certificates', 'languages', 'awards'];
-const SECTION_LABELS = { skills: 'Kỹ năng', experiences: 'Kinh nghiệm', projects: 'Dự án', personalInfo: 'Thông tin cá nhân', education: 'Học vấn', certificates: 'Chứng chỉ', languages: 'Ngoại ngữ', awards: 'Giải thưởng' };
+const SECTION_LABELS = { name: 'Tên', profilePhoto: 'Ảnh hồ sơ', summary: 'Giới thiệu', skills: 'Kỹ năng', experiences: 'Kinh nghiệm', projects: 'Dự án', personalInfo: 'Thông tin cá nhân', education: 'Học vấn', certificates: 'Chứng chỉ', languages: 'Ngoại ngữ', awards: 'Giải thưởng' };
 
 export default function CVContentEditor() {
     const {
@@ -87,25 +86,26 @@ export default function CVContentEditor() {
         if (target < 0 || target >= records.length) return;
         const next = [...records]; [next[index], next[target]] = [next[target], next[index]]; setter(next);
     };
-    const layout = cvData.editorLayout || {};
-    const hidden = (layout.hiddenSections || []).filter(key => key !== 'personalInfo');
-    const ordered = column => {
-        const defaults = column === 'main' ? MAIN_ORDER : SIDEBAR_ORDER;
-        const key = column === 'main' ? 'mainOrder' : 'sidebarOrder';
-        const saved = (layout[key] || []).filter(item => defaults.includes(item));
-        return [...new Set([...saved, ...defaults])];
-    };
+    const editorLayout = cvData.editorLayout || {};
+    const templateId = cvData.selectedTemplateId || 'the-standard';
+    const templateLayout = getCvTemplateLayout(editorLayout, templateId);
+    const hidden = (editorLayout.hiddenSections || []).filter(key => key !== 'personalInfo' && key !== 'name');
     const moveSection = (section, column, direction) => {
         const key = column === 'main' ? 'mainOrder' : 'sidebarOrder';
-        const sequence = ordered(column).filter(item => !hidden.includes(item));
+        const sequence = templateLayout[key].filter(item => !hidden.includes(item));
         const index = sequence.indexOf(section); const target = index + direction;
         if (index < 0 || target < 0 || target >= sequence.length) return;
         [sequence[index], sequence[target]] = [sequence[target], sequence[index]];
-        setFullCVData({ ...cvData, editorLayout: { ...layout, [key]: sequence, hiddenSections: hidden } });
+        const mainOrder = key === 'mainOrder' ? sequence : templateLayout.mainOrder;
+        const sidebarOrder = key === 'sidebarOrder' ? sequence : templateLayout.sidebarOrder;
+        const nextLayout = updateCvTemplateLayout(editorLayout, templateId, mainOrder, sidebarOrder);
+        nextLayout.hiddenSections = hidden;
+        setFullCVData({ ...cvData, editorLayout: nextLayout });
     };
     const toggleSection = section => {
+        if (section === 'name') return;
         const nextHidden = hidden.includes(section) ? hidden.filter(item => item !== section) : [...hidden, section];
-        setFullCVData({ ...cvData, editorLayout: { ...layout, hiddenSections: nextHidden } });
+        setFullCVData({ ...cvData, editorLayout: { ...editorLayout, hiddenSections: nextHidden } });
     };
     const updateCustomFields = customFields => setFullCVData({ ...cvData, personalInfo: { ...cvData.personalInfo, customFields } });
     const experiences = cvData.experiences || [];
@@ -117,19 +117,21 @@ export default function CVContentEditor() {
     const awards = cvData.awards || [];
 
     return <div className="space-y-1">
-        <p className="mb-3 text-xs leading-relaxed text-on-surface-variant">Bản xem trước PDF sẽ tự cập nhật sau khi bạn ngừng nhập khoảng 1 giây.</p>
+        <p className="mb-3 text-xs leading-relaxed text-on-surface-variant">Bạn có thể chỉnh nội dung trực tiếp trên bản xem trước hoặc dùng các trường nhập liệu bên dưới.</p>
         <EditorSection title="Cấu trúc mục CV" open={false}>
-            <p className="text-xs text-on-surface-variant">Ẩn/hiện mục và đổi thứ tự trong từng cột. Thông tin cá nhân luôn được giữ lại.</p>
-            {[['main', 'Nội dung chính'], ['sidebar', 'Cột thông tin']].map(([column, label]) => <div key={column} className="space-y-2">
+            <p className="text-xs text-on-surface-variant">Ẩn/hiện mục và sắp xếp theo bố cục của mẫu đang chọn. Thông tin cá nhân luôn được giữ lại.</p>
+            {[
+                ['main', templateLayout.columns === 1 ? 'Nội dung CV' : 'Nội dung chính', templateLayout.mainOrder],
+                ...(templateLayout.columns > 1 ? [['sidebar', 'Cột thông tin', templateLayout.sidebarOrder]] : []),
+            ].map(([column, label, order]) => <div key={column} className="space-y-2">
                 <p className="text-xs font-bold text-on-surface">{label}</p>
-                {ordered(column).map((section, index, list) => <div key={section} className="flex items-center gap-1 rounded-lg border border-outline-variant px-2 py-1">
+                {order.map((section, index, list) => <div key={section} className="flex items-center gap-1 rounded-lg border border-outline-variant px-2 py-1">
                     <span className="min-w-0 flex-1 text-xs">{SECTION_LABELS[section]}</span>
-                    <button type="button" disabled={hidden.includes(section) || index === 0} onClick={() => moveSection(section, column, -1)} aria-label="Di chuyển mục lên" className="rounded p-1 hover:bg-surface-container disabled:opacity-30"><ChevronUp size={14}/></button>
-                    <button type="button" disabled={hidden.includes(section) || index === list.length - 1} onClick={() => moveSection(section, column, 1)} aria-label="Di chuyển mục xuống" className="rounded p-1 hover:bg-surface-container disabled:opacity-30"><ChevronDown size={14}/></button>
-                    {section !== 'personalInfo' && <button type="button" onClick={() => toggleSection(section)} aria-label={hidden.includes(section) ? 'Hiện mục' : 'Ẩn mục'} className="rounded p-1 text-on-surface-variant hover:bg-surface-container">{hidden.includes(section) ? <Eye size={14}/> : <EyeOff size={14}/>}</button>}
+                    {section !== 'name' && <><button type="button" disabled={hidden.includes(section) || index === 0} onClick={() => moveSection(section, column, -1)} aria-label="Di chuyển mục lên" className="rounded p-1 hover:bg-surface-container disabled:opacity-30"><ChevronUp size={14}/></button>
+                        <button type="button" disabled={hidden.includes(section) || index === list.length - 1} onClick={() => moveSection(section, column, 1)} aria-label="Di chuyển mục xuống" className="rounded p-1 hover:bg-surface-container disabled:opacity-30"><ChevronDown size={14}/></button></>}
+                    {section !== 'personalInfo' && section !== 'name' && <button type="button" onClick={() => toggleSection(section)} aria-label={hidden.includes(section) ? 'Hiện mục' : 'Ẩn mục'} className="rounded p-1 text-on-surface-variant hover:bg-surface-container">{hidden.includes(section) ? <Eye size={14}/> : <EyeOff size={14}/>}</button>}
                 </div>)}
             </div>)}
-            <div className="flex items-center justify-between rounded-lg border border-outline-variant px-2 py-1"><span className="flex-1 text-xs">Giới thiệu</span><button type="button" onClick={() => toggleSection('summary')} className="rounded p-1 text-on-surface-variant hover:bg-surface-container">{hidden.includes('summary') ? <Eye size={14}/> : <EyeOff size={14}/>}</button></div>
         </EditorSection>
         <EditorSection title="Thông tin cá nhân" open>
             <div className="space-y-3">
@@ -143,10 +145,12 @@ export default function CVContentEditor() {
                 <div className="space-y-2 border-t border-outline-variant pt-3">
                     <p className="text-xs font-semibold text-on-surface-variant">Trường thông tin bổ sung</p>
                     {(cvData.personalInfo?.customFields || []).map((value, index) => <div key={index} className="flex items-center gap-2">
-                        <Field label={`Thông tin ${index + 1}`} value={typeof value === 'string' ? value : value?.value} onChange={next => updateCustomFields((cvData.personalInfo?.customFields || []).map((item, i) => i === index ? next : item))}/>
+                        <Field label={`Thông tin ${index + 1}`} value={typeof value === 'string' ? value : value?.value} onChange={next => updateCustomFields((cvData.personalInfo?.customFields || []).map((item, i) => i === index
+                            ? typeof item === 'string' ? {label: '', value: next} : {...item, value: next}
+                            : typeof item === 'string' ? {label: '', value: item} : item))}/>
                         <button type="button" onClick={() => updateCustomFields((cvData.personalInfo?.customFields || []).filter((_, i) => i !== index))} aria-label="Xóa trường thông tin" className="mt-5 rounded-md p-1.5 text-error hover:bg-error/10"><Trash2 size={15}/></button>
                     </div>)}
-                    <button type="button" onClick={() => updateCustomFields([...(cvData.personalInfo?.customFields || []), ''])} className="inline-flex items-center gap-1 rounded-lg border border-primary/40 px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5"><Plus size={14}/> Thêm trường</button>
+                    <button type="button" onClick={() => updateCustomFields([...(cvData.personalInfo?.customFields || []).map(item => typeof item === 'string' ? {label: '', value: item} : item), {label: '', value: ''}])} className="inline-flex items-center gap-1 rounded-lg border border-primary/40 px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5"><Plus size={14}/> Thêm trường</button>
                 </div>
             </div>
         </EditorSection>

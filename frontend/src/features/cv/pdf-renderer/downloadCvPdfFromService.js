@@ -1,14 +1,14 @@
 import {cvPipelineService} from '../services/cvPipelineService.js';
-import {buildStandardCvHtml} from './standardHtmlRenderer.js';
+import {buildEditableCvHtml} from './editableCvHtmlRenderer.js';
 
 function safePdfName(name) {
     return String(name || 'CV').replace(/[^\p{L}\p{N}._ -]/gu, '_').trim().slice(0, 110) || 'CV';
 }
 
-export async function downloadStandardCvPdf(cvData, cvName) {
+export async function downloadCvPdfFromService(cvData, cvName, templateId = 'the-standard') {
     const filename = safePdfName(cvName) + '.pdf';
     const blob = await cvPipelineService.renderPdf({
-        html: await buildStandardCvHtml(cvData),
+        html: await buildEditableCvHtml(cvData, templateId),
         filename,
         options: {
             format: 'A4',
