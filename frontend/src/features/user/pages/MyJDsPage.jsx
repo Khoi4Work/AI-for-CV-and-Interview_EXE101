@@ -75,6 +75,14 @@ export default function MyJDsPage() {
             showToast('Hãy nhập tiêu đề và nội dung JD.', 'error');
             return;
         }
+        if (title.length > 255 || editForm.companyName.trim().length > 255) {
+            showToast('Tiêu đề và tên công ty không được vượt quá 255 ký tự.', 'error');
+            return;
+        }
+        if (content.length > 50000) {
+            showToast('Nội dung JD không được vượt quá 50.000 ký tự.', 'error');
+            return;
+        }
         setSavingJD(true);
         try {
             const updated = await galleryService.updateJD(editingJD.id, {
@@ -229,6 +237,7 @@ export default function MyJDsPage() {
                                 required
                                 rows={14}
                                 value={editForm.content}
+                                maxLength={50000}
                                 onChange={event => setEditForm(current => ({ ...current, content: event.target.value }))}
                                 className="max-h-[50vh] min-h-64 w-full resize-y overflow-y-auto rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
                                 placeholder="Dán hoặc chỉnh sửa nội dung mô tả công việc..."

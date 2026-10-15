@@ -10,9 +10,11 @@ export default function TemplateFeedbackModal({ templateId, isOpen, onClose, onS
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const normalizedComment = comment.trim();
+        if (!Number.isInteger(rating) || rating < 1 || rating > 5 || normalizedComment.length > 1000) return;
         setIsSubmitting(true);
         try {
-            await onSubmit(templateId, { rating, comment });
+            await onSubmit(templateId, { rating, comment: normalizedComment });
             onClose();
         } catch (error) {
             console.error('Failed to submit feedback:', error);
@@ -57,10 +59,12 @@ export default function TemplateFeedbackModal({ templateId, isOpen, onClose, onS
                         <label className="text-sm font-medium text-gray-700">Nhận xét (tùy chọn)</label>
                         <textarea
                             value={comment}
-                            onChange={(e) => setComment(e.target.value)}
+                            onChange={(e) => setComment(e.target.value.slice(0, 1000))}
+                            maxLength={1000}
                             className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm min-h-[100px] transition-all"
                             placeholder="Chia sẻ trải nghiệm của bạn về mẫu này..."
                         ></textarea>
+                        <p className="text-right text-xs text-gray-500">{comment.length}/1000</p>
                     </div>
 
                     <div className="flex gap-3 pt-2">

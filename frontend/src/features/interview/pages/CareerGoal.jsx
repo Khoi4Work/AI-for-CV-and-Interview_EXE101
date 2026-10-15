@@ -12,6 +12,7 @@ const SUGGESTIONS = [
   '+ Định hướng lãnh đạo',
   '+ Tối ưu quy trình',
 ];
+const MAX_GOAL_LENGTH = 1000;
 
 export default function CareerGoal() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function CareerGoal() {
 
   const handleAppend = (text) => {
     const prefix = goal.trim() ? `${goal.trim()} ` : '';
-    setGoal(`${prefix}${text.replace('+ ', '')}`);
+    setGoal(`${prefix}${text.replace('+ ', '')}`.slice(0, MAX_GOAL_LENGTH));
   };
 
   const handleNext = () => {
@@ -53,10 +54,13 @@ export default function CareerGoal() {
           <div className="bg-interview-card-bg rounded-2xl border border-outline-variant shadow-sm overflow-hidden mb-12">
             <textarea
               value={goal}
-              onChange={(e) => setGoal(e.target.value)}
+              onChange={(e) => setGoal(e.target.value.slice(0, MAX_GOAL_LENGTH))}
+              maxLength={MAX_GOAL_LENGTH}
+              aria-label="Mục tiêu nghề nghiệp"
               className="w-full h-40 p-5 text-black placeholder-outline-variant focus:outline-none resize-none bg-interview-card-bg  rounded-t-2xl"
               placeholder="Tôi muốn đóng góp vào các dự án..."
             />
+            <p className="px-5 pb-3 text-right text-xs text-on-surface-variant">{goal.length}/{MAX_GOAL_LENGTH}</p>
 
             <div className="bg-interview-card-bg p-5 border-t border-outline-variant">
               <div className="flex items-center gap-2 mb-3">
