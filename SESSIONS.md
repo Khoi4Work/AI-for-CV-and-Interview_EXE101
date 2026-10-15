@@ -466,3 +466,11 @@
 - Removed the unused synchronous CV evaluation, feedback-generation and skill-gap flow from CVPipelineService/AIProviderService, including its private helpers, prompts and response DTOs. Kept the asynchronous analysis flow, JD recommendation scoring, feedback-history GET path and migration stubs.
 - Static reference scan found no FE callsites for the retired service methods; old FE API wrappers remain declaration-only. A separate higher-scoring alternative-role service implementation also has no callers and remains for a separately reviewed cleanup.
 - Maven backend compile and test-source compile passed; tests were not executed. No database changes.
+## 2026-10-15 — Add frontend input validation
+- Added client-side validation for personal profile data, CV contact/details before continuing/saving/exporting, JD length/content before evaluation, optional interview JD limits, career-goal length, and template feedback length/rating. Kept optional fields optional and aligned CV evaluation JD rules with backend requirements (80 characters, 12 words, 50,000 maximum).
+- Account email is read-only in the profile editor because the existing profile update API ignores email changes. Existing files remain uncommitted; build, lint, and tests were not run.
+
+## 2026-10-16 — Add inline CV editing and Chromium PDF rendering
+- Added direct editing and section controls to the Standard CV template, including field add/remove, section reorder across columns, and drag/drop into gaps; preserved section and custom-field layout in editor data.
+- Routed Standard CV PDF export through the backend OpenFeign client to the separate Playwright/Chromium PDF service, with A4 print options and body margin reset for the downloaded PDF.
+- Added validation for CV builder/editor export and save flows. Targeted ESLint and `git diff --check` passed; full Vite build was blocked because the environment denies reading `frontend/.env`.
