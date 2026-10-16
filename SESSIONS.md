@@ -536,3 +536,6 @@
 - Expanded the CV import prompt with per-section JSON examples, clarified grouped versus ungrouped skill mapping, corrected OCR-split certificate examples, and retained education details through backend/frontend mapping. Added structured-field logs after extraction, import persistence, and analysis snapshot creation/reuse; logs omit source text and profile photos.
 - Added PDF export failure-stage logging in the frontend and request failure diagnostics in the backend PDF proxy. Updated the `done` skill to summarize planned stage/commit groups before Git mutations without asking a yes/no approval question.
 - Verification: `CVImportRoleTest` passed (3 tests), `cvPdfRenderer.test.js` passed (6 tests), focused ESLint passed for the changed PDF export files, and `git diff --check` passed. Production build could not run because the sandbox denies access to `frontend/.env`.
+
+## 2026-10-17 — Summarize every Git approval operation
+- Refined the `done` skill so each individual `git add` and `git commit` operation gets its own plain-language summary immediately beforehand. Commit summaries must state the subject and included changes; approval justifications must describe the action instead of showing raw terminal syntax.
