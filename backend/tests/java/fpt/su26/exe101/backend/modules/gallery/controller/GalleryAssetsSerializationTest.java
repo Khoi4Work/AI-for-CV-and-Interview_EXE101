@@ -13,6 +13,7 @@ import fpt.su26.exe101.backend.modules.cv.repository.CVRepository;
 import fpt.su26.exe101.backend.modules.cv.repository.CVTemplateRepository;
 import fpt.su26.exe101.backend.modules.cv.service.CVPipelineService;
 import fpt.su26.exe101.backend.modules.cv.service.AIProviderService;
+import fpt.su26.exe101.backend.modules.cv.service.RoleTaxonomyService;
 import fpt.su26.exe101.backend.modules.cv.service.impl.CVPipelineServiceImpl;
 import fpt.su26.exe101.backend.modules.gallery.entity.Gallery;
 import fpt.su26.exe101.backend.modules.gallery.repository.GalleryRepository;
@@ -58,6 +59,7 @@ class GalleryAssetsSerializationTest {
     @EnableJpaRepositories(basePackageClasses = {CVRepository.class, GalleryRepository.class})
     static class Config {
         @Bean CVMapper cvMapper() { return Mappers.getMapper(CVMapper.class); }
+        @Bean ObjectMapper objectMapper() { return new ObjectMapper().findAndRegisterModules(); }
     }
     @Autowired CVRepository cvs;
     @Autowired GalleryRepository galleries;
@@ -70,6 +72,7 @@ class GalleryAssetsSerializationTest {
     @MockBean fpt.su26.exe101.backend.modules.cv.service.CVAnalysisQuotaService analysisQuotaService;
     @MockBean fpt.su26.exe101.backend.modules.cv.service.CVAnalysisService cvAnalysisService;
     @MockBean AIProviderService aiProvider;
+    @MockBean RoleTaxonomyService roleTaxonomyService;
     @MockBean CVFeedbackMapper feedbackMapper;
 
     @Test void linkedTemplateReturns200AndPlainJsonAfterServiceTransactionEnds() throws Exception {
@@ -121,6 +124,8 @@ class GalleryAssetsSerializationTest {
         Gallery gallery = fixture.getGallery();
         String templateId = fixture.getTemplate().getId();
         when(quotaService.getCvPlan(gallery.getAccountId())).thenReturn(UserPlan.ENHANCE);
+        when(quotaService.consumeCvCreation(gallery.getAccountId())).thenReturn(
+                new UsageQuotaService.CvCreationQuota(UserPlan.ENHANCE, 5, 5));
         CVContent content = CVContent.builder().summary("Before")
                 .profilePhoto("data:image/jpeg;base64,AA").professionalTitle("Frontend Developer")
                 .selectedTemplateId(templateId).build();

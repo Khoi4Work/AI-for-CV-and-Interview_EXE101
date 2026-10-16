@@ -9,6 +9,10 @@ import fpt.su26.exe101.backend.modules.gallery.repository.GalleryRepository;
 import fpt.su26.exe101.backend.modules.gallery.mapper.GalleryMapper;
 import fpt.su26.exe101.backend.modules.gallery.listener.AccountCreatedListener;
 import fpt.su26.exe101.backend.modules.gallery.service.impl.GalleryServiceImpl;
+import fpt.su26.exe101.backend.modules.gallery.service.JobDescriptionTitleExtractor;
+import fpt.su26.exe101.backend.modules.gallery.service.JobDescriptionNormalizationService;
+import fpt.su26.exe101.backend.modules.auth.service.impl.EmailVerificationServiceImpl;
+import fpt.su26.exe101.backend.modules.auth.service.impl.VerificationRateLimiterImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
@@ -35,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(classes = EmailVerificationIntegrationTest.Config.class)
-@Import({EmailVerificationService.class, VerificationRateLimiter.class, AccountCreatedListener.class, GalleryServiceImpl.class})
+@Import({EmailVerificationServiceImpl.class, VerificationRateLimiterImpl.class, AccountCreatedListener.class, GalleryServiceImpl.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class EmailVerificationIntegrationTest {
     @Configuration @AutoConfigurationPackage
@@ -48,6 +52,8 @@ class EmailVerificationIntegrationTest {
     @Autowired PlatformTransactionManager transactions;
     @Autowired JdbcTemplate jdbc;
     @MockBean GalleryMapper galleryMapper;
+    @MockBean JobDescriptionTitleExtractor jobDescriptionTitleExtractor;
+    @MockBean JobDescriptionNormalizationService jobDescriptionNormalizationService;
 
     private Account pending() {
         return new TransactionTemplate(transactions).execute(tx -> {

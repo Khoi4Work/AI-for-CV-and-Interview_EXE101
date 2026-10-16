@@ -23,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.*;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -54,9 +55,13 @@ public class CVRepositoryIntegrationTest {
     void testCVAndTemplateRelationship() {
         // Given
         CVTemplate template = CVTemplate.builder()
+                .id(UUID.randomUUID().toString())
                 .name("Modern Professional")
+                .downloads(0)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
-        templateRepository.save(template);
+        templateRepository.saveAndFlush(template);
 
         Gallery gallery = Gallery.builder()
                 .accountId(UUID.randomUUID())
@@ -165,9 +170,13 @@ public class CVRepositoryIntegrationTest {
     void testTemplateFeedbackRelationship() {
         // Given
         CVTemplate template = CVTemplate.builder()
+                .id(UUID.randomUUID().toString())
                 .name("Minimalist")
+                .downloads(0)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
-        templateRepository.save(template);
+        templateRepository.saveAndFlush(template);
 
         UUID accountId = UUID.randomUUID();
         TemplateFeedback feedback = TemplateFeedback.builder()
