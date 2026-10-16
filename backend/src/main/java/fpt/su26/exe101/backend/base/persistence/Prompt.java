@@ -64,7 +64,7 @@ public class Prompt {
                   "company": "",
                   "role": "",
                   "period": "",
-                  "details": []
+                  "details": [""]
                 }
               ],
               "education": [
@@ -72,7 +72,8 @@ public class Prompt {
                   "degree": "",
                   "school": "",
                   "year": "",
-                  "gpa": ""
+                  "gpa": "",
+                  "details": [""]
                 }
               ],
               "skills": [
@@ -86,7 +87,7 @@ public class Prompt {
                 {
                   "name": "",
                   "period": "",
-                  "details": [],
+                  "details": [""],
                   "url": ""
                 }
               ],
@@ -128,23 +129,119 @@ public class Prompt {
 
             If the document is not a CV, return {"isCV": false, "extractedData": null}.
             If it is a CV, set "isCV" to true and fill "extractedData" using the schema above.
-            Preserve only facts present in the CV; do not invent or infer information. Use empty strings
-            for missing text, empty arrays for missing lists, and null for missing nullable values.
-            Skill "level" must be exactly one of "BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT",
-            or null. Only assign a skill level when the CV explicitly states it; otherwise use null.
-            Language "level" is a string from the CV, or an empty string if absent.
-            Put spoken or written languages (for example, English or Vietnamese) only in "languages"
-            with their proficiency in "level" when stated. Do not also include those languages as
-            entries in "skills". Reserve "skills" for competencies, methods, tools, technologies,
-            and other capabilities; never use a language name as a skill category.
+            Follow the field guide below in the same order as the JSON. Each source/output pair only
+            demonstrates how to map a field; snippets may show only part of an object. Always return
+            every key from the schema. Never copy example facts unless they also appear in this CV.
+            Preserve facts from the CV, do not invent or infer them. Use "" for missing text, [] for
+            missing lists, and null for missing nullable values.
+            In the schema, [""] under "details" shows that each item is a string; it is not an item to
+            copy. Never return an empty string inside "details". Use [] when there are no details.
+
+            1. personalInfo
+            Source example: "Tuan | P 0901234567 | E tuan@example.com | A Ho Chi Minh City"
+            Output example: {"name":"Tuan","email":"tuan@example.com","phone":"0901234567","dob":"","address":"Ho Chi Minh City","linkedin":""}
+            Map a value by its nearby label and format. Ignore decorative letters or symbols before the
+            value. Put a LinkedIn profile URL in "linkedin"; do not put unrelated links there.
+
+            2. professionalTitle, targetRoleOrigin, targetRoleEvidence
+            Source example: "Applying for: Data Analyst"
+            Output example: {"professionalTitle":"Data Analyst","targetRoleOrigin":"EXPLICIT","targetRoleEvidence":"Applying for: Data Analyst"}
+            Use only a clearly stated desired or target role. A current or past job title under work
+            experience is not the target role. If no target role is explicit, use "" for
+            professionalTitle and targetRoleEvidence, and "NONE" for targetRoleOrigin. Preserve the
+            exact source wording in targetRoleEvidence.
+
+            3. summary
+            Source example: "Summary: I am a junior analyst skilled in reporting."
+            Output example: {"summary":"I am a junior analyst skilled in reporting."}
+            Copy the summary faithfully. Do not move experience descriptions or invent a summary when
+            the CV has none.
+
+            4. experiences
+            Source example: "2024 | Acme Ltd | Business Analyst | Prepared weekly reports."
+            Output example: {"id":null,"company":"Acme Ltd","role":"Business Analyst","period":"2024","details":["Prepared weekly reports."]}
+            "id" is assigned by the application; always return null. Put employer in "company",
+            position/title in "role", and the associated dates in "period".
+            Put each distinct bullet or note in "details" as its own string. For example, use
+            ["First responsibility.","Second responsibility."]; use [] if there are no details.
+            Keep the facts under their experience item and do not combine separate jobs.
+
+            5. education
+            Source example: "Example University | Major: Information Systems | Expected 2024–2027 | GPA 3.6"
+            Output example: {"school":"Example University","degree":"Information Systems","year":"Expected 2024–2027","gpa":"3.6","details":[]}
+            Put the school in "school", degree/major/field of study in "degree", and dates or study
+            status in "year". Keep qualifiers such as "Expected" or "Present". Copy GPA only when
+            stated. Put school-specific distinctions or achievements that do not fit the other fields
+            into "details" as strings; use [] when none. Do not move education facts to another section.
+
+            6. skills
+            Skill sections can be grouped, ungrouped, or use a mixture of both. Preserve the structure
+            that the source actually shows; do not assume every CV uses the same category names or has
+            categories at all.
+            Grouped source example: "Group One: Skill A, Skill B | Group Two: Skill C".
+            Output example: {"name":"Skill A","level":null,"category":"Group One"},
+            {"name":"Skill B","level":null,"category":"Group One"},
+            {"name":"Skill C","level":null,"category":"Group Two"}.
+            Ungrouped source example: "Skills: Skill A | Skill B | Skill C".
+            Output example: {"name":"Skill A","level":null,"category":""},
+            {"name":"Skill B","level":null,"category":""},
+            {"name":"Skill C","level":null,"category":""}.
+            Assign a category only when the supplied source text clearly marks a group, for example with
+            a distinct heading or label and a discernible boundary. Apply that label to its associated
+            skills until another clearly marked group begins. A flat list, line break, column boundary,
+            or adjacent skill names alone does not create a category. Do not infer categories from what
+            a skill seems related to. If the CV has no groups, or text extraction has lost the grouping
+            structure so it cannot be determined reliably, leave category empty rather than guessing or
+            merging skill names into one category. Keep each separately listed skill as its own entry.
+            When one listed skill includes examples in parentheses, keep them attached unless the CV
+            separately lists them as skills. "level" must be "BEGINNER", "INTERMEDIATE", "ADVANCED",
+            "EXPERT", or null; use a level only when the CV states it.
+
+            7. projects
+            Source example: "Website redesign (2025) | Mapped user flows."
+            Output example: {"name":"Website redesign","period":"2025","details":["Mapped user flows."],"url":""}
+            Create a project entry only when a project is stated. Map its name, dates, distinct notes
+            and URL to the matching fields. Keep each note as a string in "details" and use [] if none.
+            If the same project is also explicitly described under experience, retain it in both sections.
+
+            8. certificates
+            Source example: "UX Research | Example Academy | 2025 | https://example.com/certificate"
+            Output example: {"name":"UX Research","issuer":"Example Academy","date":"2025","url":"https://example.com/certificate"}
+            Map the certificate/course name, issuing organization, date, and its own URL. Leave a field
+            empty if the CV does not provide it; do not treat a general profile link as a certificate URL.
+            Rejoin spaces inserted inside an unmistakable OCR-split word when the complete phrase makes
+            the intended spelling clear. For example, "Soft ware Development Lifecycle" becomes
+            "Software Development Lifecycle", "Core Java for Complet e Beginners" becomes
+            "Core Java for Complete Beginners", and "AI Foundat ions for Everyone | I BM (Coursera)"
+            becomes name "AI Foundations for Everyone" and issuer "IBM (Coursera)". These are spelling
+            repair examples, not facts to add; do not rewrite genuinely separate words or proper names.
+
+            9. languages
+            Source example: "English — Proficient"
+            Output example: {"name":"English","level":"Proficient"}
+            Put spoken or written languages here, with the stated proficiency in "level". Use an empty
+            level when absent. Do not also add language names as skills or skill categories.
+
+            10. awards
+            Source example: "Outstanding Student | Example University | 2024"
+            Output example: {"name":"Outstanding Student","issuer":"Example University","date":"2024"}
+            Create an entry only for an award or distinction stated in the CV; map its name, issuer, and
+            date to the matching fields.
+
+            11. selectedTemplateId
+            This is application state, not a fact to extract from the CV. Always return null.
+
+            Text extracted from PDFs can be out of reading order, especially across columns. Use section
+            headings, nearby wording, and line breaks in the supplied text to map facts; do not move
+            content across section boundaries. Keep a fact in each section where the CV explicitly repeats
+            it. If extraction split a word across text runs, rejoin fragments only when the phrase makes
+            the intended word clear; do not alter names without clear evidence.
 
             <document_text>
             """.formatted(CV_CONTENT_SCHEMA);
 
     public static String cvImport(String extractedText) {
-        return JSON_OUTPUT_RULES + "professionalTitle must only be an explicitly stated application/target role, never a historical job title. "
-                + "If explicit, targetRoleOrigin=EXPLICIT and targetRoleEvidence is a verbatim heading/statement from the document. Otherwise leave professionalTitle empty and origin NONE.\n"
-                + CV_IMPORT_INSTRUCTIONS + extractedText + "\n</document_text>";
+        return JSON_OUTPUT_RULES + CV_IMPORT_INSTRUCTIONS + extractedText + "\n</document_text>";
     }
 
     public static String jdTitleExtraction(String jdText) {

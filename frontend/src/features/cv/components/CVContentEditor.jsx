@@ -170,7 +170,7 @@ export default function CVContentEditor() {
             { key: 'school', label: 'Trường' }, { key: 'degree', label: 'Chuyên ngành / bằng cấp' },
             { key: 'year', label: 'Thời gian' }, { key: 'gpa', label: 'GPA (không bắt buộc)' },
         ]} onChange={(index, field, value) => updateEducation(index, field, value)} onAdd={addEducation}
-        onRemove={removeEducation} onMove={(index, direction) => moveInList(education, records => setFullCVData({ ...cvData, education: records }), index, direction)} initialValue={{ school: '', degree: '', year: '', gpa: '' }} />
+        onRemove={removeEducation} onMove={(index, direction) => moveInList(education, records => setFullCVData({ ...cvData, education: records }), index, direction)} initialValue={{ school: '', degree: '', year: '', gpa: '', details: [] }} />
 
         <RecordList title="Dự án" records={projects} fields={[
             { key: 'name', label: 'Tên dự án' }, { key: 'period', label: 'Thời gian' },

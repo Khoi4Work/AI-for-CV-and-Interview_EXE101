@@ -45,6 +45,7 @@ export function mapMockDataToCVContext(mockData) {
             school: edu.school || '',
             year: edu.dates || '',
             gpa: edu.gpa || '',
+            details: Array.isArray(edu.details) ? edu.details : [],
         })),
         projects: (mockData.projectsList || []).map(proj => ({
             name: proj.name || '',

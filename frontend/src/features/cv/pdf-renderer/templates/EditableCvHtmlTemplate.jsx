@@ -470,7 +470,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
             </CvSection>;
         }
         const rows = key === 'education' ? education : key === 'certificates' ? certificates : key === 'languages' ? languages : awards;
-        const addValues = {education:{school:'',degree:'',year:'',gpa:''}, certificates:{name:'',issuer:'',date:'',url:''}, languages:{name:'',level:''}, awards:{name:'',issuer:'',date:''}};
+        const addValues = {education:{school:'',degree:'',year:'',gpa:'',details:[]}, certificates:{name:'',issuer:'',date:'',url:''}, languages:{name:'',level:''}, awards:{name:'',issuer:'',date:''}};
         const labels = {education:'học vấn', certificates:'chứng chỉ', languages:'ngoại ngữ', awards:'giải thưởng'};
         const title = {education:'Education', certificates:'Certificate', languages:'Foreign Language', awards:'Award'}[key];
         if (!onEdit && !rows.length) return null;

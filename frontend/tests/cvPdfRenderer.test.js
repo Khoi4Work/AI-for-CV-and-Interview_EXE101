@@ -63,7 +63,10 @@ test('does not infer project-experience relationships from matching titles or re
 
 test('maps canonical imported CV arrays to the fields read by the PDF renderer', () => {
     const imported = {
-        education: [{ degree: 'IT', school: 'FPT University', year: '2024-2027', gpa: '3.4' }],
+        education: [{
+            degree: 'IT', school: 'FPT University', year: 'Expected 2024-2027', gpa: '3.4',
+            details: ['Excellent student title throughout high school'],
+        }],
         projects: [{ name: 'Car Sharing', period: '2025', details: ['Built features'], url: '' }],
         certificates: [{ name: 'Cloud Basics', issuer: 'Provider', date: '2025', url: '' }],
         languages: [{ name: 'English', level: 'B2' }],
