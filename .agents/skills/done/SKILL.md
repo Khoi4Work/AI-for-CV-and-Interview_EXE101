@@ -16,6 +16,7 @@ Run this workflow when explicitly invoked as `$done` or when the user asks to ru
 
 ## 2. Stage and commit by group
 
+- Before running `git add` or `git commit`, send the user a concise summary of the changes that will be staged and the planned commit groups. This is an informational heads-up, not a yes/no approval question; do not phrase it as “Do you accept?”
 - If all changes serve one purpose, stage those files and create one commit.
 - If changes serve different purposes, stage only one logical group at a time and create a separate commit for each group.
 - Commit subjects must start with a bracketed project tag, followed by a concise imperative description. Use the most suitable tag, normally `[FEAT]`, `[FIX]`, `[REFACTOR]`, `[UI]`, `[DOCS]`, or `[CHORE]`.
