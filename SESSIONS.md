@@ -511,3 +511,7 @@
 - User requested a file describing fixes needed and a push. Created docs/reviews/2026-10-16-rework-cv-review.md with observed test failures, exact locations, remediation proposals, pagination findings, Docker port mismatch and acceptance checks.
 - Distinguished outdated test contracts/fixtures from confirmed production defects and recorded that no full baseline suite or authenticated browser export journey was run.
 - Documentation only: no feature fixes or merge into dev/main. Authorized publication targets codex/test-rework-cv, preserving feature/rework-cv itself.
+
+## 2026-10-16 — Rename the CV review branch
+- User requested renaming codex/test-rework-cv to test/test-rework-cv on local and remote. Updated the current branch name in the review document; previous session entries retain historical names.
+- Verified the destination name was unused and the old remote pointed at 6dd1446 before renaming. Publish the renamed branch and remove the old remote ref only after confirming the new ref.

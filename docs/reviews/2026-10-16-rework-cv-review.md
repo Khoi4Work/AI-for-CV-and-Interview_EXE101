@@ -1,6 +1,6 @@
 # Các điểm cần sửa trước khi merge feature/rework-cv
 
-Ngày kiểm tra: 16/10/2026. Code được kiểm tra: `7fc6df0`, trên nhánh local `codex/test-rework-cv`. Nhánh gốc so sánh: `origin/dev` tại `50e5c07`.
+Ngày kiểm tra: 16/10/2026. Code được kiểm tra: `7fc6df0`, trên nhánh `test/test-rework-cv` (đổi tên từ `codex/test-rework-cv`). Nhánh gốc so sánh: `origin/dev` tại `50e5c07`.
 
 **Kết luận:** xuất PDF đã hoạt động trên service Render với cả sáu mẫu và dữ liệu giả lập. Tuy nhiên, chưa nên xác nhận nhánh đã đạt để merge: bộ test chưa sạch, có lỗi lint mới và phân trang cần cải thiện. Đây là báo cáo kiểm tra, chưa phải bản sửa các vấn đề dưới đây.
 
