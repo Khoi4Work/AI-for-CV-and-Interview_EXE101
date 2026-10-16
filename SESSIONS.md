@@ -539,3 +539,7 @@
 
 ## 2026-10-17 — Summarize every Git approval operation
 - Refined the `done` skill so each individual `git add` and `git commit` operation gets its own plain-language summary immediately beforehand. Commit summaries must state the subject and included changes; approval justifications must describe the action instead of showing raw terminal syntax.
+
+## 2026-10-17 — Remove full CV objects from logs
+- Replaced the post-extraction CV object dump with field-presence and section-count metadata only. Removed full structured CV dumps from import persistence and analysis snapshot logs to reduce log volume and avoid writing personal CV content to logs.
+- Verification: `CVImportRoleTest` passed; a source scan found no remaining full-object CV extraction log statements, and `git diff --check` passed.

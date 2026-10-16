@@ -194,7 +194,6 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             if (normalizeLanguageSkills(cv.getContent())) {
                 cvRepository.save(cv);
             }
-            logImportedCVFields(cv.getId(), cv.getContent(), true);
             log.info("[CV] Import completed | cvId={} | galleryId={} | duplicate=true",
                     cv.getId(), gallery.getId());
             return CVImportResponseDTO.builder().cvId(cv.getId()).cvName(cv.getName())
@@ -218,7 +217,6 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .aiAnalysisLimit(analysisLimit)
                 .aiAnalysisRemaining(analysisLimit).build();
         cvRepository.save(draft);
-        logImportedCVFields(draft.getId(), extractedData, false);
         log.info("[CV] Import completed | cvId={} | galleryId={} | duplicate=false",
                 draft.getId(), gallery.getId());
         return CVImportResponseDTO.builder()
@@ -228,14 +226,6 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .sourceHash(sourceHash)
                 .duplicate(false)
                 .build();
-    }
-
-    private void logImportedCVFields(UUID cvId, CVContent content, boolean duplicate) {
-        if (content == null) return;
-        ObjectNode fields = objectMapper.valueToTree(content);
-        fields.remove(List.of("sourceText", "profilePhoto"));
-        log.info("[CV Import] Structured fields returned | cvId={} | duplicate={} | fields={}",
-                cvId, duplicate, fields.toPrettyString());
     }
 
     @Override

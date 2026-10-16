@@ -56,8 +56,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +64,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 @RequiredArgsConstructor
 public class CVAnalysisServiceImpl implements CVAnalysisService {
-    private static final Logger log = LoggerFactory.getLogger(CVAnalysisServiceImpl.class);
     private final CVRepository cvs;
     private final JobDescriptionRepository jds;
     private final GalleryRepository galleries;
@@ -103,7 +100,6 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
             if (!bound.get().getDigest().equals(digest))
                 throw new ApiException(ErrorCode.DUPLICATE_RESOURCE, "Idempotency-Key đã dùng cho yêu cầu khác.");
             CVAnalysis reusedAnalysis = owned(bound.get().getAnalysisId(), owner);
-            logSnapshotFields(reusedAnalysis.getSnapshot());
             return view(reusedAnalysis, true);
         });
         if (existing != null) return existing;
@@ -193,11 +189,6 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
     @Transactional(readOnly = true)
     public CVAnalysisResponseDTO read(UUID id, Gallery owner) {
         CVAnalysis analysis = owned(id, owner);
-        if (analysis.getStatus() == AnalysisStatus.COMPLETED
-                || analysis.getStatus() == AnalysisStatus.FAILED
-                || analysis.getStatus() == AnalysisStatus.INSUFFICIENT_EVIDENCE) {
-            logSnapshotFields(analysis.getSnapshot());
-        }
         return view(analysis, true);
     }
 
@@ -221,17 +212,7 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
         if (content.getSourceText() != null && !content.getSourceText().isBlank()) cvText = content.getSourceText();
         JobDescriptionNormalizationMetadata metadata = normalization.normalize(jd, null);
         Snapshot snapshot = cvMapper.toAnalysisSnapshot(cv, jd, content, cvText, metadata);
-        logSnapshotFields(snapshot);
         return snapshot;
-    }
-
-    private void logSnapshotFields(Snapshot snapshot) {
-        if (snapshot == null || snapshot.cv() == null) return;
-        ObjectNode fields = mapper.valueToTree(snapshot.cv());
-        fields.remove(List.of("sourceText", "profilePhoto"));
-        log.info("[CV Analysis] Snapshot structured fields | cvId={} | jdId={} | cvTextLength={} | fields={}",
-                snapshot.cvId(), snapshot.jdId(), snapshot.cvText() == null ? 0 : snapshot.cvText().length(),
-                fields.toPrettyString());
     }
 
     @Override
