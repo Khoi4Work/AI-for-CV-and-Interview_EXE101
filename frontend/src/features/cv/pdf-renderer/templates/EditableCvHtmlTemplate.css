@@ -159,6 +159,23 @@
     break-after: avoid
 }
 
+.cv-standard.cv-single-column .cv-standard-content {
+    padding: 28px 36px 24px
+}
+
+.cv-standard.cv-single-column .cv-standard-section {
+    margin-bottom: 18px
+}
+
+.cv-standard.cv-single-column .cv-standard-section-title,
+.cv-standard.cv-single-column .side-title {
+    margin-bottom: 12px
+}
+
+.cv-standard.cv-single-column .timeline-item {
+    margin-bottom: 12px
+}
+
 .cv-standard.cv-template-data-scientist .cv-standard-header,
 .cv-standard.cv-template-boardroom-ready .cv-standard-header {
     padding: 0 0 18px;

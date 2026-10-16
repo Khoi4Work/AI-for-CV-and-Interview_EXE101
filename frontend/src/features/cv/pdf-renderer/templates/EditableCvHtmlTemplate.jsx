@@ -398,15 +398,15 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
     const renderSection = (key, column, order) => {
         const side = column === 'sidebar';
         const index = order.indexOf(key);
-        const sectionProps = {key, sectionKey:key, column, index, count:order.length, side,
+        const sectionProps = {sectionKey:key, column, index, count:order.length, side,
             onSectionMove, onSectionReorder, onSectionRemove, onAdd};
-        if (key === 'name') return <CvSection {...sectionProps} title="" dragOnly
+        if (key === 'name') return <CvSection key={key} {...sectionProps} title="" dragOnly
             className={`cv-name-section${nameBackgroundMoves ? ' cv-name-section-moves-background' : ''}`}>
             {nameBackgroundMoves ? <header className="cv-standard-header">{renderNameCluster()}</header> : renderNameCluster()}
         </CvSection>;
         if (key === 'profilePhoto') {
             if (!supportsProfilePhoto(templateId)) return null;
-            return <CvSection {...sectionProps} title="" onAdd={undefined}
+            return <CvSection key={key} {...sectionProps} title="" onAdd={undefined}
                 className={`cv-photo-section${onEdit ? '' : ' cv-photo-section-readonly'}`}>
                 <ProfilePhoto source={data.profilePhoto}/>
             </CvSection>;
@@ -415,7 +415,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
             if (!onEdit && !value(data.summary)) return null;
             const summaryTitle = { 'the-standard': 'Summary', 'data-scientist': 'About Me', 'boardroom-ready': 'Professional Summary',
                 'security-analyst': 'Professional Summary', 'cloud-expert': 'Professional Summary', 'portfolio-hybrid': 'About Me' }[templateId] || 'Summary';
-            return <CvSection {...sectionProps} title={templateId === 'portfolio-hybrid' ? '' : summaryTitle} onAdd={undefined}>
+            return <CvSection key={key} {...sectionProps} title={templateId === 'portfolio-hybrid' ? '' : summaryTitle} onAdd={undefined}>
                 <EditableText as="div" className="cv-standard-summary" path="summary" onEdit={onEdit} multiline placeholder="Giới thiệu bản thân">{value(data.summary)}</EditableText>
             </CvSection>;
         }
@@ -424,7 +424,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
                 ? {label: '', value: field} : field || {label: '', value: ''});
             const personalTitle = templateId === 'security-analyst' ? 'Personal Details'
                 : templateId === 'portfolio-hybrid' ? '' : 'Personal Information';
-            return <CvSection {...sectionProps} title={personalTitle} addValue={{label:'',value:''}} addLabel="thông tin">
+            return <CvSection key={key} {...sectionProps} title={personalTitle} addValue={{label:'',value:''}} addLabel="thông tin">
                 <div className="cv-standard-contacts">
                     {personalContactOrder.map((field, contactIndex) => {
                         const [label] = contactFields.find(([, fieldKey]) => fieldKey === field);
@@ -449,13 +449,13 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         }
         if (key === 'skills' && !onEdit && !(data.skills || []).some(skill => value(skill.name)
             && !languages.some(language => value(language.name).toLowerCase() === value(skill.name).toLowerCase()))) return null;
-        if (key === 'skills') return <CvSection {...sectionProps} title="Skills" addValue={{name:'', category:nextSkillCategory(data.skills), level:''}} addLabel="nhóm kỹ năng">
+        if (key === 'skills') return <CvSection key={key} {...sectionProps} title="Skills" addValue={{name:'', category:nextSkillCategory(data.skills), level:''}} addLabel="nhóm kỹ năng">
             <SkillGroups skills={data.skills || []} languages={languages} onEdit={onEdit} onAdd={onAdd} onMove={onMove} onRemove={onRemove}
                 onGroupMove={onSkillGroupMove} onGroupRemove={onSkillGroupRemove} onRename={onSkillRename}/>
         </CvSection>;
         if (key === 'experiences') {
             if (!onEdit && !experiences.length) return null;
-            return <CvSection {...sectionProps} title="Work Experience"
+            return <CvSection key={key} {...sectionProps} title="Work Experience"
                 onAdd={experiences.length ? undefined : onAdd} addValue={{role:'',company:'',period:'',details:['']}} addLabel="kinh nghiệm">
                 <Timeline items={experiences} path="experiences" onEdit={onEdit} onMove={onMove} onRemove={onRemove}
                     onAdd={onAdd} addValue={{role:'',company:'',period:'',details:['']}}/>
@@ -463,7 +463,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         }
         if (key === 'projects') {
             if (!onEdit && !projects.length) return null;
-            return <CvSection {...sectionProps} title="Projects" onAdd={projects.length ? undefined : onAdd}
+            return <CvSection key={key} {...sectionProps} title="Projects" onAdd={projects.length ? undefined : onAdd}
                 addValue={{name:'',period:'',techStack:'',teamSize:'',url:'',details:['']}} addLabel="dự án">
                 <Timeline items={projects} path="projects" project onEdit={onEdit} onMove={onMove} onRemove={onRemove}
                     onAdd={onAdd} addValue={{name:'',period:'',techStack:'',teamSize:'',url:'',details:['']}}/>
@@ -474,7 +474,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         const labels = {education:'học vấn', certificates:'chứng chỉ', languages:'ngoại ngữ', awards:'giải thưởng'};
         const title = {education:'Education', certificates:'Certificate', languages:'Foreign Language', awards:'Award'}[key];
         if (!onEdit && !rows.length) return null;
-        return <CvSection {...sectionProps} title={title} onAdd={rows.length ? undefined : onAdd} addValue={addValues[key]} addLabel={labels[key]}>
+        return <CvSection key={key} {...sectionProps} title={title} onAdd={rows.length ? undefined : onAdd} addValue={addValues[key]} addLabel={labels[key]}>
             {rows.map((item, itemIndex) => <EditableItem key={item.id || itemIndex} path={key} index={itemIndex} count={rows.length}
                 onMove={onMove} onRemove={onRemove} onAdd={onAdd} addValue={addValues[key]} addLabel={labels[key]}
                 className={`cv-standard-side-item${key === 'languages' ? ' cv-standard-language' : ''}`}>

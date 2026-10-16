@@ -7,7 +7,7 @@ import { getSavedCVPreviewData } from '../src/features/user/utils/savedCVPreview
 import { mapCvDataForPdf } from '../src/features/cv/pdf-renderer/mapCvDataForPdf.js';
 import { PDF_TEMPLATE_LOADERS } from '../src/features/cv/pdf-renderer/templateRegistry.js';
 
-const server = await createServer({ cacheDir: 'node_modules/.vite-saved-cv-tests', optimizeDeps: { noDiscovery: true, include: [] },
+const server = await createServer({ envDir: 'node_modules/.vite-test-env', cacheDir: 'node_modules/.vite-saved-cv-tests', optimizeDeps: { noDiscovery: true, include: [] },
     server: { middlewareMode: true, hmr: false }, appType: 'custom' });
 after(() => server.close());
 const { default: SavedCVPreview } = await server.ssrLoadModule('/src/features/user/components/SavedCVPreview.jsx');
@@ -19,11 +19,14 @@ const cv = (templateId, name = 'Saved Candidate') => ({ id: name, template: { id
 } });
 const render = child => renderToStaticMarkup(child);
 
-test('saved previews route every supported template to the PDF renderer', () => {
+test('saved previews render stored content for every supported template without edit controls', () => {
     for (const id of ['portfolio-hybrid', 'cloud-expert', 'security-analyst', 'data-scientist', 'the-standard', 'boardroom-ready']) {
         assert.equal(typeof PDF_TEMPLATE_LOADERS[id], 'function', id);
         const html = render(createElement(SavedCVPreview, { cv: cv(id), compact: true }));
-        assert.ok(html.includes('Đang tạo bản xem trước PDF'), id);
+        assert.ok(html.includes(`cv-template-${id}`), id);
+        assert.ok(html.includes('Saved Candidate'), id);
+        assert.ok(html.includes('Saved summary from database'), id);
+        assert.ok(html.includes('Saved Company'), id);
         assert.doesNotMatch(html, /<textarea|<input|<button|contenteditable=/i);
     }
 });

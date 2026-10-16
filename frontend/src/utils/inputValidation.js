@@ -77,7 +77,7 @@ function collectTextErrors(cvData) {
 
 function parseDate(value) {
     const text = String(value).trim();
-    const dayFirst = /^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/.exec(text);
+    const dayFirst = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(text);
     if (dayFirst) {
         const [, dayText, monthText, yearText] = dayFirst;
         const date = new Date(Number(yearText), Number(monthText) - 1, Number(dayText));
