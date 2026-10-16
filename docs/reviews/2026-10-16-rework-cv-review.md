@@ -4,6 +4,10 @@ Ngày kiểm tra: 16/10/2026. Code được kiểm tra: `7fc6df0`, trên nhánh 
 
 **Kết luận:** xuất PDF đã hoạt động trên service Render với cả sáu mẫu và dữ liệu giả lập. Tuy nhiên, chưa nên xác nhận nhánh đã đạt để merge: bộ test chưa sạch, có lỗi lint mới và phân trang cần cải thiện. Đây là báo cáo kiểm tra, chưa phải bản sửa các vấn đề dưới đây.
 
+## Cập nhật xử lý — 16/10/2026
+
+Các mục 1–6 bên dưới đã được sửa: test catalog/preview, fixture và cấu hình 5 test class backend, regex validation ngày cùng test, cổng Docker 8081, khoảng cách phân trang hai mẫu một cột và truyền `key` trực tiếp cho `CvSection`. Sau sửa, frontend đạt 73/73 test, ESLint các file liên quan và production build đều qua; 27 test backend thuộc 5 class nêu trong mục 2 cũng qua. Full backend suite chạy 173 test, không có assertion failure nhưng vẫn có 17 lỗi khởi tạo do Java/Spring không thiết lập được loopback (`Permission denied: connect`) trong môi trường này; lỗi tương tự vẫn xuất hiện cả khi chạy với quyền nâng cao. PDF service startup test cũng không khởi động được vì Playwright browser installation thất bại trong môi trường chạy hiện tại. Bản PDF mới chưa được xuất để xác minh trực quan phân trang.
+
 ## Kết quả đã chạy
 
 | Kiểm tra | Kết quả |
