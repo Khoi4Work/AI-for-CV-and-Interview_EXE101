@@ -1,6 +1,7 @@
 package fpt.su26.exe101.backend.modules.cv.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.base.persistence.Prompt;
 import fpt.su26.exe101.backend.base.service.AIChatCompletionService;
@@ -17,10 +18,13 @@ import java.util.Locale;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class AIProviderServiceImpl implements AIProviderService {
 
+    private static final Logger log = LoggerFactory.getLogger(AIProviderServiceImpl.class);
     private static final int MAX_JSON_OUTPUT_TOKENS = 8192;
     private final AIChatCompletionService aiChatCompletionService;
     private final RoleTaxonomyService roleTaxonomy;
@@ -74,11 +78,19 @@ public class AIProviderServiceImpl implements AIProviderService {
                     Set<String> roles = roleTaxonomy.roles(cv.getProfessionalTitle());
                     cv.setTargetRoleCode(roles.size() == 1 ? roles.iterator().next() : null);
                 }
+                logStructuredExtraction(cv);
             }
             return result;
         } catch (IOException | TikaException e) {
             throw new IllegalArgumentException("Unable to read the uploaded CV file.", e);
         }
+    }
+
+    private void logStructuredExtraction(CVContent content) {
+        if (content == null) return;
+        ObjectNode fields = objectMapper.valueToTree(content);
+        fields.remove(List.of("sourceText", "profilePhoto"));
+        log.info("[CV Import] Structured fields after AI extraction | fields={}", fields.toPrettyString());
     }
 
     private boolean historicalRoleEvidence(String source,String quote) {
