@@ -26,6 +26,7 @@ const INITIAL_CV_STATE = {
         dob: '',
         address: '',
         linkedin: '',
+        customFields: [],
     },
     professionalTitle: '',
     profilePhoto: '',
@@ -37,6 +38,11 @@ const INITIAL_CV_STATE = {
     certificates: [],
     languages: [],
     awards: [],
+    editorLayout: {
+        mainOrder: ['skills', 'experiences', 'projects'],
+        sidebarOrder: ['personalInfo', 'education', 'certificates', 'languages', 'awards'],
+        hiddenSections: [],
+    },
     selectedTemplateId: 'the-standard',
 };
 
@@ -135,7 +141,7 @@ export function CVProvider({children}) {
     }, []);
 
     const addEducation = useCallback(() => {
-        setCvData(prev => ({...prev, education: [...prev.education, {degree: '', school: '', year: ''}]}));
+        setCvData(prev => ({...prev, education: [...prev.education, {degree: '', school: '', year: '', gpa: ''}]}));
     }, []);
 
     const removeEducation = useCallback((index) => {

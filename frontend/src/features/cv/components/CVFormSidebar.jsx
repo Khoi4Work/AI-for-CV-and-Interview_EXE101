@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useCV } from '../contexts/CVContext.jsx';
 import {
     User,
@@ -150,7 +150,7 @@ export default function CVFormSidebar({ isOpen, onClose }) {
                     {/* Experience */}
                     <Section title="Kinh nghiệm làm việc" icon={Briefcase}>
                         <div className="flex flex-col gap-4">
-                            {cvData.experiences.map((exp, index) => (
+                            {cvData.experiences.map((exp) => (
                                 <div key={exp.id} className="p-3 bg-gray-100 rounded-lg relative group">
                                     <button
                                         onClick={() => removeExperience(exp.id)}

@@ -3,6 +3,20 @@ import apiClient from "../../../service/apiClient.js";
 const getResult = (response) => response.data?.result;
 
 export const cvPipelineService = {
+    renderPdf: async (request) => {
+        try {
+            return (await apiClient.post('/cv/pdf', request, {
+                responseType: 'blob',
+                headers: { Accept: 'application/pdf' },
+            })).data;
+        } catch (error) {
+            if (error.response?.data instanceof Blob) {
+                const body = await error.response.data.text();
+                try { error.response.data = JSON.parse(body); } catch { /* Keep the original HTTP error. */ }
+            }
+            throw error;
+        }
+    },
     createCV: async (payload) => getResult(await apiClient.post('/cv', payload)),
     updateCV: async (id, payload) => getResult(await apiClient.put(`/cv/${id}`, payload)),
     startOptimization: async (id, payload) => getResult(await apiClient.post(`/cv/${id}/optimizations`, payload)),

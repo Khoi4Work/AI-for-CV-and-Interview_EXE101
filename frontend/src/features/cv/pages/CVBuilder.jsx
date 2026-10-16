@@ -21,6 +21,7 @@ import {getApiErrorMessage} from '../../../service/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
 import {paymentService} from '../../payment/services/paymentService.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
+import {validateCVData} from '../../../utils/inputValidation.js';
 import galleryService from '../../../service/galleryService.js';
 
 export default function CVBuilder() {
@@ -61,6 +62,7 @@ export default function CVBuilder() {
     const [isLoadingSavedCVs, setIsLoadingSavedCVs] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [quotaState, setQuotaState] = useState({ loading: false, error: '', exhausted: false });
+    const [validationError, setValidationError] = useState('');
     const totalSteps = 5;
 
     const handleRetryQuota = async () => {
@@ -104,6 +106,13 @@ export default function CVBuilder() {
 
     const handleSaveAndEdit = async () => {
         if (isSaving || quotaState.loading || quotaState.error) return;
+        const errors = validateCVData(cvData, { requireBuilderContacts: true });
+        if (errors.length) {
+            setValidationError(errors[0]);
+            showToast(errors[0], 'error');
+            return;
+        }
+        setValidationError('');
         setIsSaving(true);
         try {
             // Check only when the user continues to the editor.
@@ -151,17 +160,15 @@ export default function CVBuilder() {
     };
 
     const nextStep = () => {
-        if (step === 1) {
-            if (!cvData.personalInfo.name.trim()) {
-                showToast('Vui lòng nhập họ tên đầy đủ!', 'error');
-                return;
-            }
-            if (!cvData.personalInfo.email.trim()) {
-                showToast('Vui lòng nhập email liên lạc!', 'error');
-                return;
-            }
+        const errors = step === 1
+            ? validateCVData(cvData, { requireBuilderContacts: true })
+            : [];
+        if (errors.length) {
+            setValidationError(errors[0]);
+            showToast(errors[0], 'error');
+            return;
         }
-
+        setValidationError('');
         setStep(prev => Math.min(prev + 1, totalSteps));
     };
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
@@ -262,6 +269,7 @@ export default function CVBuilder() {
                                     )}
                                 </div>
                             )}
+                            {validationError && <p role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{validationError}</p>}
                             {step === 1 && (
                                 <div className="space-y-8 animate-fade-in">
                                     <div className="space-y-6">
@@ -274,7 +282,9 @@ export default function CVBuilder() {
                                                 className="w-full input-underlined text-lg font-bold text-black placeholder:text-slate-300"
                                                 placeholder="Nguyễn Văn A..."
                                                 value={cvData.personalInfo.name}
-                                                onChange={(e) => updatePersonalInfo({name: e.target.value})}
+                                                maxLength={255}
+                                                aria-invalid={!cvData.personalInfo.name.trim()}
+                                                onChange={(e) => { setValidationError(''); updatePersonalInfo({name: e.target.value}); }}
                                             />
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -286,7 +296,9 @@ export default function CVBuilder() {
                                                     className="w-full input-underlined text-black placeholder:text-slate-300"
                                                     placeholder="example@gmail.com"
                                                     value={cvData.personalInfo.email}
-                                                    onChange={(e) => updatePersonalInfo({email: e.target.value})}
+                                                    maxLength={254}
+                                                    aria-invalid={Boolean(cvData.personalInfo.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cvData.personalInfo.email.trim()))}
+                                                    onChange={(e) => { setValidationError(''); updatePersonalInfo({email: e.target.value}); }}
                                                 />
                                             </div>
                                             <div className="group space-y-1">
@@ -298,7 +310,8 @@ export default function CVBuilder() {
                                                     className="w-full input-underlined text-black placeholder:text-slate-300"
                                                     placeholder="090..."
                                                     value={cvData.personalInfo.phone}
-                                                    onChange={(e) => updatePersonalInfo({phone: e.target.value})}
+                                                    maxLength={24}
+                                                    onChange={(e) => { setValidationError(''); updatePersonalInfo({phone: e.target.value}); }}
                                                 />
                                             </div>
                                         </div>
@@ -310,7 +323,8 @@ export default function CVBuilder() {
                                                 className="w-full input-underlined text-black placeholder:text-slate-300"
                                                 placeholder="linkedin.com/in/yourprofile"
                                                 value={cvData.personalInfo.linkedin}
-                                                onChange={(e) => updatePersonalInfo({linkedin: e.target.value})}
+                                                maxLength={2048}
+                                                onChange={(e) => { setValidationError(''); updatePersonalInfo({linkedin: e.target.value}); }}
                                             />
                                         </div>
                                         <ProfilePhotoPicker />
@@ -325,7 +339,8 @@ export default function CVBuilder() {
                                             className="w-full h-32 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all resize-none"
                                             placeholder="Mô tả ngắn gọn về mục tiêu và giá trị bạn mang lại..."
                                             value={cvData.summary}
-                                            onChange={(e) => updateSummary(e.target.value)}
+                                            maxLength={5000}
+                                            onChange={(e) => { setValidationError(''); updateSummary(e.target.value); }}
                                         ></textarea>
                                     </div>
                                 </div>
@@ -472,7 +487,7 @@ export default function CVBuilder() {
                                                     </div>
                                                     <div className="space-y-1">
                                                         <label
-                                                            className="text-[10px] font-bold text-slate-400 uppercase">GPA</label>
+                                                            className="text-[10px] font-bold text-slate-400 uppercase">GPA (không bắt buộc)</label>
                                                         <input
                                                             type="text"
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
@@ -722,9 +737,10 @@ export default function CVBuilder() {
                                 <h2 className="text-xl font-bold">Mô tả công việc (JD)</h2>
                             </div>
                             <div className="p-6 flex-grow flex flex-col">
-                                <textarea value={jdText} onChange={e => setJdText(e.target.value)}
+                                <textarea value={jdText} maxLength={50000} onChange={e => setJdText(e.target.value)}
                                     placeholder="Dán nội dung mô tả công việc (không bắt buộc)..."
                                     className="w-full min-h-64 flex-grow p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-y" />
+                                <p className="mt-2 text-right text-xs text-slate-500">{jdText.length}/50.000 ký tự</p>
                             </div>
                         </div>
                     </section>

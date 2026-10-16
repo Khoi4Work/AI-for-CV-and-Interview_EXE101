@@ -9,6 +9,8 @@ import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { paymentService } from '../../payment/services/paymentService.js';
 import {normalizeInterviewType} from '../services/interviewConfiguration.js';
 
+const MAX_JD_LENGTH = 50000;
+
 export default function InterviewSetup() {
   const navigate = useNavigate();
   const { data, update, setStep } = useInterviewSession();
@@ -23,6 +25,7 @@ export default function InterviewSetup() {
   const [jdId, setJdId] = useState(data.interviewConfig?.jdId || null);
   const [quota, setQuota] = useState(null);
   const [quotaError, setQuotaError] = useState('');
+  const [jdError, setJdError] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -45,6 +48,11 @@ export default function InterviewSetup() {
 
   const handleNext = () => {
     if (!quota || !canChooseDuration(Number(chosenDuration))) return;
+    if (jd.length > MAX_JD_LENGTH) {
+      setJdError('JD không được vượt quá 50.000 ký tự.');
+      return;
+    }
+    setJdError('');
     update({
       interviewConfig: {
         type,
@@ -178,12 +186,14 @@ export default function InterviewSetup() {
                 <label className="block text-sm font-semibold text-black mb-2">Mô tả công việc (JD)</label>
                 <textarea
                   value={jd}
-                  onChange={(e) => {setJd(e.target.value); setJdId(null);}}
+                  maxLength={MAX_JD_LENGTH}
+                  onChange={(e) => {setJd(e.target.value); setJdId(null); setJdError('');}}
                   rows={4}
                   className="w-full bg-interview-card-bg border border-outline-variant text-black py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none"
                   placeholder="Dán JD vào đây để AI cá nhân hóa câu hỏi (tùy chọn)..."
                 />
-                <p className="text-xs text-black/60 mt-1">{jd.length} ký tự</p>
+                <p className="text-xs text-black/60 mt-1">{jd.length}/{MAX_JD_LENGTH} ký tự · JD tùy chọn</p>
+                {jdError && <p role="alert" className="mt-1 text-xs text-red-700">{jdError}</p>}
               </div>
 
               <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 flex gap-3 mt-2">
