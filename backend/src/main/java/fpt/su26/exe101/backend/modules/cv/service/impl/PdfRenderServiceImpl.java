@@ -7,12 +7,14 @@ import fpt.su26.exe101.backend.modules.cv.dto.PdfRenderOptions;
 import fpt.su26.exe101.backend.modules.cv.dto.PdfRenderRequest;
 import fpt.su26.exe101.backend.modules.cv.service.PdfRenderService;
 import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
 
 /** Calls the separately deployed Chromium PDF service and returns the generated PDF bytes. */
 @Service
+@Slf4j
 public class PdfRenderServiceImpl implements PdfRenderService {
     private static final int MAX_HTML_LENGTH = 2_000_000;
     private static final Pattern SAFE_FILENAME = Pattern.compile("[\\p{L}\\p{N}._ -]*");
@@ -45,6 +47,12 @@ public class PdfRenderServiceImpl implements PdfRenderService {
             }
             return pdf;
         } catch (FeignException exception) {
+            String requestUrl = exception.request() == null ? "unknown" : exception.request().url();
+            String causeType = exception.getCause() == null
+                    ? "none"
+                    : exception.getCause().getClass().getSimpleName();
+            log.warn("[PDF Render] PDF service request failed | status={} | url={} | causeType={}",
+                    exception.status(), requestUrl, causeType);
             ErrorCode errorCode = exception.status() >= 400 && exception.status() < 500
                     ? ErrorCode.INVALID_INPUT
                     : ErrorCode.SERVICE_UNAVAILABLE;

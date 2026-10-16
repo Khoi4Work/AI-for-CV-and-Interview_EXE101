@@ -129,13 +129,22 @@ export default function CVEditor() {
         if (!allowed || saving || exporting) return;
         if (!validateContent()) return;
         setExporting(true); setSaveError(''); setMessage('');
+        let exportStage = 'check-template-access';
         try {
             await validateAccess(selectedTemplate);
             const safeTitle = cvName.trim() || 'CV';
+            exportStage = 'load-pdf-module';
             const {downloadCvPdfFromService} = await import('../pdf-renderer/downloadCvPdfFromService.js');
+            exportStage = 'build-html-and-call-pdf-service';
             await downloadCvPdfFromService(cvData, safeTitle, selectedTemplate);
             setMessage('Đã xuất CV thành PDF.');
         } catch (error) {
+            console.error('[CV PDF Export] Export failed', {
+                stage: error?.cvPdfExportStage || exportStage,
+                message: error?.message,
+                code: error?.code,
+                status: error?.response?.status,
+            });
             setSaveError(getApiErrorMessage(error, 'Không thể tải CV thành PDF. Vui lòng thử lại.'));
         } finally { setExporting(false); }
     };
