@@ -107,8 +107,8 @@ export function InterviewRoom() {
                     try {
                         await saveLocalInterviewRecording(data.backendSessionId, blob);
                         update({localAudioRecordingAvailable: true, localAudioRecordingError: null});
-                    } catch (error) {
-                        update({localAudioRecordingAvailable: false, localAudioRecordingError: error?.message || 'Không lưu được bản ghi trên thiết bị.'});
+                    } catch {
+                        update({localAudioRecordingAvailable: false, localAudioRecordingError: 'Không lưu được bản ghi trên thiết bị. Bạn vẫn có thể tiếp tục buổi phỏng vấn.'});
                     }
                 }
                 recordingAudioContextRef.current?.close();
@@ -120,8 +120,8 @@ export function InterviewRoom() {
             recorder.start(1000);
             interviewRecorderRef.current = recorder;
             update({localAudioRecordingError: null});
-        } catch (error) {
-            update({localAudioRecordingError: error?.message || 'Không thể bắt đầu ghi âm trên trình duyệt này.'});
+        } catch {
+            update({localAudioRecordingError: 'Không thể bắt đầu ghi âm. Hãy kiểm tra micro và quyền sử dụng micro rồi thử lại.'});
         }
     }, [data.audioRecordingEnabled, data.backendSessionId, update]);
 
@@ -135,8 +135,8 @@ export function InterviewRoom() {
             source.connect(destination);
             ttsAudioSourcesRef.current.set(audio, source);
             context.resume().catch(() => {});
-        } catch (error) {
-            update({localAudioRecordingError: error?.message || 'Không thể ghép giọng đọc câu hỏi vào bản ghi.'});
+        } catch {
+            update({localAudioRecordingError: 'Không thể ghi lại phần đọc câu hỏi. Bạn vẫn có thể tiếp tục buổi phỏng vấn.'});
         }
     }, [data.audioRecordingEnabled, update]);
 
@@ -364,8 +364,8 @@ export function InterviewRoom() {
                             try {
                                 const stream = await ensureStream();
                                 await startLocalInterviewRecording(stream);
-                            } catch (error) {
-                                update({localAudioRecordingError: error?.message || 'Không thể truy cập microphone để ghi lại cuộc phỏng vấn.'});
+                            } catch {
+                                update({localAudioRecordingError: 'Không truy cập được micro. Hãy kiểm tra kết nối và quyền sử dụng micro rồi thử lại.'});
                             }
                         }
                         playTTS(currentQ.text, currentQ.id, data.interviewConfig?.language, transition);

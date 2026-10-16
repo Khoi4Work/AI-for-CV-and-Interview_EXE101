@@ -8,7 +8,7 @@ const server = await createServer({
     server: { middlewareMode: true, hmr: false },
     appType: 'custom',
 });
-const { default: apiClient } = await server.ssrLoadModule('/src/service/apiClient.js');
+const { default: apiClient, getApiErrorMessage, getUserFriendlyMessage } = await server.ssrLoadModule('/src/service/apiClient.js');
 let refreshAdapter;
 apiClient.interceptors.request.use(config => {
     if (config.url === '/auth/tokens/refresh') config.adapter = refreshAdapter;
@@ -48,6 +48,35 @@ function apiFailure(status, config) {
     error.response = { status };
     return error;
 }
+
+test('API errors are shown in plain language without technical diagnostics', () => {
+    const networkError = new Error('Network Error');
+    networkError.code = 'ERR_NETWORK';
+    assert.equal(getApiErrorMessage(networkError), 'Không thể kết nối để hoàn tất thao tác. Hãy kiểm tra kết nối mạng rồi thử lại.');
+
+    const serverError = new Error('Request failed');
+    serverError.response = { status: 500, data: { message: 'Field evidence audit failed at /skills/1 (HTTP 500)' } };
+    assert.equal(getApiErrorMessage(serverError, 'Không thể nhập CV. Vui lòng thử lại.'), 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.');
+
+    const technicalLocalError = new Error('API không trả về dữ liệu CV hợp lệ.');
+    assert.equal(getApiErrorMessage(technicalLocalError, 'Không thể nhập CV.'), 'Không thể nhập CV.');
+
+    const unauthorizedError = new Error('Unauthorized');
+    unauthorizedError.response = { status: 401, data: { message: 'Missing access token' } };
+    assert.equal(getApiErrorMessage(unauthorizedError), 'Vui lòng đăng nhập để tiếp tục.');
+});
+
+test('CV assessment errors explain the issue in everyday language', () => {
+    assert.equal(
+        getUserFriendlyMessage('Không đủ minh chứng hợp lệ để chấm điểm. Hãy kiểm tra nội dung CV và JD.'),
+        'Chưa thể đánh giá CV vì thông tin trong CV hoặc mô tả công việc chưa đủ rõ. Hãy kiểm tra lại nội dung rồi thử lại.',
+    );
+    assert.equal(
+        getUserFriendlyMessage('Chưa thể xác minh đầy đủ nội dung được trích xuất từ CV.'),
+        'Chưa đọc rõ một số thông tin trong CV. Hãy kiểm tra lại tệp hoặc thử tải lên lần nữa.',
+    );
+    assert.equal(getUserFriendlyMessage('Email hoặc mật khẩu không đúng.'), 'Email hoặc mật khẩu không đúng.');
+});
 
 test('403 preserves credentials without refresh or redirect', async () => {
     globalThis.localStorage = sessionStorage();

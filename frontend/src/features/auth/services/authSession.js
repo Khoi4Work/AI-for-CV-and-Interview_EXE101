@@ -38,7 +38,7 @@ export function createAuthSession(client, storage) {
                     expire(true);
                     return null;
                 }
-                publish({ status: 'error', profile: null, error: 'Không thể xác minh tài khoản. Vui lòng thử lại.' });
+                publish({ status: 'error', profile: null, error: 'Không tải được thông tin tài khoản. Vui lòng thử lại.' });
                 throw error;
             } finally {
                 if (attempt === revision) pending = undefined;

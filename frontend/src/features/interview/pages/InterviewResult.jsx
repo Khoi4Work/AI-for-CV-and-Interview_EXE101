@@ -25,7 +25,7 @@ export function InterviewResults() {
         if (!data.backendSessionId || !data.audioRecordingEnabled) return () => { active = false; };
         getLocalInterviewRecording(data.backendSessionId)
             .then((recording) => { if (active) setLocalAudioRecording(recording); })
-            .catch((error) => { if (active) setRecordingError(error?.message || 'Không đọc được bản ghi cục bộ.'); });
+            .catch(() => { if (active) setRecordingError('Không đọc được bản ghi trên thiết bị này. Vui lòng thử lại.'); });
         return () => { active = false; };
     }, [data.backendSessionId, data.audioRecordingEnabled]);
 

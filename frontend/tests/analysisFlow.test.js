@@ -27,5 +27,5 @@ test('shared JD formatter preserves nested source and unknown fields without raw
     const text=formatJD(JSON.stringify({title:'BA',requirements:['SQL'],source:'https://example.com',custom:{a:'Value'}}));
     assert.match(text,/SQL/);assert.match(text,/https:\/\/example.com/);assert.match(text,/Value/);assert.ok(!text.includes('{'));
     assert.equal(formatJD('plain JD'),'plain JD');assert.equal(formatJD('{invalid'),'{invalid');
-    assert.match(jdSourceLabel('USER'),/Chưa xác minh/);assert.equal(jdSourceLabel('SYSTEM'),'JD tham khảo');
+    assert.match(jdSourceLabel('USER'),/Nguồn chưa được kiểm tra/);assert.equal(jdSourceLabel('SYSTEM'),'Mô tả công việc tham khảo');
 });

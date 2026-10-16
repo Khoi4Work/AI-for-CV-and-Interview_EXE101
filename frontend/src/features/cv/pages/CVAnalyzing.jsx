@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cvPipelineService } from '../services/cvPipelineService.js';
+import { getApiErrorMessage } from '../../../service/apiClient.js';
 
 const MESSAGES = [
-  "Đang quét cấu trúc CV...",
-  "Đang trích xuất kỹ năng cốt lõi...",
-  "Đang phân tích mô tả công việc...",
-  "Đang tính toán điểm tương thích...",
+  "Đang đọc nội dung CV...",
+  "Đang xem xét các kỹ năng trong CV...",
+  "Đang đọc mô tả công việc...",
+  "Đang so sánh CV với yêu cầu công việc...",
   "Đang tạo gợi ý cải thiện...",
 ];
 
@@ -58,7 +59,7 @@ const CVAnalyzing = () => {
         }
         timer = setTimeout(poll, 1500);
       } catch (requestError) {
-        if (active) setError(requestError.response?.data?.message || 'Không thể kiểm tra trạng thái tối ưu CV.');
+        if (active) setError(getApiErrorMessage(requestError, 'Chưa kiểm tra được tiến độ. Vui lòng thử lại.'));
       }
     };
 

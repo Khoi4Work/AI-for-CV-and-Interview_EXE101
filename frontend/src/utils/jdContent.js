@@ -17,5 +17,5 @@ export function formatJD(content) {
     try { return format(JSON.parse(content)); } catch { return content; }
 }
 export function jdSourceLabel(source) {
-    return source === 'SYSTEM' ? 'JD tham khảo' : 'JD do bạn cung cấp · Chưa xác minh nguồn';
+    return source === 'SYSTEM' ? 'Mô tả công việc tham khảo' : 'Mô tả công việc do bạn cung cấp · Nguồn chưa được kiểm tra';
 }

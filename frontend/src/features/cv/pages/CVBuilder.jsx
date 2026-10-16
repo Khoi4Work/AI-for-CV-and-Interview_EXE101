@@ -149,7 +149,7 @@ export default function CVBuilder() {
         try {
             const extractedData = await extractCV(file);
             setFullCVData(mapImportedCVData(extractedData));
-            showToast(`Đã trích xuất nội dung từ ${file.name}. Vui lòng kiểm tra lại thông tin.`, 'success');
+            showToast(`Đã đọc thông tin từ ${file.name}. Vui lòng kiểm tra lại nội dung.`, 'success');
         } catch (error) {
             const message = getApiErrorMessage(error, 'Không thể nhập CV. Vui lòng thử lại.');
             showToast(message, 'error');
@@ -206,7 +206,7 @@ export default function CVBuilder() {
                                         disabled={isImporting}
                                         className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
                                         <Download className="h-4 w-4"/>
-                                        {isImporting ? 'Đang trích xuất...' : 'Tải CV cũ'}
+                                        {isImporting ? 'Đang đọc CV...' : 'Tải CV cũ'}
                                     </button>
                                     <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.doc,.docx"
                                         onChange={onFileChange}
@@ -734,7 +734,7 @@ export default function CVBuilder() {
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px] sticky top-24">
                             <div className="p-6 border-b border-slate-100 flex items-center gap-2">
                                 <Briefcase className="h-6 w-6 text-slate-800" />
-                                <h2 className="text-xl font-bold">Mô tả công việc (JD)</h2>
+                                <h2 className="text-xl font-bold">Mô tả công việc</h2>
                             </div>
                             <div className="p-6 flex-grow flex flex-col">
                                 <textarea value={jdText} maxLength={50000} onChange={e => setJdText(e.target.value)}

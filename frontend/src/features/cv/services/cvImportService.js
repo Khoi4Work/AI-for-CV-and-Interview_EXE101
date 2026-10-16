@@ -8,7 +8,7 @@ export const importCV = async (file) => {
     const result = response.data?.result;
     const extractedData = result?.extractedData;
     if (!extractedData || typeof extractedData !== 'object') {
-        throw new Error('API không trả về dữ liệu CV hợp lệ.');
+        throw new Error('Không đọc được thông tin trong CV. Vui lòng thử lại với tệp khác.');
     }
 
     return result;
@@ -21,7 +21,7 @@ export const extractCV = async (file) => {
     const response = await apiClient.post('/cv/extract', formData);
     const extractedData = response.data?.result;
     if (!extractedData || typeof extractedData !== 'object') {
-        throw new Error('API không trả về dữ liệu CV hợp lệ.');
+        throw new Error('Không đọc được thông tin trong CV. Vui lòng thử lại với tệp khác.');
     }
     return extractedData;
 };

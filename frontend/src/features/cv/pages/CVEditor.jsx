@@ -122,7 +122,7 @@ export default function CVEditor() {
                 }
             } });
         } catch (error) {
-            setSaveError(getApiErrorMessage(error, error.message || 'Không thể lưu CV. Vui lòng thử lại.'));
+            setSaveError(getApiErrorMessage(error, 'Không thể lưu CV. Vui lòng thử lại.'));
         } finally { setSaving(false); }
     };
     const handleExport = async () => {
@@ -136,7 +136,7 @@ export default function CVEditor() {
             await downloadCvPdfFromService(cvData, safeTitle, selectedTemplate);
             setMessage('Đã xuất CV thành PDF.');
         } catch (error) {
-            setSaveError(getApiErrorMessage(error, error.message));
+            setSaveError(getApiErrorMessage(error, 'Không thể tải CV thành PDF. Vui lòng thử lại.'));
         } finally { setExporting(false); }
     };
     const handleInlineEdit = (path, value) => {
@@ -280,7 +280,7 @@ export default function CVEditor() {
                         if (id !== 'the-standard') setShowContentPanel(true);
                         setSaveError('');
                     }
-                    catch (error) { setSaveError(error.message); }
+                    catch (error) { setSaveError(getApiErrorMessage(error, 'Không thể chọn mẫu CV này.')); }
                 }}
                 selectedTemplateId={selectedTemplate}
                 exportLabel="Tải PDF"
