@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, FileQuestion, LoaderCircle, BrainCircuit } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,6 +8,7 @@ import { importCV } from '../services/cvImportService.js';
 import { cvPipelineService } from '../services/cvPipelineService.js';
 import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
+import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import {analysisSelection, createRequestGuard, pollAnalysis} from '../services/analysisFlow.js';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
@@ -39,6 +40,7 @@ const CVEvaluation = () => {
   const startInFlight = useRef(false);
   const { currentCvId, setCurrentCvId, setFullCVData } = useCV();
   const { showToast } = useApp();
+  const { isLoggedIn } = useAuth();
   const continuedFlow = location.state?.continueEvaluation;
   const createdCV = location.state?.createdCV;
   const initialCV = continuedFlow?.cv || createdCV || null;
@@ -56,6 +58,24 @@ const CVEvaluation = () => {
   const [evaluationStep, setEvaluationStep] = useState(0);
   const [evaluationPhase, setEvaluationPhase] = useState('QUEUED');
 
+  const redirectToLogin = useCallback(() => {
+    navigate('/login', {
+      state: {
+        from: {
+          pathname: location.pathname,
+          search: location.search,
+          hash: location.hash,
+        },
+      },
+    });
+  }, [location.hash, location.pathname, location.search, navigate]);
+
+  const requireLogin = useCallback(() => {
+    if (isLoggedIn) return true;
+    redirectToLogin();
+    return false;
+  }, [isLoggedIn, redirectToLogin]);
+
   const evaluationStages = [
     { title: 'Đọc CV', description: 'Đang kiểm tra tệp và trích xuất nội dung CV.', icon: FileQuestion },
     { title: evaluationPhase === 'QUEUED' ? 'Đang chờ xử lý' : 'Đối chiếu CV với JD', description: evaluationPhase === 'QUEUED' ? 'Yêu cầu đánh giá đã được ghi nhận.' : 'Đang đối chiếu yêu cầu JD và kiểm tra minh chứng trong CV.', icon: BrainCircuit },
@@ -67,17 +87,32 @@ const CVEvaluation = () => {
   }, []);
   useEffect(() => {
     if (!initialCV?.cvId) return undefined;
+    if (!isLoggedIn) {
+      redirectToLogin();
+      return undefined;
+    }
     const guard = requestGuard.current;
     const token = guard.next();
     Promise.resolve().then(() => setIsFindingJDs(true))
       .then(() => cvPipelineService.recommendJDs(initialCV.cvId))
       .then(items => {if (requestGuard.current.current(token)) setJdRecommendations(items || []);})
-      .catch(error => {if (requestGuard.current.current(token)) showToast(getApiErrorMessage(error, 'Không thể tìm JD.'), 'error');})
+      .catch(error => {
+        if (!requestGuard.current.current(token)) return;
+        if (error.sessionExpired) {
+          redirectToLogin();
+          return;
+        }
+        showToast(getApiErrorMessage(error, 'Không thể tìm JD.'), 'error');
+      })
       .finally(() => {if (requestGuard.current.current(token)) setIsFindingJDs(false);});
     return () => guard.cancel();
-  }, [initialCV, showToast]);
+  }, [initialCV, isLoggedIn, redirectToLogin, showToast]);
 
   const handleFileChange = (e) => {
+    if (!requireLogin()) {
+      e.target.value = '';
+      return;
+    }
     const file = e.target.files[0];
     if (file) {
       const error = getCVFileError(file);
@@ -109,6 +144,7 @@ const CVEvaluation = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
+    if (!requireLogin()) return;
     const file = e.dataTransfer.files[0];
     if (!file) return;
     const error = getCVFileError(file);
@@ -145,6 +181,7 @@ const CVEvaluation = () => {
   ) || null;
 
   const handleStartEvaluation = async () => {
+    if (!requireLogin()) return;
     if (startInFlight.current) return;
     if (!selectedFile && !importedCV) {
       showToast('Hãy tải CV lên hoặc tạo CV trước khi đánh giá.', 'error');
@@ -197,6 +234,10 @@ const CVEvaluation = () => {
       if (result.status !== 'COMPLETED') {idempotency.current=null;throw new Error(result.error || 'Chưa có kết quả đánh giá.');}
       navigate(`/optimizer?analysisId=${result.analysisId}`);
     } catch (error) {
+      if (error.sessionExpired) {
+        redirectToLogin();
+        return;
+      }
       showToast(getApiErrorMessage(error, 'Không thể hoàn tất đánh giá CV.'), 'error');
     } finally {
       setIsEvaluating(false);
@@ -205,6 +246,7 @@ const CVEvaluation = () => {
   };
 
   const findJDsForCV = async (file, saved) => {
+    if (!requireLogin()) return;
     if (!file && !saved) {
       showToast('Hãy chọn CV ở khung bên trái trước khi tìm JD phù hợp.', 'error');
       return;
@@ -234,7 +276,12 @@ const CVEvaluation = () => {
         showToast('Không có JD phù hợp.', 'info');
       }
     } catch (error) {
-      if (requestGuard.current.current(token)) showToast(getApiErrorMessage(error, 'Không thể tìm JD phù hợp với CV.'), 'error');
+      if (!requestGuard.current.current(token)) return;
+      if (error.sessionExpired) {
+        redirectToLogin();
+        return;
+      }
+      showToast(getApiErrorMessage(error, 'Không thể tìm JD phù hợp với CV.'), 'error');
     } finally {
       if (requestGuard.current.current(token)) setIsFindingJDs(false);
     }
@@ -338,7 +385,9 @@ const CVEvaluation = () => {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                if (requireLogin()) fileInputRef.current?.click();
+              }}
               className={`
                 relative group cursor-pointer border-2 border-dashed transition-all duration-200
                 p-10 flex flex-col items-center justify-center text-center min-h-[300px] rounded-2xl

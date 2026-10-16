@@ -230,6 +230,19 @@ test('a public catalog 401 neither refreshes tokens nor redirects to login', asy
     assert.equal(redirects, 0);
 });
 
+test('a protected 401 without an access token does not mark a guest session expired', async () => {
+    let expiryEvents = 0;
+    globalThis.localStorage = {
+        getItem: () => null,
+        removeItem: () => {},
+    };
+    globalThis.window = { dispatchEvent: () => { expiryEvents++; } };
+    apiClient.defaults.adapter = async config => { throw apiFailure(401, config); };
+
+    await assert.rejects(apiClient.get('/cv/import'), error => error.response?.status === 401 && !error.sessionExpired);
+    assert.equal(expiryEvents, 0);
+});
+
 test('protected API requests still receive the current access token', async () => {
     globalThis.localStorage = { getItem: () => 'valid-token' };
     apiClient.defaults.adapter = async config => {

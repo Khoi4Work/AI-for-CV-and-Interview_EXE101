@@ -21,8 +21,7 @@ export default function Login() {
     const searchParams = new URLSearchParams(location.search);
     const emailVerified = searchParams.get('verified') === 'true';
     const verificationInvalid = searchParams.get('verification') === 'invalid';
-    const sessionExpired = searchParams.get('sessionExpired') === 'true'
-        || location.state?.sessionExpired === true
+    const sessionExpired = location.state?.sessionExpired === true
         || authSessionExpired;
 
     const getPostLoginDestination = () => {
