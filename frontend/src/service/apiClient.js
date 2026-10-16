@@ -41,6 +41,8 @@ apiClient.interceptors.response.use(
         if (error.response?.status === 401 && originalRequest) {
             const currentToken = localStorage.getItem('accessToken');
             const requestToken = originalRequest.headers?.Authorization;
+            // A guest request has no session to expire. Keep its 401 local to the caller.
+            if (!requestToken) return Promise.reject(error);
             if (requestToken && requestToken !== `Bearer ${currentToken}`) {
                 // This response belongs to an older session; do not revoke a newer login.
                 return Promise.reject(error);
