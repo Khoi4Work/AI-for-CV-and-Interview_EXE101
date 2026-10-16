@@ -36,6 +36,7 @@ public class AuthRepositoryIntegrationTest {
     void testAccountCRUD() {
         Account account = Account.builder()
                 .email("test@example.com")
+                .provider(fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider.LOCAL)
                 .passwordHash("hashed_password")
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
@@ -53,6 +54,7 @@ public class AuthRepositoryIntegrationTest {
     void testDuplicateEmailThrowsException() {
         Account account1 = Account.builder()
                 .email("duplicate@example.com")
+                .provider(fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider.LOCAL)
                 .passwordHash("hash1")
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
@@ -61,6 +63,7 @@ public class AuthRepositoryIntegrationTest {
 
         Account account2 = Account.builder()
                 .email("duplicate@example.com")
+                .provider(fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider.LOCAL)
                 .passwordHash("hash2")
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
@@ -75,6 +78,7 @@ public class AuthRepositoryIntegrationTest {
     void testTokenCRUDAndUniqueConstraint() {
         Account account = Account.builder()
                 .email("token@example.com")
+                .provider(fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider.LOCAL)
                 .passwordHash("hash")
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
@@ -103,6 +107,7 @@ public class AuthRepositoryIntegrationTest {
     void testAttendanceCRUDAndUniqueConstraint() {
         Account account = Account.builder()
                 .email("att@example.com")
+                .provider(fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider.LOCAL)
                 .passwordHash("hash")
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
@@ -129,6 +134,7 @@ public class AuthRepositoryIntegrationTest {
     void testAccountProviderForeignKey() {
         Account account = Account.builder()
                 .email("prov@example.com")
+                .provider(fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider.LOCAL)
                 .passwordHash("hash")
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")

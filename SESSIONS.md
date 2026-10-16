@@ -466,3 +466,59 @@
 - Removed the unused synchronous CV evaluation, feedback-generation and skill-gap flow from CVPipelineService/AIProviderService, including its private helpers, prompts and response DTOs. Kept the asynchronous analysis flow, JD recommendation scoring, feedback-history GET path and migration stubs.
 - Static reference scan found no FE callsites for the retired service methods; old FE API wrappers remain declaration-only. A separate higher-scoring alternative-role service implementation also has no callers and remains for a separately reviewed cleanup.
 - Maven backend compile and test-source compile passed; tests were not executed. No database changes.
+## 2026-10-15 — Add frontend input validation
+- Added client-side validation for personal profile data, CV contact/details before continuing/saving/exporting, JD length/content before evaluation, optional interview JD limits, career-goal length, and template feedback length/rating. Kept optional fields optional and aligned CV evaluation JD rules with backend requirements (80 characters, 12 words, 50,000 maximum).
+- Account email is read-only in the profile editor because the existing profile update API ignores email changes. Existing files remain uncommitted; build, lint, and tests were not run.
+
+## 2026-10-16 — Add inline CV editing and Chromium PDF rendering
+- Added direct editing and section controls to the Standard CV template, including field add/remove, section reorder across columns, and drag/drop into gaps; preserved section and custom-field layout in editor data.
+- Routed Standard CV PDF export through the backend OpenFeign client to the separate Playwright/Chromium PDF service, with A4 print options and body margin reset for the downloaded PDF.
+- Added validation for CV builder/editor export and save flows. Targeted ESLint and `git diff --check` passed; full Vite build was blocked because the environment denies reading `frontend/.env`.
+
+## 2026-10-16 — Share CV editing across all templates
+- Replaced the Standard-only HTML editor/export path with a shared editable HTML CV template for all six templates. Added per-template section layouts and preserved each template's column structure, theme colors, typography and padding while enabling inline fields, section and field controls, skill groups, multiline bullets, drag/drop and hidden-section restore.
+- All template previews now use the shared HTML output; PDF export for every template uses the PDF service with A4/print-background options. Preserved object-based custom personal fields when editing from the content panel.
+- Verification: targeted ESLint and `git diff --check` passed. Frontend tests reported 46 passing; four test files could not initialize because the environment denies reads of `frontend/.env`. Production build not run.
+
+- Rechecked the attached Chromium PDF and found low-contrast summary text, an empty award heading, blank project labels, and page-two content starting at the top edge. Adjusted single-column print flow, made summary text readable, and suppressed empty sections/optional project labels in read-only PDF output. Export again to verify the revised layout.
+
+- Compared three newly exported PDFs (Security Analyst, Portfolio Hybrid, Cloud Expert). All had low-contrast summary/title text and column content splitting into nearly empty pages; adjusted variant text colors and dark-sidebar text, with empty sections suppressed in read-only rendering. The existing PDFs cannot reflect source changes; Chromium export needs to be rerun for final visual confirmation.
+
+- Synchronized edit outlines with the matching section/field toolbar (including keyboard focus) and clear drag/drop target outlines on drag end, so only the active area remains highlighted.
+
+- Corrected cross-column drag feedback: the dragged section keeps its existing outline and toolbar; hovered section targets show their toolbar with the existing drop outline; blank main-column space now receives drag-over/drop events. Drag end clears temporary markers.
+
+- Reviewed the latest Standard PDF: summary text was still white on white, and the project section was pushed intact onto page two. Changed summary to readable body text and allowed sections/timeline entries to fragment across pages while keeping section headings with content.
+- Added A4 page-boundary markers with page labels in the left gutter outside the CV in the editor preview. Labels stay visible while their divider line appears on label hover; markers track preview height changes and remain separate from the HTML sent to the PDF service.
+- Made the profile-photo block a movable/removable CV section in templates that support photos. It shows a silhouette placeholder when no image is set, excludes Data Scientist and Boardroom Ready, and reserves the same height with or without a photo to prevent layout shifts.
+- Removed the visible photo-section heading and its add action; its section toolbar still supports drag, reorder, and remove.
+- Set the native drag image to the full section being moved, anchored at the drag handle, so users see the actual section preview follow the pointer.
+- Added a translucent clone of the dragged section at its prospective before/after location or at the end of a blank target column. The preview is removed on drop or drag cancellation; after/before drop handling now matches the indicated location.
+- Revised the drag preview to render the cloned section in document flow so surrounding items reflow into their post-drop positions. Pointer-over-preview guards keep the insertion preview stable while the pointer is above it.
+
+## 2026-10-16 — Fetch and test feature/rework-cv on an isolated local branch
+- Started from clean dev at aabf602; fetched origin, fast-forwarded dev through seven commits to 50e5c07, created codex/test-rework-cv and pulled origin/feature/rework-cv through four more commits to 7fc6df0. No merge back to dev/main or push performed.
+- Reviewed rework: shared six-template editable HTML/CSS preview with inline edits, section/group reorder controls and structured CV fields; export serializes self-contained HTML and calls authenticated backend /api/cv/pdf, which proxies through Feign to separate stateless Spring PDF service using Playwright Chromium. Added form input validation across CV/profile/interview/JD flows.
+- Frontend production build passed. Full frontend tests: 69 total, 67 passed, two failed: public catalog adapter expectation after /auth/me preflight (same catalog implementation on origin/dev), and saved preview test still expecting the retired PDF-loading placeholder. New inputValidation.js has two no-useless-escape lint errors at line 80; focused renderer/editor lint otherwise passed. React warned about spreading key in CvSection props.
+- Full backend suite compiled and ran 173 tests: 149 passed, 24 errors, zero assertion failures. Root causes include old integration fixtures missing Account.provider or explicit CVTemplate IDs, imports of service interfaces as concrete beans, and missing RoleTaxonomyService in a test context. Did not claim all errors are introduced by this branch; no baseline test run was performed.
+- PDF service test context passed (1 test); Playwright installed its required browser binaries in the local cache and launched Chromium under Java 21 (module targets Java 17). No live application database changes made.
+- Checked supplied Render service health (HTTP 200) and a synthetic PDF smoke test (HTTP 200/application/pdf). Generated HTML from each of the six actual templates with synthetic data and rendered all six through the remote service successfully. pypdf confirmed extractable Vietnamese names and content. Reviewed a six-template contact sheet; the two single-column templates spill only the language section onto page two for the short sample, worth tightening before merge.
+- Generated review artifacts only under ignored pdf-service/target/rework-review and frontend/node_modules/.cache. No real CV/person data submitted. Tests exercised PDF service directly, not the full authenticated browser editor/save/export journey.
+- Deployment checks: backend listens on 8080 and reads PDF_SERVICE_URL (default http://localhost:8081); PDF service listens on 8081, with Docker EXPOSE, local port mapping, and README examples aligned to 8081. Existing dev changes also require the manual CV optimization result_snapshot migration if not yet applied. Public PDF endpoint accepts requests without app authentication and is intended for trusted callers per README.
+- Recommendation: keep on the test branch until the two frontend expectations, backend test setup failures, lint and pagination spacing are addressed; do not label this ready to merge based only on a passing build. Only SESSIONS.md is modified in tracked files and remains uncommitted.
+
+## 2026-10-16 — Publish rework CV review findings
+- User requested a file describing fixes needed and a push. Created docs/reviews/2026-10-16-rework-cv-review.md with observed test failures, exact locations, remediation proposals, pagination findings, Docker port mismatch and acceptance checks.
+- Distinguished outdated test contracts/fixtures from confirmed production defects and recorded that no full baseline suite or authenticated browser export journey was run.
+- Documentation only: no feature fixes or merge into dev/main. Authorized publication targets codex/test-rework-cv, preserving feature/rework-cv itself.
+
+## 2026-10-16 — Rename the CV review branch
+- User requested renaming codex/test-rework-cv to test/test-rework-cv on local and remote. Updated the current branch name in the review document; previous session entries retain historical names.
+- Verified the destination name was unused and the old remote pointed at 6dd1446 before renaming. Publish the renamed branch and remove the old remote ref only after confirming the new ref.
+
+## 2026-10-16 — Fix findings from the CV rework review
+- Updated the public template catalog tests to cover guest, signed-in and expired-token refresh flows; marked the catalog request as public. Replaced the obsolete saved-preview loading assertion with read-only stored-content checks for all six templates.
+- Fixed backend integration-test setup in the five reported classes: explicit local account provider, concrete service imports and missing collaborators, CV template defaults, quota fixture values, and the quota result mock used when creating a CV. No test was disabled.
+- Fixed the date-validation regex and added valid, impossible and future-date cases. Passed the section React key directly instead of spreading it from props. Tightened spacing for the two single-column print templates and aligned PDF Docker exposure/docs to port 8081.
+- Verification: frontend suite 73/73, focused ESLint, and production build passed (using a temporary Vite config that kept the sandbox from reading the restricted `frontend/.env`; the temporary config was removed). All 27 tests in the five backend classes from the review passed. Full backend suite ran 173 tests with 17 context/setup errors (zero assertion failures): Java/Spring could not establish loopback connections (`Permission denied: connect`), including on the escalated rerun. PDF service startup test could not install its Playwright browser in this environment, including on the escalated rerun. A fresh PDF was not rendered for visual pagination confirmation.
+- Updated `docs/reviews/2026-10-16-rework-cv-review.md` with the resolution status. Changes remain uncommitted; no push or merge.

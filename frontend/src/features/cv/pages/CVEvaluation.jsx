@@ -13,6 +13,7 @@ import {analysisSelection, createRequestGuard, pollAnalysis} from '../services/a
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
 
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_JD_LENGTH = 50000;
 
 function getCVTargetRole(cvContent) {
   if (cvContent?.targetRoleOrigin !== 'EXPLICIT') return '';
@@ -151,6 +152,15 @@ const CVEvaluation = () => {
     }
     if (!jdText.trim()) {
       showToast('Hãy chọn JD được gợi ý hoặc dán nội dung JD cần đánh giá.', 'error');
+      return;
+    }
+    const trimmedJD = jdText.trim();
+    if (trimmedJD.length < 80 || trimmedJD.split(/\s+/).length < 12) {
+      showToast('JD cần có ít nhất 80 ký tự và 12 từ, gồm nội dung công việc và yêu cầu.', 'error');
+      return;
+    }
+    if (trimmedJD.length > MAX_JD_LENGTH) {
+      showToast('JD không được vượt quá 50.000 ký tự.', 'error');
       return;
     }
     const fileError = selectedFile ? getCVFileError(selectedFile) : '';
@@ -465,6 +475,7 @@ const CVEvaluation = () => {
                       <textarea
                         id="evaluation-jd"
                         value={selectedRecommendation ? formatJD(selectedRecommendation.content) : jdText}
+                        maxLength={MAX_JD_LENGTH}
                         onChange={(e) => {
                           setJdText(e.target.value);
                           setSelectedRecommendationKey(null);

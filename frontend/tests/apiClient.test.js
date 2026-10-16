@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'vite';
 
 const server = await createServer({
+    envDir: 'node_modules/.vite-test-env',
     optimizeDeps: { noDiscovery: true, include: [] },
     server: { middlewareMode: true, hmr: false },
     appType: 'custom',
@@ -146,18 +147,71 @@ test('late unauthorized response from an older login cannot clear new credential
     assert.equal(events, 0);
 });
 
-test('public catalog supports guests and preserves existing user credentials', async () => {
-    for (const token of [null, 'expired-token']) {
-        globalThis.localStorage = { getItem: () => token };
-        apiClient.defaults.adapter = async config => {
-            assert.equal(config.url, '/templates');
-            assert.equal(config.publicRequest, true);
-            assert.equal(config.headers.Authorization, token ? `Bearer ${token}` : undefined);
-            return { data: { result: [{ id: 'sample', name: 'Sample CV' }] }, status: 200, headers: {}, config };
-        };
-        const templates = await galleryService.getTemplates();
-        assert.equal(templates[0].id, 'sample');
-    }
+test('public catalog supports guests without making an authenticated request', async () => {
+    globalThis.localStorage = { getItem: () => null };
+    apiClient.defaults.adapter = async config => {
+        assert.equal(config.url, '/templates');
+        assert.equal(config.publicRequest, true);
+        assert.equal(config.headers.Authorization, undefined);
+        return { data: { result: [{ id: 'sample', name: 'Sample CV' }] }, status: 200, headers: {}, config };
+    };
+
+    const templates = await galleryService.getTemplates();
+    assert.equal(templates[0].id, 'sample');
+});
+
+test('signed-in catalog validates the session and preserves user credentials', async () => {
+    const values = new Map([['accessToken', 'valid-token'], ['refreshToken', 'valid-refresh']]);
+    globalThis.localStorage = {
+        getItem: key => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value),
+        removeItem: key => values.delete(key),
+    };
+    const requests = [];
+    apiClient.defaults.adapter = async config => {
+        requests.push(config.url);
+        assert.equal(config.headers.Authorization, 'Bearer valid-token');
+        if (config.url === '/auth/me') return { data: { result: { id: 'user-1' } }, status: 200, headers: {}, config };
+        assert.equal(config.url, '/templates');
+        assert.equal(config.publicRequest, true);
+        return { data: { result: [{ id: 'premium', name: 'Premium CV' }] }, status: 200, headers: {}, config };
+    };
+
+    const templates = await galleryService.getTemplates();
+    assert.deepEqual(requests, ['/auth/me', '/templates']);
+    assert.equal(values.get('accessToken'), 'valid-token');
+    assert.equal(values.get('refreshToken'), 'valid-refresh');
+    assert.equal(templates[0].id, 'premium');
+});
+
+test('expired catalog session refreshes before loading template access', async () => {
+    const values = new Map([['accessToken', 'expired-token'], ['refreshToken', 'valid-refresh']]);
+    globalThis.localStorage = {
+        getItem: key => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value),
+        removeItem: key => values.delete(key),
+    };
+    const requests = [];
+    refreshAdapter = async config => {
+        assert.equal(config.url, '/auth/tokens/refresh');
+        const body = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
+        assert.equal(body.refreshToken, 'valid-refresh');
+        return { data: { result: { accessToken: 'new-access', refreshToken: 'new-refresh' } }, status: 200, headers: {}, config };
+    };
+    apiClient.defaults.adapter = async config => {
+        requests.push(config.url);
+        if (config.url === '/auth/me' && config.headers.Authorization === 'Bearer expired-token') throw apiFailure(401, config);
+        assert.equal(config.headers.Authorization, 'Bearer new-access');
+        if (config.url === '/auth/me') return { data: { result: { id: 'user-1' } }, status: 200, headers: {}, config };
+        assert.equal(config.url, '/templates');
+        return { data: { result: [{ id: 'premium', name: 'Premium CV' }] }, status: 200, headers: {}, config };
+    };
+
+    const templates = await galleryService.getTemplates();
+    assert.deepEqual(requests, ['/auth/me', '/auth/me', '/templates']);
+    assert.equal(values.get('accessToken'), 'new-access');
+    assert.equal(values.get('refreshToken'), 'new-refresh');
+    assert.equal(templates[0].id, 'premium');
 });
 
 test('a public catalog 401 neither refreshes tokens nor redirects to login', async () => {

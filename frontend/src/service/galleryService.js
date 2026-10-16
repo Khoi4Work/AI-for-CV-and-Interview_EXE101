@@ -54,7 +54,7 @@ const galleryService = {
             if (accessToken && accessToken !== 'undefined' && accessToken !== 'null') {
                 await apiClient.get('/auth/me');
             }
-            const response = await apiClient.get('/templates');
+            const response = await apiClient.get('/templates', { publicRequest: true });
             const data = response.data?.result;
             if (!data || (Array.isArray(data) && data.length === 0)) {
                 console.log('[GalleryService] No data found for templates');

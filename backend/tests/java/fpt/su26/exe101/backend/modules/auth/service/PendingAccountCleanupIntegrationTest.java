@@ -1,6 +1,7 @@
 package fpt.su26.exe101.backend.modules.auth.service;
 
 import fpt.su26.exe101.backend.modules.quota.config.QuotaBenefitConfig;
+import fpt.su26.exe101.backend.modules.auth.service.impl.PendingAccountCleanupServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -30,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(classes = PendingAccountCleanupIntegrationTest.Config.class)
-@Import({PendingAccountCleanupService.class, QuotaBenefitConfig.class})
+@Import({PendingAccountCleanupServiceImpl.class, QuotaBenefitConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class PendingAccountCleanupIntegrationTest {
     @Configuration
@@ -56,8 +57,8 @@ class PendingAccountCleanupIntegrationTest {
                 UUID.randomUUID(), now.minusDays(3), id);
         jdbc.update("""
                 INSERT INTO user_usage_quotas (id,created_at,account_id,remaining_cv_cnt,remaining_cv_ai_cnt,
-                    remaining_int_min,cv_plan,interview_plan,cv_expiry_email_sent,interview_expiry_email_sent)
-                VALUES (?,?,?,1,1,0,'FREE','FREE',false,false)
+                    remaining_cv_free_credits,remaining_int_min,cv_plan,interview_plan,cv_expiry_email_sent,interview_expiry_email_sent)
+                VALUES (?,?,?,1,0,1,5,'FREE','FREE',false,false)
                 """, UUID.randomUUID(), now.minusDays(3), id);
         jdbc.update("""
                 INSERT INTO verification_mail_outbox (id,created_at,account_id,token_hash,attempts,next_attempt_at,canceled)
@@ -92,7 +93,7 @@ class PendingAccountCleanupIntegrationTest {
 
         UUID cvAccount = createShell();
         UUID gallery = jdbc.queryForObject("SELECT id FROM gallery WHERE account_id=?", UUID.class, cvAccount);
-        jdbc.update("INSERT INTO cvs (id,created_at,gallery_id,name,content) VALUES (?,?,?,?,'{}')",
+        jdbc.update("INSERT INTO cvs (id,created_at,gallery_id,name,content,ai_analysis_limit,ai_analysis_remaining) VALUES (?,?,?,?,'{}',1,1)",
                 UUID.randomUUID(), now.minusDays(1), gallery, "Existing CV");
         assertEquals(PendingAccountCleanupService.Result.SKIPPED, service.cleanAccount(cvAccount, now, false));
         assertEquals(1, accountCount(cvAccount));

@@ -6,6 +6,7 @@ import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Input, Toggle, Badge, SectionHeader} from '../components/Layout.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
+import { validateProfile } from '../../../utils/inputValidation.js';
 
 const PersonalInfoPage = () => {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ const PersonalInfoPage = () => {
     const [formData, setFormData] = useState({...profile});
     const [local2fa, setLocal2fa] = useState(is2faEnabled);
     const [usageQuota, setUsageQuota] = useState(null);
+    const [validationErrors, setValidationErrors] = useState({});
 
     useEffect(() => {
         setFormData({...profile});
@@ -36,6 +38,7 @@ const PersonalInfoPage = () => {
 
     const handleChange = (e) => {
         const {name, value} = e.target;
+        setValidationErrors((previous) => ({ ...previous, [name]: undefined }));
         setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -43,8 +46,14 @@ const PersonalInfoPage = () => {
     };
 
     const handleSave = async () => {
+        const errors = validateProfile(formData);
+        setValidationErrors(errors);
+        if (Object.keys(errors).length) {
+            showToast('Vui lòng kiểm tra lại các trường thông tin được đánh dấu.', 'error');
+            return;
+        }
         try {
-            await updateProfile(formData);
+            await updateProfile({ ...formData, fullName: formData.fullName.trim() });
             handle2faToggle(local2fa);
             showToast('Đã lưu các thay đổi thông tin cá nhân thành công!', 'success');
         } catch (err) {
@@ -54,6 +63,7 @@ const PersonalInfoPage = () => {
 
     const handleReset = () => {
         setFormData({...profile});
+        setValidationErrors({});
         setLocal2fa(is2faEnabled);
         showToast('Đã khôi phục thông tin ban đầu.', 'info');
     };
@@ -130,28 +140,37 @@ const PersonalInfoPage = () => {
                         name="fullName"
                         value={formData.fullName || ''}
                         onChange={handleChange}
+                        maxLength={255}
+                        aria-invalid={Boolean(validationErrors.fullName)}
                         placeholder="Nhập họ và tên..."
                     />
+                    {validationErrors.fullName && <p role="alert" className="text-sm text-red-600">{validationErrors.fullName}</p>}
                     <Input
                         label="Địa chỉ Email"
                         name="email"
                         type="email"
                         value={formData.email || ''}
-                        onChange={handleChange}
+                        readOnly
+                        maxLength={254}
                         placeholder="Nhập địa chỉ email..."
                     />
+                    <p className="text-xs text-slate-500">Email tài khoản không thể thay đổi tại đây.</p>
                     <Input
                         label="Số điện thoại"
                         name="phone"
                         value={formData.phone || ''}
                         onChange={handleChange}
+                        maxLength={24}
+                        aria-invalid={Boolean(validationErrors.phone)}
                         placeholder="Nhập số điện thoại..."
                     />
+                    {validationErrors.phone && <p role="alert" className="text-sm text-red-600">{validationErrors.phone}</p>}
                     <Input
                         label="Vị trí"
                         name="location"
                         value={formData.location || ''}
                         onChange={handleChange}
+                        maxLength={255}
                         placeholder="Thành phố, Quốc gia..."
                     />
                     <div className="md:col-span-2">
@@ -160,6 +179,7 @@ const PersonalInfoPage = () => {
                             name="profession"
                             value={formData.profession || ''}
                             onChange={handleChange}
+                            maxLength={255}
                             placeholder="Nhập ngành nghề của bạn..."
                         />
                     </div>
@@ -176,24 +196,33 @@ const PersonalInfoPage = () => {
                         icon={<Link size={16}/>}
                         value={formData.linkedin || ''}
                         onChange={handleChange}
+                        maxLength={255}
+                        aria-invalid={Boolean(validationErrors.linkedin)}
                         placeholder="https://linkedin.com/in/username"
                     />
+                    {validationErrors.linkedin && <p role="alert" className="text-sm text-red-600">{validationErrors.linkedin}</p>}
                     <Input
                         label="URL Portfolio"
                         name="portfolio"
                         icon={<Globe size={16}/>}
                         value={formData.portfolio || ''}
                         onChange={handleChange}
+                        maxLength={255}
+                        aria-invalid={Boolean(validationErrors.portfolio)}
                         placeholder="https://myportfolio.com"
                     />
+                    {validationErrors.portfolio && <p role="alert" className="text-sm text-red-600">{validationErrors.portfolio}</p>}
                     <Input
                         label="URL GitHub"
                         name="github"
                         icon={<Code size={16}/>}
                         value={formData.github || ''}
                         onChange={handleChange}
+                        maxLength={255}
+                        aria-invalid={Boolean(validationErrors.github)}
                         placeholder="https://github.com/username"
                     />
+                    {validationErrors.github && <p role="alert" className="text-sm text-red-600">{validationErrors.github}</p>}
                 </div>
             </div>
 
