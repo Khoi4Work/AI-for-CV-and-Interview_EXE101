@@ -77,8 +77,8 @@ const CVEvaluation = () => {
   }, [isLoggedIn, redirectToLogin]);
 
   const evaluationStages = [
-    { title: 'Đọc CV', description: 'Đang kiểm tra tệp và trích xuất nội dung CV.', icon: FileQuestion },
-    { title: evaluationPhase === 'QUEUED' ? 'Đang chờ xử lý' : 'Đối chiếu CV với JD', description: evaluationPhase === 'QUEUED' ? 'Yêu cầu đánh giá đã được ghi nhận.' : 'Đang đối chiếu yêu cầu JD và kiểm tra minh chứng trong CV.', icon: BrainCircuit },
+    { title: 'Đọc CV', description: 'Đang đọc thông tin trong CV.', icon: FileQuestion },
+    { title: evaluationPhase === 'QUEUED' ? 'Đang chờ xử lý' : 'So sánh CV với mô tả công việc', description: evaluationPhase === 'QUEUED' ? 'Đã nhận yêu cầu đánh giá.' : 'Đang so sánh yêu cầu công việc với thông tin trong CV.', icon: BrainCircuit },
   ];
 
   useEffect(() => {
@@ -102,7 +102,7 @@ const CVEvaluation = () => {
           redirectToLogin();
           return;
         }
-        showToast(getApiErrorMessage(error, 'Không thể tìm JD.'), 'error');
+        showToast(getApiErrorMessage(error, 'Không tìm được mô tả công việc phù hợp. Vui lòng thử lại.'), 'error');
       })
       .finally(() => {if (requestGuard.current.current(token)) setIsFindingJDs(false);});
     return () => guard.cancel();
@@ -188,16 +188,16 @@ const CVEvaluation = () => {
       return;
     }
     if (!jdText.trim()) {
-      showToast('Hãy chọn JD được gợi ý hoặc dán nội dung JD cần đánh giá.', 'error');
+      showToast('Hãy chọn mô tả công việc được gợi ý hoặc dán nội dung cần đánh giá.', 'error');
       return;
     }
     const trimmedJD = jdText.trim();
     if (trimmedJD.length < 80 || trimmedJD.split(/\s+/).length < 12) {
-      showToast('JD cần có ít nhất 80 ký tự và 12 từ, gồm nội dung công việc và yêu cầu.', 'error');
+      showToast('Mô tả công việc cần có ít nhất 80 ký tự và 12 từ, gồm nội dung công việc và yêu cầu.', 'error');
       return;
     }
     if (trimmedJD.length > MAX_JD_LENGTH) {
-      showToast('JD không được vượt quá 50.000 ký tự.', 'error');
+      showToast('Mô tả công việc không được vượt quá 50.000 ký tự.', 'error');
       return;
     }
     const fileError = selectedFile ? getCVFileError(selectedFile) : '';
@@ -228,7 +228,7 @@ const CVEvaluation = () => {
       if (idempotency.current?.fingerprint !== fingerprint) idempotency.current = {fingerprint, key:crypto.randomUUID()};
       analysisController.current = new AbortController();
       const started = await cvPipelineService.analyzeCV(cvId, selection, idempotency.current.key);
-      if (!started?.analysisId) throw new Error('API không trả về analysisId.');
+      if (!started?.analysisId) throw new Error('Chưa nhận được kết quả đánh giá.');
       setEvaluationPhase(started.phase);
       const result = started.status === 'COMPLETED' ? started : await pollAnalysis(cvPipelineService.getAnalysis, started.analysisId, {signal:analysisController.current.signal,onUpdate:state=>setEvaluationPhase(state.phase)});
       if (result.status !== 'COMPLETED') {idempotency.current=null;throw new Error(result.error || 'Chưa có kết quả đánh giá.');}
@@ -248,7 +248,7 @@ const CVEvaluation = () => {
   const findJDsForCV = async (file, saved) => {
     if (!requireLogin()) return;
     if (!file && !saved) {
-      showToast('Hãy chọn CV ở khung bên trái trước khi tìm JD phù hợp.', 'error');
+      showToast('Hãy chọn CV ở khung bên trái trước khi tìm vị trí phù hợp.', 'error');
       return;
     }
     const fileError = file ? getCVFileError(file) : '';
@@ -261,7 +261,7 @@ const CVEvaluation = () => {
     try {
       const imported = saved || await importCV(file);
       if (!requestGuard.current.current(token)) return;
-      if (!imported?.cvId) throw new Error('Không xác định được CV đã lưu để tìm JD.');
+      if (!imported?.cvId) throw new Error('Không tìm thấy CV cần dùng. Vui lòng tải lại CV rồi thử lại.');
       const cvName = saved?.cvName || imported.cvName || file?.name || 'CV đã tạo';
       if (!saved && imported.duplicate) {
         showToast(`Tệp này đã được nhập trước đó. Đang dùng CV "${cvName}" đã lưu.`, 'info');
@@ -273,7 +273,7 @@ const CVEvaluation = () => {
       if (!requestGuard.current.current(token)) return;
       setJdRecommendations(recommendations || []);
       if (!recommendations?.length) {
-        showToast('Không có JD phù hợp.', 'info');
+      showToast('Không tìm thấy mô tả công việc phù hợp.', 'info');
       }
     } catch (error) {
       if (!requestGuard.current.current(token)) return;
@@ -281,7 +281,7 @@ const CVEvaluation = () => {
         redirectToLogin();
         return;
       }
-      showToast(getApiErrorMessage(error, 'Không thể tìm JD phù hợp với CV.'), 'error');
+      showToast(getApiErrorMessage(error, 'Không tìm được mô tả công việc phù hợp với CV.'), 'error');
     } finally {
       if (requestGuard.current.current(token)) setIsFindingJDs(false);
     }
@@ -294,7 +294,7 @@ const CVEvaluation = () => {
     setJdText(recommendation.content || '');
     setSelectedRecommendationKey(`${recommendation.source}-${recommendation.id}`);
     setPreviewRecommendation(null);
-    showToast(`Đã chọn JD: ${recommendation.title}`, 'success');
+    showToast(`Đã chọn mô tả công việc: ${recommendation.title}`, 'success');
   };
 
   if (isEvaluating) {
@@ -370,7 +370,7 @@ const CVEvaluation = () => {
         {/* Header Section */}
         <div className="mb-10 text-center md:text-left">
           <h1 className="text-3xl font-bold text-on-surface mb-2">Đánh giá CV AI</h1>
-          <p className="text-on-surface-variant">Tải CV lên để hệ thống tìm JD phù hợp, hoặc dán JD riêng để đánh giá.</p>
+          <p className="text-on-surface-variant">Tải CV lên để tìm vị trí phù hợp, hoặc dán mô tả công việc để đánh giá.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -443,11 +443,11 @@ const CVEvaluation = () => {
             </div>
           </div>
 
-          {/* Right Column: JD Input */}
+          {/* Right Column: Job description input */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 mb-2">
               <TextCursor className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-on-surface">Mô tả công việc (JD)</h2>
+              <h2 className="text-lg font-semibold text-on-surface">Mô tả công việc</h2>
             </div>
 
             <div className="glass-panel rounded-2xl shadow-sm overflow-hidden border border-outline-variant">
@@ -460,17 +460,17 @@ const CVEvaluation = () => {
                         disabled={(!selectedFile && !importedCV) || isFindingJDs || isEvaluating}
                         className="w-full rounded-xl border border-primary px-4 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {isFindingJDs ? 'Đang đọc CV và tìm JD...' : 'Tìm JD phù hợp với CV'}
+                        {isFindingJDs ? 'Đang đọc CV và tìm vị trí phù hợp...' : 'Tìm vị trí phù hợp với CV'}
                       </button>
                       {jdRecommendations.length > 0 && (
-                        <section className="space-y-2" aria-label="JD được gợi ý">
+                        <section className="space-y-2" aria-label="Các vị trí được gợi ý">
                           {getCVTargetRole(importedCV?.extractedData) ? (
                             <p className="text-sm text-on-surface-variant">
-                              CV có nêu vị trí <strong className="text-on-surface">{getCVTargetRole(importedCV?.extractedData)}</strong>. Các JD dưới đây được tìm theo vị trí đó; hãy xem nội dung và chọn JD muốn đánh giá.
+                              CV có nêu vị trí <strong className="text-on-surface">{getCVTargetRole(importedCV?.extractedData)}</strong>. Hãy xem các mô tả công việc dưới đây và chọn vị trí muốn đánh giá.
                             </p>
                           ) : (
                             <p className="text-sm text-on-surface-variant">
-                              CV chưa nêu vị trí ứng tuyển. Dựa trên kỹ năng, kinh nghiệm và dự án trong CV, hệ thống gợi ý các vị trí dưới đây. Hãy xem JD và chọn vị trí phù hợp để tiếp tục.
+                              CV chưa nêu vị trí ứng tuyển. Dựa trên kỹ năng, kinh nghiệm và dự án trong CV, hệ thống gợi ý các vị trí dưới đây. Hãy xem mô tả công việc và chọn vị trí phù hợp để tiếp tục.
                             </p>
                           )}
                           {jdRecommendations.map((recommendation) => (
@@ -481,7 +481,7 @@ const CVEvaluation = () => {
                               <h3 className="font-semibold text-on-surface">{recommendation.title}</h3>
                               <p className="mt-1 text-xs text-on-surface-variant">
                                 {[recommendation.companyName, recommendation.industry, recommendation.experienceLevel]
-                                  .filter(Boolean).join(' · ') || 'JD cá nhân'}
+                                  .filter(Boolean).join(' · ') || 'Mô tả công việc của bạn'}
                               </p>
                               <span className="mt-1 inline-block rounded-full bg-surface-container-high px-2 py-0.5 text-[11px] text-on-surface-variant">
                                 {jdSourceLabel(recommendation.source)}
@@ -492,14 +492,14 @@ const CVEvaluation = () => {
                                   onClick={() => setPreviewRecommendation(recommendation)}
                                   className="rounded-lg border border-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-surface-container-high"
                                 >
-                                  Xem JD đầy đủ
+                                  Xem mô tả công việc
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => selectRecommendation(recommendation)}
                                   className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-on-primary hover:opacity-90"
                                 >
-                                  Chọn JD này
+                                  Chọn vị trí này
                                 </button>
                               </div>
                             </article>
@@ -508,18 +508,18 @@ const CVEvaluation = () => {
                       )}
                       {continuedJdId && (
                         <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm text-on-surface">
-                          <p>Đang giữ JD đã dùng ở lần đánh giá trước{continuedJdTitle ? `: ${continuedJdTitle}` : ''}. Bổ sung minh chứng vào CV rồi chọn “Bắt đầu đánh giá” để tạo kết quả mới.</p>
+                          <p>Đang giữ mô tả công việc đã dùng ở lần đánh giá trước{continuedJdTitle ? `: ${continuedJdTitle}` : ''}. Cập nhật thông tin thực tế vào CV rồi chọn “Bắt đầu đánh giá” để xem kết quả mới.</p>
                           <button
                             type="button"
                             onClick={() => setContinuedJdId(null)}
                             className="mt-2 font-semibold text-primary underline underline-offset-2"
                           >
-                            Chỉnh sửa JD thành nội dung riêng
+                            Chỉnh sửa mô tả công việc
                           </button>
                         </div>
                       )}
                       <label htmlFor="evaluation-jd" className="text-sm font-medium text-on-surface">
-                        JD dùng để đánh giá
+                        Mô tả công việc dùng để đánh giá
                       </label>
                       <textarea
                         id="evaluation-jd"
@@ -530,10 +530,10 @@ const CVEvaluation = () => {
                           setSelectedRecommendationKey(null);
                         }}
                         readOnly={Boolean(selectedRecommendation || continuedJdId)}
-                        placeholder="Chọn một JD được gợi ý hoặc dán JD riêng vào đây..."
+                        placeholder="Chọn vị trí được gợi ý hoặc dán mô tả công việc vào đây..."
                         className="w-full h-64 p-4 text-sm text-on-surface border border-outline-variant rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none bg-surface-container"
                       />
-                      {selectedRecommendation && <button type="button" onClick={() => {derivedFromJdId.current=selectedRecommendation.id;setSelectedRecommendationKey(null);setJdText(formatJD(selectedRecommendation.content));}} className="text-sm font-semibold text-primary">Dùng bản sao để chỉnh JD riêng</button>}
+                      {selectedRecommendation && <button type="button" onClick={() => {derivedFromJdId.current=selectedRecommendation.id;setSelectedRecommendationKey(null);setJdText(formatJD(selectedRecommendation.content));}} className="text-sm font-semibold text-primary">Chỉnh sửa mô tả công việc</button>}
                   </div>
               </div>
             </div>
@@ -560,7 +560,7 @@ const CVEvaluation = () => {
       <Modal
         isOpen={Boolean(previewRecommendation)}
         onClose={() => setPreviewRecommendation(null)}
-        title={previewRecommendation?.title || 'Nội dung JD'}
+        title={previewRecommendation?.title || 'Mô tả công việc'}
       >
         {previewRecommendation && (
           <div className="space-y-4">
@@ -570,7 +570,7 @@ const CVEvaluation = () => {
                 .filter(Boolean).join(' · ')}
             </p>
             <div className="max-h-[55vh] overflow-y-auto whitespace-pre-wrap break-words rounded-xl border border-outline-variant bg-surface-container p-4 text-sm leading-6 text-on-surface custom-scrollbar">
-              {formatJD(previewRecommendation.content) || 'JD này chưa có nội dung chi tiết.'}
+              {formatJD(previewRecommendation.content) || 'Chưa có nội dung chi tiết.'}
             </div>
             <div className="flex justify-end">
               <button
@@ -578,7 +578,7 @@ const CVEvaluation = () => {
                 onClick={() => selectRecommendation(previewRecommendation)}
                 className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary hover:opacity-90"
               >
-                Chọn JD này
+                Chọn vị trí này
               </button>
             </div>
           </div>

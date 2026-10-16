@@ -141,7 +141,7 @@ export function CVProvider({children}) {
     }, []);
 
     const addEducation = useCallback(() => {
-        setCvData(prev => ({...prev, education: [...prev.education, {degree: '', school: '', year: '', gpa: ''}]}));
+        setCvData(prev => ({...prev, education: [...prev.education, {degree: '', school: '', year: '', gpa: '', details: []}]}));
     }, []);
 
     const removeEducation = useCallback((index) => {

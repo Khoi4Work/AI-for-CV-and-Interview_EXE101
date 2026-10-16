@@ -14,7 +14,7 @@ export function CVResult() {
     const location=useLocation();
     const analysisId=new URLSearchParams(location.search).get('analysisId');
     if(analysisId) return <MainLayout><CVAnalysisResult key={analysisId} analysisId={analysisId}/></MainLayout>;
-    if(!location.state?.optimizationResult) return <main className="p-8 text-on-surface">Chưa có kết quả đánh giá. Hãy chọn CV và JD để bắt đầu.</main>;
+    if(!location.state?.optimizationResult) return <main className="p-8 text-on-surface">Chưa có kết quả đánh giá. Hãy chọn CV và mô tả công việc để bắt đầu.</main>;
     return <OptimizationResult/>;
 }
 
@@ -63,11 +63,11 @@ function OptimizationResult() {
                     </div>
                     <div className="grid gap-5 md:grid-cols-[180px_1fr] mb-6">
                         <div className="rounded-2xl border border-outline-variant p-6 text-center">
-                            <p className="text-sm text-on-surface-variant">Điểm theo rubric sau tối ưu</p>
+                            <p className="text-sm text-on-surface-variant">Điểm sau khi cải thiện CV</p>
                             <p className="text-4xl font-bold text-primary">
                                 {optimizationResult.postOptimizationScore ?? '—'}{optimizationResult.postOptimizationScore != null ? '/100' : ''}
                             </p>
-                            <p className="mt-2 text-xs text-on-surface-variant">{optimizationResult.scoreNote || 'Chấm lại nội dung đề xuất theo JD đã chọn.'}</p>
+                            <p className="mt-2 text-xs text-on-surface-variant">{typeof optimizationResult.scoreNote === 'string' ? optimizationResult.scoreNote.replace(/\bJD\b/gi, 'mô tả công việc').replace(/\brubric\b/gi, 'cách chấm điểm').replace(/minh chứng/gi, 'thông tin cụ thể').replace(/đối chiếu/gi, 'so sánh') : 'Điểm được tính lại dựa trên nội dung đã chỉnh sửa.'}</p>
                         </div>
                         <div className="rounded-2xl border border-outline-variant p-6">
                             <h2 className="font-bold mb-2">Tóm tắt cải thiện</h2>

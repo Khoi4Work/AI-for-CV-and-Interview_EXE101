@@ -99,7 +99,8 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
             if (bound.isEmpty()) return null;
             if (!bound.get().getDigest().equals(digest))
                 throw new ApiException(ErrorCode.DUPLICATE_RESOURCE, "Idempotency-Key đã dùng cho yêu cầu khác.");
-            return view(owned(bound.get().getAnalysisId(), owner), true);
+            CVAnalysis reusedAnalysis = owned(bound.get().getAnalysisId(), owner);
+            return view(reusedAnalysis, true);
         });
         if (existing != null) return existing;
         UUID preparedId;
@@ -187,7 +188,8 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
     @Override
     @Transactional(readOnly = true)
     public CVAnalysisResponseDTO read(UUID id, Gallery owner) {
-        return view(owned(id, owner), true);
+        CVAnalysis analysis = owned(id, owner);
+        return view(analysis, true);
     }
 
     private CVAnalysis owned(UUID id, Gallery owner) {
@@ -209,7 +211,8 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
         String cvText = readable(mapper.valueToTree(content));
         if (content.getSourceText() != null && !content.getSourceText().isBlank()) cvText = content.getSourceText();
         JobDescriptionNormalizationMetadata metadata = normalization.normalize(jd, null);
-        return cvMapper.toAnalysisSnapshot(cv, jd, content, cvText, metadata);
+        Snapshot snapshot = cvMapper.toAnalysisSnapshot(cv, jd, content, cvText, metadata);
+        return snapshot;
     }
 
     @Override

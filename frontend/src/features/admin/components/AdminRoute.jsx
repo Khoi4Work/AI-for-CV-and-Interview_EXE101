@@ -14,7 +14,7 @@ export default function AdminRoute({ children }) {
             showToast('Tài khoản không có quyền quản trị.', 'info');
         }
     }, [isLoading, isLoggedIn, profile?.role, showToast]);
-    if (isLoading) return <p className="p-8">Đang xác minh tài khoản…</p>;
+    if (isLoading) return <p className="p-8">Đang tải thông tin tài khoản…</p>;
     if (!isLoggedIn) return <Navigate to="/login" replace state={{ from: location, sessionExpired }} />;
     if (profile?.role !== 'ADMIN') return <Navigate to="/home" replace />;
     return children;

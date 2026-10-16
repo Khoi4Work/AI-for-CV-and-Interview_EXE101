@@ -527,3 +527,19 @@
 - Kept the CV evaluation page publicly viewable, but redirect guests to login before opening the file picker, accepting a dropped CV, requesting JD recommendations, or starting evaluation. Added a guard to the saved-CV continuation path so it cannot make an authenticated recommendation request as a guest; expired sessions during these requests also return to login instead of leaving the user on a 401 error.
 - Prevented unauthenticated 401 responses from being marked as expired sessions, so the login page only shows the expiration notice after a request that actually carried an access token is confirmed expired. Removed the unused query-string override for that notice.
 - Verification: frontend tests passed 74/74, focused ESLint and `git diff --check` passed. Changes remain uncommitted.
+
+## 2026-10-17 — Use plain-language feedback across the frontend
+- Replaced technical network/server error details with user-friendly guidance, kept expired-session wording separate from ordinary sign-in errors, and translated key CV import/evaluation failures into actionable Vietnamese. Simplified CV evaluation progress, result explanations, and feedback for authentication, PDF export, feedback submission, and interview recording.
+- Added tests for technical error filtering and CV assessment messages; frontend suite passed 76/76, final focused API and formatter tests passed 23/23, focused ESLint passed for the primary changed components, and `git diff --check` passed. ESLint still reports existing React Hooks rule errors in `FeedbackWidget.jsx` and `InterviewResult.jsx`; the reported lines are pre-existing effect/declaration patterns, not the changed message handling. Changes remain uncommitted.
+
+## 2026-10-17 — Clarify CV import fields and PDF export diagnostics
+- Expanded the CV import prompt with per-section JSON examples, clarified grouped versus ungrouped skill mapping, corrected OCR-split certificate examples, and retained education details through backend/frontend mapping. Added structured-field logs after extraction, import persistence, and analysis snapshot creation/reuse; logs omit source text and profile photos.
+- Added PDF export failure-stage logging in the frontend and request failure diagnostics in the backend PDF proxy. Updated the `done` skill to summarize planned stage/commit groups before Git mutations without asking a yes/no approval question.
+- Verification: `CVImportRoleTest` passed (3 tests), `cvPdfRenderer.test.js` passed (6 tests), focused ESLint passed for the changed PDF export files, and `git diff --check` passed. Production build could not run because the sandbox denies access to `frontend/.env`.
+
+## 2026-10-17 — Summarize every Git approval operation
+- Refined the `done` skill so each individual `git add` and `git commit` operation gets its own plain-language summary immediately beforehand. Commit summaries must state the subject and included changes; approval justifications must describe the action instead of showing raw terminal syntax.
+
+## 2026-10-17 — Remove full CV objects from logs
+- Replaced the post-extraction CV object dump with field-presence and section-count metadata only. Removed full structured CV dumps from import persistence and analysis snapshot logs to reduce log volume and avoid writing personal CV content to logs.
+- Verification: `CVImportRoleTest` passed; a source scan found no remaining full-object CV extraction log statements, and `git diff --check` passed.

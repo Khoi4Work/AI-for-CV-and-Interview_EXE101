@@ -4,6 +4,7 @@ import {
     FileText, MessageCircle, ImagePlus, Check, Loader2, Send,
 } from "lucide-react";
 import {feedbackService} from "../services/feedbackService.js";
+import {getApiErrorMessage} from "../../../service/apiClient.js";
 
 /**
  * FeedbackWidget
@@ -200,7 +201,7 @@ export default function FeedbackWidget({onSubmit}) {
             }
             return {ok: false, message: "Lỗi"};
         } catch (err) {
-            return {ok: false, message: err.response?.data?.message || "Lỗi"};
+            return {ok: false, message: getApiErrorMessage(err, 'Không gửi được góp ý. Vui lòng thử lại.')};
         }
     }
 

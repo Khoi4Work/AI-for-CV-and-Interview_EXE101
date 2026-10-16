@@ -122,21 +122,30 @@ export default function CVEditor() {
                 }
             } });
         } catch (error) {
-            setSaveError(getApiErrorMessage(error, error.message || 'Không thể lưu CV. Vui lòng thử lại.'));
+            setSaveError(getApiErrorMessage(error, 'Không thể lưu CV. Vui lòng thử lại.'));
         } finally { setSaving(false); }
     };
     const handleExport = async () => {
         if (!allowed || saving || exporting) return;
         if (!validateContent()) return;
         setExporting(true); setSaveError(''); setMessage('');
+        let exportStage = 'check-template-access';
         try {
             await validateAccess(selectedTemplate);
             const safeTitle = cvName.trim() || 'CV';
+            exportStage = 'load-pdf-module';
             const {downloadCvPdfFromService} = await import('../pdf-renderer/downloadCvPdfFromService.js');
+            exportStage = 'build-html-and-call-pdf-service';
             await downloadCvPdfFromService(cvData, safeTitle, selectedTemplate);
             setMessage('Đã xuất CV thành PDF.');
         } catch (error) {
-            setSaveError(getApiErrorMessage(error, error.message));
+            console.error('[CV PDF Export] Export failed', {
+                stage: error?.cvPdfExportStage || exportStage,
+                message: error?.message,
+                code: error?.code,
+                status: error?.response?.status,
+            });
+            setSaveError(getApiErrorMessage(error, 'Không thể tải CV thành PDF. Vui lòng thử lại.'));
         } finally { setExporting(false); }
     };
     const handleInlineEdit = (path, value) => {
@@ -280,7 +289,7 @@ export default function CVEditor() {
                         if (id !== 'the-standard') setShowContentPanel(true);
                         setSaveError('');
                     }
-                    catch (error) { setSaveError(error.message); }
+                    catch (error) { setSaveError(getApiErrorMessage(error, 'Không thể chọn mẫu CV này.')); }
                 }}
                 selectedTemplateId={selectedTemplate}
                 exportLabel="Tải PDF"

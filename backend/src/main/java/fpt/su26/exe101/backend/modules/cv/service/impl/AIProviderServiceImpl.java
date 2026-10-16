@@ -14,11 +14,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.Set;
 import java.util.Locale;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class AIProviderServiceImpl implements AIProviderService {
 
     private static final int MAX_JSON_OUTPUT_TOKENS = 8192;
@@ -74,11 +76,27 @@ public class AIProviderServiceImpl implements AIProviderService {
                     Set<String> roles = roleTaxonomy.roles(cv.getProfessionalTitle());
                     cv.setTargetRoleCode(roles.size() == 1 ? roles.iterator().next() : null);
                 }
+                logStructuredExtractionSummary(cv);
             }
             return result;
         } catch (IOException | TikaException e) {
             throw new IllegalArgumentException("Unable to read the uploaded CV file.", e);
         }
+    }
+
+    private void logStructuredExtractionSummary(CVContent content) {
+        log.info("[CV Import] AI extraction completed | personalInfoPresent={} | summaryPresent={}"
+                        + " | experiences={} | education={} | skills={} | projects={} | certificates={}"
+                        + " | languages={} | awards={}",
+                content.getPersonalInfo() != null,
+                content.getSummary() != null && !content.getSummary().isBlank(),
+                count(content.getExperiences()), count(content.getEducation()), count(content.getSkills()),
+                count(content.getProjects()), count(content.getCertificates()), count(content.getLanguages()),
+                count(content.getAwards()));
+    }
+
+    private int count(List<?> items) {
+        return items == null ? 0 : items.size();
     }
 
     private boolean historicalRoleEvidence(String source,String quote) {

@@ -58,6 +58,7 @@ public class CVContent {
         private String school;
         private String year;
         private String gpa;
+        @Builder.Default private List<String> details = new ArrayList<>();
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor @JsonIgnoreProperties(ignoreUnknown = false)
