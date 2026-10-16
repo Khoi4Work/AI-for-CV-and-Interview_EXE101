@@ -48,7 +48,7 @@ Hoặc chạy bằng Docker, image runtime đã kèm Chromium và thư viện h�
 
 ```bash
 docker build -t pdf-service .
-docker run --rm -p 8080:8080 pdf-service
+docker run --rm -p 8081:8081 pdf-service
 ```
 
 ## API
@@ -79,7 +79,7 @@ Nhận JSON và trả `application/pdf` trực tiếp. Tối đa 2,000,000 ký t
 Ví dụ gọi từ service khác:
 
 ```bash
-curl -X POST http://pdf-service:8080/api/v1/pdf \
+curl -X POST http://pdf-service:8081/api/v1/pdf \
   -H 'Content-Type: application/json' \
   --data '{"html":"<h1>Invoice 42</h1>"}' \
   --output invoice.pdf
@@ -89,7 +89,7 @@ Lỗi trả theo `application/problem+json`: `400` cho request không hợp lệ
 
 ## Ghi chú vận hành
 
-- Mặc định dùng cổng `8080`; có thể đổi bằng `SERVER_PORT`.
+- Mặc định dùng cổng `8081`; có thể đổi bằng `SERVER_PORT`.
 - `PDF_CHROMIUM_HEADLESS` điều khiển headless mode (mặc định `true`).
 - Browser dùng chung trong tiến trình; thao tác render được tuần tự hóa vì Playwright Java không thread-safe. Ngang tải bằng cách chạy thêm replica sau load balancer.
 - Service nhận HTML từ caller tin cậy. Hạn chế quyền gọi ở network/gateway nội bộ và đặt giới hạn body request ở gateway.
