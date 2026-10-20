@@ -12,6 +12,7 @@ import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import {analysisSelection, createRequestGuard, pollAnalysis} from '../services/analysisFlow.js';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
+import {MainLayout} from '../../interview/components/MainLayout.jsx';
 
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_JD_LENGTH = 50000;
@@ -358,7 +359,8 @@ const CVEvaluation = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-background p-6 md:p-12 font-sans antialiased text-on-surface">
+    <MainLayout bgClass="bg-background">
+    <div className="relative bg-background p-0 md:p-4 font-sans antialiased text-on-surface">
       <button
         onClick={() => navigate('/')}
         className="absolute left-6 top-6 p-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all z-10"
@@ -427,15 +429,16 @@ const CVEvaluation = () => {
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       removeFile();
                       setImportedCV(null);
                       setJdRecommendations([]);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-2xl transition-colors"
+                    className="inline-flex w-fit max-w-full flex-nowrap items-center justify-center gap-2 whitespace-nowrap px-4 py-2 text-sm font-medium text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-2xl transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 shrink-0" />
                     Bỏ CV này
                   </button>
                 </div>
@@ -585,6 +588,7 @@ const CVEvaluation = () => {
         )}
       </Modal>
     </div>
+    </MainLayout>
   );
 };
 

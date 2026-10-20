@@ -200,7 +200,8 @@ function AppLayout() {
                 {/* ── Protected block (Zones B + C) ───────────────── */}
                 <Route path="/*" element={
                     <ProtectedRoute isLoggedIn={isLoggedIn}>
-                        <Routes location={location}>
+                        <AnimatePresence mode="wait" initial={false}>
+                        <Routes location={location} key={location.pathname}>
                             {/* ZONE B · Dashboard (Home + 5 settings pages). */}
                             <Route
                                 path="home"
@@ -290,6 +291,7 @@ function AppLayout() {
                                 </ProtectedRoute>
                             }/>
                         </Routes>
+                        </AnimatePresence>
                     </ProtectedRoute>
                 }/>
             </Routes>

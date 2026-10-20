@@ -31,7 +31,7 @@ export default function InterviewLanding() {
             <main>
                 {/* Hero Section */}
                 <section
-                    className="px-6 md:px-12 py-16 lg:py-24  mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+                    className="w-full max-w-7xl px-6 md:px-12 py-16 lg:py-24 mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
                     <div className="flex-1 lg:pr-10">
                         <h1 className="text-4xl lg:text-5xl font-extrabold text-on-surface leading-tight mb-6 font-display">
                             Luyện phỏng vấn AI -<br/>
@@ -78,10 +78,10 @@ export default function InterviewLanding() {
 
                 {/*Features Section */}
                 <section className="py-20 px-6 md:px-12">
-                    <div className="-7xl mx-auto">
+                    <div className="max-w-7xl mx-auto">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl font-bold text-on-surface mb-4 font-display">Đa dạng hình thức phỏng vấn</h2>
-                            <p className="text-on-surface-variant -2xl mx-auto">
+                            <p className="text-on-surface-variant max-w-2xl mx-auto">
                                 Chọn loại hình phỏng vấn phù hợp với nhu cầu của bạn. AI của chúng tôi được huấn luyện
                                 trên hàng ngàn kịch bản thực tế.
                             </p>
@@ -149,11 +149,11 @@ export default function InterviewLanding() {
                 </section>
 
                 {/* Benefits Section */}
-                <section className="py-24 px-6 md:px-12 -7xl mx-auto">
+                <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row gap-16 items-center">
 
                         {/* Left Grid */}
-                        <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="bg-interview-card-1 rounded-2xl p-6 border border-interview-card-1 text-white">
                                 <div
                                     className="w-10 h-10 rounded-full bg-interview-icon-1 text-white flex items-center justify-center mb-4">
@@ -238,7 +238,7 @@ export default function InterviewLanding() {
                 {/* Bottom CTA */}
                 <section className="py-20 px-6 text-center text-white">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4 font-display">Sẵn sàng để tỏa sáng?</h2>
-                    <p className="text-white/80 -2xl mx-auto mb-10 text-lg">
+                    <p className="text-white/80 max-w-2xl mx-auto mb-10 text-lg">
                         Đừng để buổi phỏng vấn mơ ước trôi qua chỉ vì thiếu sự chuẩn bị. Hãy bắt đầu luyện tập ngay hôm
                         nay.
                     </p>
