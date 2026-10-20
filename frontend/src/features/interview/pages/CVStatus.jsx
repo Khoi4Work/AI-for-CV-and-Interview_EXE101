@@ -29,7 +29,9 @@ export default function CvStatus() {
         if (!active) return;
         const availableCvs = assets?.cvs || [];
         setCvs(availableCvs);
-        setCvId((previous) => (previous && availableCvs.some((cv) => cv.id === previous) ? previous : ''));
+        const savedCvId = data.cvId && availableCvs.some((cv) => cv.id === data.cvId) ? data.cvId : '';
+        setCvId(savedCvId);
+        update({ cvId: savedCvId || null });
       })
       .catch((error) => {
         if (active) setCvError(getApiErrorMessage(error, 'Không thể tải danh sách CV.'));
@@ -38,7 +40,7 @@ export default function CvStatus() {
         if (active) setLoadingCvs(false);
       });
     return () => { active = false; };
-  }, [selected]);
+  }, [selected, update]);
 
   const handleNext = () => {
     if (!selected) return;
@@ -48,6 +50,7 @@ export default function CvStatus() {
 
   const handleSelectHaveCv = () => {
     setSelected('have');
+    update({ cvStatus: 'have' });
     setLoadingCvs(true);
     setCvError('');
   };
@@ -90,7 +93,7 @@ export default function CvStatus() {
             </div>
 
             <div
-              onClick={() => setSelected('nothave')}
+              onClick={() => { setSelected('nothave'); setCvId(''); update({ cvStatus: 'nothave', cvId: null }); }}
               className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-interview-card-bg ${
                 selected === 'nothave' ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
               }`}
@@ -112,7 +115,7 @@ export default function CvStatus() {
             <div className="bg-interview-card-bg rounded-xl border border-outline-variant p-5 mb-8">
               <label htmlFor="interview-cv" className="block text-sm font-semibold text-black mb-2">Chọn CV đã lưu</label>
               {loadingCvs ? <p className="text-sm text-black/60">Đang tải CV...</p> : (
-                <select id="interview-cv" value={cvId} onChange={(event) => setCvId(event.target.value)}
+                <select id="interview-cv" value={cvId} onChange={(event) => { setCvId(event.target.value); update({ cvId: event.target.value || null }); }}
                   className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-sm text-black">
                   <option value="">-- Chọn CV --</option>
                   {cvs.map((cv) => <option key={cv.id} value={cv.id}>{cv.name || 'CV chưa đặt tên'}</option>)}

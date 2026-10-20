@@ -6,6 +6,7 @@ import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { JOBS } from '../constants/jobs.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
+import { paymentService } from '../../payment/services/paymentService.js';
 
 const ICONS = { Code, Monitor, Server, Cloud, Bug, Database };
 
@@ -14,6 +15,9 @@ export default function JobSelection() {
   const { data, update, setStep } = useInterviewSession();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedId, setSelectedId] = useState(data.job?.id || null);
+  const [quotaLoading, setQuotaLoading] = useState(!data.quotaSnapshot);
+  const [quotaError, setQuotaError] = useState('');
+  const [quotaRetry, setQuotaRetry] = useState(0);
 
   useEffect(() => {
     setStep(1);
@@ -25,12 +29,30 @@ export default function JobSelection() {
     });
   }, [setStep, update]);
 
+  useEffect(() => {
+    let active = true;
+    setQuotaLoading(true);
+    setQuotaError('');
+    paymentService.getCurrentQuota()
+      .then((quotaSnapshot) => {
+        if (!active) return;
+        update({ quotaSnapshot, quotaSnapshotAt: Date.now() });
+      })
+      .catch(() => {
+        if (active) setQuotaError('Không tải được số phút Interview. Vui lòng thử lại.');
+      })
+      .finally(() => {
+        if (active) setQuotaLoading(false);
+      });
+    return () => { active = false; };
+  }, [quotaRetry, update]);
+
   const filtered = JOBS.filter((j) =>
     j.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleNext = () => {
-    if (!selectedId) return;
+    if (!selectedId || quotaLoading || quotaError || !data.quotaSnapshot) return;
     const job = JOBS.find((j) => j.id === selectedId);
     update({ job });
     navigate('/interview/cv-status');
@@ -46,6 +68,12 @@ export default function JobSelection() {
           <h1 className="text-3xl font-bold text-on-surface mb-3">Bạn đang tìm việc ở ngành nào?</h1>
           <p className="text-on-surface-variant">Chúng tôi sẽ tùy chỉnh các mẫu CV và gợi ý kỹ năng AI dựa trên vai trò mong muốn của bạn.</p>
         </div>
+
+        <p className="text-center text-sm text-on-surface-variant mb-5" aria-live="polite">
+          {quotaLoading ? 'Đang kiểm tra số phút Interview…' : quotaError ? (
+            <>{quotaError} <button type="button" onClick={() => setQuotaRetry((value) => value + 1)} className="font-semibold text-primary underline">Thử lại</button></>
+          ) : `Đã kiểm tra số phút Interview: ${Number(data.quotaSnapshot?.remainingInterviewMinutes ?? 0)} phút còn lại`}
+        </p>
 
         <div className="relative mb-8 shadow-sm rounded-xl">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -67,7 +95,7 @@ export default function JobSelection() {
             return (
               <div
                 key={job.id}
-                onClick={() => setSelectedId(job.id)}
+                onClick={() => { setSelectedId(job.id); update({ job }); }}
                 className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-md bg-interview-card-bg ${
                   isSelected ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
                 }`}
@@ -91,9 +119,9 @@ export default function JobSelection() {
           </button>
           <button
             onClick={handleNext}
-            disabled={!selectedId}
+            disabled={!selectedId || quotaLoading || Boolean(quotaError) || !data.quotaSnapshot}
             className={`flex items-center px-6 py-2.5 rounded-lg font-medium transition-colors ${
-              selectedId
+              selectedId && !quotaLoading && !quotaError && data.quotaSnapshot
                 ? 'bg-primary text-on-primary hover:bg-primary-container'
                 : 'bg-surface-container text-outline cursor-not-allowed'
             }`}

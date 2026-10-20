@@ -13,6 +13,9 @@ const initialState = () => ({
   experienceLevel: null,
   careerGoal: '',
   interviewConfig: null,
+  interviewSetupDraft: null,
+  quotaSnapshot: null,
+  quotaSnapshotAt: null,
   audioTestPassed: false,
   audioRecordingEnabled: false,
   videoSetupConfirmed: false,
@@ -147,8 +150,8 @@ export function useInterviewSession() {
   }, []);
 
   const setStep = useCallback((step) => {
-    setData((previous) => ({ ...previous, step }));
-  }, []);
+    update({ step });
+  }, [update]);
 
   const clearCurrentInterview = useCallback(() => {
     configurationVersion.current++;

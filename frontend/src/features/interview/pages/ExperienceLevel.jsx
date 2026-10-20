@@ -49,7 +49,7 @@ export default function ExperienceLevel() {
               return (
                 <div
                   key={level.id}
-                  onClick={() => setSelected(level.id)}
+                  onClick={() => { setSelected(level.id); update({ experienceLevel: level.id }); }}
                   className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-interview-card-bg ${
                     isSelected ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
                   }`}
