@@ -543,3 +543,15 @@
 ## 2026-10-17 — Remove full CV objects from logs
 - Replaced the post-extraction CV object dump with field-presence and section-count metadata only. Removed full structured CV dumps from import persistence and analysis snapshot logs to reduce log volume and avoid writing personal CV content to logs.
 - Verification: `CVImportRoleTest` passed; a source scan found no remaining full-object CV extraction log statements, and `git diff --check` passed.
+
+## 2026-10-20 — Fix frontend layout utility classes
+- Corrected invalid width and corner-radius utilities in the login/logout loading overlays; set login and logout loading overlays to inline grid centering and viewport-based inline dialog widths after the reported view still showed a narrow card and template feedback modal. Fixed missing max-width utilities in the interview landing page, made its feature/benefit sections fit a centered content column, improved narrow-screen card stacking, and restored full contrast on the interview setup primary action.
+- Verification: removed the custom-theme-conflicting max-w-md class from both loading dialogs; browser preview on localhost:5173 measured the login dialog at 448px in a 502px viewport. Source scan and git diff --check passed.
+
+## 2026-10-21 — Align editable CV templates with their references
+- Reworked the editable and PDF template renderers so section order, skill tiers, project links, contact details, profile imagery, and template-specific styling stay consistent between the editor and export. Matched the Cloud Specialist reference with a responsive navy identity panel, angled summary background, dynamic contact and summary heights, and balanced skill cells.
+- Verification: inspected the rendered Cloud Specialist template in the localhost editor, confirmed computed geometry and dynamic spacing, and completed the frontend production build with the isolated review Vite config.
+
+## 2026-10-21 — Preserve interview setup progress and quota state
+- Persisted wizard choices as they are made, moved the quota snapshot to the interview session, restored draft setup values, and prevented navigation into setup before quota data is available. Improved route transitions and responsive layout details across authentication, interview, CV evaluation, and feedback views.
+- Verification: the complete frontend production build passed after the interview flow and layout changes.
