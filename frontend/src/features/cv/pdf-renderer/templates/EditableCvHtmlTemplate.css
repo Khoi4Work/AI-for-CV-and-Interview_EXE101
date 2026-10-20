@@ -425,6 +425,1080 @@
     }
 }
 
+/* Keep each résumé template's visual language independent. The shared markup
+   supplies structure only; The Standard's warm palette and timeline are local. */
+.cv-standard.cv-template-boardroom-ready {
+    --cv-accent: #355e5b;
+    --cv-rule: #9cb2af;
+    font-family: Arial, 'Noto Sans', sans-serif
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-header {
+    background: #fff;
+    color: #263a38
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-section-title,
+.cv-standard.cv-template-boardroom-ready .side-title,
+.cv-standard.cv-template-boardroom-ready .timeline-item h3,
+.cv-standard.cv-template-boardroom-ready .cv-standard-school,
+.cv-standard.cv-template-boardroom-ready .cv-standard-item-title,
+.cv-standard.cv-template-boardroom-ready .cv-skill-category {
+    color: #355e5b
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-section-title,
+.cv-standard.cv-template-boardroom-ready .side-title {
+    border-color: #9cb2af
+}
+
+.cv-standard.cv-template-boardroom-ready .chip {
+    border-radius: 3px;
+    background: #e9eeee;
+    color: #263a38
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline {
+    margin-left: 0;
+    padding-left: 0;
+    border: 0
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item {
+    padding: 10px 12px 7px;
+    background: #eef2f1
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item::before {
+    display: none
+}
+
+.cv-standard.cv-template-data-scientist {
+    --cv-accent: #15191f;
+    font-family: Arial, 'Noto Sans', sans-serif
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-header {
+    background: #fff;
+    color: #15191f;
+    border-bottom: 2px solid #20242a
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-name,
+.cv-standard.cv-template-data-scientist .cv-standard-title,
+.cv-standard.cv-template-data-scientist .cv-standard-section-title,
+.cv-standard.cv-template-data-scientist .side-title,
+.cv-standard.cv-template-data-scientist .timeline-item h3,
+.cv-standard.cv-template-data-scientist .cv-standard-school,
+.cv-standard.cv-template-data-scientist .cv-standard-item-title,
+.cv-standard.cv-template-data-scientist .cv-skill-category {
+    color: #15191f
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-section-title,
+.cv-standard.cv-template-data-scientist .side-title {
+    border-color: #20242a
+}
+
+.cv-standard.cv-template-data-scientist .chip {
+    border-radius: 3px;
+    background: #f0f1f2;
+    color: #20242a
+}
+
+.cv-standard.cv-template-data-scientist .timeline {
+    margin: 0;
+    padding: 0;
+    border: 0
+}
+
+.cv-standard.cv-template-data-scientist .timeline-item {
+    margin: 0;
+    padding: 12px 0;
+    border-bottom: 1px solid #d9dde1
+}
+
+.cv-standard.cv-template-data-scientist .timeline-item::before {
+    display: none
+}
+
+.cv-standard.cv-template-security-analyst {
+    --cv-accent: #d72d3b
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-header {
+    background: #f0f0f0;
+    color: #20242a
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-section-title,
+.cv-standard.cv-template-security-analyst .side-title,
+.cv-standard.cv-template-security-analyst .timeline-item h3,
+.cv-standard.cv-template-security-analyst .cv-standard-school,
+.cv-standard.cv-template-security-analyst .cv-standard-item-title,
+.cv-standard.cv-template-security-analyst .cv-skill-category {
+    color: #d72d3b
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-section-title,
+.cv-standard.cv-template-security-analyst .side-title {
+    border-color: #e7a3aa
+}
+
+.cv-standard.cv-template-security-analyst .timeline {
+    border-color: #d72d3b
+}
+
+.cv-standard.cv-template-security-analyst .timeline-item::before {
+    background: #d72d3b
+}
+
+.cv-standard.cv-template-security-analyst .chip {
+    background: #fbecee;
+    color: #a91f2c
+}
+
+.cv-standard.cv-template-cloud-expert {
+    --cv-accent: #173b61
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-section-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .side-title,
+.cv-standard.cv-template-cloud-expert .timeline-item h3,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-school,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-item-title {
+    color: #173b61
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-section-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .side-title {
+    border-color: #9fb2c4
+}
+
+.cv-standard.cv-template-cloud-expert .chip {
+    border-radius: 4px;
+    background: #e8eef4;
+    color: #173b61
+}
+
+.cv-standard.cv-template-cloud-expert .timeline {
+    margin: 0;
+    padding: 0;
+    border: 0
+}
+
+.cv-standard.cv-template-cloud-expert .timeline-item {
+    margin: 0 0 14px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid #d8e0e8
+}
+
+.cv-standard.cv-template-cloud-expert .timeline-item::before {
+    display: none
+}
+
+.cv-standard.cv-template-portfolio-hybrid {
+    --cv-accent: #17636b
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-header {
+    background: #fff;
+    color: #17636b
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-section-title,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .side-title,
+.cv-standard.cv-template-portfolio-hybrid .timeline-item h3,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-school,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-item-title {
+    color: #17636b
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-section-title,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .side-title {
+    border-color: #b9d5d4
+}
+
+.cv-standard.cv-template-portfolio-hybrid .timeline {
+    margin: 0;
+    padding: 0;
+    border: 0
+}
+
+.cv-standard.cv-template-portfolio-hybrid .timeline-item {
+    margin: 0 0 15px;
+    padding: 10px 12px 7px;
+    border-left: 3px solid #77aeb0;
+    background: #edf4f3
+}
+
+.cv-standard.cv-template-portfolio-hybrid .timeline-item::before {
+    display: none
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .chip {
+    border: 1px solid rgba(255, 255, 255, .58);
+    background: transparent;
+    color: #fff
+}
+
+/* Template-specific entry and skill structures. */
+.experience-list-boardroom,
+.project-list-boardroom {
+    display: grid;
+    gap: 9px
+}
+
+.experience-entry-boardroom,
+.project-entry-boardroom {
+    padding: 10px 12px 7px;
+    background: #eef2f1
+}
+
+.boardroom-entry-heading,
+.portfolio-entry-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px
+}
+
+.boardroom-entry-heading h3,
+.portfolio-entry-heading h3 {
+    margin: 0 0 3px
+}
+
+.boardroom-entry-heading .period,
+.portfolio-entry-heading .period {
+    flex: 0 0 auto;
+    font-weight: 700
+}
+
+.experience-entry-boardroom .company {
+    display: inline-block;
+    margin-bottom: 5px;
+    font-weight: 700
+}
+
+.cv-standard.cv-template-boardroom-ready .experience-entry-boardroom h3,
+.cv-standard.cv-template-boardroom-ready .project-entry-boardroom h3 {
+    color: #355e5b
+}
+
+.cv-skill-group-boardroom {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 9px
+}
+
+.experience-list-data,
+.project-list-data {
+    border-top: 1px solid #d9dde1
+}
+
+.experience-entry-data,
+.project-entry-data {
+    padding: 12px 0;
+    border-bottom: 1px solid #d9dde1
+}
+
+.data-entry-period {
+    margin-bottom: 4px;
+    color: #475569;
+    font-size: 8pt;
+    font-weight: 700
+}
+
+.experience-entry-data h3,
+.project-entry-data h3 {
+    margin: 0 0 2px;
+    color: #15191f;
+    font-size: 11pt
+}
+
+.experience-entry-data .company {
+    margin-bottom: 6px
+}
+
+.cv-skill-group-data {
+    padding: 9px 0;
+    border-bottom: 1px solid #e2e5e8
+}
+
+.data-skill-heading {
+    margin-bottom: 6px
+}
+
+.cv-skill-groups-security {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px
+}
+
+.cv-skill-group-security {
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid #f2c8cc;
+    border-radius: 5px;
+    background: #fffafa
+}
+
+.security-skill-heading {
+    margin-bottom: 7px
+}
+
+.experience-list-security,
+.project-list-security {
+    display: grid;
+    gap: 13px
+}
+
+.experience-entry-security,
+.project-entry-security {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 12px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid #f2d9dc
+}
+
+.security-entry-date {
+    color: #b42331;
+    font-size: 8pt;
+    font-weight: 700
+}
+
+.security-entry-content h3 {
+    margin: 0 0 3px;
+    color: #b42331;
+    font-size: 11pt
+}
+
+.security-entry-content .company {
+    margin-bottom: 6px
+}
+
+.cv-skill-group-cloud {
+    margin-bottom: 14px
+}
+
+.cloud-skill-heading {
+    margin-bottom: 6px
+}
+
+.cloud-skill-grid .chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 5px
+}
+
+.cloud-skill-grid .cv-skill-item {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 100%
+}
+
+.cloud-skill-grid .chip {
+    display: flex;
+    width: 100%;
+    min-height: 32px;
+    flex: 1;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 3px;
+    background: #eef1f3;
+    color: #173b61
+}
+
+.experience-list-cloud,
+.project-list-cloud {
+    display: grid;
+    gap: 12px
+}
+
+.experience-entry-cloud,
+.project-entry-cloud {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 12px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid #d8e0e8
+}
+
+.cloud-entry-date {
+    color: #45627f;
+    font-size: 8pt;
+    font-weight: 700
+}
+
+.cloud-entry-heading h3,
+.cloud-entry-content > h3 {
+    margin: 0 0 3px;
+    color: #173b61;
+    font-size: 11pt
+}
+
+.cloud-entry-content .company {
+    margin-bottom: 6px
+}
+
+.cv-skill-group-portfolio {
+    margin-bottom: 14px
+}
+
+.portfolio-skill-heading {
+    margin-bottom: 6px
+}
+
+.experience-list-portfolio,
+.project-list-portfolio {
+    display: grid;
+    gap: 12px
+}
+
+.experience-entry-portfolio,
+.project-entry-portfolio {
+    padding: 10px 12px 8px;
+    border-left: 3px solid #77aeb0;
+    background: #edf4f3
+}
+
+.experience-entry-portfolio .company {
+    margin-bottom: 6px;
+    color: #17636b;
+    font-size: 9pt
+}
+
+.cv-standard.cv-template-portfolio-hybrid .experience-entry-portfolio h3,
+.cv-standard.cv-template-portfolio-hybrid .project-entry-portfolio h3 {
+    color: #17636b
+}
+
+.experience-list-standard,
+.project-list-standard {
+    margin-left: 2px;
+    padding-left: 15px;
+    border-left: 1.5px solid #564234
+}
+
+.experience-entry-standard,
+.project-entry-standard {
+    position: relative;
+    margin-bottom: 18px
+}
+
+.experience-entry-standard::before,
+.project-entry-standard::before {
+    position: absolute;
+    top: 4px;
+    left: -20px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #564234;
+    content: ''
+}
+
+.standard-entry-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px
+}
+
+.standard-entry-heading .period {
+    color: #64748b;
+    font-size: 8pt;
+    font-weight: 700
+}
+
+.standard-entry-heading h3 {
+    margin: 0 0 2px;
+    color: #564234;
+    font-size: 11pt
+}
+
+.experience-entry-standard .company {
+    margin-bottom: 7px
+}
+
+@media (max-width: 640px) {
+    .cv-skill-groups-security {
+        grid-template-columns: minmax(0, 1fr)
+    }
+
+    .experience-entry-security,
+    .project-entry-security,
+    .experience-entry-cloud,
+    .project-entry-cloud {
+        grid-template-columns: 1fr;
+        gap: 4px
+    }
+}
+
+.cv-standard.cv-template-the-standard {
+    --cv-accent: #564234;
+    --cv-rule: #d6b997
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-header,
+.cv-standard.cv-template-the-standard .cv-standard-section-title,
+.cv-standard.cv-template-the-standard .cv-standard .side-title,
+.cv-standard.cv-template-the-standard .timeline {
+    border-color: #564234
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-section-title,
+.cv-standard.cv-template-the-standard .cv-standard-content .side-title,
+.cv-standard.cv-template-the-standard .timeline-item h3,
+.cv-standard.cv-template-the-standard .cv-standard-school,
+.cv-standard.cv-template-the-standard .cv-standard-item-title,
+.cv-standard.cv-template-the-standard .cv-skill-category {
+    color: #564234
+}
+
+.cv-standard.cv-template-the-standard .timeline-item::before {
+    background: #564234
+}
+
+/* Security Analyst follows the reference's full-width masthead and true
+   sidebar/main composition. */
+.cv-standard.cv-template-security-analyst {
+    position: relative;
+    isolation: isolate;
+    background: #fff
+}
+
+.cv-standard.cv-template-security-analyst::before {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 148px;
+    background: #e7e7e7;
+    clip-path: polygon(0 0, 100% 0, 100% 64%, 0 100%);
+    content: ''
+}
+
+.cv-standard.cv-template-security-analyst > .cv-standard-main,
+.cv-standard.cv-template-security-analyst > .cv-standard-sidebar {
+    position: relative;
+    background: transparent
+}
+
+.cv-standard.cv-template-security-analyst > .cv-standard-main {
+    z-index: 1;
+    padding-top: 0
+}
+
+.cv-standard.cv-template-security-analyst > .cv-standard-sidebar {
+    z-index: 2;
+    padding: 166px 26px 30px;
+    border: 0
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-main > .cv-standard-header {
+    display: none
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-content {
+    padding: 166px 30px 30px
+}
+
+.cv-standard.cv-template-security-analyst .cv-security-name-section {
+    position: absolute;
+    z-index: 3;
+    top: 24px;
+    right: auto;
+    bottom: auto;
+    left: 24px;
+    width: 500px;
+    margin: 0
+}
+
+.cv-standard.cv-template-security-analyst .cv-security-masthead {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #20242a
+}
+
+.cv-standard.cv-template-security-analyst .cv-security-masthead .cv-standard-name {
+    color: #20242a;
+    font-size: 27pt;
+    line-height: 1.15
+}
+
+.cv-standard.cv-template-security-analyst .cv-security-masthead .cv-standard-title {
+    margin: 0;
+    color: #475569;
+    font-size: 10.5pt
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-sidebar > .cv-photo-section {
+    position: absolute;
+    z-index: 4;
+    top: 18px;
+    left: 218%;
+    width: 112px;
+    margin: 0
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-photo,
+.cv-standard.cv-template-security-analyst .cv-standard-photo-placeholder {
+    width: 112px;
+    height: 112px;
+    border: 2px solid #fff;
+    border-radius: 50%
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-section-title,
+.cv-standard.cv-template-security-analyst .side-title {
+    color: #dc3545;
+    border-color: #e7a3aa
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-sidebar .cv-standard-school,
+.cv-standard.cv-template-security-analyst .cv-skill-category,
+.cv-standard.cv-template-security-analyst .experience-entry-security h3,
+.cv-standard.cv-template-security-analyst .project-entry-security h3 {
+    color: #20242a
+}
+
+.cv-standard.cv-template-security-analyst .cv-skill-group-security {
+    border-color: #dfe2e5;
+    background: #fff
+}
+
+.cv-standard.cv-template-security-analyst .cv-skill-group-security .chip {
+    background: #f0f1f2;
+    color: #20242a
+}
+
+.cv-standard.cv-template-security-analyst .security-entry-date {
+    color: #475569
+}
+
+.cv-standard.cv-template-security-analyst .experience-entry-security,
+.cv-standard.cv-template-security-analyst .project-entry-security {
+    border-color: #e2e5e8
+}
+
+.cv-standard.cv-template-boardroom-ready .chip {
+    border-radius: 3px;
+    background: #e9eeee;
+    color: #263a38
+}
+
+.cv-standard.cv-template-data-scientist .chip {
+    border-radius: 3px;
+    background: #f0f1f2;
+    color: #20242a
+}
+
+.cv-standard.cv-template-security-analyst .chip {
+    background: #fbecee;
+    color: #a91f2c
+}
+
+.cv-standard.cv-template-cloud-expert .chip {
+    border-radius: 4px;
+    background: #e8eef4;
+    color: #173b61
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .chip {
+    border: 1px solid rgba(255, 255, 255, .58);
+    background: transparent;
+    color: #fff
+}
+
+.cv-standard.cv-template-the-standard .chip {
+    background: #f1eeeb;
+    color: #334155
+}
+
+/* Boardroom Ready: compact, executive summary with skills before experience. */
+.cv-standard.cv-template-boardroom-ready {
+    font-family: Arial, 'Noto Sans', sans-serif;
+    --cv-accent: #355e5b
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-header {
+    align-items: flex-start;
+    text-align: left;
+    border-bottom: 2px solid #9cb2af
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(170px, .85fr);
+    align-content: start;
+    gap: 0 12px;
+    padding: 22px 30px 28px
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-name,
+.cv-standard.cv-template-boardroom-ready .cv-standard-title,
+.cv-standard.cv-template-boardroom-ready .cv-standard-section-title,
+.cv-standard.cv-template-boardroom-ready .timeline-item h3,
+.cv-standard.cv-template-boardroom-ready .cv-skill-category {
+    color: #355e5b
+}
+
+.cv-standard.cv-template-boardroom-ready [data-section-key="summary"],
+.cv-standard.cv-template-boardroom-ready [data-section-key="personalInfo"] {
+    min-width: 0;
+    margin: 0;
+    padding: 14px 14px 16px;
+    background: #eef2f1
+}
+
+.cv-standard.cv-template-boardroom-ready [data-section-key="summary"] {
+    grid-column: 1;
+    grid-row: 1
+}
+
+.cv-standard.cv-template-boardroom-ready [data-section-key="personalInfo"] {
+    grid-column: 2;
+    grid-row: 1
+}
+
+.cv-standard.cv-template-boardroom-ready [data-section-key="summary"] .cv-standard-section-heading,
+.cv-standard.cv-template-boardroom-ready [data-section-key="personalInfo"] .cv-standard-section-heading {
+    display: none
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-summary {
+    max-width: none;
+    color: #3f4c4b
+}
+
+.cv-standard.cv-template-boardroom-ready [data-section-key="personalInfo"] .cv-standard-contacts {
+    gap: 7px
+}
+
+.cv-standard.cv-template-boardroom-ready [data-section-key="personalInfo"] .cv-standard-contact {
+    display: block
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-contact-icon {
+    display: none
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-contact-value {
+    color: #3f4c4b;
+    font-size: 8pt
+}
+
+.cv-standard.cv-template-boardroom-ready [data-section-key="skills"],
+.cv-standard.cv-template-boardroom-ready [data-section-key="experiences"],
+.cv-standard.cv-template-boardroom-ready [data-section-key="projects"],
+.cv-standard.cv-template-boardroom-ready [data-section-key="education"],
+.cv-standard.cv-template-boardroom-ready [data-section-key="certificates"],
+.cv-standard.cv-template-boardroom-ready [data-section-key="languages"],
+.cv-standard.cv-template-boardroom-ready [data-section-key="awards"] {
+    grid-column: 1 / -1
+}
+
+.cv-standard.cv-template-boardroom-ready [data-section-key="skills"] {
+    margin-top: 22px
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-section-title {
+    text-align: left;
+    border-bottom-color: #9cb2af
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-skill-group-row {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-skill-category {
+    margin: 0
+}
+
+.cv-standard.cv-template-boardroom-ready .chip {
+    border-radius: 3px;
+    background: #e9eeee;
+    color: #263a38
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item {
+    margin-bottom: 8px;
+    padding: 9px 11px 4px;
+    background: #eef2f1
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item::before {
+    display: none
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item .period {
+    float: right;
+    color: #355e5b
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item h3,
+.cv-standard.cv-template-boardroom-ready .timeline-item .company {
+    display: inline
+}
+
+/* Data Scientist: centered identity and a simple, left-aligned résumé body. */
+.cv-standard.cv-template-data-scientist .cv-standard-section-title,
+.cv-standard.cv-template-data-scientist .side-title {
+    text-align: left;
+    border-bottom-color: #111827
+}
+
+.cv-standard.cv-template-data-scientist [data-section-key="personalInfo"] .cv-standard-section-heading {
+    display: none
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-contacts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px 14px
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-contact {
+    display: flex;
+    width: auto;
+    gap: 5px
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-contact-icon {
+    display: none
+}
+
+/* Security Analyst: pale masthead, red section accents and photo at upper right. */
+.cv-standard.cv-template-security-analyst .cv-standard-header {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: -53.846%;
+    width: 153.846%;
+    height: 148px;
+    padding: 0;
+    border: 0;
+    background: #e7e7e7
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-main {
+    padding-top: 0
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-content {
+    padding: 166px 30px 30px
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-content > .cv-name-section:first-child {
+    top: 28px;
+    right: 112px;
+    left: calc(-53.846% + 24px)
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-sidebar {
+    padding-top: 166px;
+    background: #fafafa
+}
+
+.cv-standard.cv-template-security-analyst .cv-photo-section {
+    position: absolute;
+    z-index: 2;
+    top: 18px;
+    left: 120%;
+    width: 96px;
+    margin: 0
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-photo,
+.cv-standard.cv-template-security-analyst .cv-standard-photo-placeholder {
+    width: 96px;
+    height: 96px;
+    border: 2px solid #fff;
+    border-radius: 50%
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-name,
+.cv-standard.cv-template-security-analyst .cv-standard-section-title,
+.cv-standard.cv-template-security-analyst .side-title,
+.cv-standard.cv-template-security-analyst .timeline-item h3,
+.cv-standard.cv-template-security-analyst .cv-skill-category {
+    color: #dc3545
+}
+
+/* Cloud Specialist: navy identity panel and a light summary band. */
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar {
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    color: #24364a
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar::before {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 270px;
+    background: #0b2039;
+    clip-path: polygon(0 0, 100% 0, 100% 78%, 9% 100%, 0 100%);
+    content: ''
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar > * {
+    position: relative;
+    z-index: 1
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar > .cv-name-section:first-of-type {
+    z-index: 2
+}
+
+.cv-standard.cv-template-cloud-expert .cv-sidebar-header {
+    padding: 0;
+    margin-bottom: -12px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="personalInfo"] > .cv-standard-side-heading {
+    display: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="personalInfo"] .cv-standard-contact-value {
+    color: #e2eaf2
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .side-title {
+    color: #0b2039;
+    border-color: #cbd5e1
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-school,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-degree,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-muted,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-item-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-item-body,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-skill-category {
+    color: #334155
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-photo-section {
+    position: absolute;
+    z-index: 3;
+    top: 18px;
+    left: 140%;
+    width: 100px;
+    margin: 0
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-photo,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-photo-placeholder {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #fff;
+    border-radius: 50%
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content {
+    padding-top: 22px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content [data-section-key="summary"] {
+    position: relative;
+    isolation: isolate;
+    margin: -22px -32px 22px;
+    /* Keep summary text clear of the portrait that overlaps the band. */
+    padding: 24px 142px 22px 42px;
+    background: transparent
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content [data-section-key="summary"]::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: #f1f4f6;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 18px));
+    content: ''
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content [data-section-key="summary"] .cv-standard-section-heading {
+    display: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-summary {
+    max-width: none
+}
+
+/* Portfolio Hybrid: distinct teal sidebar and understated portfolio headings. */
+.cv-standard.cv-template-portfolio-hybrid {
+    grid-template-columns: 34% 66%;
+    font-family: Arial, 'Noto Sans', sans-serif
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar {
+    background: #17636b
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content {
+    padding: 34px 32px 30px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-section-title {
+    border-bottom-color: #d6e5e5;
+    color: #17636b;
+    font-size: 12pt;
+    letter-spacing: .8px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .timeline-item h3,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-school,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-item-title {
+    color: #17636b
+}
+
+/* The Standard: warm editorial masthead with a quiet right-hand details panel. */
+.cv-standard.cv-template-the-standard {
+    grid-template-columns: 67% 33%;
+    font-family: Arial, 'Noto Sans', sans-serif
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-sidebar {
+    border-color: #ddd8d4;
+    background: #e9e5e2
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-header,
+.cv-standard.cv-template-the-standard .cv-name-section-moves-background .cv-standard-header {
+    background: #5b3c2d
+}
+
+.cv-standard.cv-template-the-standard .cv-name-section-moves-background .cv-standard-title {
+    color: #e9d8c9
+}
+
 .cv-standard-main {
     position: relative;
     display: flex;
@@ -1140,4 +2214,1100 @@
     .cv-standard-side-section.cv-section-dragging {
         outline: 0
     }
+}
+
+/* Final theme rules: keep shared HTML structure from imposing The Standard's look. */
+.cv-standard.cv-template-boardroom-ready .timeline,
+.cv-standard.cv-template-data-scientist .timeline,
+.cv-standard.cv-template-cloud-expert .timeline,
+.cv-standard.cv-template-portfolio-hybrid .timeline {
+    margin: 0;
+    padding: 0;
+    border: 0
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item::before,
+.cv-standard.cv-template-data-scientist .timeline-item::before,
+.cv-standard.cv-template-cloud-expert .timeline-item::before,
+.cv-standard.cv-template-portfolio-hybrid .timeline-item::before {
+    display: none
+}
+
+.cv-standard.cv-template-boardroom-ready .timeline-item {
+    margin-bottom: 8px;
+    padding: 10px 12px 7px;
+    background: #eef2f1
+}
+
+.cv-standard.cv-template-data-scientist .timeline-item,
+.cv-standard.cv-template-cloud-expert .timeline-item {
+    margin: 0 0 14px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid #d9dde1
+}
+
+.cv-standard.cv-template-portfolio-hybrid .timeline-item {
+    margin: 0 0 15px;
+    padding: 10px 12px 7px;
+    border-left: 3px solid #77aeb0;
+    background: #edf4f3
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-section-title,
+.cv-standard.cv-template-boardroom-ready .side-title,
+.cv-standard.cv-template-boardroom-ready .timeline-item h3,
+.cv-standard.cv-template-boardroom-ready .cv-skill-category,
+.cv-standard.cv-template-boardroom-ready .cv-standard-school,
+.cv-standard.cv-template-boardroom-ready .cv-standard-item-title {
+    color: #355e5b
+}
+
+.cv-standard.cv-template-boardroom-ready .cv-standard-section-title,
+.cv-standard.cv-template-boardroom-ready .side-title {
+    border-color: #9cb2af
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-name,
+.cv-standard.cv-template-data-scientist .cv-standard-title,
+.cv-standard.cv-template-data-scientist .cv-standard-section-title,
+.cv-standard.cv-template-data-scientist .side-title,
+.cv-standard.cv-template-data-scientist .timeline-item h3,
+.cv-standard.cv-template-data-scientist .cv-skill-category,
+.cv-standard.cv-template-data-scientist .cv-standard-school,
+.cv-standard.cv-template-data-scientist .cv-standard-item-title {
+    color: #15191f
+}
+
+.cv-standard.cv-template-data-scientist .cv-standard-section-title,
+.cv-standard.cv-template-data-scientist .side-title {
+    border-color: #20242a
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-section-title,
+.cv-standard.cv-template-security-analyst .side-title,
+.cv-standard.cv-template-security-analyst .timeline-item h3,
+.cv-standard.cv-template-security-analyst .cv-skill-category,
+.cv-standard.cv-template-security-analyst .cv-standard-school,
+.cv-standard.cv-template-security-analyst .cv-standard-item-title {
+    color: #d72d3b
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-section-title,
+.cv-standard.cv-template-security-analyst .side-title,
+.cv-standard.cv-template-security-analyst .timeline {
+    border-color: #d72d3b
+}
+
+.cv-standard.cv-template-security-analyst .timeline-item::before {
+    background: #d72d3b
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-section-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .side-title {
+    border-color: #9fb2c4
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-section-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .side-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .timeline-item h3,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-school,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-item-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-skill-category {
+    color: #173b61
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-section-title,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .side-title {
+    border-color: #b9d5d4
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-section-title,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .side-title,
+.cv-standard.cv-template-portfolio-hybrid .timeline-item h3,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-school,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-item-title {
+    color: #17636b
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .chip {
+    background: #f2f6f5;
+    color: #17636b
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-section-title,
+.cv-standard.cv-template-the-standard .cv-standard-content .side-title,
+.cv-standard.cv-template-the-standard .timeline-item h3,
+.cv-standard.cv-template-the-standard .cv-skill-category,
+.cv-standard.cv-template-the-standard .cv-standard-school,
+.cv-standard.cv-template-the-standard .cv-standard-item-title {
+    color: #564234
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-section-title,
+.cv-standard.cv-template-the-standard .cv-standard-content .side-title,
+.cv-standard.cv-template-the-standard .timeline {
+    border-color: #564234
+}
+
+.cv-standard.cv-template-the-standard .timeline-item::before {
+    background: #564234
+}
+
+/* Last word for the Security Analyst masthead and photo, after shared rules. */
+.cv-standard.cv-template-security-analyst .cv-security-masthead {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-sidebar > .cv-photo-section {
+    top: 18px;
+    left: 218%;
+    width: 112px
+}
+
+.cv-standard.cv-template-security-analyst .cv-standard-photo,
+.cv-standard.cv-template-security-analyst .cv-standard-photo-placeholder {
+    width: 112px;
+    height: 112px
+}
+
+.cv-standard.cv-template-security-analyst .cv-skill-category {
+    color: #20242a
+}
+
+.cv-standard.cv-template-security-analyst .cv-skill-group-security .chip {
+    background: #f0f1f2;
+    color: #20242a
+}
+.cv-standard.cv-template-security-analyst .cv-security-name-section > .cv-standard-side-heading {
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0
+}
+
+.cv-standard.cv-template-security-analyst .cv-security-name-section > .cv-standard-side-heading > h2 {
+    display: none
+}
+/* Portfolio Hybrid: teal portfolio reference. Keep these final overrides together
+   so the shared CV rules cannot reintroduce the old generic two-column layout. */
+.cv-standard.cv-template-portfolio-hybrid {
+    grid-template-columns: 33% 67%;
+    color: #202020;
+    font-family: Arial, CVNoto, sans-serif;
+    font-size: 8.5pt;
+    line-height: 1.45
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+    padding: 28px 20px 30px;
+    border: 0;
+    background: #1d667a;
+    color: #fff
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar::before {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 122px;
+    background: #fff;
+    clip-path: polygon(0 0, 100% 0, 100% 86%, 0 23%);
+    content: ''
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar > * {
+    position: relative;
+    z-index: 1
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-photo-section {
+    width: 100%;
+    margin: 0 0 17px;
+    padding: 0
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-photo-wrap {
+    min-height: 100px;
+    margin: 0;
+    padding: 0
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-photo,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-photo-placeholder {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+    border: 0;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .14)
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar [data-section-key="personalInfo"] {
+    margin: 0 0 31px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar [data-section-key="personalInfo"] > .cv-standard-side-heading {
+    display: none
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contacts {
+    display: grid;
+    gap: 10px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contact {
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    min-width: 0
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contacts .cv-standard-contact-icon {
+    display: flex;
+    width: 14px;
+    height: 14px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #b7dce5
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contact-icon svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 1.8
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contact-value {
+    min-width: 0;
+    color: #eaf7fa;
+    font-size: 7.8pt;
+    line-height: 1.32;
+    overflow-wrap: anywhere
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar [data-section-key="skills"] {
+    margin: 0 0 29px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar [data-section-key="education"] {
+    margin: 0 0 27px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar [data-section-key="certificates"] {
+    margin: 0
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .side-title {
+    margin: 0 0 15px;
+    padding: 0;
+    border: 0;
+    color: #fff;
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: .2px;
+    text-transform: uppercase
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-skill-group-portfolio {
+    margin: 0 0 14px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .portfolio-skill-heading {
+    margin: 0 0 6px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-skill-category {
+    color: #fff;
+    font-size: 8.6pt;
+    font-weight: 700
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-skill-group-portfolio .chips {
+    display: flex;
+    align-items: stretch;
+    gap: 4px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-skill-group-portfolio .cv-skill-item {
+    width: auto;
+    max-width: 100%;
+    flex: 0 1 auto
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .chip {
+    min-height: 20px;
+    padding: 2px 6px;
+    border: 1px solid rgba(214, 240, 244, .72);
+    border-radius: 2px;
+    background: transparent;
+    color: #fff;
+    font-size: 7pt;
+    line-height: 1.25
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-skill-level {
+    color: #b7dce5
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-side-item {
+    margin: 0 0 13px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-school,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-item-title {
+    margin: 0 0 3px;
+    color: #fff;
+    font-size: 9.4pt;
+    font-weight: 700;
+    line-height: 1.35
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-degree,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-item-body {
+    margin: 0 0 4px;
+    color: #eaf7fa;
+    font-size: 8pt;
+    font-weight: 400;
+    line-height: 1.35
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-muted,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-gpa {
+    color: #b7dce5;
+    font-size: 7.7pt
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-main {
+    background: #fff
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content {
+    padding: 28px 26px 30px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content > .cv-name-section:first-child {
+    position: static;
+    margin: 0 0 12px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .cv-standard-name {
+    margin: 0 0 2px;
+    color: #222;
+    font-size: 21.5pt;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: 0;
+    text-transform: none
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .cv-standard-title {
+    margin: 0;
+    color: #696969;
+    font-size: 8pt;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 2px;
+    text-transform: uppercase
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content [data-section-key="summary"] {
+    margin: 0 0 21px;
+    padding: 0 0 17px;
+    border-bottom: 1px solid #d6d6d6
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content [data-section-key="summary"] > .cv-standard-section-heading {
+    display: none
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .cv-standard-summary {
+    max-width: none;
+    color: #383838;
+    font-size: 8.6pt;
+    line-height: 1.55
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-section {
+    margin: 0 0 22px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .cv-standard-section-title {
+    margin: 0 0 12px;
+    padding: 0 0 6px;
+    border: 0;
+    border-bottom: 1px solid #d6d6d6;
+    color: #2b2b2b;
+    font-size: 12pt;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0;
+    text-transform: uppercase
+}
+
+.cv-standard.cv-template-portfolio-hybrid .experience-list-portfolio,
+.cv-standard.cv-template-portfolio-hybrid .project-list-portfolio {
+    display: grid;
+    gap: 14px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .experience-entry-portfolio {
+    margin: 0;
+    padding: 0 0 13px;
+    border: 0;
+    background: transparent
+}
+
+.cv-standard.cv-template-portfolio-hybrid .experience-entry-portfolio .portfolio-entry-heading {
+    display: flex;
+    min-height: 51px;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 10px;
+    padding: 8px 10px 7px;
+    border-left: 4px solid #86bfcd;
+    background: #edf3f4
+}
+
+.cv-standard.cv-template-portfolio-hybrid .portfolio-role-company {
+    min-width: 0
+}
+
+.cv-standard.cv-template-portfolio-hybrid .experience-entry-portfolio h3 {
+    margin: 0 0 3px;
+    color: #222;
+    font-size: 10.5pt;
+    line-height: 1.25
+}
+
+.cv-standard.cv-template-portfolio-hybrid .experience-entry-portfolio .portfolio-company {
+    margin: 0;
+    color: #26758a;
+    font-size: 7.4pt;
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: uppercase
+}
+
+.cv-standard.cv-template-portfolio-hybrid .portfolio-entry-heading .period {
+    flex: 0 0 auto;
+    padding-top: 1px;
+    color: #555;
+    font-size: 7.7pt;
+    font-weight: 400;
+    white-space: nowrap
+}
+
+.cv-standard.cv-template-portfolio-hybrid .experience-entry-portfolio .bullet-details,
+.cv-standard.cv-template-portfolio-hybrid .project-entry-portfolio .project-details {
+    margin: 0;
+    padding-left: 18px;
+    color: #333;
+    font-size: 8.2pt;
+    line-height: 1.5
+}
+
+.cv-standard.cv-template-portfolio-hybrid .project-entry-portfolio {
+    margin: 0;
+    padding: 0 0 13px;
+    border: 0;
+    border-bottom: 1px solid #ddd;
+    background: transparent
+}
+
+.cv-standard.cv-template-portfolio-hybrid .project-entry-portfolio:last-child {
+    border-bottom: 0
+}
+
+.cv-standard.cv-template-portfolio-hybrid .portfolio-project-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 8px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .portfolio-project-title {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 5px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .project-entry-portfolio h3 {
+    margin: 0;
+    color: #222;
+    font-size: 10.5pt
+}
+
+.cv-standard.cv-template-portfolio-hybrid .portfolio-project-link,
+.cv-standard.cv-template-portfolio-hybrid .project-link-icon {
+    display: inline-flex;
+    color: #26758a
+}
+
+.cv-standard.cv-template-portfolio-hybrid .portfolio-project-link svg,
+.cv-standard.cv-template-portfolio-hybrid .project-link-icon svg {
+    width: 12px;
+    height: 12px;
+    stroke-width: 2
+}
+
+.cv-standard.cv-template-portfolio-hybrid .project-entry-portfolio .project-meta {
+    margin-top: 7px
+}
+
+.cv-standard.cv-template-portfolio-hybrid .project-entry-portfolio .project-detail {
+    margin: 2px 0;
+    padding: 0;
+    color: #444;
+    font-size: 8pt
+}
+
+/* Project URL editor: the icon is always available while editing. The field is
+   kept out of the printable markup because exported templates have no onEdit. */
+.cv-standard .project-link-editor {
+    position: relative;
+    z-index: 12;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center
+}
+
+.cv-standard .project-link-edit-button {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer
+}
+
+.cv-standard .project-link-edit-button:hover,
+.cv-standard .project-link-edit-button:focus-visible,
+.cv-standard .project-link-editor.has-project-link .project-link-edit-button {
+    background: rgba(38, 117, 138, .12)
+}
+
+.cv-standard .project-link-popover {
+    position: absolute;
+    z-index: 30;
+    top: 100%;
+    right: -8px;
+    display: grid;
+    width: 225px;
+    gap: 5px;
+    padding: 9px;
+    transform: translateY(3px);
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .2);
+    color: #334155;
+    font-size: 7.5pt;
+    line-height: 1.25;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .12s ease, transform .12s ease, visibility .12s ease
+}
+
+.cv-standard .project-link-editor:hover .project-link-popover,
+.cv-standard .project-link-editor:focus-within .project-link-popover {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto
+}
+
+.cv-standard .project-link-popover label {
+    color: #475569;
+    font-weight: 700
+}
+
+.cv-standard .project-link-popover input {
+    width: 100%;
+    min-width: 0;
+    padding: 6px 7px;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    outline: 0;
+    background: #fff;
+    color: #0f172a;
+    font: 8pt/1.3 Arial, CVNoto, sans-serif
+}
+
+.cv-standard .project-link-popover input:focus {
+    border-color: #26758a;
+    box-shadow: 0 0 0 2px rgba(38, 117, 138, .16)
+}
+
+@media print {
+    .cv-standard .project-link-editor {
+        display: none !important
+    }
+}
+
+/* Cloud Specialist: navy curved sidebar reference. */
+.cv-standard.cv-template-cloud-expert {
+    position: relative;
+    grid-template-columns: 35% 65%;
+    overflow: hidden;
+    color: #262626;
+    font-family: Arial, CVNoto, sans-serif;
+    font-size: 8.4pt;
+    line-height: 1.45
+}
+
+.cv-standard.cv-template-cloud-expert::after {
+    position: absolute;
+    z-index: 20;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 12px;
+    border-radius: 7px 7px 0 0;
+    background: #062f4f;
+    content: '';
+    pointer-events: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0;
+    overflow: visible;
+    padding: 32px 31px 34px;
+    border: 0;
+    background: transparent;
+    color: #1d2939
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar::before {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    right: auto;
+    left: 0;
+    width: calc(100% + 56px);
+    height: var(--cloud-panel-height, 530px);
+    background: #062f4f;
+    clip-path: var(--cloud-panel-shape, path('M 0 0 H 278 L 245 245 Q 243 260 227 263 C 171 271 98 276 34 281 L 0 500 Z'));
+    content: ''
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar > * {
+    position: relative;
+    z-index: 1
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar > .cv-name-section:first-of-type {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    margin: 0 0 18px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-name-section > .cv-standard-side-heading {
+    display: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-name {
+    margin: 0 0 5px;
+    color: #fff;
+    font-size: 19pt;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: 0;
+    text-transform: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-title {
+    margin: 0;
+    color: #c8d6e2;
+    font-size: 10pt;
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: 0;
+    text-transform: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-photo-section {
+    position: absolute;
+    z-index: 5;
+    top: 20px;
+    left: 242%;
+    width: 86px;
+    height: 86px;
+    margin: 0;
+    padding: 0
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-photo-wrap {
+    min-height: 86px;
+    margin: 0
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-photo,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-photo-placeholder {
+    width: 86px;
+    height: 86px;
+    margin: 0;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="personalInfo"] {
+    margin: 0;
+    padding: 0
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="personalInfo"] > .cv-standard-side-heading {
+    display: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-contacts {
+    display: grid;
+    gap: 9px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-contact {
+    display: grid;
+    grid-template-columns: 15px minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+    min-width: 0
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-contact-icon {
+    display: flex;
+    width: 15px;
+    height: 15px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #b9cad8
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-contact-icon svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 1.9
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="personalInfo"] .cv-standard-contact-value {
+    min-width: 0;
+    color: #edf4f8;
+    font-size: 7.8pt;
+    line-height: 1.3;
+    overflow-wrap: anywhere
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="education"] {
+    margin: 75px 0 27px;
+    padding-left: 8px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="skills"],
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="certificates"],
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="languages"],
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar [data-section-key="awards"] {
+    margin: 0 0 27px;
+    padding-left: 8px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-side-heading,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .side-title {
+    border: 0
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .side-title {
+    margin: 0 0 13px;
+    padding: 0;
+    color: #103c5e;
+    font-size: 11.5pt;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: .2px;
+    text-transform: uppercase
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-side-item {
+    margin: 0 0 12px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-school,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-item-title {
+    margin: 0 0 3px;
+    color: #252525;
+    font-size: 9.3pt;
+    font-weight: 700;
+    line-height: 1.3
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-degree,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-item-body {
+    margin: 0 0 4px;
+    color: #333;
+    font-size: 8pt;
+    font-weight: 400;
+    line-height: 1.35
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-muted,
+.cv-standard.cv-template-cloud-expert .cv-standard-sidebar .cv-standard-gpa {
+    color: #666;
+    font-size: 7.7pt
+}
+
+.cv-standard.cv-template-cloud-expert .cv-skill-group-cloud {
+    margin: 0 0 13px
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-skill-heading {
+    display: block;
+    margin: 0 0 6px;
+    color: #2f2f2f;
+    font-size: 8.8pt;
+    font-weight: 700
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-skill-grid .chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 4px 5px
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-skill-grid .cv-skill-item {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 100%
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-skill-grid .chip {
+    display: flex;
+    width: 100%;
+    min-height: 21px;
+    flex: 1;
+    align-items: center;
+    padding: 3px 6px;
+    border: 0;
+    border-radius: 3px;
+    background: #eef1f3;
+    color: #263746;
+    font-size: 7.2pt;
+    line-height: 1.2
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-skill-grid .cv-skill-level {
+    display: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-main {
+    position: relative;
+    z-index: 2;
+    background: transparent
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content {
+    padding: 0 34px 30px 30px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content [data-section-key="summary"] {
+    position: relative;
+    isolation: isolate;
+    min-height: 158px;
+    margin: 0 -34px 19px -30px;
+    padding: 27px 132px 25px 30px;
+    border: 0;
+    background: transparent
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content [data-section-key="summary"]::before {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: -32px;
+    display: block;
+    background: #f1f3f5;
+    clip-path: polygon(32px 0, 100% 0, 100% 100%, 0 calc(100% - 28px));
+    content: '';
+    pointer-events: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content [data-section-key="summary"] > .cv-standard-section-heading {
+    display: none
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-summary {
+    max-width: none;
+    padding-bottom: 3px;
+    color: #3d3d3d;
+    font-size: 8.3pt;
+    line-height: 1.55
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-section {
+    margin: 0 0 20px
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-section-title,
+.cv-standard.cv-template-cloud-expert .cv-standard-content .side-title {
+    margin: 0 0 11px;
+    padding: 0;
+    border: 0;
+    color: #103c5e;
+    font-size: 12pt;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0;
+    text-transform: uppercase
+}
+
+.cv-standard.cv-template-cloud-expert .experience-list-cloud,
+.cv-standard.cv-template-cloud-expert .project-list-cloud {
+    display: block
+}
+
+.cv-standard.cv-template-cloud-expert .experience-entry-cloud,
+.cv-standard.cv-template-cloud-expert .project-entry-cloud {
+    display: block;
+    margin: 0 0 14px;
+    padding: 0 0 12px;
+    border: 0;
+    border-bottom: 1px solid #d8d8d8;
+    background: transparent
+}
+
+.cv-standard.cv-template-cloud-expert .experience-entry-cloud::before {
+    display: none
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-entry-period {
+    display: block;
+    float: none;
+    margin: 0 0 8px;
+    padding: 0 0 6px;
+    border: 0;
+    border-bottom: 1px solid #d8d8d8;
+    color: #666;
+    font-size: 7.8pt;
+    font-weight: 400;
+    white-space: nowrap
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-entry-heading {
+    display: flex;
+    min-height: 0;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    margin: 0 0 7px;
+    padding: 0
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-entry-heading h3,
+.cv-standard.cv-template-cloud-expert .cloud-project-title h3 {
+    margin: 0;
+    color: #252525;
+    font-size: 10.2pt;
+    font-weight: 700;
+    line-height: 1.3
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-company {
+    display: inline-flex;
+    gap: 8px;
+    margin: 0;
+    color: #444;
+    font-size: 8.5pt;
+    font-weight: 400;
+    text-transform: none
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-company > span {
+    display: inline;
+    color: #969696
+}
+
+.cv-standard.cv-template-cloud-expert .experience-entry-cloud > .bullet-details,
+.cv-standard.cv-template-cloud-expert .project-entry-cloud > .project-details {
+    margin: 0;
+    padding-left: 18px;
+    color: #333;
+    font-size: 8pt;
+    line-height: 1.5
+}
+
+.cv-standard.cv-template-cloud-expert .project-entry-cloud > .cloud-entry-period {
+    float: none;
+    padding: 0 0 6px
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-project-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 7px
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-project-link,
+.cv-standard.cv-template-cloud-expert .project-link-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    color: #397890
+}
+
+.cv-standard.cv-template-cloud-expert .cloud-project-link svg,
+.cv-standard.cv-template-cloud-expert .project-link-icon svg {
+    width: 12px;
+    height: 12px;
+    stroke-width: 2
+}
+
+.cv-standard.cv-template-cloud-expert .project-entry-cloud .project-meta {
+    margin-top: 7px
+}
+
+.cv-standard.cv-template-cloud-expert .project-entry-cloud .project-detail {
+    margin: 2px 0;
+    padding: 0;
+    color: #444;
+    font-size: 7.8pt
 }

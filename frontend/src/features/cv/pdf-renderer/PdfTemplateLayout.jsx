@@ -1,4 +1,4 @@
-import { Document, Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Document, Font, Image, Link, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import notoLatinRegular from '@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff';
 import notoLatinBold from '@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff';
 import notoVietnameseRegular from '@fontsource/noto-sans/files/noto-sans-vietnamese-400-normal.woff';
@@ -39,6 +39,11 @@ const s = StyleSheet.create({
     body: { fontSize: 8.5, lineHeight: 1.4, marginBottom: 3, color: '#334155' },
     bullet: { fontSize: 8.3, lineHeight: 1.4, paddingLeft: 9, marginBottom: 3 },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
+    cloudSkillGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 4 },
+    cloudSkillChip: { width: '48%', minHeight: 22, alignSelf: 'stretch', backgroundColor: '#eef1f3', color: '#173b61', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 4, fontSize: 7.5 },
+    cloudSkillTier: { color: '#0B2039', fontSize: 8.5, fontWeight: 700, marginBottom: 5 },
+    cloudProjectTitle: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    cloudProjectLink: { color: '#45627f', fontSize: 10, fontWeight: 700 },
     chip: { backgroundColor: '#f1f5f9', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 3, fontSize: 7.5 },
     skillGroup: { marginBottom: 8 },
     skillCategory: { fontSize: 8, fontWeight: 700, marginBottom: 3 },
@@ -70,12 +75,33 @@ function skillsByCategory(skills = [], languages = []) {
     const groups = new Map();
     skills.forEach(item => {
         const name = text(item.name);
-        if (!name || languageSet.has(name.toLocaleLowerCase())) return;
+        const normalizedName = name.toLocaleLowerCase();
+        const duplicatesLanguage = [...languageSet].some(language => normalizedName === language
+            || normalizedName.startsWith(`${language}:`) || normalizedName.startsWith(`${language} `));
+        if (!name || duplicatesLanguage || /^english\s*[:\-]/i.test(name)) return;
         const category = text(item.category) || 'Other skills';
         if (!groups.has(category)) groups.set(category, []);
         groups.get(category).push(name);
     });
     return [...groups.entries()];
+}
+
+function skillsByLevel(skills = [], languages = []) {
+    const languageSet = new Set(languages.map(item => text(item.name).toLocaleLowerCase()).filter(Boolean));
+    const groups = new Map([['Excellent', []], ['Intermediate', []], ['Beginner', []]]);
+    skills.forEach(item => {
+        const name = text(item.name);
+        const normalizedName = name.toLocaleLowerCase();
+        const duplicatesLanguage = [...languageSet].some(language => normalizedName === language
+            || normalizedName.startsWith(`${language}:`) || normalizedName.startsWith(`${language} `));
+        if (!name || duplicatesLanguage || /^english\s*[:\-]/i.test(name)) return;
+        const level = text(item.level).toUpperCase();
+        const tier = ['EXPERT', 'ADVANCED', 'EXCELLENT'].includes(level) ? 'Excellent'
+            : level === 'INTERMEDIATE' ? 'Intermediate'
+                : 'Beginner';
+        groups.get(tier).push(name);
+    });
+    return [...groups.entries()].filter(([, items]) => items.length);
 }
 
 function ContactBlock({ data, color = '#475569', stacked = false }) {
@@ -88,7 +114,8 @@ function ContactBlock({ data, color = '#475569', stacked = false }) {
 function Heading({ children, theme, light = false, portfolioSidebar = false, portfolioMain = false }) {
     if (portfolioSidebar) return <View style={s.portfolioSidebarHeadingRow}><View style={s.portfolioSidebarHeadingMark} /><Text style={s.portfolioSidebarHeadingText}>{children}</Text></View>;
     const portfolioStyle = portfolioMain ? s.portfolioMainHeading : null;
-    return <Text style={[s.heading, portfolioStyle, !portfolioStyle && { color: light ? theme.tint : theme.accent, borderBottomColor: light ? '#64748b' : '#cbd5e1' }]}>{children}</Text>;
+    const cloudSidebar = light && theme.layout === 'cloud';
+    return <Text style={[s.heading, portfolioStyle, !portfolioStyle && { color: light ? theme.tint : theme.accent, borderBottomColor: light ? '#64748b' : '#cbd5e1' }, cloudSidebar && { borderBottomWidth: 0 }]}>{children}</Text>;
 }
 
 function Section({ title, theme, children, light = false, portfolioSidebar = false, portfolioMain = false, style }) {
@@ -125,12 +152,15 @@ function Projects({ items = [], theme, title = 'Projects', portfolio = false }) 
     const visible = items.filter(item => has(item.name, item.period, item.url, item.techStack, item.teamSize) || item.details.some(text));
     return visible.length ? <Section title={title} theme={theme} portfolioMain={portfolio}>
         {visible.map((item, index) => <View key={`${item.name || 'project'}-${index}`} style={s.item}>
-            {has(item.name) && <Text style={[s.itemTitle, { color: theme.accent }]}>{text(item.name)}</Text>}
+            {has(item.name) && <View style={['cloud', 'portfolio'].includes(theme.layout) ? s.cloudProjectTitle : undefined}>
+                <Text style={[s.itemTitle, { color: theme.accent }]}>{text(item.name)}</Text>
+                {['cloud', 'portfolio'].includes(theme.layout) && /^https?:\/\//i.test(text(item.url)) && <Link src={text(item.url)} style={s.cloudProjectLink}>↗</Link>}
+            </View>}
             {has(item.period) && <Text style={s.muted}>{text(item.period)}</Text>}
             {item.details.filter(text).map((detail, i) => <Text key={i} style={s.bullet}>•  {text(detail)}</Text>)}
             {has(item.techStack) && <Text style={s.body}>Tech stack: {text(item.techStack)}</Text>}
             {has(item.teamSize) && <Text style={s.body}>Team size: {text(item.teamSize)}</Text>}
-            {has(item.url) && <Text style={s.muted}>{text(item.url)}</Text>}
+            {has(item.url) && !['cloud', 'portfolio'].includes(theme.layout) && <Text style={s.muted}>{text(item.url)}</Text>}
         </View>)}
     </Section> : null;
 }
@@ -153,22 +183,23 @@ function Education({ items = [], theme, light = false, portfolioSidebar = false 
 }
 
 function Skills({ data, theme, light = false, chips = false, portfolioSidebar = false }) {
-    const groups = skillsByCategory(data.skills, data.languages);
+    const cloudChips = theme.layout === 'cloud';
+    const groups = cloudChips ? skillsByLevel(data.skills, data.languages) : skillsByCategory(data.skills, data.languages);
     return groups.length ? <Section title="Skills" theme={theme} light={light} portfolioSidebar={portfolioSidebar}>
         {groups.map(([category, items]) => <View key={category} style={s.skillGroup}>
-            <Text style={[s.skillCategory, light && { color: '#fff' }, portfolioSidebar && s.portfolioSkillCategory]}>{category}</Text>
-            {chips ? <View style={s.chipRow}>{items.map((item, index) => <Text key={`${item}-${index}`} style={portfolioSidebar ? { backgroundColor: '#246c6d', borderWidth: 0.7, borderColor: '#438485', color: '#fff', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 3, fontSize: 7 } : s.chip}>{item}</Text>)}</View>
+            <Text style={[cloudChips ? s.cloudSkillTier : s.skillCategory, light && { color: '#fff' }, portfolioSidebar && s.portfolioSkillCategory]}>{category}</Text>
+            {chips || cloudChips ? <View style={cloudChips ? s.cloudSkillGrid : s.chipRow}>{items.map((item, index) => <Text key={`${item}-${index}`} style={portfolioSidebar ? { backgroundColor: '#246c6d', borderWidth: 0.7, borderColor: '#438485', color: '#fff', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 3, fontSize: 7 } : cloudChips ? s.cloudSkillChip : s.chip}>{item}</Text>)}</View>
                 : <Text style={[s.body, light && { color: '#e2e8f0' }]}>{items.join(' · ')}</Text>}
         </View>)}
     </Section> : null;
 }
 
-function OtherSections({ data, theme, light = false }) {
+function OtherSections({ data, theme, light = false, portfolioSidebar = false }) {
     const certificates = filled(data.certificates);
     const awards = filled(data.awards);
     const languages = filled(data.languages);
     return <>
-        {certificates.length > 0 && <Section title="Certificates" theme={theme} light={light}>{certificates.map((item, index) => <View key={index} style={s.item}>
+        {certificates.length > 0 && <Section title="Certificate" theme={theme} light={light} portfolioSidebar={portfolioSidebar}>{certificates.map((item, index) => <View key={index} style={s.item}>
             {has(item.name) && <Text style={[s.itemTitle, light && { color: '#fff' }]}>{text(item.name)}</Text>}
             {has(item.issuer) && <Text style={[s.body, light && { color: '#e2e8f0' }]}>{text(item.issuer)}</Text>}
             {has(item.date) && <Text style={[s.muted, light && { color: '#cbd5e1' }]}>{text(item.date)}</Text>}
@@ -183,7 +214,8 @@ function OtherSections({ data, theme, light = false }) {
 }
 
 function Header({ data, theme, centered = false, light = false, showContact = true, borderless = false, portfolio = false }) {
-    return <View style={[s.header, centered && s.centered, { borderBottomColor: light ? '#64748b' : '#e2e8f0' }, borderless && { borderBottomWidth: 0 }]}>
+    const cloudSidebar = light && theme.layout === 'cloud';
+    return <View style={[s.header, centered && s.centered, { borderBottomColor: light ? '#64748b' : '#e2e8f0' }, (borderless || cloudSidebar) && { borderBottomWidth: 0 }]}>
         {has(data.personalInfo.name) && <Text style={[s.name, { color: light ? '#fff' : '#1e293b' }]}>{text(data.personalInfo.name)}</Text>}
         {has(data.professionalTitle) && <Text style={[portfolio ? s.portfolioTitle : s.title, { color: light ? theme.tint : portfolio ? '#64748b' : theme.accent }]}>{text(data.professionalTitle)}</Text>}
         {showContact && <ContactBlock data={data.personalInfo} color={light ? '#e2e8f0' : '#475569'} />}
@@ -234,6 +266,7 @@ function SidebarTemplate({ data, theme, portfolio = false }) {
                     <ContactBlock data={data.personalInfo} color="#e6f4f1" stacked />
                     <Skills data={data} theme={theme} light chips portfolioSidebar />
                     <Education items={data.education} theme={theme} light portfolioSidebar />
+                    <OtherSections data={{ ...data, awards: [], languages: [] }} theme={theme} light portfolioSidebar />
                 </> : <>
                     <Header data={data} theme={theme} light />
                     <Education items={data.education} theme={theme} light />
@@ -248,7 +281,8 @@ function SidebarTemplate({ data, theme, portfolio = false }) {
                 </>}
                 {!portfolio && <Summary data={data} theme={theme} />}
                 <Experience items={data.experiences} theme={theme} portfolio={portfolio} />
-                <Projects items={data.projects} theme={theme} title={portfolio ? 'Highlight Project' : 'Projects'} portfolio={portfolio} />
+                <Projects items={data.projects} theme={theme}
+                    title={portfolio ? 'Highlight Project' : theme.layout === 'cloud' ? 'Personal Project' : 'Projects'} portfolio={portfolio} />
                 {!portfolio && <OtherSections data={{ ...data, certificates: [], awards: [] }} theme={theme} />}
             </View>
         </View>
