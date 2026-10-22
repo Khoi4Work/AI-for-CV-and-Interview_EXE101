@@ -11,7 +11,7 @@ export const CV_TEMPLATE_LAYOUTS = Object.freeze({
         columns: 2,
     },
     'data-scientist': {
-        mainOrder: ['name', 'summary', 'personalInfo', 'experiences', 'projects', 'education', 'skills', 'certificates', 'languages', 'awards'],
+        mainOrder: ['name', 'personalInfo', 'summary', 'experiences', 'education', 'skills', 'projects', 'certificates', 'languages', 'awards'],
         sidebarOrder: [],
         columns: 1,
     },
@@ -21,10 +21,9 @@ export const CV_TEMPLATE_LAYOUTS = Object.freeze({
         columns: 1,
     },
     'security-analyst': {
-        mainOrder: ['summary', 'experiences', 'projects', 'awards'],
-        sidebarOrder: ['name', 'profilePhoto', 'personalInfo', 'education', 'skills', 'certificates', 'languages'],
-        columns: 2,
-        sidebarFirst: true,
+        mainOrder: ['name', 'summary', 'personalInfo', 'skills', 'experiences', 'projects', 'education', 'certificates', 'languages', 'awards'],
+        sidebarOrder: [],
+        columns: 1,
     },
     'cloud-expert': {
         mainOrder: ['summary', 'experiences', 'projects', 'languages', 'awards'],
@@ -62,8 +61,7 @@ export function getCvTemplateLayout(editorLayout = {}, templateId = 'the-standar
         || (templateId === 'the-standard' ? editorLayout : {});
     const supportsPhoto = supportsProfilePhoto(templateId);
     const explicitMain = [...new Set(saved.mainOrder || [])].filter(key => CV_SECTION_KEYS.includes(key)
-        && (key !== 'profilePhoto' || supportsPhoto)
-        && !(templateId === 'security-analyst' && key === 'name'));
+        && (key !== 'profilePhoto' || supportsPhoto));
     const explicitSidebar = [...new Set(saved.sidebarOrder || [])]
         .filter(key => CV_SECTION_KEYS.includes(key) && (key !== 'profilePhoto' || supportsPhoto) && !explicitMain.includes(key));
     const occupiedKeys = new Set([...explicitMain, ...explicitSidebar]);
@@ -71,8 +69,11 @@ export function getCvTemplateLayout(editorLayout = {}, templateId = 'the-standar
     const templateSidebarOrder = supportsPhoto
         ? defaults.sidebarOrder.includes('profilePhoto') ? defaults.sidebarOrder : ['profilePhoto', ...defaults.sidebarOrder]
         : defaults.sidebarOrder.filter(key => key !== 'profilePhoto');
-    const mainOrder = mergeDefaultOrder(explicitMain, templateMainOrder, occupiedKeys);
-    const sidebarOrder = mergeDefaultOrder(explicitSidebar, templateSidebarOrder, occupiedKeys);
+    // Single-column templates also recover sections saved in an older sidebar layout.
+    const mainOrder = defaults.columns === 1
+        ? mergeDefaultOrder([...explicitMain, ...explicitSidebar], templateMainOrder, new Set())
+        : mergeDefaultOrder(explicitMain, templateMainOrder, occupiedKeys);
+    const sidebarOrder = defaults.columns === 1 ? [] : mergeDefaultOrder(explicitSidebar, templateSidebarOrder, occupiedKeys);
     return {mainOrder, sidebarOrder, columns: defaults.columns, sidebarFirst: defaults.sidebarFirst === true};
 }
 
