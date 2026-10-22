@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { UpgradeInfo } from '../components/UpgradeInfo';
@@ -9,14 +9,18 @@ import { paymentService } from '../services/paymentService';
 import { getPaymentServiceInfo } from '../components/paymentServiceInfo';
 import {trackEvent, trackEventBeforeRedirectOnce} from '../../analytics/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
+import {useApp} from '../../auth/contexts/AppContext.jsx';
 
 export function PaymentPage() {
     const navigate = useNavigate();
+    const {showToast} = useApp();
     const [searchParams] = useSearchParams();
     const serviceId = searchParams.get('serviceId');
 
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('BANK_TRANSFER');
     const [serviceState, setServiceState] = useState(null);
+    const [checkingOut, setCheckingOut] = useState(false);
+    const checkoutInProgress = useRef(false);
     const currentState = serviceState?.serviceId === serviceId ? serviceState : null;
     const selectedService = currentState?.service || null;
     const loading = Boolean(serviceId) && !currentState;
@@ -49,11 +53,15 @@ export function PaymentPage() {
     }, [serviceId]);
 
     const handlePayment = async () => {
+        if (checkoutInProgress.current) return;
         if (!selectedService || !selectedPaymentMethod) {
-            alert('Vui lòng chọn đầy đủ thông tin');
+            showToast('Vui lòng chọn đầy đủ thông tin', 'error');
             return;
         }
 
+        checkoutInProgress.current = true;
+        setCheckingOut(true);
+        let redirecting = false;
         try {
             const response = await paymentService.createCheckoutOrder(
                 selectedService.id,
@@ -76,13 +84,19 @@ export function PaymentPage() {
                     }, 'begin_checkout', orderId, 300);
                 }
                 window.location.href = response.checkoutUrl;
+                redirecting = true;
             } else {
                 trackEvent('feature_error', {feature: 'checkout', error_category: 'provider'});
-                alert('Không thể tạo đơn hàng thanh toán. Vui lòng thử lại.');
+                showToast('Không thể tạo đơn hàng thanh toán. Vui lòng thử lại.', 'error');
             }
         } catch (error) {
             trackEvent('feature_error', {feature: 'checkout', error_category: categorizeAnalyticsError(error)});
-            alert('Đã xảy ra lỗi khi khởi tạo thanh toán. Vui lòng liên hệ hỗ trợ.');
+            showToast('Đã xảy ra lỗi khi khởi tạo thanh toán. Vui lòng liên hệ hỗ trợ.', 'error');
+        } finally {
+            if (!redirecting) {
+                checkoutInProgress.current = false;
+                setCheckingOut(false);
+            }
         }
     };
 
@@ -111,6 +125,7 @@ export function PaymentPage() {
                         error={error}
                         selectedPaymentMethod={selectedPaymentMethod}
                         onPaymentClick={handlePayment}
+                        checkingOut={checkingOut}
                     />
                 </div>
             </div>
