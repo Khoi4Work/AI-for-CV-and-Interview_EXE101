@@ -3833,10 +3833,6 @@
     display:block;
 }
 
-.cv-standard.cv-template-security-analyst.cv-reference-template .cv-standard-content {
-    padding:34px 50px 30px;
-}
-
 .cv-standard.cv-template-data-scientist.cv-reference-template .cv-standard-contacts {
     max-width:540px;
     margin:0 auto;
@@ -3849,4 +3845,643 @@
 .cv-standard.cv-reference-template [data-section-key="education"] .cv-standard-side-item:last-child,
 .cv-standard.cv-reference-template .experience-entry:last-child {
     border-bottom:0;
+}
+
+/* Fine alignment with the supplied three résumé references. */
+.cv-standard.cv-reference-template h1,
+.cv-standard.cv-reference-template h2,
+.cv-standard.cv-reference-template h3 {
+    font-family: Arial, CVNoto, sans-serif;
+}
+
+.cv-standard.cv-template-data-scientist.cv-reference-template .cv-standard-contacts {
+    max-width: none;
+    gap: 6px 20px;
+}
+
+.cv-standard.cv-template-data-scientist .cv-reference-contact-break {
+    flex-basis: 100%;
+    height: 0;
+}
+
+.cv-standard.cv-reference-template .chip > span:first-child {
+    font-weight: 700;
+}
+
+.cv-standard.cv-reference-template .cv-soft-skills .chip > span:first-child {
+    font-weight: 400;
+}
+
+.cv-standard.cv-reference-template .cv-standard-side-item > .bullet-details {
+    margin: 6px 0 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.cv-standard.cv-reference-template .cv-standard-side-item > .bullet-details li {
+    white-space: pre-wrap;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-content > [data-section-key="projects"] {
+    margin-top: -14px;
+}
+
+.cv-standard.cv-reference-executive [data-section-key="projects"] .cv-standard-section-title {
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.cv-standard.cv-reference-executive .reference-project-heading {
+    margin-bottom: 4px;
+    line-height: 1.5;
+}
+
+.cv-standard.cv-reference-executive .reference-project-heading h3 {
+    font-size: 9.5pt;
+}
+
+.cv-standard.cv-reference-executive .project-entry .project-details {
+    margin-top: 0;
+}
+
+.cv-standard.cv-reference-executive .project-entry .project-detail {
+    position: relative;
+    margin-left: 18px;
+    font-size: 9.5pt;
+    line-height: 1.8;
+}
+
+.cv-standard.cv-reference-executive .project-entry .project-detail::before {
+    position: absolute;
+    left: -12px;
+    content: '•';
+}
+
+.cv-standard.cv-reference-template .reference-experience-heading,
+.cv-standard.cv-reference-template .reference-data-heading {
+    break-inside: avoid;
+    break-after: avoid;
+}
+
+.cv-standard.cv-reference-executive .reference-experience-heading {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) auto;
+}
+
+.cv-standard.cv-reference-executive .reference-experience-heading .period {
+    text-align: right;
+}
+
+.cv-standard.cv-reference-template .experience-list-data,
+.cv-standard.cv-reference-template .project-list-data {
+    border-top: 0;
+}
+
+.cv-standard.cv-reference-template .experience-entry:last-child,
+.cv-standard.cv-reference-template .cv-standard-side-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.cv-standard.cv-reference-template .bullet-details li,
+.cv-standard.cv-reference-template .project-details li {
+    margin-bottom: 2px;
+}
+
+.cv-standard.cv-reference-template .bullet-details li:last-child,
+.cv-standard.cv-reference-template .project-details li:last-child {
+    margin-bottom: 0;
+}
+
+.cv-standard.cv-reference-template .cv-skill-group {
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+}
+
+.cv-standard.cv-reference-template .cv-skill-group:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.cv-standard.cv-reference-executive .project-list {
+    gap: 0;
+}
+
+.cv-standard.cv-reference-executive .project-entry {
+    margin-bottom: 6px;
+}
+
+.cv-standard.cv-reference-template .bullet-details,
+.cv-standard.cv-reference-template .project-details {
+    line-height: 1.75;
+}
+
+.cv-standard.cv-reference-template .cv-standard-content {
+    padding-bottom: 14px;
+}
+
+.cv-standard.cv-reference-executive [data-section-key="personalInfo"] .cv-standard-contacts {
+    gap: 3px;
+}
+
+/* Remaining reference corrections found during the six-template audit. */
+.cv-standard.cv-template-the-standard .cv-standard-main {
+    background: #f8f6f5;
+}
+
+.cv-standard.cv-template-the-standard .cv-name-section-moves-background {
+    margin-bottom: 0;
+}
+
+.cv-standard.cv-template-the-standard .cv-name-section .cv-standard-header {
+    padding: 34px 32px 10px;
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-name {
+    font-size: 19pt;
+    line-height: 1.25;
+    text-transform: none;
+}
+
+.cv-standard.cv-template-the-standard .cv-name-section .cv-standard-title {
+    margin: 8px 0 0;
+    font-size: 8.5pt;
+    letter-spacing: 2px;
+}
+
+.cv-standard.cv-template-the-standard .cv-name-section + [data-section-key="summary"] {
+    margin: 0 -30px 26px;
+    padding: 0 32px 28px;
+    background: #5b3c2d;
+}
+
+.cv-standard.cv-template-the-standard .cv-name-section + [data-section-key="summary"] > .cv-standard-section-heading {
+    display: none;
+}
+
+.cv-standard.cv-template-the-standard .cv-name-section + [data-section-key="summary"] .cv-standard-summary {
+    max-width: none;
+    color: #fff;
+    font-size: 8.5pt;
+    line-height: 1.7;
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-section-title,
+.cv-standard.cv-template-the-standard .side-title {
+    color: #444;
+    font-size: 12pt;
+    font-weight: 400;
+    letter-spacing: .6px;
+    border-color: #aaa;
+}
+
+.cv-standard.cv-template-the-standard .standard-role-company {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+    margin: 4px 0 7px;
+}
+
+.cv-standard.cv-template-the-standard .standard-role-company h3,
+.cv-standard.cv-template-the-standard .standard-role-company .company {
+    margin: 0;
+    font-size: 10pt;
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-content .cv-skill-category {
+    margin-top: 12px;
+}
+
+.cv-standard.cv-template-the-standard .chip > span:first-child,
+.cv-standard.cv-template-portfolio-hybrid .chip > span:first-child {
+    font-weight: 700;
+}
+
+.cv-standard.cv-template-the-standard .cv-soft-skills .chips,
+.cv-standard.cv-template-portfolio-hybrid .cv-soft-skills .chips {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.cv-standard.cv-template-the-standard .cv-soft-skills .chip,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-soft-skills .chip {
+    border: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.cv-standard.cv-template-the-standard .cv-soft-skills .chip > span:first-child,
+.cv-standard.cv-template-portfolio-hybrid .cv-soft-skills .chip > span:first-child {
+    font-weight: 400;
+}
+
+.cv-standard.cv-template-the-standard .cv-soft-skills .chip::before,
+.cv-standard.cv-template-portfolio-hybrid .cv-soft-skills .chip::before {
+    content: '•';
+    margin-right: 7px;
+}
+
+.cv-standard .cv-certificate-link {
+    display: inline-block;
+    margin-top: 5px;
+    color: inherit;
+    font-size: 8.5pt;
+    text-decoration: underline;
+    overflow-wrap: anywhere;
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-photo,
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-photo-placeholder {
+    width: 120px;
+    height: 120px;
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-contact-value {
+    font-size: 8.5pt;
+    font-weight: 400;
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-content .cv-standard-summary,
+.cv-standard.cv-template-portfolio-hybrid .experience-entry-portfolio .bullet-details,
+.cv-standard.cv-template-portfolio-hybrid .project-entry-portfolio .project-details {
+    font-size: 9pt;
+    line-height: 1.7;
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .side-title {
+    font-weight: 400;
+}
+
+.cv-standard.cv-template-cloud-expert .cv-standard-content .cv-standard-summary,
+.cv-standard.cv-template-cloud-expert .experience-entry-cloud > .bullet-details,
+.cv-standard.cv-template-cloud-expert .project-entry-cloud > .project-details {
+    font-size: 9pt;
+    line-height: 1.6;
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-sidebar {
+    padding: 32px 16px 28px;
+}
+
+.cv-standard.cv-template-the-standard [data-section-key="personalInfo"] > .cv-standard-side-heading {
+    display: none;
+}
+
+.cv-standard.cv-template-the-standard .cv-standard-contact-icon svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 1.5;
+}
+
+.cv-standard.cv-template-the-standard .cv-name-section + [data-section-key="summary"] .cv-standard-summary {
+    font-weight: 400;
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-standard-contact-value {
+    font-size: 8.5pt;
+    font-weight: 400;
+}
+
+.cv-standard.cv-template-portfolio-hybrid .cv-standard-sidebar .cv-soft-skills .chip {
+    font-size: 8.5pt;
+    line-height: 1.5;
+}
+
+/* Corrected Security Analyst reference: red-accented two-column résumé. */
+.cv-standard.cv-template-security-analyst.cv-security-reference {
+    position: relative;
+    display: grid;
+    grid-template-columns: 36% minmax(0, 64%);
+    align-items: stretch;
+    background: #fff;
+    color: #171717;
+    font-family: Arial, CVNoto, sans-serif;
+    font-size: 8.5pt;
+    line-height: 1.65;
+}
+
+.cv-standard.cv-security-reference::before {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 172px;
+    background: #e9e9e9;
+    clip-path: polygon(0 0, 100% 0, 100% 67%, 0 100%);
+    content: '';
+}
+
+.cv-standard.cv-security-reference .cv-standard-main {
+    position: relative;
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    padding: 196px 32px 30px 20px;
+    background: transparent;
+}
+
+.cv-standard.cv-security-reference .cv-standard-content {
+    padding: 0;
+}
+
+.cv-standard.cv-security-reference .cv-standard-content > .cv-name-section,
+.cv-standard.cv-security-reference .cv-standard-content > .cv-name-section:first-child {
+    position: absolute;
+    z-index: 2;
+    top: 42px;
+    left: calc(-56.25% + 32px);
+    right: auto;
+    width: calc(156.25% - 230px);
+    margin: 0;
+    padding: 0;
+}
+
+.cv-standard.cv-security-reference .cv-name-section > .cv-standard-section-heading {
+    height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.cv-standard.cv-security-reference .cv-standard-name {
+    margin: 0;
+    color: #111;
+    font-family: inherit;
+    font-size: 26pt;
+    line-height: 1.25;
+    text-transform: none;
+}
+
+.cv-standard.cv-security-reference .cv-name-cluster .cv-standard-title {
+    margin: 10px 0 0;
+    color: #111;
+    font-size: 10pt;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.cv-standard.cv-security-reference .cv-standard-sidebar {
+    position: static;
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    min-width: 0;
+    margin-top: 196px;
+    padding: 0 22px 30px 32px;
+    border: 0;
+    border-right: 1px solid #dedede;
+    background: transparent;
+}
+
+.cv-standard.cv-security-reference .cv-standard-sidebar > .cv-photo-section {
+    position: absolute;
+    z-index: 3;
+    top: 30px;
+    right: 48px;
+    bottom: auto;
+    left: auto;
+    width: 140px;
+    height: 140px;
+    margin: 0;
+    padding: 0;
+}
+
+.cv-standard.cv-security-reference .cv-photo-section > .cv-standard-side-heading {
+    display: none;
+}
+
+.cv-standard.cv-security-reference .cv-standard-photo,
+.cv-standard.cv-security-reference .cv-standard-photo-placeholder {
+    box-sizing: border-box;
+    width: 140px;
+    height: 140px;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.cv-standard.cv-security-reference .cv-standard-section,
+.cv-standard.cv-security-reference .cv-standard-side-section {
+    margin: 0 0 26px;
+}
+
+.cv-standard.cv-security-reference .cv-standard-sidebar > .cv-standard-side-section {
+    margin-bottom: 0;
+}
+
+.cv-standard.cv-security-reference .cv-standard-section-title,
+.cv-standard.cv-security-reference .side-title {
+    margin: 0 0 14px;
+    padding: 0;
+    border: 0;
+    color: #ff001e;
+    font-family: inherit;
+    font-size: 10.5pt;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.cv-standard.cv-security-reference .cv-standard-contacts {
+    display: grid;
+    gap: 7px;
+}
+
+.cv-standard.cv-security-reference .cv-standard-contact {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.cv-standard.cv-security-reference .cv-standard-contact-icon {
+    flex: 0 0 13px;
+    width: 13px;
+    height: 14px;
+    border: 0;
+    background: transparent;
+    color: #999;
+}
+
+.cv-standard.cv-security-reference .cv-standard-contact-icon svg {
+    width: 13px;
+    height: 13px;
+}
+
+.cv-standard.cv-security-reference .cv-standard-contact-value {
+    color: #222;
+    font-size: 7.8pt;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.cv-standard.cv-security-reference .cv-standard-summary {
+    max-width: none;
+    color: #222;
+    font-size: 8pt;
+    font-weight: 400;
+    line-height: 1.9;
+}
+
+.cv-standard.cv-security-reference .experience-list,
+.cv-standard.cv-security-reference .project-list {
+    display: block;
+}
+
+.cv-standard.cv-security-reference .experience-entry,
+.cv-standard.cv-security-reference .project-entry {
+    display: block;
+    margin: 0 0 22px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.cv-standard.cv-security-reference .security-reference-entry-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+    break-after: avoid;
+}
+
+.cv-standard.cv-security-reference .security-reference-entry-heading h3 {
+    margin: 0;
+    color: #111;
+    font-size: 9pt;
+    line-height: 1.4;
+}
+
+.cv-standard.cv-security-reference .experience-entry .security-reference-entry-heading h3 {
+    text-transform: uppercase;
+}
+
+.cv-standard.cv-security-reference .period {
+    flex: 0 0 auto;
+    margin: 0;
+    color: #333;
+    font-size: 7.7pt;
+    font-weight: 400;
+}
+
+.cv-standard.cv-security-reference .company {
+    margin: 0 0 12px;
+    color: #222;
+    font-size: 8pt;
+    font-weight: 700;
+}
+
+.cv-standard.cv-security-reference .bullet-details,
+.cv-standard.cv-security-reference .project-details {
+    margin: 10px 0 0;
+    padding-left: 18px;
+    font-size: 8.5pt;
+    line-height: 1.8;
+}
+
+.cv-standard.cv-security-reference .bullet-details li,
+.cv-standard.cv-security-reference .project-details li {
+    margin-bottom: 3px;
+}
+
+.cv-standard.cv-security-reference .project-detail {
+    margin: 10px 0 0;
+    padding: 0;
+    font-size: 8pt;
+}
+
+.cv-standard.cv-security-reference .project-detail a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.cv-standard.cv-security-reference .cv-standard-school,
+.cv-standard.cv-security-reference .cv-standard-item-title {
+    margin: 0 0 4px;
+    color: #111;
+    font-size: 9pt;
+    line-height: 1.6;
+}
+
+.cv-standard.cv-security-reference .cv-standard-degree,
+.cv-standard.cv-security-reference .cv-standard-item-body {
+    margin-bottom: 6px;
+    color: #222;
+    font-size: 8pt;
+    font-weight: 700;
+}
+
+.cv-standard.cv-security-reference .cv-standard-muted {
+    color: #333;
+    font-size: 8pt;
+}
+
+.cv-standard.cv-security-reference .cv-standard-side-item > .bullet-details {
+    padding-left: 0;
+    list-style: none;
+}
+
+.cv-standard.cv-security-reference .cv-skill-groups-cloud {
+    display: block;
+}
+
+.cv-standard.cv-security-reference .cv-skill-group-cloud {
+    margin: 0 0 14px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.cv-standard.cv-security-reference .cloud-skill-heading {
+    margin: 0 0 5px;
+    color: #111;
+    font-size: 9pt;
+}
+
+.cv-standard.cv-security-reference .cloud-skill-grid .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.cv-standard.cv-security-reference .cloud-skill-grid .cv-skill-item {
+    width: auto;
+    max-width: 100%;
+    flex: 0 1 auto;
+}
+
+.cv-standard.cv-security-reference .chip {
+    display: inline-block;
+    min-height: 0;
+    padding: 2px 5px;
+    border: 0;
+    border-radius: 3px;
+    background: #f4f4f4;
+    color: #222;
+    font-size: 7.5pt;
+    line-height: 1.4;
+}
+
+.cv-standard.cv-security-reference .cv-skill-level {
+    display: none;
+}
+
+.cv-standard.cv-security-reference h1,
+.cv-standard.cv-security-reference h2,
+.cv-standard.cv-security-reference h3 {
+    font-family: Arial, CVNoto, sans-serif;
+}
+
+.cv-standard.cv-security-reference [data-section-key="certificates"] .cv-standard-side-item {
+    position: relative;
+    padding-right: 78px;
+}
+
+.cv-standard.cv-security-reference [data-section-key="certificates"] .cv-record-date {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
