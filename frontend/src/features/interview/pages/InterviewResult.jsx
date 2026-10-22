@@ -8,10 +8,13 @@ import {TAG_DEFINITIONS} from '../constants/feedbackInterviewRubric.js';
 import {getLocalInterviewRecording} from '../services/localInterviewRecording.js';
 import {downloadInterviewTranscript, downloadLocalInterviewAudio} from '../services/interviewExports.js';
 import './interview-result.css';
+import {trackEventOnce} from '../../analytics/analyticsClient.js';
+import {useAnalyticsConsent} from '../../analytics/AnalyticsProvider.jsx';
 
 export function InterviewResults() {
     const navigate = useNavigate();
     const {data, update} = useInterviewSession();
+    const {canTrack} = useAnalyticsConsent();
     const [localAudioRecording, setLocalAudioRecording] = useState(null);
     const [recordingError, setRecordingError] = useState('');
 
@@ -20,8 +23,15 @@ export function InterviewResults() {
     }, [update]);
 
     useEffect(() => {
+        if (!canTrack || !data.feedback || !data.backendSessionId) return;
+        trackEventOnce('interview_result_viewed', {
+            interview_type: data.interviewConfig?.type || 'unknown',
+        }, 'interview_result_viewed', data.backendSessionId);
+    }, [canTrack, data.backendSessionId, data.feedback, data.interviewConfig?.type]);
+
+    useEffect(() => {
         let active = true;
-        setLocalAudioRecording(null);
+        Promise.resolve().then(() => { if (active) setLocalAudioRecording(null); });
         if (!data.backendSessionId || !data.audioRecordingEnabled) return () => { active = false; };
         getLocalInterviewRecording(data.backendSessionId)
             .then((recording) => { if (active) setLocalAudioRecording(recording); })

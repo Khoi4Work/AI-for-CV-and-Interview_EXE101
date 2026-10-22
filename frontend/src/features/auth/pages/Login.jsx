@@ -7,6 +7,8 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
+import { setAnalyticsEligibility, trackEvent } from '../../analytics/analyticsClient.js';
+import { categorizeAnalyticsError } from '../../analytics/sanitizeAnalytics.js';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -63,11 +65,17 @@ export default function Login() {
             const { accessToken, refreshToken } = tokens;
 
             if (!accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            await handleLogin(null, { accessToken, refreshToken });
+            const authenticatedProfile = await handleLogin(null, { accessToken, refreshToken });
             setLoginSuccess(true);
+            const analyticsExcluded = String(authenticatedProfile?.role || '').toUpperCase() === 'ADMIN' || authenticatedProfile?.analyticsExcluded === true;
+            setAnalyticsEligibility(!analyticsExcluded);
+            if (!analyticsExcluded) {
+                trackEvent('login', { method: 'email' });
+            }
 
             navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
+            trackEvent('feature_error', { feature: 'login', error_category: categorizeAnalyticsError(err) });
             setLoginSuccess(false);
             setLoading(false);
             loginInProgress.current = false;
@@ -88,11 +96,17 @@ export default function Login() {
             }, { publicRequest: true, anonymousRequest: true });
             const tokens = response.data?.result || response.data?.data || {};
             if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            await handleLogin(null, tokens);
+            const authenticatedProfile = await handleLogin(null, tokens);
             setLoginSuccess(true);
+            const analyticsExcluded = String(authenticatedProfile?.role || '').toUpperCase() === 'ADMIN' || authenticatedProfile?.analyticsExcluded === true;
+            setAnalyticsEligibility(!analyticsExcluded);
+            if (!analyticsExcluded) {
+                trackEvent('login', { method: 'google' });
+            }
 
             navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
+            trackEvent('feature_error', { feature: 'login', error_category: categorizeAnalyticsError(err) });
             setLoginSuccess(false);
             setLoading(false);
             loginInProgress.current = false;

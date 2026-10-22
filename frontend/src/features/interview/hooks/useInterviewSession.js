@@ -3,6 +3,8 @@ import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { HR_PERSONAS, labelForScore } from '../constants/feedbackInterviewRubric.js';
 import { interviewService } from '../services/interviewService.js';
 import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../services/interviewConfiguration.js';
+import {trackEvent, trackEventOnce} from '../../analytics/analyticsClient.js';
+import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
 
 const SESSION_KEY = 'interview_session_v1';
 
@@ -193,6 +195,11 @@ export function useInterviewSession() {
     const payload=interviewPayload(currentData);
     const pending = interviewService.createSession(payload).then((session) => {
       if(configurationVersion.current!==version) throw new Error('Cấu hình đã thay đổi. Hãy bắt đầu lại buổi phỏng vấn.');
+      if (!session?.id) throw new Error('Máy chủ chưa trả về mã buổi phỏng vấn.');
+      trackEventOnce('interview_setup_submitted', {
+        interview_type: normalizeInterviewType(interviewConfig.type),
+        duration_minutes: Number(interviewConfig.duration),
+      }, 'interview_setup_submitted', session.id);
       const questions = (session.questions || []).map((question) => ({
         id: question.id,
         text: question.text,
@@ -223,6 +230,7 @@ export function useInterviewSession() {
       setData(next);
       return questions;
     }).catch((error) => {
+      trackEvent('feature_error', {feature: 'interview_setup', error_category: categorizeAnalyticsError(error)});
       const message = getApiErrorMessage(error, 'Không thể tạo buổi phỏng vấn.');
       if(configurationVersion.current===version) update({ sessionError: message });
       throw error;

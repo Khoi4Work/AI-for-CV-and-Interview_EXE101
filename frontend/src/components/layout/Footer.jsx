@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useAnalyticsConsent } from '../../features/analytics/AnalyticsProvider.jsx';
 
 export function Footer() {
+  const { available, openPreferences } = useAnalyticsConsent();
   return (
     <footer className="bg-surface-container dark:bg-surface-container-highest border-t border-outline-variant dark:border-outline mt-auto w-full">
       <div className="flex flex-col md:flex-row justify-between items-center w-full px-margin-mobile md:px-margin-desktop lg:px-gutter py-lg gap-md max-w-[1280px] mx-auto">
@@ -15,6 +17,7 @@ export function Footer() {
           <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Chính sách bảo mật</Link>
           <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Điều khoản dịch vụ</Link>
           <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Hỗ trợ</Link>
+          {available && <button type="button" onClick={openPreferences} className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100">Tùy chọn đo lường</button>}
         </div>
       </div>
     </footer >

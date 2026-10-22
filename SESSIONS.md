@@ -555,3 +555,12 @@
 ## 2026-10-21 — Preserve interview setup progress and quota state
 - Persisted wizard choices as they are made, moved the quota snapshot to the interview session, restored draft setup values, and prevented navigation into setup before quota data is available. Improved route transitions and responsive layout details across authentication, interview, CV evaluation, and feedback views.
 - Verification: the complete frontend production build passed after the interview flow and layout changes.
+
+## 2026-10-21 — Specify GA4 analytics implementation
+- Added `.spec/analytics-ga4-implementation-plan.md` covering frontend tracking, event definitions, SPA navigation, consent and data minimization, production/test separation, dashboards, and a later backend Measurement Protocol/outbox phase for confirmed outcomes.
+- Cross-checked integration points against authentication, CV analysis, interview and payment code; documented deduplication limits, DB reconciliation, rollout and acceptance checks. This task changes documentation only; application tests were not run. The `.spec/` directory remains ignored by the existing Git configuration.
+
+## 2026-10-22 — Finalize frontend GA4 integration
+- Reviewed and grouped the pending frontend analytics implementation: consent controls, environment and hostname gates, sanitized SPA page views, event schemas, and authentication/CV/interview/checkout instrumentation.
+- Included setup documentation and analytics regression tests. Kept local browser profiles and `frontend/vite.review.config.js` outside the feature commit; the analytics spec remains ignored.
+- Verification: all 83 frontend tests passed; `npm run build -- --config vite.review.config.js` passed using the existing isolated review configuration, with large-chunk warnings. `git diff --check` passed. Live GA4 ingestion and production configuration were not verified.
