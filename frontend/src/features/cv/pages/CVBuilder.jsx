@@ -450,7 +450,7 @@ export default function CVBuilder() {
 
                             {step === 2 && (
                                 <div className="space-y-8 animate-fade-in">
-                                    <p className="text-sm text-slate-500">Mô tả vai trò, công ty và kết quả bạn đạt được. Nếu chưa có kinh nghiệm, bạn có thể bỏ qua bước này.</p>
+                                    <p className="text-sm text-slate-500">Thêm công việc chính thức, thực tập, việc làm thêm, tình nguyện hoặc dự án thực tế. Kinh nghiệm không nhất thiết phải ở công ty; có thể ghi tên cửa hàng, tổ chức, nhóm hoặc để trống nếu không có.</p>
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Kinh
                                             nghiệm làm việc</h3>
@@ -475,13 +475,13 @@ export default function CVBuilder() {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                                     <div className="space-y-1">
                                                         <label
-                                                            className="text-[10px] font-bold text-slate-400 uppercase">Công
-                                                            ty</label>
+                                                            className="text-[10px] font-bold text-slate-400 uppercase">Nơi làm việc / tổ chức (không bắt buộc)</label>
                                                         <input
                                                             type="text"
                                                             data-validation-field={`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.company`}
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm font-bold py-1 text-black"
                                                             value={exp.company}
+                                                            placeholder="Công ty, cửa hàng, CLB hoặc dự án"
                                                             onChange={(e) => { clearFieldError(`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.company`); updateExperience(exp.id, 'company', e.target.value); }}
                                                         />
                                                         {fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.company`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.company`]}</p>}
@@ -495,6 +495,7 @@ export default function CVBuilder() {
                                                             data-validation-field={`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.period`}
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={exp.period}
+                                                            placeholder="Ví dụ: 06/2025 – Hiện tại"
                                                             onChange={(e) => { clearFieldError(`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.period`); updateExperience(exp.id, 'period', e.target.value); }}
                                                         />
                                                         {fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.period`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.period`]}</p>}
@@ -655,8 +656,7 @@ export default function CVBuilder() {
                                         {/* Skills Section */}
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-center">
-                                                <label className="text-xs font-bold text-slate-600 uppercase">Kỹ năng
-                                                    chuyên môn</label>
+                                                <label className="text-xs font-bold text-slate-600 uppercase">Kỹ năng chuyên môn và kỹ năng mềm</label>
                                                 <button
                                                     onClick={() => {
                                                         const newSkills = [...cvData.skills, {
