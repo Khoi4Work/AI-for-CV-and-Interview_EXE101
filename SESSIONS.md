@@ -567,3 +567,7 @@
 
 ## 2026-10-22 — Ignore local review artifacts
 - Added root-scoped ignore rules for the local Chrome/Edge profiles and `frontend/vite.review.config.js`, preserving these files on disk while excluding them from Git.
+
+## 2026-10-22 — Specify CV builder step-four mapping corrections
+- Documented confirmed renderer failure, unconfirmed-input loss, incomplete field contracts and conditional hidden-section behavior in `.spec/cv-builder-step4-mapping-spec.md`, including proposed behavior and acceptance tests.
+- Documentation only; no application changes. The earlier read-only SSR check reproduced blank-skill failures on five templates and confirmed populated item names on all six. Browser interaction and PDF export remain to be verified during implementation. The spec directory remains ignored by Git.
