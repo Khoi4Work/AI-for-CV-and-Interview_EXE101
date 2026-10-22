@@ -564,3 +564,6 @@
 - Reviewed and grouped the pending frontend analytics implementation: consent controls, environment and hostname gates, sanitized SPA page views, event schemas, and authentication/CV/interview/checkout instrumentation.
 - Included setup documentation and analytics regression tests. Kept local browser profiles and `frontend/vite.review.config.js` outside the feature commit; the analytics spec remains ignored.
 - Verification: all 83 frontend tests passed; `npm run build -- --config vite.review.config.js` passed using the existing isolated review configuration, with large-chunk warnings. `git diff --check` passed. Live GA4 ingestion and production configuration were not verified.
+
+## 2026-10-22 — Ignore local review artifacts
+- Added root-scoped ignore rules for the local Chrome/Edge profiles and `frontend/vite.review.config.js`, preserving these files on disk while excluding them from Git.
