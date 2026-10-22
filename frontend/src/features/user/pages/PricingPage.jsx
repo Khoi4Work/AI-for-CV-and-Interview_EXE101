@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {
     HelpCircle,
     CheckCircle,
@@ -11,6 +11,8 @@ import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Badge} from '../components/Layout.jsx';
 import {paymentService} from '../../payment/services/paymentService.js';
 import PaymentHistory from '../components/PaymentHistory.jsx';
+import {trackNavigationEvent} from '../../analytics/analyticsClient.js';
+import {useAnalyticsConsent} from '../../analytics/AnalyticsProvider.jsx';
 
 // Keep package quantities aligned with QuotaBenefitConfig and the payment catalog.
 const cvComparisonRows = [
@@ -68,6 +70,12 @@ const PricingPage = () => {
     const [quotaError, setQuotaError] = useState('');
     const {showToast} = useApp();
     const navigate = useNavigate();
+    const location = useLocation();
+    const {canTrack} = useAnalyticsConsent();
+
+    useEffect(() => {
+        if (canTrack) trackNavigationEvent('pricing_viewed', location.key, {screen_name: 'pricing'});
+    }, [canTrack, location.key]);
 
     useEffect(() => {
         let active = true;

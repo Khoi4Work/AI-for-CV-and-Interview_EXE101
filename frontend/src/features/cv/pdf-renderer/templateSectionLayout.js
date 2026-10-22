@@ -16,13 +16,13 @@ export const CV_TEMPLATE_LAYOUTS = Object.freeze({
         columns: 1,
     },
     'boardroom-ready': {
-        mainOrder: ['name', 'summary', 'personalInfo', 'experiences', 'education', 'skills', 'projects', 'certificates', 'languages', 'awards'],
+        mainOrder: ['name', 'summary', 'personalInfo', 'skills', 'experiences', 'projects', 'education', 'certificates', 'languages', 'awards'],
         sidebarOrder: [],
         columns: 1,
     },
     'security-analyst': {
-        mainOrder: ['name', 'summary', 'experiences', 'projects', 'awards'],
-        sidebarOrder: ['profilePhoto', 'personalInfo', 'education', 'skills', 'certificates', 'languages'],
+        mainOrder: ['summary', 'experiences', 'projects', 'awards'],
+        sidebarOrder: ['name', 'profilePhoto', 'personalInfo', 'education', 'skills', 'certificates', 'languages'],
         columns: 2,
         sidebarFirst: true,
     },
@@ -33,8 +33,8 @@ export const CV_TEMPLATE_LAYOUTS = Object.freeze({
         sidebarFirst: true,
     },
     'portfolio-hybrid': {
-        mainOrder: ['name', 'summary', 'experiences', 'projects', 'certificates', 'languages', 'awards'],
-        sidebarOrder: ['profilePhoto', 'personalInfo', 'skills', 'education'],
+        mainOrder: ['name', 'summary', 'experiences', 'projects', 'languages', 'awards'],
+        sidebarOrder: ['profilePhoto', 'personalInfo', 'skills', 'education', 'certificates'],
         columns: 2,
         sidebarFirst: true,
     },
@@ -62,7 +62,8 @@ export function getCvTemplateLayout(editorLayout = {}, templateId = 'the-standar
         || (templateId === 'the-standard' ? editorLayout : {});
     const supportsPhoto = supportsProfilePhoto(templateId);
     const explicitMain = [...new Set(saved.mainOrder || [])].filter(key => CV_SECTION_KEYS.includes(key)
-        && (key !== 'profilePhoto' || supportsPhoto));
+        && (key !== 'profilePhoto' || supportsPhoto)
+        && !(templateId === 'security-analyst' && key === 'name'));
     const explicitSidebar = [...new Set(saved.sidebarOrder || [])]
         .filter(key => CV_SECTION_KEYS.includes(key) && (key !== 'profilePhoto' || supportsPhoto) && !explicitMain.includes(key));
     const occupiedKeys = new Set([...explicitMain, ...explicitSidebar]);

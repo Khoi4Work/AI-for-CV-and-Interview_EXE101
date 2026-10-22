@@ -20,6 +20,8 @@ import {Footer} from "../../../components/layout/Footer.jsx";
 import {paymentService} from '../../payment/services/paymentService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
+import {trackEvent} from '../../analytics/analyticsClient.js';
+import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
 
 export default function TemplateDetail() {
     const {id} = useParams();
@@ -60,8 +62,10 @@ export default function TemplateDetail() {
         try {
             await checkBuilderQuota(() => paymentService.getCurrentQuota());
             setTemplate(id);
+            trackEvent('template_selected', {template_id: id});
             navigate('/builder', {state: location.state});
         } catch (error) {
+            trackEvent('feature_error', {feature: 'template_selection', error_category: categorizeAnalyticsError(error)});
             const message = getApiErrorMessage(error, 'Không kiểm tra được lượt tạo CV. Vui lòng thử lại.');
             setQuotaError({ templateId: id, message, exhausted: error.code === 'CV_CREATION_QUOTA_EXCEEDED' });
             showToast(message, 'error');

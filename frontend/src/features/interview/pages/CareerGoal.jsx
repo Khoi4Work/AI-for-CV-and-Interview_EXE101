@@ -25,7 +25,9 @@ export default function CareerGoal() {
 
   const handleAppend = (text) => {
     const prefix = goal.trim() ? `${goal.trim()} ` : '';
-    setGoal(`${prefix}${text.replace('+ ', '')}`.slice(0, MAX_GOAL_LENGTH));
+    const nextGoal = `${prefix}${text.replace('+ ', '')}`.slice(0, MAX_GOAL_LENGTH);
+    setGoal(nextGoal);
+    update({ careerGoal: nextGoal });
   };
 
   const handleNext = () => {
@@ -54,7 +56,7 @@ export default function CareerGoal() {
           <div className="bg-interview-card-bg rounded-2xl border border-outline-variant shadow-sm overflow-hidden mb-12">
             <textarea
               value={goal}
-              onChange={(e) => setGoal(e.target.value.slice(0, MAX_GOAL_LENGTH))}
+              onChange={(e) => { const nextGoal = e.target.value.slice(0, MAX_GOAL_LENGTH); setGoal(nextGoal); update({ careerGoal: nextGoal }); }}
               maxLength={MAX_GOAL_LENGTH}
               aria-label="Mục tiêu nghề nghiệp"
               className="w-full h-40 p-5 text-black placeholder-outline-variant focus:outline-none resize-none bg-interview-card-bg  rounded-t-2xl"

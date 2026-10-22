@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 /**
  * PageTransition
@@ -24,12 +24,14 @@ import { motion } from 'framer-motion';
 const EASE = [0.22, 1, 0.36, 1];
 
 export default function PageTransition({ children, className = '', skipEnter = false }) {
+    const prefersReducedMotion = useReducedMotion();
+    const offset = prefersReducedMotion ? 0 : 8;
     return (
         <motion.div
-            initial={skipEnter ? false : { opacity: 0, y: 12 }}
+            initial={skipEnter ? false : { opacity: 0, y: offset }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.28, ease: EASE }}
+            exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2, ease: EASE }}
             className={className}
         >
             {children}

@@ -12,6 +12,8 @@ import { cvPipelineService } from '../services/cvPipelineService.js';
 import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from '../services/editorSave.js';
 import { validateCVData } from '../../../utils/inputValidation.js';
 import {getCvTemplateLayout, updateCvTemplateLayout} from '../pdf-renderer/templateSectionLayout.js';
+import {trackEvent} from '../../analytics/analyticsClient.js';
+import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
 
 function updateValueAtPath(source, path, value) {
     const [key, ...remaining] = path.split('.');
@@ -102,12 +104,14 @@ export default function CVEditor() {
         if (saving || exporting || !allowed) return;
         if (!validateContent()) return;
         setSaving(true); setSaveError(''); setMessage('');
+        const saveMode = currentCvId ? 'update' : 'create';
         try {
             const payload = buildEditorPayload(cvName, cvData);
             await writeCV({ id: currentCvId, payload, validate: validateAccess, onSaved: result => {
                 setCurrentCvId(result.id); setHasCV(true);
                 setLastSaved(JSON.stringify({ name: payload.name, content: payload.content }));
                 setMessage('Đã lưu CV vào tài khoản của bạn.');
+                trackEvent('cv_saved', {save_mode: saveMode});
                 if (returnToEvaluation) {
                     navigate('/cv-evaluation', {
                         replace: true,
@@ -122,6 +126,7 @@ export default function CVEditor() {
                 }
             } });
         } catch (error) {
+            trackEvent('feature_error', {feature: 'cv_save', error_category: categorizeAnalyticsError(error)});
             setSaveError(getApiErrorMessage(error, 'Không thể lưu CV. Vui lòng thử lại.'));
         } finally { setSaving(false); }
     };
@@ -137,8 +142,10 @@ export default function CVEditor() {
             const {downloadCvPdfFromService} = await import('../pdf-renderer/downloadCvPdfFromService.js');
             exportStage = 'build-html-and-call-pdf-service';
             await downloadCvPdfFromService(cvData, safeTitle, selectedTemplate);
+            trackEvent('cv_download_requested', {template_id: selectedTemplate});
             setMessage('Đã xuất CV thành PDF.');
         } catch (error) {
+            trackEvent('feature_error', {feature: 'cv_download', error_category: categorizeAnalyticsError(error)});
             console.error('[CV PDF Export] Export failed', {
                 stage: error?.cvPdfExportStage || exportStage,
                 message: error?.message,

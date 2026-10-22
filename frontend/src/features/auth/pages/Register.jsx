@@ -8,6 +8,8 @@ import { useApp } from '../contexts/AppContext.jsx';
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
+import { setAnalyticsEligibility, trackEvent } from '../../analytics/analyticsClient.js';
+import { categorizeAnalyticsError } from '../../analytics/sanitizeAnalytics.js';
 
 export default function Register() {
   const panelRef = useRef(null);
@@ -70,9 +72,11 @@ export default function Register() {
 
     try {
       await apiClient.post('/auth/accounts', data, { publicRequest: true, anonymousRequest: true });
+      trackEvent('registration_submitted', { method: 'email' });
       showToast('Đăng ký tài khoản thành công! Vui lòng kiểm tra email để xác thực.', 'success');
       navigate('/check-email', { state: { email: data.email, registeredAt: Date.now(), from: location.state?.from } });
     } catch (err) {
+      trackEvent('feature_error', { feature: 'registration', error_category: categorizeAnalyticsError(err) });
       const msg = getApiErrorMessage(err);
       showToast(msg, 'error');
       setError(msg);
@@ -95,11 +99,17 @@ export default function Register() {
       }, { publicRequest: true, anonymousRequest: true });
       const tokens = response.data?.result || response.data?.data || {};
       if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-      await handleLogin(null, tokens);
+      const authenticatedProfile = await handleLogin(null, tokens);
       setLoginSuccess(true);
+      const analyticsExcluded = String(authenticatedProfile?.role || '').toUpperCase() === 'ADMIN' || authenticatedProfile?.analyticsExcluded === true;
+      setAnalyticsEligibility(!analyticsExcluded);
+      if (!analyticsExcluded) {
+        trackEvent('login', { method: 'google' });
+      }
 
       navigate('/home');
     } catch (err) {
+      trackEvent('feature_error', { feature: 'login', error_category: categorizeAnalyticsError(err) });
       setLoginSuccess(false);
       setLoading(false);
       loginInProgress.current = false;

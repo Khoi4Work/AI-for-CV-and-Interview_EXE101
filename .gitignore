@@ -38,3 +38,8 @@ target/
 # Project specific
 importedCode/
 .claude/settings.local.json
+
+# Local browser profiles and review configuration
+/.codex-chrome-profile/
+/.codex-edge-profile/
+/frontend/vite.review.config.js

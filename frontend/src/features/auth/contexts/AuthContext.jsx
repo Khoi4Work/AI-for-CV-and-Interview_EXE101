@@ -108,6 +108,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       isLoggedIn,
       isLoading,
+      authStatus: auth.status,
       sessionExpired,
       isLoggingOut,
       is2faEnabled,

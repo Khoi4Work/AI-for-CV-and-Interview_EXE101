@@ -12,6 +12,9 @@ import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import {analysisSelection, createRequestGuard, pollAnalysis} from '../services/analysisFlow.js';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
+import {MainLayout} from '../../interview/components/MainLayout.jsx';
+import {trackEvent, trackEventOnce} from '../../analytics/analyticsClient.js';
+import {categorizeAnalyticsError, normalizeJdOrigin, safeFileType} from '../../analytics/sanitizeAnalytics.js';
 
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_JD_LENGTH = 50000;
@@ -210,6 +213,12 @@ const CVEvaluation = () => {
     setEvaluationStep(0);
     try {
       const imported = importedCV || await importCV(selectedFile);
+      if (!importedCV) {
+        trackEvent('cv_import_succeeded', {
+          file_type: safeFileType(selectedFile),
+          result_origin: imported.duplicate ? 'reused' : 'new',
+        });
+      }
       const cvId = imported.cvId || currentCvId;
       const cvName = imported.cvName || importedCV?.cvName || selectedFile?.name || 'CV đã lưu';
       if (!importedCV && imported.duplicate) {
@@ -229,6 +238,16 @@ const CVEvaluation = () => {
       analysisController.current = new AbortController();
       const started = await cvPipelineService.analyzeCV(cvId, selection, idempotency.current.key);
       if (!started?.analysisId) throw new Error('Chưa nhận được kết quả đánh giá.');
+      const jdOrigin = continuedJdId
+        ? normalizeJdOrigin(continuedFlow?.jdSource || 'saved_user')
+        : selectedRecommendation
+          ? normalizeJdOrigin(selectedRecommendation.source)
+          : 'custom_text';
+      trackEvent('jd_selected', {jd_origin: jdOrigin});
+      trackEventOnce('cv_evaluation_requested', {
+        jd_origin: jdOrigin,
+        result_origin: started.reused ? 'reused' : 'new',
+      }, 'cv_evaluation_requested', started.analysisId);
       setEvaluationPhase(started.phase);
       const result = started.status === 'COMPLETED' ? started : await pollAnalysis(cvPipelineService.getAnalysis, started.analysisId, {signal:analysisController.current.signal,onUpdate:state=>setEvaluationPhase(state.phase)});
       if (result.status !== 'COMPLETED') {idempotency.current=null;throw new Error(result.error || 'Chưa có kết quả đánh giá.');}
@@ -237,6 +256,12 @@ const CVEvaluation = () => {
       if (error.sessionExpired) {
         redirectToLogin();
         return;
+      }
+      if (error?.name !== 'AbortError') {
+        trackEventOnce('feature_error', {
+          feature: 'cv_evaluation',
+          error_category: categorizeAnalyticsError(error),
+        }, 'cv_evaluation_error', idempotency.current?.key);
       }
       showToast(getApiErrorMessage(error, 'Không thể hoàn tất đánh giá CV.'), 'error');
     } finally {
@@ -258,9 +283,16 @@ const CVEvaluation = () => {
     }
     setIsFindingJDs(true);
     const token = requestGuard.current.next();
+    let operation = saved ? 'jd_recommendation' : 'cv_import';
     try {
       const imported = saved || await importCV(file);
       if (!requestGuard.current.current(token)) return;
+      if (!saved) {
+        trackEvent('cv_import_succeeded', {
+          file_type: safeFileType(file),
+          result_origin: imported.duplicate ? 'reused' : 'new',
+        });
+      }
       if (!imported?.cvId) throw new Error('Không tìm thấy CV cần dùng. Vui lòng tải lại CV rồi thử lại.');
       const cvName = saved?.cvName || imported.cvName || file?.name || 'CV đã tạo';
       if (!saved && imported.duplicate) {
@@ -269,6 +301,7 @@ const CVEvaluation = () => {
       setImportedCV({...imported, cvName});
       setCurrentCvId(imported.cvId);
       setFullCVData(mapImportedCVData(imported.extractedData));
+      operation = 'jd_recommendation';
       const recommendations = await cvPipelineService.recommendJDs(imported.cvId);
       if (!requestGuard.current.current(token)) return;
       setJdRecommendations(recommendations || []);
@@ -281,6 +314,7 @@ const CVEvaluation = () => {
         redirectToLogin();
         return;
       }
+      trackEvent('feature_error', {feature: operation, error_category: categorizeAnalyticsError(error)});
       showToast(getApiErrorMessage(error, 'Không tìm được mô tả công việc phù hợp với CV.'), 'error');
     } finally {
       if (requestGuard.current.current(token)) setIsFindingJDs(false);
@@ -358,7 +392,8 @@ const CVEvaluation = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-background p-6 md:p-12 font-sans antialiased text-on-surface">
+    <MainLayout bgClass="bg-background">
+    <div className="relative bg-background p-0 md:p-4 font-sans antialiased text-on-surface">
       <button
         onClick={() => navigate('/')}
         className="absolute left-6 top-6 p-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all z-10"
@@ -427,15 +462,16 @@ const CVEvaluation = () => {
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       removeFile();
                       setImportedCV(null);
                       setJdRecommendations([]);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-2xl transition-colors"
+                    className="inline-flex w-fit max-w-full flex-nowrap items-center justify-center gap-2 whitespace-nowrap px-4 py-2 text-sm font-medium text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-2xl transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 shrink-0" />
                     Bỏ CV này
                   </button>
                 </div>
@@ -585,6 +621,7 @@ const CVEvaluation = () => {
         )}
       </Modal>
     </div>
+    </MainLayout>
   );
 };
 

@@ -7,6 +7,8 @@ import { PaymentNotes } from '../components/PaymentNotes';
 import { OrderSummary } from '../components/OrderSummary';
 import { paymentService } from '../services/paymentService';
 import { getPaymentServiceInfo } from '../components/paymentServiceInfo';
+import {trackEvent, trackEventBeforeRedirectOnce} from '../../analytics/analyticsClient.js';
+import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
 
 export function PaymentPage() {
     const navigate = useNavigate();
@@ -38,6 +40,7 @@ export function PaymentPage() {
                 if (active) setServiceState({ serviceId, service });
             } catch (err) {
                 console.error('PaymentPage: Error fetching service info:', err);
+                trackEvent('feature_error', {feature: 'payment_catalog', error_category: categorizeAnalyticsError(err)});
                 if (active) setServiceState({ serviceId, error: 'Không thể tải thông tin gói. Vui lòng thử lại.' });
             }
         }
@@ -58,11 +61,27 @@ export function PaymentPage() {
             );
 
             if (response && response.checkoutUrl) {
+                const orderId = response.id;
+                const packageCode = `${selectedService.category}_${selectedService.packageCode}`.toLowerCase();
+                if (orderId) {
+                    await trackEventBeforeRedirectOnce('begin_checkout', {
+                        currency: 'VND',
+                        value: Number(selectedService.price),
+                        package_code: packageCode,
+                        items: [{
+                            item_id: packageCode,
+                            price: Number(selectedService.price),
+                            quantity: 1,
+                        }],
+                    }, 'begin_checkout', orderId, 300);
+                }
                 window.location.href = response.checkoutUrl;
             } else {
+                trackEvent('feature_error', {feature: 'checkout', error_category: 'provider'});
                 alert('Không thể tạo đơn hàng thanh toán. Vui lòng thử lại.');
             }
-        } catch {
+        } catch (error) {
+            trackEvent('feature_error', {feature: 'checkout', error_category: categorizeAnalyticsError(error)});
             alert('Đã xảy ra lỗi khi khởi tạo thanh toán. Vui lòng liên hệ hỗ trợ.');
         }
     };

@@ -23,6 +23,8 @@ import {paymentService} from '../../payment/services/paymentService.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
 import {validateCVData} from '../../../utils/inputValidation.js';
 import galleryService from '../../../service/galleryService.js';
+import {trackEvent} from '../../analytics/analyticsClient.js';
+import {categorizeAnalyticsError, safeFileType} from '../../analytics/sanitizeAnalytics.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
@@ -149,8 +151,10 @@ export default function CVBuilder() {
         try {
             const extractedData = await extractCV(file);
             setFullCVData(mapImportedCVData(extractedData));
+            trackEvent('cv_import_succeeded', {file_type: safeFileType(file), result_origin: 'new'});
             showToast(`Đã đọc thông tin từ ${file.name}. Vui lòng kiểm tra lại nội dung.`, 'success');
         } catch (error) {
+            trackEvent('feature_error', {feature: 'cv_import', error_category: categorizeAnalyticsError(error)});
             const message = getApiErrorMessage(error, 'Không thể nhập CV. Vui lòng thử lại.');
             showToast(message, 'error');
         } finally {

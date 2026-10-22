@@ -1,12 +1,11 @@
 // /src/pages/interview/InterviewSetup.jsx
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Sparkles, ChevronDown, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../constants/interviewTypes.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
-import { paymentService } from '../../payment/services/paymentService.js';
 import {normalizeInterviewType} from '../services/interviewConfiguration.js';
 
 const MAX_JD_LENGTH = 50000;
@@ -14,26 +13,22 @@ const MAX_JD_LENGTH = 50000;
 export default function InterviewSetup() {
   const navigate = useNavigate();
   const { data, update, setStep } = useInterviewSession();
+  const savedDraft = data.interviewSetupDraft || data.interviewConfig || {};
 
   const [type, setType] = useState(() => {
-    try {return INTERVIEW_TYPES.find(item => normalizeInterviewType(item.id) === normalizeInterviewType(data.interviewConfig?.type || 'HR'))?.id || 'HR';}
+    try {return INTERVIEW_TYPES.find(item => normalizeInterviewType(item.id) === normalizeInterviewType(savedDraft.type || 'HR'))?.id || 'HR';}
     catch {return 'HR';}
   });
-  const [language, setLanguage] = useState(data.interviewConfig?.language || 'vi');
-  const [duration, setDuration] = useState(data.interviewConfig?.duration || 10);
-  const [jd, setJd] = useState(data.interviewConfig?.jd || '');
-  const [jdId, setJdId] = useState(data.interviewConfig?.jdId || null);
-  const [quota, setQuota] = useState(null);
-  const [quotaError, setQuotaError] = useState('');
+  const [language, setLanguage] = useState(savedDraft.language || 'vi');
+  const [duration, setDuration] = useState(savedDraft.duration || 10);
+  const [jd, setJd] = useState(savedDraft.jd || '');
+  const [jdId, setJdId] = useState(savedDraft.jdId || null);
   const [jdError, setJdError] = useState('');
 
-  useEffect(() => {
-    let active = true;
-    paymentService.getCurrentQuota()
-      .then((value) => { if (active) { setQuota(value); setQuotaError(''); } })
-      .catch(() => { if (active) setQuotaError('Không tải được quota Interview. Vui lòng thử lại.'); });
-    return () => { active = false; };
-  }, []);
+  const quota = data.quotaSnapshot;
+  const persistDraft = (patch) => update({
+    interviewSetupDraft: { type, language, duration, jd, jdId, ...patch },
+  });
 
   const maxDuration = quota?.interviewPlan === 'ENHANCE' ? 15 : quota?.interviewPlan === 'MIDDLE' ? 10 : 5;
   const remainingMinutes = Number(quota?.remainingInterviewMinutes ?? 0);
@@ -61,9 +56,12 @@ export default function InterviewSetup() {
         jd,
         jdId,
       },
+      interviewSetupDraft: { type, language, duration: chosenDuration, jd, jdId },
     });
     navigate('/audio-setup');
   };
+
+  if (!quota) return <Navigate to="/interview/job-selection" replace />;
 
   return (
     <div className="min-h-screen flex flex-col bg-interview-radial font-sans text-on-surface">
@@ -102,7 +100,7 @@ export default function InterviewSetup() {
                   {INTERVIEW_TYPES.map((t) => (
                     <button
                       key={t.id}
-                      onClick={() => setType(t.id)}
+                      onClick={() => { setType(t.id); persistDraft({ type: t.id }); }}
                       className={`text-left p-3 rounded-xl border-2 transition-all bg-interview-card-bg ${
                         type === t.id
                           ? 'selection-card-selected'
@@ -123,7 +121,7 @@ export default function InterviewSetup() {
                   <div className="relative">
                     <select
                       value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
+                      onChange={(e) => { setLanguage(e.target.value); persistDraft({ language: e.target.value }); }}
                       className="w-full appearance-none bg-interview-card-bg border border-outline-variant text-black font-medium py-3 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                     >
                       {LANGUAGES.map((l) => (
@@ -139,13 +137,13 @@ export default function InterviewSetup() {
                 <div>
                   <label className="block text-sm font-semibold text-black mb-2">Thời lượng</label>
                   <p className="text-xs text-black/70 mb-2" aria-live="polite">
-                    Quota Interview: {quota ? `${remainingMinutes} phút còn lại` : quotaError || 'Đang tải...'}
+                    Quota Interview: {remainingMinutes} phút còn lại
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {DURATIONS.map((d) => (
                       <button
                         key={d.value}
-                        onClick={() => setDuration(d.value)}
+                        onClick={() => { setDuration(d.value); persistDraft({ duration: d.value }); }}
                         disabled={!canChooseDuration(d.value)}
                         title={!canChooseDuration(d.value) ? (d.value > maxDuration ? `Gói hiện tại chỉ hỗ trợ tối đa ${maxDuration} phút/buổi` : 'Quota còn lại không đủ cho thời lượng này') : ''}
                         className={`py-2.5 px-1 border rounded-xl text-center transition-colors bg-interview-card-bg disabled:opacity-40 disabled:cursor-not-allowed ${
@@ -187,7 +185,7 @@ export default function InterviewSetup() {
                 <textarea
                   value={jd}
                   maxLength={MAX_JD_LENGTH}
-                  onChange={(e) => {setJd(e.target.value); setJdId(null); setJdError('');}}
+                  onChange={(e) => { const nextJd = e.target.value; setJd(nextJd); setJdId(null); setJdError(''); persistDraft({ jd: nextJd, jdId: null }); }}
                   rows={4}
                   className="w-full bg-interview-card-bg border border-outline-variant text-black py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none"
                   placeholder="Dán JD vào đây để AI cá nhân hóa câu hỏi (tùy chọn)..."
@@ -230,11 +228,11 @@ export default function InterviewSetup() {
                 </button>
                 <button
                   onClick={handleNext}
-                  disabled={!quota || !canChooseDuration(Number(duration))}
+                  disabled={!canChooseDuration(Number(chosenDuration))}
                   className="
                   hover:text-on-primary
                   hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
-                  w-full flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
+                  w-full flex items-center justify-center bg-primary text-on-primary py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
                 >
                   Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
                 </button>
