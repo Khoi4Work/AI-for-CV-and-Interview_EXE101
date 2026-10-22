@@ -30,17 +30,33 @@ public class InterviewSpeechScriptServiceImpl implements InterviewSpeechScriptSe
     private String afterAnswerVi;
     @Value("${interview.voice.delivery.phrases.vi.after-skip:Không sao, mình chuyển sang câu tiếp theo nhé.}")
     private String afterSkipVi;
+    @Value("${interview.voice.delivery.phrases.vi.no-answer-reminder:Bạn có thể trả lời hoặc chia sẻ cách bạn sẽ giải quyết câu hỏi này không?}")
+    private String noAnswerReminderVi;
+    @Value("${interview.voice.delivery.phrases.vi.code-idle-reminder:Tôi sẽ ghi nhận lời giải này nếu bạn không bổ sung thêm.}")
+    private String codeIdleReminderVi;
+    @Value("${interview.voice.delivery.phrases.vi.closing:Cảm ơn bạn đã tham gia phỏng vấn.}")
+    private String closingVi;
     @Value("${interview.voice.delivery.phrases.en.opening:Hello, and thank you for joining. Let's get started.}")
     private String openingEn;
     @Value("${interview.voice.delivery.phrases.en.after-answer:Thank you for sharing that. Let's move on to the next question.|All right, let's continue with another question.|Thanks for that. I'd like to ask you about this next:}")
     private String afterAnswerEn;
     @Value("${interview.voice.delivery.phrases.en.after-skip:No problem, let's move on to the next question.}")
     private String afterSkipEn;
+    @Value("${interview.voice.delivery.phrases.en.no-answer-reminder:Would you like to answer or explain how you would approach this question?}")
+    private String noAnswerReminderEn;
+    @Value("${interview.voice.delivery.phrases.en.code-idle-reminder:I will record this answer if you have nothing else to add.}")
+    private String codeIdleReminderEn;
+    @Value("${interview.voice.delivery.phrases.en.closing:Thank you for participating in this interview.}")
+    private String closingEn;
 
     @Override
     public String compose(InterviewQuestion question, InterviewSpeechTransition transition, String modelId) {
         String language = "en".equalsIgnoreCase(question.getLanguage()) ? "en" : "vi";
-        String prefix = prefixFor(language, transition, question.getId());
+        InterviewSpeechTransition resolvedTransition = transition == null ? InterviewSpeechTransition.START : transition;
+        if (isStandaloneTransition(resolvedTransition)) {
+            return standalonePhrase(language, resolvedTransition);
+        }
+        String prefix = prefixFor(language, resolvedTransition, question.getId());
         String emotionTag = deliveryEnabled && supportsAudioTags(modelId)
                 ? tagForCategory(question.getCategory())
                 : "";
@@ -61,7 +77,27 @@ public class InterviewSpeechScriptServiceImpl implements InterviewSpeechScriptSe
             case START -> english ? openingEn : openingVi;
             case SKIPPED -> english ? afterSkipEn : afterSkipVi;
             case ANSWERED -> choose(english ? afterAnswerEn : afterAnswerVi, questionId);
+            case NO_ANSWER_REMINDER -> english ? noAnswerReminderEn : noAnswerReminderVi;
+            case CODE_IDLE_REMINDER -> english ? codeIdleReminderEn : codeIdleReminderVi;
+            case CLOSING -> english ? closingEn : closingVi;
         };
+    }
+
+    private String standalonePhrase(String language, InterviewSpeechTransition transition) {
+        boolean english = "en".equals(language);
+        String phrase = switch (transition) {
+            case NO_ANSWER_REMINDER -> english ? noAnswerReminderEn : noAnswerReminderVi;
+            case CODE_IDLE_REMINDER -> english ? codeIdleReminderEn : codeIdleReminderVi;
+            case CLOSING -> english ? closingEn : closingVi;
+            default -> "";
+        };
+        return phrase == null ? "" : phrase.trim();
+    }
+
+    private boolean isStandaloneTransition(InterviewSpeechTransition transition) {
+        return transition == InterviewSpeechTransition.NO_ANSWER_REMINDER
+                || transition == InterviewSpeechTransition.CODE_IDLE_REMINDER
+                || transition == InterviewSpeechTransition.CLOSING;
     }
 
     private boolean supportsAudioTags(String modelId) {

@@ -6,7 +6,13 @@ interview:
           opening: "Chào bạn, cảm ơn bạn đã tham gia buổi phỏng vấn. Chúng ta bắt đầu nhé."
           after-answer: "Cảm ơn bạn đã chia sẻ. Vậy thì,|Được rồi, mình chuyển sang câu tiếp theo nhé.|Cảm ơn bạn. Tiếp theo, mình muốn hỏi về điều này:"
           after-skip: "Không sao, mình chuyển sang câu tiếp theo nhé."
+          no-answer-reminder: "Bạn có thể trả lời hoặc chia sẻ cách bạn sẽ giải quyết câu hỏi này không?"
+          code-idle-reminder: "Tôi sẽ ghi nhận lời giải này nếu bạn không bổ sung thêm."
+          closing: "Cảm ơn bạn đã tham gia phỏng vấn."
         en:
           opening: "Hello, and thank you for joining. Let's get started."
           after-answer: "Thank you for sharing that. Let's move on to the next question.|All right, let's continue with another question.|Thanks for that. I'd like to ask you about this next:"
           after-skip: "No problem, let's move on to the next question."
+          no-answer-reminder: "Would you like to answer or explain how you would approach this question?"
+          code-idle-reminder: "I will record this answer if you have nothing else to add."
+          closing: "Thank you for participating in this interview."
