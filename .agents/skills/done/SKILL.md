@@ -25,7 +25,7 @@ Run this workflow when explicitly invoked as `$done` or when the user asks to ru
 - If the user supplied commit-message guidance, use it to describe the commits while retaining the required bracketed tag and imperative wording.
 - Add a commit body with a clear, detailed list of what changed and why, following `CLAUDE.md`.
 - Do not amend existing commits, push, merge, or create pull requests unless the user separately asks.
-- If Git reports a permission or approval block, stop and report it accurately. Never claim staging or committing succeeded when it did not.
+- If a Git operation is denied by the sandbox or requires approval, request elevated permission for that specific operation with a concise justification, then retry it after approval. Continue the workflow if it succeeds. If approval is denied or the retry still fails, stop and report the exact block. Never claim staging or committing succeeded when it did not.
 
 ## 3. Verify
 
