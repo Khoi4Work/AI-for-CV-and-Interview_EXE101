@@ -6,7 +6,6 @@ import {
     Plus,
     Download,
     LayoutTemplate,
-    Briefcase,
     ChevronRight,
     ChevronLeft,
     CheckCircle2
@@ -57,7 +56,6 @@ export default function CVBuilder() {
     }, [resetCV, setCurrentCvId]);
 
     const [step, setStep] = useState(1);
-    const [jdText, setJdText] = useState('');
     const [isImporting, setIsImporting] = useState(false);
     const [savedCVs, setSavedCVs] = useState([]);
     const [showSavedCVPicker, setShowSavedCVPicker] = useState(false);
@@ -103,6 +101,8 @@ export default function CVBuilder() {
         if (!selectedCV?.content) return;
 
         setFullCVData(mapImportedCVData(selectedCV.content));
+        setStep(1);
+        setValidationError('');
         showToast(`Đã điền thông tin từ CV "${selectedCV.name || 'CV đã lưu'}".`, 'success');
     };
 
@@ -151,6 +151,8 @@ export default function CVBuilder() {
         try {
             const extractedData = await extractCV(file);
             setFullCVData(mapImportedCVData(extractedData));
+            setStep(1);
+            setValidationError('');
             trackEvent('cv_import_succeeded', {file_type: safeFileType(file), result_origin: 'new'});
             showToast(`Đã đọc thông tin từ ${file.name}. Vui lòng kiểm tra lại nội dung.`, 'success');
         } catch (error) {
@@ -180,37 +182,39 @@ export default function CVBuilder() {
     return (
         <>
             <Header/>
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8 w-full flex-grow">
+            <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
 
-                <div className="flex-grow grid grid-cols-12 gap-8 items-start">
-
-                    {/* LEFT COLUMN: Wizard Form */}
+                    {/* CV creation wizard */}
                     <section
-                        className="col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[700px]">
+                        className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[700px]">
 
                         {/* Stepper Header */}
                         <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-                            <div className="flex justify-between items-center mb-6">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
                                 <div className="flex items-center gap-2">
                                     <div
                                         className="w-6 h-6 bg-green-100 text-green-700 rounded-full flex items-center justify-center">
                                         <LayoutTemplate className="h-4 w-4"/>
                                     </div>
-                                    <h2 className="text-xl font-bold text-slate-800">Xây dựng nội dung CV</h2>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-800">Tạo CV của bạn</h2>
+                                        <p className="mt-1 text-sm text-slate-500">Nhập thông tin theo từng bước. Bạn có thể bỏ qua các mục không phù hợp.</p>
+                                    </div>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-3">
                                     <button
                                         onClick={handleShowSavedCVs}
                                         disabled={isLoadingSavedCVs}
-                                        className="text-sm font-medium text-green-700 hover:underline transition-colors disabled:opacity-50">
-                                        {isLoadingSavedCVs ? 'Đang tải CV đã lưu...' : 'Chọn CV đã lưu'}
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-green-600 hover:text-green-700 transition-colors disabled:opacity-50">
+                                        <LayoutTemplate className="h-4 w-4"/>
+                                        {isLoadingSavedCVs ? 'Đang tải CV đã lưu...' : 'Dùng CV đã lưu'}
                                     </button>
                                     <button
                                         onClick={handleFileUpload}
                                         disabled={isImporting}
-                                        className="text-sm font-medium text-green-700 flex items-center gap-1 hover:underline transition-colors disabled:opacity-50">
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-green-600 hover:text-green-700 transition-colors disabled:opacity-50">
                                         <Download className="h-4 w-4"/>
-                                        {isImporting ? 'Đang đọc CV...' : 'Tải CV cũ'}
+                                        {isImporting ? 'Đang đọc CV...' : 'Nhập CV từ tệp'}
                                     </button>
                                     <input id="cv-upload-input" type="file" className="hidden" accept=".pdf,.doc,.docx"
                                         onChange={onFileChange}
@@ -240,18 +244,19 @@ export default function CVBuilder() {
                             )}
 
                             {/* Stepper Visual */}
-                            <div className="flex items-center gap-4">
+                            <div role="group" aria-label={`Bước ${step} trên ${totalSteps}`} className="flex items-start gap-2 sm:gap-4">
                                 {[1, 2, 3, 4, 5].map(s => (
                                     <div key={s} className="flex items-center gap-2 flex-1">
-                                        <div
-                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                                        <button type="button" onClick={() => s < step && setStep(s)} disabled={s >= step} aria-current={step === s ? 'step' : undefined}
+                                            aria-label={`Bước ${s}: ${s === 1 ? 'Thông tin' : s === 2 ? 'Kinh nghiệm' : s === 3 ? 'Học vấn' : s === 4 ? 'Kỹ năng' : 'Hoàn tất'}`}
+                                            className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                                                 step === s ? 'bg-green-700 text-white shadow-md scale-110' :
-                                                    step > s ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-500'
+                                                    step > s ? 'bg-green-500 text-white cursor-pointer hover:bg-green-700' : 'bg-slate-200 text-slate-500'
                                             }`}>
                                             {step > s ? <CheckCircle2 className="w-5 h-5"/> : s}
-                                        </div>
+                                        </button>
                                         <span
-                                            className={`text-xs font-bold transition-colors ${step === s ? 'text-green-700' : 'text-slate-400'}`}>
+                                            className={`hidden sm:block text-xs font-bold transition-colors ${step === s ? 'text-green-700' : 'text-slate-400'}`}>
                                             {s === 1 ? 'Thông tin' : s === 2 ? 'Kinh nghiệm' : s === 3 ? 'Học vấn' : s === 4 ? 'Kỹ năng' : 'Hoàn tất'}
                                         </span>
                                         {s < totalSteps && <div
@@ -259,6 +264,7 @@ export default function CVBuilder() {
                                     </div>
                                 ))}
                             </div>
+                            <p className="mt-4 text-sm font-medium text-slate-600 sm:hidden">Bước {step} trên {totalSteps}: {['Thông tin cá nhân', 'Kinh nghiệm', 'Học vấn', 'Kỹ năng', 'Hoàn tất CV'][step - 1]}</p>
                         </div>
 
                         <div className="p-8 flex-grow">
@@ -276,11 +282,12 @@ export default function CVBuilder() {
                             {validationError && <p role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{validationError}</p>}
                             {step === 1 && (
                                 <div className="space-y-8 animate-fade-in">
+                                    <p className="text-sm text-slate-500">Bắt đầu với thông tin liên hệ và phần giới thiệu ngắn. Họ tên và email là bắt buộc; các trường khác có thể bổ sung sau.</p>
                                     <div className="space-y-6">
                                         <div className="group space-y-1">
                                             <label
                                                 className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Tên
-                                                đầy đủ</label>
+                                                đầy đủ <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
                                                 className="w-full input-underlined text-lg font-bold text-black placeholder:text-slate-300"
@@ -293,8 +300,8 @@ export default function CVBuilder() {
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="group space-y-1">
-                                                <label
-                                                    className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Email</label>
+                                                    <label
+                                                        className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Email <span className="text-red-500">*</span></label>
                                                 <input
                                                     type="email"
                                                     className="w-full input-underlined text-black placeholder:text-slate-300"
@@ -306,9 +313,9 @@ export default function CVBuilder() {
                                                 />
                                             </div>
                                             <div className="group space-y-1">
-                                                <label
-                                                    className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Số
-                                                    điện thoại</label>
+                                                    <label
+                                                        className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Số
+                                                        điện thoại</label>
                                                 <input
                                                     type="text"
                                                     className="w-full input-underlined text-black placeholder:text-slate-300"
@@ -352,6 +359,7 @@ export default function CVBuilder() {
 
                             {step === 2 && (
                                 <div className="space-y-8 animate-fade-in">
+                                    <p className="text-sm text-slate-500">Mô tả vai trò, công ty và kết quả bạn đạt được. Nếu chưa có kinh nghiệm, bạn có thể bỏ qua bước này.</p>
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Kinh
                                             nghiệm làm việc</h3>
@@ -363,6 +371,13 @@ export default function CVBuilder() {
                                     </div>
 
                                     <div className="space-y-6">
+                                    {cvData.experiences.length === 0 && (
+                                        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                                            <p className="font-semibold text-slate-700">Chưa thêm kinh nghiệm làm việc</p>
+                                            <p className="mt-1 text-sm text-slate-500">Có thể thêm việc làm, thực tập, hoạt động tình nguyện hoặc dự án thực tế.</p>
+                                            <button onClick={addExperience} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"><Plus className="h-4 w-4"/>Thêm kinh nghiệm</button>
+                                        </div>
+                                    )}
                                     {cvData.experiences.map((exp) => (
                                             <div key={exp.id}
                                                  className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-green-500">
@@ -439,6 +454,7 @@ export default function CVBuilder() {
 
                             {step === 3 && (
                                 <div className="space-y-8 animate-fade-in">
+                                    <p className="text-sm text-slate-500">Thêm trường học hoặc chương trình đào tạo liên quan. GPA là thông tin tùy chọn.</p>
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Học
                                             vấn</h3>
@@ -450,6 +466,13 @@ export default function CVBuilder() {
                                     </div>
 
                                     <div className="space-y-6">
+                                        {cvData.education.length === 0 && (
+                                            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                                                <p className="font-semibold text-slate-700">Chưa thêm học vấn</p>
+                                                <p className="mt-1 text-sm text-slate-500">Bạn có thể bỏ qua nếu không muốn đưa học vấn vào CV.</p>
+                                                <button onClick={addEducation} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"><Plus className="h-4 w-4"/>Thêm học vấn</button>
+                                            </div>
+                                        )}
                                         {cvData.education.map((edu, index) => (
                                             <div key={index}
                                                  className="relative group bg-slate-50 border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md focus-within:border-green-500">
@@ -514,6 +537,7 @@ export default function CVBuilder() {
 
                             {step === 4 && (
                                 <div className="space-y-8 animate-fade-in">
+                                    <p className="text-sm text-slate-500">Chỉ thêm kỹ năng, dự án, chứng chỉ và thành tích bạn muốn xuất hiện trên CV. Các mục này đều có thể bổ sung sau trong trình chỉnh sửa.</p>
                                     <div className="flex items-center gap-2 mb-4">
                                         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">Kỹ
                                             năng & Thông tin khác</h3>
@@ -700,11 +724,23 @@ export default function CVBuilder() {
                                         className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                                         <CheckCircle2 className="w-10 h-10"/>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">Sẵn sàng cho CV của bạn!</h3>
+                                    <h3 className="text-2xl font-bold text-slate-800 mb-2">Thông tin CV đã sẵn sàng</h3>
                                     <p className="text-slate-500 mb-8 max-w-4xl mx-auto">
-                                        Chúng tôi đã thu thập đủ thông tin. Bây giờ hãy chọn một mẫu thiết kế và tinh
-                                        chỉnh nó trong trình chỉnh sửa chuyên nghiệp.
+                                        Tiếp theo, bạn sẽ chọn mẫu, xem trước CV và chỉnh sửa nội dung trong trình chỉnh sửa.
                                     </p>
+                                    <div className="mx-auto mb-8 text-left" style={{width: 'min(100%, 36rem)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 8rem), 1fr))', gap: '0.75rem'}}>
+                                        {[
+                                            ['Kinh nghiệm', cvData.experiences.length],
+                                            ['Học vấn', cvData.education.length],
+                                            ['Kỹ năng', cvData.skills.length],
+                                            ['Dự án', cvData.projects.length],
+                                        ].map(([label, count]) => (
+                                            <div key={label} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                                <p className="break-normal text-xs text-slate-500">{label}</p>
+                                                <p className="mt-1 break-normal font-semibold text-slate-800">{count} mục</p>
+                                            </div>
+                                        ))}
+                                    </div>
                                     <button
                                         onClick={handleSaveAndEdit}
                                         disabled={isSaving || quotaState.loading || Boolean(quotaState.error)}
@@ -716,40 +752,23 @@ export default function CVBuilder() {
                         </div>
 
                         {/* Bottom Navigation */}
-                        {step < 5 && (
-                            <div
-                                className="p-6 border-t border-slate-100 flex justify-between items-center bg-slate-50/30">
+                        <div className="p-6 border-t border-slate-100 flex justify-between items-center bg-slate-50/30">
                                 <button
                                     onClick={prevStep}
                                     disabled={step === 1}
-                                    className="px-6 py-2 text-sm font-bold text-green-500 hover:text-green-700  flex items-center gap-1 transition-colors">
+                                    className="px-6 py-2 text-sm font-bold text-green-700 hover:text-green-800 disabled:text-slate-300 disabled:cursor-not-allowed flex items-center gap-1 transition-colors">
                                     <ChevronLeft className="w-4 h-4"/> Quay lại
                                 </button>
-                                <button
-                                    onClick={nextStep}
-                                    className="px-8 py-2 bg-green-700 text-white text-sm font-bold rounded-xl hover:bg-green-800 shadow-md shadow-green-200 transition-all flex items-center gap-1">
-                                    Tiếp tục <ChevronRight className="w-4 h-4"/>
-                                </button>
+                                {step < totalSteps && (
+                                    <button
+                                        onClick={nextStep}
+                                        className="px-8 py-2 bg-green-700 text-white text-sm font-bold rounded-xl hover:bg-green-800 shadow-md shadow-green-200 transition-all flex items-center gap-1">
+                                        Tiếp tục <ChevronRight className="w-4 h-4"/>
+                                    </button>
+                                )}
                             </div>
-                        )}
                     </section>
 
-                    <section className="col-span-5 flex flex-col gap-6">
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px] sticky top-24">
-                            <div className="p-6 border-b border-slate-100 flex items-center gap-2">
-                                <Briefcase className="h-6 w-6 text-slate-800" />
-                                <h2 className="text-xl font-bold">Mô tả công việc</h2>
-                            </div>
-                            <div className="p-6 flex-grow flex flex-col">
-                                <textarea value={jdText} maxLength={50000} onChange={e => setJdText(e.target.value)}
-                                    placeholder="Dán nội dung mô tả công việc (không bắt buộc)..."
-                                    className="w-full min-h-64 flex-grow p-4 text-sm text-black border border-slate-200 rounded-2xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-y" />
-                                <p className="mt-2 text-right text-xs text-slate-500">{jdText.length}/50.000 ký tự</p>
-                            </div>
-                        </div>
-                    </section>
-
-                </div>
             </main>
             <Footer/>
 
