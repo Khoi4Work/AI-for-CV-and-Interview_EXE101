@@ -115,6 +115,14 @@ test('normalizes nullable fields for every renderer while preserving arbitrary d
     assert.deepEqual(mapped.languages, [{ name: 'English', level: 'B2' }]);
 });
 
+test('removes blank project description lines from PDF data and keeps nonblank lines in order', () => {
+    const mapped = mapCvDataForPdf({projects: [{
+        name: 'Project A', details: [' First achievement ', '', '  ', 'Second achievement'],
+    }]});
+
+    assert.deepEqual(mapped.projects[0].details, ['First achievement', 'Second achievement']);
+});
+
 test('registers a dedicated PDF template module for all six editor template IDs', () => {
     assert.deepEqual(PDF_TEMPLATE_IDS, [
         'the-standard',

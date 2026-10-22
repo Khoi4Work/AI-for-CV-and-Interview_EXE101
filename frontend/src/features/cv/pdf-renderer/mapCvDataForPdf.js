@@ -7,6 +7,7 @@ export function mapCvDataForPdf(source = {}) {
     const personalInfo = source.personalInfo && typeof source.personalInfo === 'object' ? source.personalInfo : {};
 
     return {
+        contentLanguage: source.contentLanguage === 'vi' ? 'vi' : 'en',
         personalInfo: {
             name: asText(personalInfo.name),
             email: asText(personalInfo.email),
@@ -35,7 +36,7 @@ export function mapCvDataForPdf(source = {}) {
             ...item,
             name: asText(item.name),
             period: asText(item.period),
-            details: asList(item.details).map(asText),
+            details: asList(item.details).map(asText).filter(Boolean),
             url: asText(item.url),
             techStack: asText(item.techStack),
             teamSize: asText(item.teamSize),

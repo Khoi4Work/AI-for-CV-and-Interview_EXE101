@@ -1,5 +1,22 @@
 # Session History
 
+## 2026-10-22 — Synchronize CV Builder step-four mapping
+
+- Replaced the quick-add inputs for projects, certificates, languages, and awards with editable canonical fields that update CV context on every change; stopped generating dates and preserved imported record fields when one value changes.
+- Kept legacy project `date` visible as an explicit confirmation hint instead of silently treating it as `period`; retained imported skill categories and arbitrary skill fields.
+- Revealed only a section with populated content when its builder data changes, preserved imported hidden sections otherwise, filtered blank skills for rendered PDFs, and removed blank project-description lines from PDF data.
+- Validation: 92 frontend tests passed, targeted ESLint passed, and the Vite review-config production build passed. Browser localhost connection timed out, so real interaction and downloaded-PDF QA remain unverified.
+
+## 2026-10-22 — Point CV validation feedback to the field
+- Added field paths to CV validation errors, displayed inline messages for editable inputs, and made the builder navigate to, scroll to, and focus the first invalid field on continue/save.
+- Added missing title, birth-date, and address inputs so imported values that fail validation can be corrected in the builder.
+- Validation: targeted ESLint and the Vite review-config production build passed; tests were not rerun for this follow-up.
+
+## 2026-10-22 — Add English and Vietnamese CV content labels
+- Added an English/Vietnamese selector to the editor toolbar and localized template section headings, project metadata labels, and Cloud skill tiers in both preview and PDF output.
+- User-entered CV values remain unchanged when switching the display language.
+- Validation: targeted ESLint and the Vite review-config production build passed.
+
 ## 2026-10-14 — Secure CV optimization results, template access, and session expiry
 
 - Recalculate the proposed CV score with the existing CV/JD rubric; ignore AI-predicted scores, clear stale parser text before scoring, and keep the proposal in an optimization-job snapshot until the user explicitly saves it. Scope result polling to the CV owner's gallery and document the required manual migration.

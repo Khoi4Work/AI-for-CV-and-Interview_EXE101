@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
     Sparkles,
@@ -20,7 +20,7 @@ import {getApiErrorMessage} from '../../../service/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
 import {paymentService} from '../../payment/services/paymentService.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
-import {validateCVData} from '../../../utils/inputValidation.js';
+import {validateCVDataFields} from '../../../utils/inputValidation.js';
 import galleryService from '../../../service/galleryService.js';
 import {trackEvent} from '../../analytics/analyticsClient.js';
 import {categorizeAnalyticsError, safeFileType} from '../../analytics/sanitizeAnalytics.js';
@@ -33,6 +33,7 @@ export default function CVBuilder() {
         setCurrentCvId,
         setHasCV,
         updatePersonalInfo,
+        updateProfessionalTitle,
         updateSummary,
         addExperience,
         updateExperience,
@@ -63,7 +64,55 @@ export default function CVBuilder() {
     const [isSaving, setIsSaving] = useState(false);
     const [quotaState, setQuotaState] = useState({ loading: false, error: '', exhausted: false });
     const [validationError, setValidationError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
+    const pendingFocusField = useRef('');
+    const builderRef = useRef(null);
     const totalSteps = 5;
+    const stepForField = field => field.startsWith('personalInfo.') || field === 'summary' || field === 'professionalTitle' ? 1
+        : field.startsWith('experiences.') ? 2
+            : field.startsWith('education.') ? 3 : 4;
+    const revealValidationErrors = errors => {
+        const byField = errors.reduce((result, error) => ({...result, [error.field]: error.message}), {});
+        setFieldErrors(byField);
+        const firstError = errors[0];
+        if (!firstError) return;
+        const [section, index, ...fieldParts] = firstError.field.split('.');
+        const sectionLabels = {personalInfo: 'Thông tin cá nhân', experiences: 'Kinh nghiệm', education: 'Học vấn', projects: 'Dự án', certificates: 'Chứng chỉ', languages: 'Ngoại ngữ', awards: 'Giải thưởng', skills: 'Kỹ năng'};
+        const fieldLabels = {name: 'Họ và tên / tên mục', email: 'Email', phone: 'Số điện thoại', dob: 'Ngày sinh', address: 'Địa chỉ', linkedin: 'LinkedIn', url: 'Liên kết', details: 'Mô tả', period: 'Thời gian', role: 'Vị trí', company: 'Công ty', degree: 'Bằng cấp', school: 'Trường học', year: 'Thời gian', gpa: 'GPA', issuer: 'Đơn vị cấp', date: 'Ngày'};
+        const location = section === 'personalInfo' || section === 'summary' || section === 'professionalTitle'
+            ? (fieldLabels[index] || (section === 'summary' ? 'Mục tiêu nghề nghiệp' : 'Chức danh'))
+            : `${sectionLabels[section] || section} ${Number(index) + 1} · ${fieldLabels[fieldParts[0]] || fieldParts[0] || 'Nội dung'}`;
+        setValidationError(`${location}: ${firstError.message} (Bước ${stepForField(firstError.field)}).`);
+        pendingFocusField.current = firstError.field;
+        setStep(stepForField(firstError.field));
+        showToast(`${location}: ${firstError.message}`, 'error');
+    };
+    const clearFieldError = field => {
+        setValidationError('');
+        setFieldErrors(current => {
+            if (!current[field]) return current;
+            const next = {...current};
+            delete next[field];
+            return next;
+        });
+    };
+
+    useEffect(() => {
+        if (!pendingFocusField.current) return;
+        const target = builderRef.current?.querySelector(`[data-validation-field="${pendingFocusField.current}"]`);
+        if (!target) return;
+        pendingFocusField.current = '';
+        target.scrollIntoView({behavior: 'smooth', block: 'center'});
+        target.focus({preventScroll: true});
+    }, [step, fieldErrors]);
+    const skillCategoryOptions = [
+        {value: 'frontend', label: 'Front-end'},
+        {value: 'backend', label: 'Back-end'},
+        {value: 'soft', label: 'Soft Skill'},
+        ...[...new Set((cvData.skills || []).map(skill => String(skill.category || '').trim()).filter(Boolean))]
+            .filter(category => !['frontend', 'backend', 'soft'].includes(category))
+            .map(category => ({value: category, label: category})),
+    ];
 
     const handleRetryQuota = async () => {
         setQuotaState({ loading: true, error: '', exhausted: false });
@@ -108,13 +157,13 @@ export default function CVBuilder() {
 
     const handleSaveAndEdit = async () => {
         if (isSaving || quotaState.loading || quotaState.error) return;
-        const errors = validateCVData(cvData, { requireBuilderContacts: true });
+        const errors = validateCVDataFields(cvData, { requireBuilderContacts: true });
         if (errors.length) {
-            setValidationError(errors[0]);
-            showToast(errors[0], 'error');
+            revealValidationErrors(errors);
             return;
         }
         setValidationError('');
+        setFieldErrors({});
         setIsSaving(true);
         try {
             // Check only when the user continues to the editor.
@@ -166,23 +215,35 @@ export default function CVBuilder() {
     };
 
     const nextStep = () => {
-        const errors = step === 1
-            ? validateCVData(cvData, { requireBuilderContacts: true })
-            : [];
+        const stepFields = validateCVDataFields(cvData, {requireBuilderContacts: step === 1});
+        const errors = stepFields.filter(error => stepForField(error.field) === step);
         if (errors.length) {
-            setValidationError(errors[0]);
-            showToast(errors[0], 'error');
+            revealValidationErrors(errors);
             return;
         }
         setValidationError('');
+        setFieldErrors({});
         setStep(prev => Math.min(prev + 1, totalSteps));
     };
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
+    const updateStepFourRecord = (section, index, patch) => {
+        const current = Array.isArray(cvData[section.field]) ? cvData[section.field] : [];
+        section.updater(current.map((record, recordIndex) => recordIndex === index ? {...record, ...patch} : record));
+    };
+
+    const addStepFourRecord = section => {
+        section.updater([...(cvData[section.field] || []), {...section.emptyRecord}]);
+    };
+
+    const removeStepFourRecord = (section, index) => {
+        section.updater((cvData[section.field] || []).filter((_, recordIndex) => recordIndex !== index));
+    };
+
     return (
         <>
             <Header/>
-            <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+            <main ref={builderRef} className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
 
                     {/* CV creation wizard */}
                     <section
@@ -285,18 +346,25 @@ export default function CVBuilder() {
                                     <p className="text-sm text-slate-500">Bắt đầu với thông tin liên hệ và phần giới thiệu ngắn. Họ tên và email là bắt buộc; các trường khác có thể bổ sung sau.</p>
                                     <div className="space-y-6">
                                         <div className="group space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Chức danh</label>
+                                            <input type="text" data-validation-field="professionalTitle" className="w-full input-underlined text-black placeholder:text-slate-300" placeholder="Ví dụ: Software Developer" value={cvData.professionalTitle || ''} maxLength={255} aria-invalid={Boolean(fieldErrors.professionalTitle)} onChange={event => { clearFieldError('professionalTitle'); updateProfessionalTitle(event.target.value); }} />
+                                            {fieldErrors.professionalTitle && <p className="text-xs text-red-600" role="alert">{fieldErrors.professionalTitle}</p>}
+                                        </div>
+                                        <div className="group space-y-1">
                                             <label
                                                 className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Tên
                                                 đầy đủ <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
+                                                data-validation-field="personalInfo.name"
                                                 className="w-full input-underlined text-lg font-bold text-black placeholder:text-slate-300"
                                                 placeholder="Nguyễn Văn A..."
                                                 value={cvData.personalInfo.name}
                                                 maxLength={255}
-                                                aria-invalid={!cvData.personalInfo.name.trim()}
-                                                onChange={(e) => { setValidationError(''); updatePersonalInfo({name: e.target.value}); }}
+                                                aria-invalid={Boolean(fieldErrors['personalInfo.name']) || !cvData.personalInfo.name.trim()}
+                                                onChange={(e) => { clearFieldError('personalInfo.name'); updatePersonalInfo({name: e.target.value}); }}
                                             />
+                                            {fieldErrors['personalInfo.name'] && <p className="text-xs text-red-600" role="alert">{fieldErrors['personalInfo.name']}</p>}
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="group space-y-1">
@@ -304,13 +372,15 @@ export default function CVBuilder() {
                                                         className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Email <span className="text-red-500">*</span></label>
                                                 <input
                                                     type="email"
+                                                    data-validation-field="personalInfo.email"
                                                     className="w-full input-underlined text-black placeholder:text-slate-300"
                                                     placeholder="example@gmail.com"
                                                     value={cvData.personalInfo.email}
                                                     maxLength={254}
-                                                    aria-invalid={Boolean(cvData.personalInfo.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cvData.personalInfo.email.trim()))}
-                                                    onChange={(e) => { setValidationError(''); updatePersonalInfo({email: e.target.value}); }}
+                                                    aria-invalid={Boolean(fieldErrors['personalInfo.email'])}
+                                                    onChange={(e) => { clearFieldError('personalInfo.email'); updatePersonalInfo({email: e.target.value}); }}
                                                 />
+                                                {fieldErrors['personalInfo.email'] && <p className="text-xs text-red-600" role="alert">{fieldErrors['personalInfo.email']}</p>}
                                             </div>
                                             <div className="group space-y-1">
                                                     <label
@@ -318,12 +388,15 @@ export default function CVBuilder() {
                                                         điện thoại</label>
                                                 <input
                                                     type="text"
+                                                    data-validation-field="personalInfo.phone"
                                                     className="w-full input-underlined text-black placeholder:text-slate-300"
                                                     placeholder="090..."
                                                     value={cvData.personalInfo.phone}
                                                     maxLength={24}
-                                                    onChange={(e) => { setValidationError(''); updatePersonalInfo({phone: e.target.value}); }}
+                                                    aria-invalid={Boolean(fieldErrors['personalInfo.phone'])}
+                                                    onChange={(e) => { clearFieldError('personalInfo.phone'); updatePersonalInfo({phone: e.target.value}); }}
                                                 />
+                                                {fieldErrors['personalInfo.phone'] && <p className="text-xs text-red-600" role="alert">{fieldErrors['personalInfo.phone']}</p>}
                                             </div>
                                         </div>
                                         <div className="group space-y-1">
@@ -331,12 +404,27 @@ export default function CVBuilder() {
                                                 className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">LinkedIn</label>
                                             <input
                                                 type="text"
+                                                data-validation-field="personalInfo.linkedin"
                                                 className="w-full input-underlined text-black placeholder:text-slate-300"
                                                 placeholder="linkedin.com/in/yourprofile"
                                                 value={cvData.personalInfo.linkedin}
                                                 maxLength={2048}
-                                                onChange={(e) => { setValidationError(''); updatePersonalInfo({linkedin: e.target.value}); }}
+                                                aria-invalid={Boolean(fieldErrors['personalInfo.linkedin'])}
+                                                onChange={(e) => { clearFieldError('personalInfo.linkedin'); updatePersonalInfo({linkedin: e.target.value}); }}
                                             />
+                                            {fieldErrors['personalInfo.linkedin'] && <p className="text-xs text-red-600" role="alert">{fieldErrors['personalInfo.linkedin']}</p>}
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="group space-y-1">
+                                                <label className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Ngày sinh</label>
+                                                <input type="text" data-validation-field="personalInfo.dob" className="w-full input-underlined text-black placeholder:text-slate-300" placeholder="DD/MM/YYYY" value={cvData.personalInfo.dob || ''} maxLength={32} aria-invalid={Boolean(fieldErrors['personalInfo.dob'])} onChange={event => { clearFieldError('personalInfo.dob'); updatePersonalInfo({dob: event.target.value}); }} />
+                                                {fieldErrors['personalInfo.dob'] && <p className="text-xs text-red-600" role="alert">{fieldErrors['personalInfo.dob']}</p>}
+                                            </div>
+                                            <div className="group space-y-1">
+                                                <label className="text-[10px] uppercase font-bold text-slate-400 group-focus-within:text-green-700 transition-colors">Địa chỉ</label>
+                                                <input type="text" data-validation-field="personalInfo.address" className="w-full input-underlined text-black placeholder:text-slate-300" placeholder="Thành phố, quốc gia" value={cvData.personalInfo.address || ''} maxLength={500} aria-invalid={Boolean(fieldErrors['personalInfo.address'])} onChange={event => { clearFieldError('personalInfo.address'); updatePersonalInfo({address: event.target.value}); }} />
+                                                {fieldErrors['personalInfo.address'] && <p className="text-xs text-red-600" role="alert">{fieldErrors['personalInfo.address']}</p>}
+                                            </div>
                                         </div>
                                         <ProfilePhotoPicker />
                                     </div>
@@ -347,12 +435,15 @@ export default function CVBuilder() {
                                             Mục tiêu nghề nghiệp
                                         </h3>
                                         <textarea
+                                            data-validation-field="summary"
                                             className="w-full h-32 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-black focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all resize-none"
                                             placeholder="Mô tả ngắn gọn về mục tiêu và giá trị bạn mang lại..."
                                             value={cvData.summary}
                                             maxLength={5000}
-                                            onChange={(e) => { setValidationError(''); updateSummary(e.target.value); }}
+                                            aria-invalid={Boolean(fieldErrors.summary)}
+                                            onChange={(e) => { clearFieldError('summary'); updateSummary(e.target.value); }}
                                         ></textarea>
+                                        {fieldErrors.summary && <p className="text-xs text-red-600" role="alert">{fieldErrors.summary}</p>}
                                     </div>
                                 </div>
                             )}
@@ -388,10 +479,12 @@ export default function CVBuilder() {
                                                             ty</label>
                                                         <input
                                                             type="text"
+                                                            data-validation-field={`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.company`}
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm font-bold py-1 text-black"
                                                             value={exp.company}
-                                                            onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
+                                                            onChange={(e) => { clearFieldError(`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.company`); updateExperience(exp.id, 'company', e.target.value); }}
                                                         />
+                                                        {fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.company`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.company`]}</p>}
                                                     </div>
                                                     <div className="space-y-1">
                                                         <label
@@ -399,10 +492,12 @@ export default function CVBuilder() {
                                                             gian</label>
                                                         <input
                                                             type="text"
+                                                            data-validation-field={`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.period`}
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={exp.period}
-                                                            onChange={(e) => updateExperience(exp.id, 'period', e.target.value)}
+                                                            onChange={(e) => { clearFieldError(`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.period`); updateExperience(exp.id, 'period', e.target.value); }}
                                                         />
+                                                        {fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.period`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.period`]}</p>}
                                                     </div>
                                                 </div>
                                                 <div className="space-y-1 mb-4">
@@ -410,10 +505,12 @@ export default function CVBuilder() {
                                                         trí</label>
                                                     <input
                                                         type="text"
+                                                        data-validation-field={`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.role`}
                                                         className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                         value={exp.role}
-                                                        onChange={(e) => updateExperience(exp.id, 'role', e.target.value)}
+                                                        onChange={(e) => { clearFieldError(`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.role`); updateExperience(exp.id, 'role', e.target.value); }}
                                                     />
+                                                    {fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.role`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.role`]}</p>}
                                                 </div>
                                                 <div className="space-y-3">
                                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Chi
@@ -423,11 +520,13 @@ export default function CVBuilder() {
                                                             <div
                                                                 className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-2 shrink-0"></div>
                                                             <textarea
+                                                                data-validation-field={`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.details`}
                                                                 className="w-full bg-transparent border-none resize-none focus:ring-0 text-sm py-1 placeholder:text-slate-300 outline-none text-black"
                                                                 placeholder="Ví dụ: Tăng doanh thu 20% trong 6 tháng..."
                                                                 value={detail}
-                                                                onChange={(e) => updateExperienceDetail(exp.id, dIdx, e.target.value)}
+                                                                onChange={(e) => { clearFieldError(`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.details`); updateExperienceDetail(exp.id, dIdx, e.target.value); }}
                                                             ></textarea>
+                                                            {dIdx === 0 && fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.details`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`experiences.${cvData.experiences.findIndex(item => item.id === exp.id)}.details`]}</p>}
                                                         </div>
                                                     ))}
                                                     <button
@@ -483,10 +582,12 @@ export default function CVBuilder() {
                                                             cấp / Chứng chỉ</label>
                                                         <input
                                                             type="text"
+                                                            data-validation-field={`education.${index}.degree`}
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm font-bold py-1 text-black"
                                                             value={edu.degree}
-                                                            onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                                                            onChange={(e) => { clearFieldError(`education.${index}.degree`); updateEducation(index, 'degree', e.target.value); }}
                                                         />
+                                                        {fieldErrors[`education.${index}.degree`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`education.${index}.degree`]}</p>}
                                                     </div>
                                                     <div className="space-y-1">
                                                         <label
@@ -494,10 +595,12 @@ export default function CVBuilder() {
                                                             học / Tổ chức</label>
                                                         <input
                                                             type="text"
+                                                            data-validation-field={`education.${index}.school`}
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={edu.school}
-                                                            onChange={(e) => updateEducation(index, 'school', e.target.value)}
+                                                            onChange={(e) => { clearFieldError(`education.${index}.school`); updateEducation(index, 'school', e.target.value); }}
                                                         />
+                                                        {fieldErrors[`education.${index}.school`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`education.${index}.school`]}</p>}
                                                     </div>
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -507,20 +610,24 @@ export default function CVBuilder() {
                                                             gian</label>
                                                         <input
                                                             type="text"
+                                                            data-validation-field={`education.${index}.year`}
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={edu.year}
-                                                            onChange={(e) => updateEducation(index, 'year', e.target.value)}
+                                                            onChange={(e) => { clearFieldError(`education.${index}.year`); updateEducation(index, 'year', e.target.value); }}
                                                         />
+                                                        {fieldErrors[`education.${index}.year`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`education.${index}.year`]}</p>}
                                                     </div>
                                                     <div className="space-y-1">
                                                         <label
                                                             className="text-[10px] font-bold text-slate-400 uppercase">GPA (không bắt buộc)</label>
                                                         <input
                                                             type="text"
+                                                            data-validation-field={`education.${index}.gpa`}
                                                             className="w-full bg-transparent border-b border-slate-200 focus:border-green-500 outline-none text-sm py-1 text-black"
                                                             value={edu.gpa}
-                                                            onChange={(e) => updateEducation(index, 'gpa', e.target.value)}
+                                                            onChange={(e) => { clearFieldError(`education.${index}.gpa`); updateEducation(index, 'gpa', e.target.value); }}
                                                         />
+                                                        {fieldErrors[`education.${index}.gpa`] && <p className="text-xs text-red-600" role="alert">{fieldErrors[`education.${index}.gpa`]}</p>}
                                                     </div>
                                                 </div>
                                                 <button
@@ -570,29 +677,30 @@ export default function CVBuilder() {
                                                          className="grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 group sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center">
                                                         <input
                                                             type="text"
+                                                            data-validation-field={`skills.${index}.name`}
                                                             className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-black outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 sm:col-span-3"
                                                             value={skill.name}
                                                             onChange={(e) => {
-                                                                const updated = [...cvData.skills];
-                                                                updated[index].name = e.target.value;
+                                                                const updated = cvData.skills.map((item, itemIndex) => itemIndex === index
+                                                                    ? {...item, name: e.target.value} : item);
                                                                 updateSkills(updated);
                                                             }}
                                                             placeholder="Tên kỹ năng..."
                                                         />
+                                                        {fieldErrors[`skills.${index}.name`] && <p className="text-xs text-red-600 sm:col-span-3" role="alert">{fieldErrors[`skills.${index}.name`]}</p>}
                                                         <div className="relative min-w-0">
                                                             <select
+                                                                data-validation-field={`skills.${index}.category`}
                                                                 className="w-full min-w-0 appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-xs text-slate-700 outline-none transition hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                                                                 value={skill.category || ''}
                                                                 onChange={(e) => {
-                                                                    const updated = [...cvData.skills];
-                                                                    updated[index].category = e.target.value;
+                                                                    const updated = cvData.skills.map((item, itemIndex) => itemIndex === index
+                                                                        ? {...item, category: e.target.value} : item);
                                                                     updateSkills(updated);
                                                                 }}
                                                             >
                                                                 <option value="">Chọn nhóm</option>
-                                                                <option value="frontend">Front-end</option>
-                                                                <option value="backend">Back-end</option>
-                                                                <option value="soft">Soft Skill</option>
+                                                                {skillCategoryOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                                                             </select>
                                                             <ChevronRight className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-slate-400" />
                                                         </div>
@@ -601,8 +709,8 @@ export default function CVBuilder() {
                                                                 className="w-full min-w-0 appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-xs text-slate-700 outline-none transition hover:border-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                                                                 value={skill.level || ''}
                                                                 onChange={(e) => {
-                                                                    const updated = [...cvData.skills];
-                                                                    updated[index].level = e.target.value || null;
+                                                                    const updated = cvData.skills.map((item, itemIndex) => itemIndex === index
+                                                                        ? {...item, level: e.target.value || null} : item);
                                                                     updateSkills(updated);
                                                                 }}
                                                             >
@@ -628,90 +736,108 @@ export default function CVBuilder() {
                                             </div>
                                         </div>
 
-                                        {/* Others Sections: Projects, Certs, Langs, Awards */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* Structured extra sections use the same canonical fields as the templates. */}
+                                        <div className="space-y-8">
                                             {[
                                                 {
-                                                    label: 'Dự án',
-                                                    field: 'projects',
-                                                    updater: updateProjects,
-                                                    placeholder: 'Tên dự án, mô tả ngắn...'
+                                                    label: 'Dự án', field: 'projects', updater: updateProjects,
+                                                    emptyRecord: {name: '', period: '', details: [], techStack: '', teamSize: '', url: ''},
+                                                    fields: [
+                                                        {key: 'name', label: 'Tên dự án', placeholder: 'Ví dụ: Nền tảng thương mại điện tử'},
+                                                        {key: 'period', label: 'Thời gian', placeholder: 'Ví dụ: 01/2024 – 06/2024'},
+                                                        {key: 'details', label: 'Mô tả', type: 'textarea', placeholder: 'Mỗi dòng là một ý mô tả'},
+                                                        {key: 'techStack', label: 'Tech stack', placeholder: 'Ví dụ: Java, Spring Boot, MySQL'},
+                                                        {key: 'teamSize', label: 'Quy mô nhóm', placeholder: 'Ví dụ: 4 thành viên'},
+                                                        {key: 'url', label: 'Liên kết', type: 'url', placeholder: 'https://...'},
+                                                    ],
                                                 },
                                                 {
-                                                    label: 'Chứng chỉ',
-                                                    field: 'certificates',
-                                                    updater: updateCertificates,
-                                                    placeholder: 'Tên chứng chỉ...'
+                                                    label: 'Chứng chỉ', field: 'certificates', updater: updateCertificates,
+                                                    emptyRecord: {name: '', issuer: '', date: '', url: ''},
+                                                    fields: [
+                                                        {key: 'name', label: 'Tên chứng chỉ', placeholder: 'Tên chứng chỉ'},
+                                                        {key: 'issuer', label: 'Đơn vị cấp', placeholder: 'Đơn vị cấp'},
+                                                        {key: 'date', label: 'Ngày hoặc năm cấp', placeholder: 'Ví dụ: 2023'},
+                                                        {key: 'url', label: 'Liên kết', type: 'url', placeholder: 'https://...'},
+                                                    ],
                                                 },
                                                 {
-                                                    label: 'Ngôn ngữ',
-                                                    field: 'languages',
-                                                    updater: updateLanguages,
-                                                    placeholder: 'Tiếng Anh, Tiếng Nhật...'
+                                                    label: 'Ngôn ngữ', field: 'languages', updater: updateLanguages,
+                                                    emptyRecord: {name: '', level: ''},
+                                                    fields: [
+                                                        {key: 'name', label: 'Ngôn ngữ', placeholder: 'Ví dụ: English'},
+                                                        {key: 'level', label: 'Trình độ', placeholder: 'Ví dụ: B2, IELTS 7.0, Native'},
+                                                    ],
                                                 },
                                                 {
-                                                    label: 'Giải thưởng',
-                                                    field: 'awards',
-                                                    updater: updateAwards,
-                                                    placeholder: 'Giải nhất cuộc thi...'
+                                                    label: 'Giải thưởng', field: 'awards', updater: updateAwards,
+                                                    emptyRecord: {name: '', issuer: '', date: ''},
+                                                    fields: [
+                                                        {key: 'name', label: 'Tên giải thưởng', placeholder: 'Tên giải thưởng'},
+                                                        {key: 'issuer', label: 'Đơn vị trao', placeholder: 'Đơn vị trao'},
+                                                        {key: 'date', label: 'Ngày hoặc năm nhận', placeholder: 'Ví dụ: 2023'},
+                                                    ],
                                                 },
-                                            ].map((section) => (
-                                                <div key={section.field} className="space-y-3">
-                                                    <label
-                                                        className="text-xs font-bold text-slate-600 uppercase">{section.label}</label>
-                                                    <div className="flex gap-2">
-                                                        <input
-                                                            type="text"
-                                                            className="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-green-500 text-black"
-                                                            placeholder={section.placeholder}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter' && e.target.value) {
-                                                                    const currentData = cvData[section.field] || [];
-                                                                    const newItem = {
-                                                                        name: e.target.value,
-                                                                        date: new Date().getFullYear().toString()
-                                                                    };
-                                                                    section.updater([...currentData, newItem]);
-                                                                    e.target.value = '';
-                                                                }
-                                                            }}
-                                                        />
-                                                        <button
-                                                            onClick={(e) => {
-                                                                const input = e.currentTarget.previousElementSibling;
-                                                                if (input.value) {
-                                                                    const currentData = cvData[section.field] || [];
-                                                                    const newItem = {
-                                                                        name: input.value,
-                                                                        date: new Date().getFullYear().toString()
-                                                                    };
-                                                                    section.updater([...currentData, newItem]);
-                                                                    input.value = '';
-                                                                }
-                                                            }}
-                                                            className="bg-green-700 text-white p-2 rounded-xl hover:bg-green-800 transition-all"
-                                                        >
-                                                            <Plus className="w-4 h-4"/>
+                                            ].map(section => (
+                                                <section key={section.field} className="space-y-3 rounded-2xl border border-slate-200 p-4 sm:p-5">
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <h4 className="text-sm font-bold uppercase tracking-wide text-slate-700">{section.label}</h4>
+                                                        <button type="button" onClick={() => addStepFourRecord(section)}
+                                                            className="inline-flex items-center gap-1 rounded-lg bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-800">
+                                                            <Plus className="h-3.5 w-3.5"/> Thêm {section.label.toLowerCase()}
                                                         </button>
                                                     </div>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {(cvData[section.field] || []).map((item, i) => (
-                                                            <span key={i}
-                                                                  className="bg-slate-100 text-slate-600 text-[11px] px-3 py-1 rounded-full border border-slate-200 flex items-center gap-2 group">
-                                                                {item.name}
-                                                                <button
-                                                                    onClick={() => {
-                                                                        const updated = (cvData[section.field] || []).filter((_, idx) => idx !== i);
-                                                                        section.updater(updated);
-                                                                    }}
-                                                                    className="text-slate-400 hover:text-red-500"
-                                                                >
-                                                                    <Trash2 className="w-2.5 h-2.5"/>
-                                                                </button>
-                                                            </span>
+                                                    {(cvData[section.field] || []).length === 0 && (
+                                                        <p className="text-sm text-slate-500">Chưa có {section.label.toLowerCase()}. Các trường đều không bắt buộc.</p>
+                                                    )}
+                                                    <div className="space-y-4">
+                                                        {(cvData[section.field] || []).map((item, index) => (
+                                                            <div key={item.id || `${section.field}-${index}`} className="space-y-3 rounded-xl bg-slate-50 p-4">
+                                                                <div className="flex items-center justify-between gap-3">
+                                                                    <p className="text-xs font-semibold text-slate-500">{section.label} {index + 1}</p>
+                                                                    <button type="button" aria-label={`Xóa ${section.label.toLowerCase()} ${index + 1}`}
+                                                                        onClick={() => removeStepFourRecord(section, index)}
+                                                                        className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600">
+                                                                        <Trash2 className="h-4 w-4"/>
+                                                                    </button>
+                                                                </div>
+                                                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                                                    {section.fields.map(field => {
+                                                                        const isLegacyProjectDate = section.field === 'projects' && field.key === 'period'
+                                                                            && !item.period && Boolean(item.date);
+                                                                        const inputValue = field.key === 'period'
+                                                                            ? (item.period || '')
+                                                                            : field.key === 'details'
+                                                                                ? (Array.isArray(item.details) ? item.details.join('\n') : String(item.details || ''))
+                                                                                : (item[field.key] || '');
+                                                                        const inputId = `${section.field}-${index}-${field.key}`;
+                                                                        const inputProps = {
+                                                                            id: inputId,
+                                                                            'data-validation-field': `${section.field}.${index}.${field.key}`,
+                                                                            value: inputValue,
+                                                                            placeholder: field.placeholder,
+                                                                            onChange: event => updateStepFourRecord(section, index, {
+                                                                                [field.key]: field.key === 'details'
+                                                                                    ? event.target.value.split(/\r?\n/)
+                                                                                    : event.target.value,
+                                                                            }) || clearFieldError(`${section.field}.${index}.${field.key}`),
+                                                                            'aria-invalid': Boolean(fieldErrors[`${section.field}.${index}.${field.key}`]),
+                                                                            className: 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100',
+                                                                        };
+                                                                        return <div key={field.key} className={field.type === 'textarea' ? 'sm:col-span-2' : ''}>
+                                                                            <label htmlFor={inputId} className="mb-1 block text-xs font-semibold text-slate-600">{field.label}</label>
+                                                                            {field.type === 'textarea'
+                                                                                ? <textarea {...inputProps} rows={3}/>
+                                                                                : <input {...inputProps} type={field.type === 'url' ? 'url' : 'text'} inputMode={field.type === 'url' ? 'url' : undefined}/>}
+                                                                            {fieldErrors[`${section.field}.${index}.${field.key}`] && <p className="mt-1 text-xs text-red-600" role="alert">{fieldErrors[`${section.field}.${index}.${field.key}`]}</p>}
+                                                                            {isLegacyProjectDate && <p className="mt-1 text-xs text-amber-700">CV cũ lưu trường date là “{item.date}”. Hãy nhập lại thời gian nếu xác nhận giá trị này đúng.</p>}
+                                                                        </div>;
+                                                                    })}
+                                                                </div>
+                                                            </div>
                                                         ))}
                                                     </div>
-                                                </div>
+                                                </section>
                                             ))}
                                         </div>
                                     </div>

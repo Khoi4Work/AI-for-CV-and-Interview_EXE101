@@ -1,4 +1,5 @@
 import {createContext, useState, useContext, useCallback} from 'react';
+import {replaceCvSectionItems} from '../utils/cvSectionState.js';
 
 const CVContext = createContext();
 
@@ -29,6 +30,7 @@ const INITIAL_CV_STATE = {
         customFields: [],
     },
     professionalTitle: '',
+    contentLanguage: 'en',
     profilePhoto: '',
     summary: '',
     experiences: [],
@@ -121,11 +123,15 @@ export function CVProvider({children}) {
     }, []);
 
     const updateSkills = useCallback((skills) => {
-        setCvData(prev => ({...prev, skills}));
+        setCvData(prev => replaceCvSectionItems(prev, 'skills', skills));
     }, []);
 
     const setTemplate = useCallback((id) => {
         setCvData(prev => ({...prev, selectedTemplateId: id}));
+    }, []);
+
+    const setContentLanguage = useCallback((language) => {
+        setCvData(prev => ({...prev, contentLanguage: language === 'vi' ? 'vi' : 'en'}));
     }, []);
 
     const setExperiences = useCallback((experiences) => {
@@ -153,19 +159,19 @@ export function CVProvider({children}) {
     }, []);
 
     const updateProjects = useCallback((projects) => {
-        setCvData(prev => ({...prev, projects}));
+        setCvData(prev => replaceCvSectionItems(prev, 'projects', projects));
     }, []);
 
     const updateCertificates = useCallback((certs) => {
-        setCvData(prev => ({...prev, certificates: certs}));
+        setCvData(prev => replaceCvSectionItems(prev, 'certificates', certs));
     }, []);
 
     const updateLanguages = useCallback((langs) => {
-        setCvData(prev => ({...prev, languages: langs}));
+        setCvData(prev => replaceCvSectionItems(prev, 'languages', langs));
     }, []);
 
     const updateAwards = useCallback((awards) => {
-        setCvData(prev => ({...prev, awards}));
+        setCvData(prev => replaceCvSectionItems(prev, 'awards', awards));
     }, []);
 
     const resetCV = useCallback(() => {
@@ -192,6 +198,7 @@ export function CVProvider({children}) {
             removeExperience,
             updateSkills,
             setTemplate,
+            setContentLanguage,
             setExperiences,
             updateEducation,
             addEducation,

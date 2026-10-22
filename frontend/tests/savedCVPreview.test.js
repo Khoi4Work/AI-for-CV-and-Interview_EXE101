@@ -31,6 +31,29 @@ test('saved previews render stored content for every supported template without 
     }
 });
 
+test('renders structured step-four content and ignores blank skills on all six templates', () => {
+    for (const id of ['portfolio-hybrid', 'cloud-expert', 'security-analyst', 'data-scientist', 'the-standard', 'boardroom-ready']) {
+        const saved = cv(id, `Candidate ${id}`);
+        saved.content.skills = [
+            {name: 'React', category: 'Frontend', level: 'ADVANCED'},
+            {name: '', category: 'Frontend', level: null},
+        ];
+        saved.content.projects = [{
+            name: 'Mapping Project', period: '2022 – 2023', details: ['First detail', '', 'Second detail'],
+            techStack: 'React, Node.js', teamSize: '4 members', url: 'https://example.com/project',
+        }];
+        saved.content.certificates = [{name: 'Cloud Certificate', issuer: 'Example Institute', date: '2023', url: 'https://example.com/certificate'}];
+        saved.content.languages = [{name: 'English', level: 'IELTS 7.0'}];
+        saved.content.awards = [{name: 'Design Award', issuer: 'Example University', date: '2024'}];
+
+        const html = render(createElement(SavedCVPreview, {cv: saved, compact: true}));
+        for (const value of ['React', 'Mapping Project', '2022 – 2023', 'First detail', 'Second detail',
+            'React, Node.js', '4 members', 'Cloud Certificate', 'Example Institute', 'English', 'IELTS 7.0', 'Design Award']) {
+            assert.ok(html.includes(value), `${id}: expected ${value}`);
+        }
+    }
+});
+
 test('saved preview renderer inputs isolate CVs and preserve their stored content', () => {
     const alice = mapCvDataForPdf(getSavedCVPreviewData(cv('portfolio-hybrid', 'Alice')));
     const bob = mapCvDataForPdf(getSavedCVPreviewData(cv('cloud-expert', 'Bob')));
