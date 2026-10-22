@@ -91,7 +91,7 @@ export default function HistoryPage() {
                 {visible.length < filtered.length && <div className="text-center"><Button onClick={() => setLimit(previous => previous + 10)} className="gap-2 rounded-full">Hiển thị thêm<ChevronDown size={16} /></Button></div>}
             </div>
         </>}
-        <Modal isOpen={Boolean(selected)} onClose={() => setSelected(null)} title={selected?.title || 'Chi tiết hoạt động'}>
+        <Modal solid isOpen={Boolean(selected)} onClose={() => setSelected(null)} title={selected?.title || 'Chi tiết hoạt động'}>
             {selected && <div className="space-y-4 text-slate-700">
                 <p className="flex gap-2 text-sm"><Clock size={16} />{selected.time}</p>
                 <p className="text-sm">{selected.details}</p>

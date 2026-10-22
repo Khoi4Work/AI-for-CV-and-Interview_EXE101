@@ -14,6 +14,8 @@ import { validateCVData } from '../../../utils/inputValidation.js';
 import {getCvTemplateLayout, updateCvTemplateLayout} from '../pdf-renderer/templateSectionLayout.js';
 import {trackEvent} from '../../analytics/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
+import ConfirmationDialog from '../../../components/ui/ConfirmationDialog.jsx';
+import {useConfirmation} from '../../../components/ui/useConfirmation.js';
 
 function updateValueAtPath(source, path, value) {
     const [key, ...remaining] = path.split('.');
@@ -26,6 +28,7 @@ function updateValueAtPath(source, path, value) {
 export default function CVEditor() {
     const { cvData, setTemplate, setFullCVData, currentCvId, setCurrentCvId, setHasCV } = useCV();
     const navigate = useNavigate();
+    const {confirm, confirmation} = useConfirmation();
     const location = useLocation();
     const returnToEvaluation = location.state?.returnToCVEvaluation;
     const [zoom, setZoom] = useState(100);
@@ -270,6 +273,7 @@ export default function CVEditor() {
 
     return (
         <div className="cv-editor-shell flex flex-col h-screen overflow-hidden" style={{ background: 'radial-gradient(circle at center, var(--color-bg-radial-start) 0%, var(--color-bg-radial-end) 100%)' }}>
+            <ConfirmationDialog {...confirmation}/>
             <TopNagivationToolBar
                 onExport={handleExport}
                 onSave={handleSave}
@@ -279,8 +283,8 @@ export default function CVEditor() {
                 templatesLoading={templatesLoading || exporting}
                 cvName={cvName}
                 onNameChange={setCvName}
-                onClose={() => {
-                    if (dirty && !window.confirm('CV có thay đổi chưa lưu. Bạn vẫn muốn rời trang?')) return;
+                onClose={async () => {
+                    if (dirty && !await confirm({title: 'Rời trình chỉnh sửa?', message: 'CV có thay đổi chưa lưu. Nếu rời trang, các thay đổi chưa lưu sẽ không được lưu vào tài khoản.', confirmLabel: 'Rời trang'})) return;
                     if (returnToEvaluation?.analysisId) navigate(`/optimizer?analysisId=${returnToEvaluation.analysisId}`);
                     else navigate('/home');
                 }}
