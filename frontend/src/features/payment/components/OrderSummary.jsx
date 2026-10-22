@@ -1,4 +1,4 @@
-import { CheckCircle2, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, LoaderCircle, ShieldCheck } from 'lucide-react';
 
 function InfoRow({ label, value, isBold = false, isGreen = false }) {
     return (
@@ -20,10 +20,10 @@ function BenefitItem({ text }) {
     );
 }
 
-export function OrderSummary({ service, loading, error, selectedPaymentMethod, onPaymentClick }) {
+export function OrderSummary({ service, loading, error, selectedPaymentMethod, onPaymentClick, checkingOut = false }) {
     const benefits = service?.benefits || [];
     const unavailable = loading ? 'Đang tải...' : '—';
-    const paymentDisabled = loading || Boolean(error) || !service || !selectedPaymentMethod;
+    const paymentDisabled = checkingOut || loading || Boolean(error) || !service || !selectedPaymentMethod;
 
     return (
         <div className="bg-[#E5ECE9] rounded-2xl p-6 flex flex-col w-full h-fit">
@@ -79,13 +79,18 @@ export function OrderSummary({ service, loading, error, selectedPaymentMethod, o
                 <button
                     onClick={onPaymentClick}
                     disabled={paymentDisabled}
+                    aria-busy={checkingOut}
+                    aria-label={checkingOut ? 'Đang tạo thanh toán...' : 'Thanh toán ngay'}
                     className={`w-full py-3 text-white font-bold rounded-xl min-h-[44px] transition-colors ${
                         paymentDisabled
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-[#1c8c54] hover:bg-[#167345]'
                     }`}
                 >
-                    Thanh toán ngay
+                    <span className="flex items-center justify-center gap-2">
+                        {checkingOut && <LoaderCircle size={18} className="animate-spin" aria-hidden="true"/>}
+                        {checkingOut ? 'Đang tạo thanh toán...' : 'Thanh toán ngay'}
+                    </span>
                 </button>
             </div>
         </div>

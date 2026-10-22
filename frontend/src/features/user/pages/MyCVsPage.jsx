@@ -9,12 +9,15 @@ import { useGalleryData } from '../hooks/useGalleryData';
 import { mapCV } from '../utils/galleryData';
 import SavedCVPreview from '../components/SavedCVPreview.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
+import ConfirmationDialog from '../../../components/ui/ConfirmationDialog.jsx';
+import {useConfirmation} from '../../../components/ui/useConfirmation.js';
 
 const filters = [['All', 'Tất cả'], ['COMPLETED', 'Hoàn thành'], ['OPTIMIZED', 'AI Optimized'], ['DRAFT', 'Bản nháp']];
 
 export default function MyCVsPage() {
     const navigate = useNavigate();
     const { showToast } = useApp();
+    const {confirm, confirmation} = useConfirmation();
     const { cvs, loading, errors, reload, removeCV } = useGalleryData();
     const [filter, setFilter] = useState('All');
     const [deleting, setDeleting] = useState([]);
@@ -23,7 +26,7 @@ export default function MyCVsPage() {
     const visibleCVs = cvs.map(mapCV).filter(cv => filter === 'All' || cv.status === filter);
 
     const handleDelete = async cv => {
-        if (!window.confirm(`Xóa “${cv.title}”? Lượt tạo đã dùng sẽ không được hoàn lại; bạn vẫn giữ các quota đã mua còn lại.`)) return;
+        if (!await confirm({title: 'Xóa CV?', message: `Xóa “${cv.title}”? Lượt tạo đã dùng sẽ không được hoàn lại; bạn vẫn giữ các quota đã mua còn lại.`, confirmLabel: 'Xóa CV', danger: true})) return;
         if (deletingRef.current.has(cv.id)) return;
         deletingRef.current.add(cv.id);
         setDeleting([...deletingRef.current]);
@@ -41,6 +44,7 @@ export default function MyCVsPage() {
 
     return (
         <div className="max-w-6xl mx-auto pb-12">
+            <ConfirmationDialog {...confirmation}/>
             <div className="flex flex-wrap gap-4 items-center justify-between mb-8">
                 <h1 className="text-2xl font-bold text-[#10B981]">Danh sách CV của tôi</h1>
                 <Button onClick={() => navigate('/templates')} className="gap-2 rounded-full"><Plus size={18} />Tạo CV mới</Button>
@@ -88,7 +92,7 @@ export default function MyCVsPage() {
                     </div>
                 </>
             )}
-            <Modal isOpen={Boolean(previewCV)} onClose={() => setPreviewCV(null)} title={previewCV?.title || 'Xem trước CV'}>
+            <Modal solid isOpen={Boolean(previewCV)} onClose={() => setPreviewCV(null)} title={previewCV?.title || 'Xem trước CV'}>
                 {previewCV && <SavedCVPreview key={previewCV.id} cv={previewCV} />}
             </Modal>
         </div>

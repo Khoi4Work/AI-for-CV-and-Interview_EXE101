@@ -596,3 +596,64 @@
 - Fixed blank skill names referencing an undefined onEdit variable in the shared skill grouping helper.
 - Validation: 15 targeted CV/editor/saved-preview tests passed; targeted ESLint and frontend production build passed. Generated HTML for all six templates and inspected Chromium screenshots of the three changed templates using synthetic data. Live authenticated editor actions and remote PDF service were not exercised.
 - User authorized commit and push to dev; fetched origin and confirmed no divergence, then reran all 15 targeted tests successfully before publishing. Groq 403 was diagnosed only; no backend fix is included.
+
+## 2026-10-22 - Replace native frontend alerts and confirmations
+- Audited frontend/src: found six native dialog calls across CVEditor (leave unsaved editor), MyCVsPage (delete CV), MyJDsPage (hide JD), and PaymentPage (three validation/checkout error alerts).
+- Added shared ConfirmationDialog/useConfirmation with project modal styling, action labels, cancellation through Escape/backdrop/close, keyboard focus on Cancel, focus restoration and protection against overlapping confirmation requests. A native HTML dialog element renders custom application content; it does not call browser confirm/alert.
+- Replaced all three window.confirm calls with asynchronous confirmation; destructive actions and editor navigation only proceed after acceptance. Payment errors now use the existing AppContext toast.
+- Kept CVEditor beforeunload protection for reload/tab close: browsers control that warning and do not support replacing it with application UI.
+- Validation: targeted ESLint and production build passed. Local Chromium interaction fixture with synthetic data passed cancellation, confirmation exactly once, initial focus/focus restoration, mobile width and absence of native dialogs/browser errors; inspected desktop/mobile screenshots. No real CV/JD deletion or payment request was performed.
+- Changes remain uncommitted; no push requested.
+
+## 2026-10-22 - Improve history detail readability
+- HistoryPage detail modal now opts into the existing solid appearance: opaque white content, slate header and dark text replace the translucent glass surface. Applies to both CV and interview activity details.
+- Verified the shared Modal solid variant supplies opaque backgrounds and readable text; targeted HistoryPage ESLint passed. No data/API behavior changed.
+- Kept earlier notification UI changes intact; changes remain uncommitted.
+
+## 2026-10-22 - Show extracted content for uploaded CVs without a template
+- SavedCVPreview now renders ImportedCVPreview when stored content has no selected template: compact cards show an upload label, name, role, skills and first experience/education highlight; opening the preview shows all available structured sections and extracted source text.
+- Uses existing persisted CV content, including older uploads, without assigning a template, changing records, calling AI or consuming quota. Supported template previews remain unchanged; empty and unsupported data retain useful fallbacks.
+- My CVs preview modal now uses the existing opaque white appearance for readable details. The unfinished edit action remains disabled.
+- Validation: six saved-preview tests passed, covering all six template previews, uploaded compact/full views, partial data, HTML escaping and no mutation; targeted ESLint and production build passed. Inspected Chromium screenshots with synthetic data at desktop and 375px mobile widths.
+- Earlier confirmation/toast and history modal changes remain intact; all current changes are uncommitted, no push performed.
+
+## 2026-10-22 - Refine three templates against supplied reference images
+- Confirmed mapping: Security_Analyst.png -> security-analyst, Data_Sciencetist.png -> data-scientist, Boardroom_Ready.png -> boardroom-ready. The two executive reference images show the same layout.
+- Refined shared editable/exported HTML: centered two-row Data Scientist contacts, consistent heading fonts, bold skill names with regular proficiency text, education achievement details, executive project label emphasis and metadata bullets.
+- Removed cumulative entry/list/section spacing and redundant Security Analyst padding; aligned executive contact spacing and kept content responsive to longer CV data. Reference-like fixtures render within one A4-height canvas without horizontal overflow.
+- Validation: 14 targeted CV renderer/saved-preview tests passed; targeted ESLint and frontend build passed. Inspected local Chromium screenshots for all three templates with reference-like synthetic content. Live authenticated editing and deployed PDF-service calls were not exercised.
+- Template detail/list thumbnail images still come from their existing image data; these changes apply to actual CV renderers. Earlier uncommitted notification, history and imported-CV preview changes are preserved. No commit/push performed.
+
+## 2026-10-22 - Audit remaining references and all six CV templates
+- Compared rendered The Standard, Portfolio Hybrid and Cloud Specialist against supplied references using synthetic content and an anonymous placeholder photo.
+- Found and corrected The Standard's uppercase/wrapping name, summary outside the brown masthead, personal-info heading, letter contact icons, experience role/company layout and soft-skill chips. Preserved its brown timeline/right-sidebar design.
+- Preserved Portfolio/Cloud layout geometry; adjusted small summary/body text, Portfolio photo/contact/soft-skill presentation. All six previews now render validated web certificate URLs as readable clickable links; empty read-only contacts are omitted.
+- Verified six templates with ordinary and long content (eight experiences/six projects): no horizontal document overflow or measured headings/chips/contact fields outside the page; editable markup is present for all six. Multi-page content remains allowed. Inspected screenshots of all three remaining references.
+- Limitation: reference images may embed projects within a specific work experience, while current CV data stores independent arrays without an explicit relationship; no association was guessed or data hidden. Live authenticated editing and deployed PDF-service printing were not tested.
+- Validation: 15 targeted renderer/preview tests passed; targeted ESLint and frontend build passed. Kept all earlier uncommitted work intact; no commit or push requested.
+
+## 2026-10-22 - Correct Security Analyst using newly supplied reference
+- User replaced the earlier identical executive reference with the actual Security Analyst design. Supersedes prior notes describing Security Analyst as matching Boardroom Ready.
+- Security Analyst now uses a gray angled masthead with a round profile photo, red headings, left contact/summary/education/tiered-skills column and right experience/project/certificate column. Added readable web project URLs, uppercase role headings, right-aligned dates and sans-serif typography.
+- Re-enabled Security Analyst profile photos; migrated the previous one-column saved layout into the correct two columns while retaining every section and anchoring name/photo in the masthead. Header sections cannot be dragged into body content.
+- Boardroom Ready and the other four templates keep their current designs. Earlier uncommitted work remains intact.
+- Validation: 15 targeted renderer/preview tests passed; targeted ESLint and frontend build passed. Reviewed Chromium screenshot of corrected Security Analyst and reran six-template checks with ordinary/long synthetic content: editable markup present, no horizontal overflow or measured text outside the page. No deployed PDF-service request or real user data mutation performed.
+- Changes remain uncommitted; no push requested.
+
+## 2026-10-22 - Guard checkout clicks and hide pricing top-up shortcuts
+- PaymentPage now acquires a synchronous ref lock before the checkout request and shows a busy state in OrderSummary. The payment button displays a spinner and processing text, disables duplicate clicks, unlocks on failed/malformed responses and remains locked while redirecting after success.
+- Removed the two current-plan card shortcuts: Mua thêm quota CV and Mua thêm phút Interview. Plan purchase actions elsewhere in pricing remain available.
+- Validation: targeted ESLint and frontend build passed. Chromium integration fixture using mocked service methods verified immediate rapid double-click produces one request, disabled/loading state, retry after rejection and missing checkout URL, and retained lock on successful redirect. No real checkout order was created.
+- All earlier uncommitted work is preserved. No commit/push requested.
+
+## 2026-10-22 - Show only completed/failed payments in pricing history
+- Verified backend payment enum: PENDING, PAID, FAILED, REFUNDED. Pricing history now allows only PAID/FAILED after existing legacy-status normalization.
+- Applies consistently to the three-row summary, View all dialog, counts, pagination and status filters. Pending orders are filtered before slicing, so they cannot push paid/failed orders out of the summary. No orders are deleted or changed in the backend.
+- Validation: four payment-history tests passed, including mixed/legacy states, pending-only history, preserved order and no input mutation; targeted ESLint and frontend build passed.
+- Earlier uncommitted changes remain intact. No commit/push requested.
+
+## 2026-10-22 - Publish validated frontend changes
+- User authorized committing and pushing all pending frontend work. Fetched origin and confirmed dev had no remote divergence before preparing commits.
+- Grouped changes into CV templates/imported previews, confirmation/detail dialogs, and checkout/pricing history. Existing session records are included in a separate documentation commit.
+- Final checks: 19 targeted CV/preview/payment-history tests passed; ESLint passed for every changed JS/JSX file; frontend production build and git diff --check passed. Prior local mocked-browser checks cover confirmation behavior, checkout double-click/retry/redirect, responsive previews and six-template overflow checks.
+- Deployed PDF-service calls and real payment orders were not exercised. No backend or database changes are included.

@@ -5,6 +5,12 @@ export const paymentStatuses = {
     REFUNDED: { label: 'Đã hoàn tiền', className: 'bg-blue-100 text-blue-800' },
 };
 
+export const visiblePaymentHistoryStatuses = ['PAID', 'FAILED'];
+
+export function getVisiblePaymentHistory(orders = []) {
+    return orders.map(mapPaymentOrder).filter(order => visiblePaymentHistoryStatuses.includes(order.status));
+}
+
 export function mapPaymentOrder(order) {
     const status = order.paymentStatus || (order.status === 'COMPLETED' ? 'PAID' : order.status);
     const date = order.orderedAt ? new Date(order.orderedAt) : null;

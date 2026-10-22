@@ -5,7 +5,7 @@ import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
 import { Card, Button } from './Layout.jsx';
-import { mapPaymentOrder, paymentStatuses } from '../utils/paymentHistory.js';
+import { getVisiblePaymentHistory, paymentStatuses, visiblePaymentHistoryStatuses } from '../utils/paymentHistory.js';
 
 function OrderRow({ order, onCopy, detailed = false }) {
     if (detailed) return <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
@@ -57,7 +57,7 @@ export default function PaymentHistory() {
     useEffect(() => {
         let active = true;
         paymentService.getPaymentHistory().then(orders => {
-            if (active) setState({ orders: orders.map(mapPaymentOrder), loading: false, error: '' });
+            if (active) setState({ orders: getVisiblePaymentHistory(orders), loading: false, error: '' });
         }).catch(error => {
             if (active) setState({ orders: [], loading: false, error: getApiErrorMessage(error) });
         });
@@ -79,7 +79,7 @@ export default function PaymentHistory() {
     const renderOrders = (orders, detailed = false) => {
         if (state.loading) return <p role="status" className="py-6 text-sm text-slate-600">Đang tải lịch sử thanh toán...</p>;
         if (state.error) return <div role="alert" className="py-4 space-y-3 text-sm text-red-700"><p>{state.error}</p><Button onClick={retry}>Thử lại</Button></div>;
-        if (!orders.length) return <p className="py-6 text-sm text-slate-600">{state.orders.length ? 'Không có đơn phù hợp với bộ lọc.' : 'Bạn chưa có đơn thanh toán nào.'}</p>;
+        if (!orders.length) return <p className="py-6 text-sm text-slate-600">{state.orders.length ? 'Không có đơn phù hợp với bộ lọc.' : 'Chưa có đơn đã thanh toán hoặc thanh toán thất bại.'}</p>;
         return orders.map(order => <OrderRow key={order.id} order={order} onCopy={copyId} detailed={detailed} />);
     };
     return <>
@@ -95,7 +95,7 @@ export default function PaymentHistory() {
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="mb-3 text-sm text-slate-600">Theo dõi trạng thái các đơn thanh toán của bạn.</p>
                 <div className="flex flex-wrap gap-2" role="group" aria-label="Lọc theo trạng thái thanh toán">
-                    {[['ALL', 'Tất cả'], ...Object.entries(paymentStatuses).filter(([id]) => id !== 'REFUNDED').map(([id, info]) => [id, info.label])].map(([id, label]) =>
+                    {[['ALL', 'Tất cả'], ...visiblePaymentHistoryStatuses.map(id => [id, paymentStatuses[id].label])].map(([id, label]) =>
                         <button key={id} aria-pressed={filter === id} onClick={() => { setFilter(id); setLimit(10); }} className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-[#0b3c8f] ${filter === id ? 'border-[#0b3c8f] bg-[#0b3c8f] text-white shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'}`}>{label}</button>)}
                 </div>
                 </div>
