@@ -9,6 +9,11 @@ import {getCvTemplateLayout} from '../templateSectionLayout.js';
 import {supportsProfilePhoto} from '../../utils/templateCapabilities.js';
 
 const value = item => typeof item === 'string' || typeof item === 'number' ? String(item).trim() : '';
+const CV_LABELS = {
+    en: {summary:'Summary', about:'About Me', professionalSummary:'Professional Summary', personalInfo:'Personal Information', personalDetails:'Personal Details', skills:'Skills', experience:'Work Experience', education:'Education', certificate:'Certificate', foreignLanguage:'Foreign Language', award:'Award', project:'Personal Project', projects:'Projects'},
+    vi: {summary:'Giới thiệu', about:'Giới thiệu bản thân', professionalSummary:'Tóm tắt chuyên môn', personalInfo:'Thông tin cá nhân', personalDetails:'Thông tin cá nhân', skills:'Kỹ năng', experience:'Kinh nghiệm làm việc', education:'Học vấn', certificate:'Chứng chỉ', foreignLanguage:'Ngoại ngữ', award:'Giải thưởng', project:'Dự án cá nhân', projects:'Dự án nổi bật'},
+};
+const cvLabel = (language, key) => CV_LABELS[language === 'vi' ? 'vi' : 'en'][key];
 function clearSectionDropPreview(root) {
     if (!root) return;
     root.querySelectorAll('.cv-section-drop-preview').forEach(preview => preview.remove());
@@ -362,14 +367,14 @@ function getCloudSkillTiers(skills = [], languages = [], editing = false) {
     return [...tiers].filter(([, items]) => items.length);
 }
 
-function SkillGroups({templateId, skills = [], languages = [], onEdit, onAdd, onMove, onRemove, onGroupMove, onGroupRemove, onRename}) {
+function SkillGroups({templateId, skills = [], languages = [], contentLanguage = 'en', onEdit, onAdd, onMove, onRemove, onGroupMove, onGroupRemove, onRename}) {
     const variant = {'boardroom-ready':'boardroom', 'data-scientist':'data', 'security-analyst':'security',
         'cloud-expert':'cloud', 'portfolio-hybrid':'portfolio', 'the-standard':'standard'}[templateId] || 'standard';
     if (variant === 'cloud') {
         const entries = getCloudSkillTiers(skills, languages, typeof onEdit === 'function');
         return <div className="cv-skill-groups cv-skill-groups-cloud">{entries.map(([category, items]) =>
             <div key={category} className="cv-skill-group cv-skill-group-cloud">
-                <strong className="cv-skill-category cloud-skill-heading">{category}</strong>
+                <strong className="cv-skill-category cloud-skill-heading">{contentLanguage === 'vi' ? ({Excellent:'Tốt', Intermediate:'Trung bình', Beginner:'Cơ bản'}[category] || category) : category}</strong>
                 <div className="cloud-skill-grid"><div className="chips">{items.map(item =>
                     <EditableItem key={item.index} path="skills" index={item.index} count={skills.length}
                         onMove={onMove} onRemove={onRemove} onAdd={onAdd}
@@ -401,13 +406,13 @@ function SkillGroups({templateId, skills = [], languages = [], onEdit, onAdd, on
     })}</div>;
 }
 
-function ExperienceList({templateId, items = [], onEdit, onMove, onRemove, onAdd, addValue}) {
+function ExperienceList({templateId, items = [], contentLanguage = 'en', onEdit, onMove, onRemove, onAdd, addValue}) {
     const variant = {'boardroom-ready':'boardroom', 'data-scientist':'data', 'security-analyst':'security',
         'cloud-expert':'cloud', 'portfolio-hybrid':'portfolio', 'the-standard':'standard'}[templateId] || 'standard';
     return <div className={`experience-list experience-list-${variant}`}>{items.map((item, index) => {
         const period = <EditableText as="span" className="period" path={`experiences.${index}.period`} onEdit={onEdit} placeholder="Thời gian">{value(item.period)}</EditableText>;
         const role = <EditableText as="h3" path={`experiences.${index}.role`} onEdit={onEdit} placeholder="Vị trí">{value(item.role)}</EditableText>;
-        const company = <div className="company"><span>at </span><EditableText path={`experiences.${index}.company`} onEdit={onEdit} placeholder="Công ty">{value(item.company)}</EditableText></div>;
+        const company = <div className="company"><span>{contentLanguage === 'vi' ? 'tại ' : 'at '}</span><EditableText path={`experiences.${index}.company`} onEdit={onEdit} placeholder="Công ty">{value(item.company)}</EditableText></div>;
         const cloudCompany = <div className="company cloud-company"><span aria-hidden="true">|</span><EditableText path={`experiences.${index}.company`} onEdit={onEdit} placeholder="Công ty">{value(item.company)}</EditableText></div>;
         const portfolioCompany = <div className="company portfolio-company"><EditableText path={`experiences.${index}.company`} onEdit={onEdit} placeholder="Công ty">{value(item.company)}</EditableText></div>;
         const bullets = <EditableBulletList details={item.details} path={`experiences.${index}.details`} onEdit={onEdit}/>;
@@ -422,7 +427,7 @@ function ExperienceList({templateId, items = [], onEdit, onMove, onRemove, onAdd
     })}</div>;
 }
 
-function ProjectList({templateId, items = [], onEdit, onMove, onRemove, onAdd, addValue}) {
+function ProjectList({templateId, items = [], contentLanguage = 'en', onEdit, onMove, onRemove, onAdd, addValue}) {
     const variant = {'boardroom-ready':'boardroom', 'data-scientist':'data', 'security-analyst':'security',
         'cloud-expert':'cloud', 'portfolio-hybrid':'portfolio', 'the-standard':'standard'}[templateId] || 'standard';
     return <div className={`project-list project-list-${variant}`}>{items.map((item, index) => {
@@ -456,8 +461,8 @@ function ProjectList({templateId, items = [], onEdit, onMove, onRemove, onAdd, a
         const portfolioName = <div className="portfolio-project-title">{name}{projectLink}</div>;
         const bullets = <EditableBulletList details={item.details} path={`projects.${index}.details`} onEdit={onEdit} project/>;
         const metadata = <div className="project-meta">
-            {(onEdit || value(item.techStack)) && <p className="project-detail"><strong>Tech stack:</strong> <EditableText path={`projects.${index}.techStack`} onEdit={onEdit} placeholder="Công nghệ">{value(item.techStack)}</EditableText></p>}
-            {(onEdit || value(item.teamSize)) && <p className="project-detail"><strong>Team size:</strong> <EditableText path={`projects.${index}.teamSize`} onEdit={onEdit} placeholder="Quy mô nhóm">{value(item.teamSize)}</EditableText></p>}
+            {(onEdit || value(item.techStack)) && <p className="project-detail"><strong>{contentLanguage === 'vi' ? 'Công nghệ:' : 'Tech stack:'}</strong> <EditableText path={`projects.${index}.techStack`} onEdit={onEdit} placeholder="Công nghệ">{value(item.techStack)}</EditableText></p>}
+            {(onEdit || value(item.teamSize)) && <p className="project-detail"><strong>{contentLanguage === 'vi' ? 'Quy mô nhóm:' : 'Team size:'}</strong> <EditableText path={`projects.${index}.teamSize`} onEdit={onEdit} placeholder="Quy mô nhóm">{value(item.teamSize)}</EditableText></p>}
             {!['cloud', 'portfolio'].includes(variant) && (onEdit || value(item.url)) && <p className="project-detail"><EditableText path={`projects.${index}.url`} onEdit={onEdit} placeholder="Liên kết">{value(item.url)}</EditableText></p>}
         </div>;
         const content = ['boardroom', 'security'].includes(variant) ? <><div className="reference-project-heading">{name}{period}</div>{bullets}{metadata}</>
@@ -481,6 +486,7 @@ function ProfilePhoto({source}) {
 export default function EditableCvHtmlTemplate({data: source = {}, templateId = 'the-standard', onEdit, onAdd, onMove, onRemove,
     onSectionMove, onSectionReorder, onSectionRemove, onSkillGroupMove, onSkillGroupRemove, onSkillRename, onClear, includeStyles = true}) {
     const data = source || {};
+    const vi = data.contentLanguage === 'vi';
     const personal = data.personalInfo || {};
     const sections = getVisibleCvPdfSections(data);
     const layout = data.editorLayout || {};
@@ -548,8 +554,8 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         }
         if (key === 'summary') {
             if (!onEdit && !value(data.summary)) return null;
-            const summaryTitle = { 'the-standard': 'Summary', 'data-scientist': 'About Me', 'boardroom-ready': 'Professional Summary',
-                'security-analyst': 'Professional Summary', 'cloud-expert': 'Professional Summary', 'portfolio-hybrid': 'About Me' }[templateId] || 'Summary';
+            const summaryTitle = templateId === 'data-scientist' || templateId === 'portfolio-hybrid' ? cvLabel(data.contentLanguage, 'about')
+                : ['boardroom-ready', 'security-analyst', 'cloud-expert'].includes(templateId) ? cvLabel(data.contentLanguage, 'professionalSummary') : cvLabel(data.contentLanguage, 'summary');
             return <CvSection key={key} {...sectionProps} title={templateId === 'portfolio-hybrid' ? '' : summaryTitle} onAdd={undefined}>
                 <EditableText as="div" className="cv-standard-summary" path="summary" onEdit={onEdit} multiline placeholder="Giới thiệu bản thân">{value(data.summary)}</EditableText>
             </CvSection>;
@@ -557,8 +563,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         if (key === 'personalInfo') {
             const customFields = (personal.customFields || []).map(field => typeof field === 'string'
                 ? {label: '', value: field} : field || {label: '', value: ''});
-            const personalTitle = templateId === 'security-analyst' ? 'Personal Details'
-                : templateId === 'portfolio-hybrid' ? '' : 'Personal Information';
+            const personalTitle = templateId === 'portfolio-hybrid' ? '' : templateId === 'security-analyst' ? cvLabel(data.contentLanguage, 'personalDetails') : cvLabel(data.contentLanguage, 'personalInfo');
             return <CvSection key={key} {...sectionProps} title={personalTitle} addValue={{label:'',value:''}} addLabel="thông tin">
                 <div className="cv-standard-contacts">
                     {personalContactOrder.map((field, contactIndex) => {
@@ -587,32 +592,32 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         }
         if (key === 'skills' && !onEdit && !(data.skills || []).some(skill => value(skill.name)
             && !languages.some(language => value(language.name).toLowerCase() === value(skill.name).toLowerCase()))) return null;
-        if (key === 'skills') return <CvSection key={key} {...sectionProps} title={referenceTemplate ? <>{executiveTemplate && <Wrench className="cv-reference-section-icon"/>}Skill</> : templateId === 'cloud-expert' ? 'Skill' : 'Skills'} addValue={{name:'', category:nextSkillCategory(data.skills), level:''}} addLabel="nhóm kỹ năng">
-            <SkillGroups templateId={templateId} skills={data.skills || []} languages={languages} onEdit={onEdit} onAdd={onAdd} onMove={onMove} onRemove={onRemove}
+        if (key === 'skills') return <CvSection key={key} {...sectionProps} title={referenceTemplate || templateId === 'cloud-expert' ? <>{executiveTemplate && <Wrench className="cv-reference-section-icon"/>}{vi ? 'Kỹ năng' : 'Skill'}</> : cvLabel(data.contentLanguage, 'skills')} addValue={{name:'', category:nextSkillCategory(data.skills), level:''}} addLabel="nhóm kỹ năng">
+            <SkillGroups templateId={templateId} skills={data.skills || []} languages={languages} contentLanguage={data.contentLanguage} onEdit={onEdit} onAdd={onAdd} onMove={onMove} onRemove={onRemove}
                 onGroupMove={onSkillGroupMove} onGroupRemove={onSkillGroupRemove} onRename={onSkillRename}/>
         </CvSection>;
         if (key === 'experiences') {
             if (!onEdit && !experiences.length) return null;
-            return <CvSection key={key} {...sectionProps} title={<>{executiveTemplate && <BriefcaseBusiness className="cv-reference-section-icon"/>}Work Experience</>}
+            return <CvSection key={key} {...sectionProps} title={<>{executiveTemplate && <BriefcaseBusiness className="cv-reference-section-icon"/>}{cvLabel(data.contentLanguage, 'experience')}</>}
                 onAdd={experiences.length ? undefined : onAdd} addValue={{role:'',company:'',period:'',details:['']}} addLabel="kinh nghiệm">
-                <ExperienceList templateId={templateId} items={experiences} onEdit={onEdit} onMove={onMove} onRemove={onRemove}
+                <ExperienceList templateId={templateId} items={experiences} contentLanguage={data.contentLanguage} onEdit={onEdit} onMove={onMove} onRemove={onRemove}
                     onAdd={onAdd} addValue={{role:'',company:'',period:'',details:['']}}/>
             </CvSection>;
         }
         if (key === 'projects') {
             if (!onEdit && !projects.length) return null;
-            const projectTitle = executiveTemplate ? 'Project:' : templateId === 'cloud-expert' ? 'Personal Project'
-                : templateId === 'portfolio-hybrid' ? 'Highlight Project' : 'Projects';
+            const projectTitle = executiveTemplate ? (vi ? 'Dự án:' : 'Project:') : templateId === 'cloud-expert' ? cvLabel(data.contentLanguage, 'project')
+                : cvLabel(data.contentLanguage, 'projects');
             return <CvSection key={key} {...sectionProps} title={projectTitle} onAdd={projects.length ? undefined : onAdd}
                 addValue={{name:'',period:'',techStack:'',teamSize:'',url:'',details:['']}} addLabel="dự án">
-                <ProjectList templateId={templateId} items={projects} onEdit={onEdit} onMove={onMove} onRemove={onRemove}
+                <ProjectList templateId={templateId} items={projects} contentLanguage={data.contentLanguage} onEdit={onEdit} onMove={onMove} onRemove={onRemove}
                     onAdd={onAdd} addValue={{name:'',period:'',techStack:'',teamSize:'',url:'',details:['']}}/>
             </CvSection>;
         }
         const rows = key === 'education' ? education : key === 'certificates' ? certificates : key === 'languages' ? languages : awards;
         const addValues = {education:{school:'',degree:'',year:'',gpa:'',details:[]}, certificates:{name:'',issuer:'',date:'',url:''}, languages:{name:'',level:''}, awards:{name:'',issuer:'',date:''}};
         const labels = {education:'học vấn', certificates:'chứng chỉ', languages:'ngoại ngữ', awards:'giải thưởng'};
-        const title = {education:'Education', certificates:'Certificate', languages:'Foreign Language', awards:'Award'}[key];
+        const title = {education:cvLabel(data.contentLanguage, 'education'), certificates:cvLabel(data.contentLanguage, 'certificate'), languages:cvLabel(data.contentLanguage, 'foreignLanguage'), awards:cvLabel(data.contentLanguage, 'award')}[key];
         if (!onEdit && !rows.length) return null;
         return <CvSection key={key} {...sectionProps} title={title} onAdd={rows.length ? undefined : onAdd} addValue={addValues[key]} addLabel={labels[key]}>
             {rows.map((item, itemIndex) => <EditableItem key={item.id || itemIndex} path={key} index={itemIndex} count={rows.length}

@@ -24,7 +24,7 @@ function updateValueAtPath(source, path, value) {
 }
 
 export default function CVEditor() {
-    const { cvData, setTemplate, setFullCVData, currentCvId, setCurrentCvId, setHasCV } = useCV();
+    const { cvData, setTemplate, setContentLanguage, setFullCVData, currentCvId, setCurrentCvId, setHasCV } = useCV();
     const navigate = useNavigate();
     const location = useLocation();
     const returnToEvaluation = location.state?.returnToCVEvaluation;
@@ -299,6 +299,8 @@ export default function CVEditor() {
                     catch (error) { setSaveError(getApiErrorMessage(error, 'Không thể chọn mẫu CV này.')); }
                 }}
                 selectedTemplateId={selectedTemplate}
+                contentLanguage={cvData.contentLanguage || 'en'}
+                onContentLanguageChange={setContentLanguage}
                 exportLabel="Tải PDF"
             />
             <div className="cv-editor-toolbar relative px-6 py-2 text-sm text-on-surface-variant" aria-live="polite">
