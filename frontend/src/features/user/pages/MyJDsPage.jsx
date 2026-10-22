@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { Card, Button } from '../components/Layout.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
+import ConfirmationDialog from '../../../components/ui/ConfirmationDialog.jsx';
+import {useConfirmation} from '../../../components/ui/useConfirmation.js';
 import galleryService from '../../../service/galleryService';
 import { getApiErrorMessage } from '../../../service/apiClient';
 import { useGalleryData } from '../hooks/useGalleryData';
@@ -31,6 +33,7 @@ function structuredMetadata(content) {
 export default function MyJDsPage() {
     const navigate = useNavigate();
     const { showToast } = useApp();
+    const {confirm, confirmation} = useConfirmation();
     const { jds, loading, errors, reload, removeJD, updateJD } = useGalleryData();
     const [deleting, setDeleting] = useState([]);
     const [editingJD, setEditingJD] = useState(null);
@@ -41,7 +44,7 @@ export default function MyJDsPage() {
 
     const handleDelete = async jd => {
         const title = jd.title || 'JD này';
-        if (!window.confirm(`Ẩn “${title}” khỏi danh sách và gợi ý mới? Kết quả đánh giá và phỏng vấn cũ vẫn được giữ.`)) return;
+        if (!await confirm({title: 'Ẩn JD?', message: `Ẩn “${title}” khỏi danh sách và gợi ý mới? Kết quả đánh giá và phỏng vấn cũ vẫn được giữ.`, confirmLabel: 'Ẩn JD'})) return;
         if (deletingRef.current.has(jd.id)) return;
         deletingRef.current.add(jd.id);
         setDeleting([...deletingRef.current]);
@@ -103,6 +106,7 @@ export default function MyJDsPage() {
 
     return (
         <div className="mx-auto max-w-6xl pb-12">
+            <ConfirmationDialog {...confirmation}/>
             <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-[#10B981]">JD của tôi</h1>

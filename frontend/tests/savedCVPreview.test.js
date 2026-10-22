@@ -31,6 +31,29 @@ test('saved previews render stored content for every supported template without 
     }
 });
 
+test('renders structured step-four content and ignores blank skills on all six templates', () => {
+    for (const id of ['portfolio-hybrid', 'cloud-expert', 'security-analyst', 'data-scientist', 'the-standard', 'boardroom-ready']) {
+        const saved = cv(id, `Candidate ${id}`);
+        saved.content.skills = [
+            {name: 'React', category: 'Frontend', level: 'ADVANCED'},
+            {name: '', category: 'Frontend', level: null},
+        ];
+        saved.content.projects = [{
+            name: 'Mapping Project', period: '2022 – 2023', details: ['First detail', '', 'Second detail'],
+            techStack: 'React, Node.js', teamSize: '4 members', url: 'https://example.com/project',
+        }];
+        saved.content.certificates = [{name: 'Cloud Certificate', issuer: 'Example Institute', date: '2023', url: 'https://example.com/certificate'}];
+        saved.content.languages = [{name: 'English', level: 'IELTS 7.0'}];
+        saved.content.awards = [{name: 'Design Award', issuer: 'Example University', date: '2024'}];
+
+        const html = render(createElement(SavedCVPreview, {cv: saved, compact: true}));
+        for (const value of ['React', 'Mapping Project', '2022 – 2023', 'First detail', 'Second detail',
+            'React, Node.js', '4 members', 'Cloud Certificate', 'Example Institute', 'English', 'IELTS 7.0', 'Design Award']) {
+            assert.ok(html.includes(value), `${id}: expected ${value}`);
+        }
+    }
+});
+
 test('saved preview renderer inputs isolate CVs and preserve their stored content', () => {
     const alice = mapCvDataForPdf(getSavedCVPreviewData(cv('portfolio-hybrid', 'Alice')));
     const bob = mapCvDataForPdf(getSavedCVPreviewData(cv('cloud-expert', 'Bob')));
@@ -41,9 +64,75 @@ test('saved preview renderer inputs isolate CVs and preserve their stored conten
     assert.equal(bob.personalInfo.email, 'Bob@example.test');
 });
 
+test('reference templates preserve education achievements and emphasize executive project labels', () => {
+    for (const id of ['data-scientist', 'security-analyst', 'boardroom-ready']) {
+        const saved = cv(id);
+        saved.content.education[0].details = ['First-place graduation'];
+        saved.content.projects = [{name: 'Authentication', details: ['Project description: Secure login', 'Responsibilities: Build APIs']}];
+        const before = JSON.stringify(saved);
+        const html = render(createElement(SavedCVPreview, {cv: saved}));
+        assert.ok(html.includes('First-place graduation'), id);
+        assert.ok(html.includes('Secure login'), id);
+        assert.ok(html.includes('Build APIs'), id);
+        if (id !== 'data-scientist') {
+            assert.ok(html.includes('<strong>Project description:</strong>'), id);
+            assert.ok(html.includes('<strong>Responsibilities:</strong>'), id);
+        }
+        assert.equal(JSON.stringify(saved), before);
+    }
+});
+
+test('certificate links in all six previews are clickable only for web URLs', () => {
+    for (const id of Object.keys(PDF_TEMPLATE_LOADERS)) {
+        const saved = cv(id);
+        saved.content.certificates = [{name: 'Certificate', url: 'https://example.test/certificate'}];
+        let html = render(createElement(SavedCVPreview, {cv: saved}));
+        assert.ok(html.includes('href="https://example.test/certificate"'), id);
+        assert.ok(html.includes('View certificate'), id);
+        saved.content.certificates[0].url = 'javascript:alert(1)';
+        html = render(createElement(SavedCVPreview, {cv: saved}));
+        assert.ok(!html.includes('href="javascript:'), id);
+    }
+});
+
 test('missing template, missing content and unsupported template show useful fallbacks', () => {
-    for (const [data, message] of [[{ content: {} }, 'CV chưa chọn mẫu.'], [{ template: { id: 'cloud-expert' } }, 'CV chưa có nội dung'], [cv('unsupported'), 'Mẫu CV này chưa hỗ trợ']]) {
+    for (const [data, message] of [[{ content: {} }, 'CV chưa có nội dung'], [{ template: { id: 'cloud-expert' } }, 'CV chưa có nội dung'], [cv('unsupported'), 'Mẫu CV này chưa hỗ trợ']]) {
         assert.ok(render(createElement(SavedCVPreview, { cv: data })).includes(message));
+    }
+});
+
+test('uploaded CVs preview extracted content without assigning a template or mutating saved data', () => {
+    const uploaded = cv(null, 'Imported Candidate');
+    uploaded.content.professionalTitle = 'Frontend Developer';
+    uploaded.content.projects = [{name: 'Portfolio project', details: ['Project outcome']}];
+    uploaded.content.certificates = [{name: 'Certificate A', issuer: 'Issuer A'}];
+    uploaded.content.languages = [{name: 'Vietnamese', level: 'Native'}];
+    uploaded.content.awards = [{name: 'Award A'}];
+    const before = JSON.stringify(uploaded);
+    const compact = render(createElement(SavedCVPreview, {cv: uploaded, compact: true}));
+    const full = render(createElement(SavedCVPreview, {cv: uploaded}));
+    for (const html of [compact, full]) {
+        assert.ok(html.includes('CV tải lên'));
+        assert.ok(html.includes('Imported Candidate'));
+        assert.ok(html.includes('Frontend Developer'));
+        assert.ok(html.includes('React'));
+        assert.doesNotMatch(html, /CV chưa chọn mẫu|cv-template-|contenteditable=|<input|<button/i);
+    }
+    for (const content of ['Saved summary from database', 'Saved Company', 'Real achievement', 'Saved School', 'Portfolio project', 'Project outcome', 'Certificate A', 'Vietnamese', 'Award A']) {
+        assert.ok(full.includes(content), content);
+    }
+    assert.ok(!compact.includes('Project outcome'));
+    assert.equal(JSON.stringify(uploaded), before);
+});
+
+test('uploaded previews handle partial content and escape extracted text', () => {
+    const partial = {content: {personalInfo: null, experiences: [null, {details: null}], skills: [{name: {invalid: true}}],
+        sourceText: '<script>alert("unsafe")</script>', education: null}};
+    for (const compact of [false, true]) {
+        const html = render(createElement(SavedCVPreview, {cv: partial, compact}));
+        assert.ok(html.includes('CV tải lên'));
+        assert.ok(html.includes('&lt;script&gt;'));
+        assert.doesNotMatch(html, /<script>/);
     }
 });
 

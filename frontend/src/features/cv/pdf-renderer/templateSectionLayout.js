@@ -21,9 +21,10 @@ export const CV_TEMPLATE_LAYOUTS = Object.freeze({
         columns: 1,
     },
     'security-analyst': {
-        mainOrder: ['name', 'summary', 'personalInfo', 'skills', 'experiences', 'projects', 'education', 'certificates', 'languages', 'awards'],
-        sidebarOrder: [],
-        columns: 1,
+        mainOrder: ['name', 'experiences', 'projects', 'certificates', 'languages', 'awards'],
+        sidebarOrder: ['profilePhoto', 'personalInfo', 'summary', 'education', 'skills'],
+        columns: 2,
+        sidebarFirst: true,
     },
     'cloud-expert': {
         mainOrder: ['summary', 'experiences', 'projects', 'languages', 'awards'],
@@ -57,8 +58,17 @@ function mergeDefaultOrder(savedOrder, defaultOrder, occupiedKeys) {
 
 export function getCvTemplateLayout(editorLayout = {}, templateId = 'the-standard') {
     const defaults = CV_TEMPLATE_LAYOUTS[templateId] || CV_TEMPLATE_LAYOUTS['the-standard'];
-    const saved = editorLayout.templateLayouts?.[templateId]
+    let saved = editorLayout.templateLayouts?.[templateId]
         || (templateId === 'the-standard' ? editorLayout : {});
+    if (templateId === 'security-analyst') {
+        const oldSingleColumn = saved.mainOrder?.length && !saved.sidebarOrder?.length;
+        const main = oldSingleColumn ? saved.mainOrder.filter(key => defaults.mainOrder.includes(key)) : saved.mainOrder || [];
+        const sidebar = oldSingleColumn ? saved.mainOrder.filter(key => defaults.sidebarOrder.includes(key)) : saved.sidebarOrder || [];
+        saved = {
+            mainOrder: ['name', ...main.filter(key => !['name', 'profilePhoto'].includes(key))],
+            sidebarOrder: ['profilePhoto', ...sidebar.filter(key => !['name', 'profilePhoto'].includes(key))],
+        };
+    }
     const supportsPhoto = supportsProfilePhoto(templateId);
     const explicitMain = [...new Set(saved.mainOrder || [])].filter(key => CV_SECTION_KEYS.includes(key)
         && (key !== 'profilePhoto' || supportsPhoto));

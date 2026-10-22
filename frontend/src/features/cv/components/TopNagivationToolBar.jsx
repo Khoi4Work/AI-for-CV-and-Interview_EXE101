@@ -2,7 +2,7 @@ import { X, FileDown, Save, LoaderCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfilePhotoPicker from './ProfilePhotoPicker.jsx';
 
-export default function TopNagivationToolBar({ onExport, onSave, saving, exporting = false, actionsDisabled, templatesLoading, cvName, onNameChange, onClose, zoom = 100, onZoomIn, onZoomOut, templateName, templateOptions = [], selectedTemplateId, onTemplateChange, exportLabel = 'Tải PDF' }) {
+export default function TopNagivationToolBar({ onExport, onSave, saving, exporting = false, actionsDisabled, templatesLoading, cvName, onNameChange, onClose, zoom = 100, onZoomIn, onZoomOut, templateName, templateOptions = [], selectedTemplateId, onTemplateChange, contentLanguage = 'en', onContentLanguageChange, exportLabel = 'Tải PDF' }) {
     const navigate = useNavigate();
 
     return (
@@ -45,6 +45,16 @@ export default function TopNagivationToolBar({ onExport, onSave, saving, exporti
                         </select>
                     </label>
                 )}
+
+                {onContentLanguageChange && <label className="flex items-center gap-2 text-sm text-on-surface-variant">
+                    <span className="hidden sm:inline">Ngôn ngữ CV</span>
+                    <select aria-label="Ngôn ngữ nội dung CV" value={contentLanguage} disabled={saving || exporting}
+                        onChange={event => onContentLanguageChange(event.target.value)}
+                        className="rounded-lg border border-outline-variant bg-surface px-3 py-2 text-on-surface">
+                        <option value="en">English</option>
+                        <option value="vi">Tiếng Việt</option>
+                    </select>
+                </label>}
 
                 {/* Zoom Controls */}
                 <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full px-4 py-1 gap-4 border border-white/10">

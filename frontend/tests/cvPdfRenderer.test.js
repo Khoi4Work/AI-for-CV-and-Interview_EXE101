@@ -115,6 +115,14 @@ test('normalizes nullable fields for every renderer while preserving arbitrary d
     assert.deepEqual(mapped.languages, [{ name: 'English', level: 'B2' }]);
 });
 
+test('removes blank project description lines from PDF data and keeps nonblank lines in order', () => {
+    const mapped = mapCvDataForPdf({projects: [{
+        name: 'Project A', details: [' First achievement ', '', '  ', 'Second achievement'],
+    }]});
+
+    assert.deepEqual(mapped.projects[0].details, ['First achievement', 'Second achievement']);
+});
+
 test('registers a dedicated PDF template module for all six editor template IDs', () => {
     assert.deepEqual(PDF_TEMPLATE_IDS, [
         'the-standard',
@@ -126,16 +134,19 @@ test('registers a dedicated PDF template module for all six editor template IDs'
     ]);
 });
 
-test('old Security Analyst sidebar sections remain visible after switching to the single-column layout', () => {
+test('Security Analyst migrates the previous single-column layout without losing sections', () => {
     const layout = getCvTemplateLayout({templateLayouts: {'security-analyst': {
-        mainOrder: ['summary', 'experiences', 'projects', 'awards'],
-        sidebarOrder: ['name', 'profilePhoto', 'personalInfo', 'education', 'skills', 'certificates', 'languages'],
+        mainOrder: ['name', 'summary', 'personalInfo', 'skills', 'experiences', 'projects', 'education', 'certificates', 'languages', 'awards'],
+        sidebarOrder: [],
     }}}, 'security-analyst');
-    assert.equal(layout.columns, 1);
-    assert.deepEqual(layout.sidebarOrder, []);
-    for (const section of ['name', 'personalInfo', 'education', 'skills', 'certificates', 'languages']) {
+    assert.equal(layout.columns, 2);
+    assert.equal(layout.sidebarFirst, true);
+    for (const section of ['personalInfo', 'summary', 'education', 'skills', 'profilePhoto']) {
+        assert.ok(layout.sidebarOrder.includes(section), section);
+    }
+    for (const section of ['name', 'experiences', 'projects', 'certificates', 'languages', 'awards']) {
         assert.ok(layout.mainOrder.includes(section), section);
     }
-    assert.equal(new Set(layout.mainOrder).size, layout.mainOrder.length);
-    assert.ok(!layout.mainOrder.includes('profilePhoto'));
+    const sections = [...layout.mainOrder, ...layout.sidebarOrder];
+    assert.equal(new Set(sections).size, sections.length);
 });

@@ -1,4 +1,5 @@
 import {Sparkles} from 'lucide-react';
+import {Link} from 'react-router-dom';
 import { TEMPLATE_CATEGORIES, TEMPLATE_STYLES } from '../constants/templates.js';
 
 export default function Sidebar({ activeCategory, setActiveCategory, activeStyle, setActiveStyle }){
@@ -52,9 +53,10 @@ export default function Sidebar({ activeCategory, setActiveCategory, activeStyle
                     <div className="glass-panel rounded-xl p-4 shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
                             <Sparkles className="w-5 h-5 text-primary" />
-                            <span className="text-sm font-bold text-on-surface">AI Recommendations</span>
+                            <span className="text-sm font-bold text-on-surface">Gợi ý cải thiện CV bằng AI</span>
                         </div>
-                        <button className="w-full py-2 bg-primary text-on-primary rounded-md text-sm font-bold hover:opacity-90 transition-colors">Try</button>
+                        <p className="mb-3 text-xs leading-relaxed text-on-surface-variant">So sánh CV với mô tả công việc để tìm điểm cần bổ sung.</p>
+                        <Link to="/cv-evaluation" className="block w-full rounded-md bg-primary py-2 text-center text-sm font-bold text-on-primary transition-colors hover:opacity-90">Đánh giá CV</Link>
                     </div>
                 </section>
             </aside>

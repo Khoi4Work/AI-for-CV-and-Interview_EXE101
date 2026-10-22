@@ -229,17 +229,18 @@ export default function TemplateList() {
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-400">Sắp xếp theo:</span>
                                     <div className="relative">
-                                        <button
-                                            onClick={() => {
-                                                const orders = ['Mới nhất', 'Phổ biến nhất', 'Đánh giá cao'];
-                                                const nextIndex = (orders.indexOf(sortOrder) + 1) % orders.length;
-                                                setSortOrder(orders[nextIndex]);
-                                            }}
-                                            className="flex items-center gap-2 px-4 py-1.5 border border-green-700 rounded-lg text-sm font-medium text-green-700 bg-white hover:bg-gray-50 transition"
+                                        <label className="sr-only" htmlFor="template-sort-order">Sắp xếp mẫu CV</label>
+                                        <select
+                                            id="template-sort-order"
+                                            value={sortOrder}
+                                            onChange={(event) => setSortOrder(event.target.value)}
+                                            className="min-w-40 appearance-none rounded-lg border border-green-700 bg-white py-1.5 pl-4 pr-9 text-sm font-medium text-green-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-600"
                                         >
-                                            {sortOrder}
-                                            <ChevronDown className="w-4 h-4"/>
-                                        </button>
+                                            <option value="Mới nhất">Mới nhất</option>
+                                            <option value="Phổ biến nhất">Phổ biến nhất</option>
+                                            <option value="Đánh giá cao">Đánh giá cao</option>
+                                        </select>
+                                        <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-green-700"/>
                                     </div>
                                 </div>
                             </div>

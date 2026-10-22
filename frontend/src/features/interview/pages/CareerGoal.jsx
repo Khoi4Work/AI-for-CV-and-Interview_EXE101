@@ -1,7 +1,7 @@
 // /src/pages/interview/CareerGoal.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
@@ -24,8 +24,10 @@ export default function CareerGoal() {
   }, [setStep]);
 
   const handleAppend = (text) => {
+    const suggestion = text.replace(/^\+\s*/, '').trim();
+    if (goal.toLocaleLowerCase().includes(suggestion.toLocaleLowerCase())) return;
     const prefix = goal.trim() ? `${goal.trim()} ` : '';
-    const nextGoal = `${prefix}${text.replace('+ ', '')}`.slice(0, MAX_GOAL_LENGTH);
+    const nextGoal = `${prefix}${suggestion}`.slice(0, MAX_GOAL_LENGTH);
     setGoal(nextGoal);
     update({ careerGoal: nextGoal });
   };
@@ -72,8 +74,10 @@ export default function CareerGoal() {
                 {SUGGESTIONS.map((sug, idx) => (
                   <button
                     key={idx}
+                    type="button"
+                    aria-pressed={goal.toLocaleLowerCase().includes(sug.replace(/^\+\s*/, '').toLocaleLowerCase())}
                     onClick={() => handleAppend(sug)}
-                    className="bg-interview-card-bg text-black border-2 border-selection-border selection-card-hover px-3 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer"
+                    className={`bg-interview-card-bg text-black border-2 border-selection-border selection-card-hover px-3 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer ${goal.toLocaleLowerCase().includes(sug.replace(/^\+\s*/, '').toLocaleLowerCase()) ? 'ring-2 ring-primary/30' : ''}`}
                   >
                     {sug}
                   </button>

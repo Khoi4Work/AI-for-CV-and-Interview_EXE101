@@ -132,7 +132,6 @@ const PricingPage = () => {
                         </div>
                         <p className="text-sm text-[#334155] mb-1">Còn {quota?.remainingCvCount ?? '—'} lượt tạo CV</p>
                         <p className="text-sm text-[#334155] mb-5">Lượt phân tích được cấp riêng cho từng CV</p>
-                        <Button onClick={() => navigate('#cv-plans')} className="bg-[#065F46] hover:bg-[#044d3a] text-white text-xs font-bold px-5 py-2.5 rounded-lg">Mua thêm quota CV</Button>
                     </Card>
                     <Card className="p-6 bg-[#B5C2BC] border-none shadow-sm">
                         <Badge variant="light" className="text-[10px] !text-[#1E293B] font-bold">Gói Interview</Badge>
@@ -141,7 +140,6 @@ const PricingPage = () => {
                             <span className="text-right text-xs text-[#475569]">Gói interview<br/><b>Không hết hạn</b></span>
                         </div>
                         <p className="text-sm text-[#334155] mb-5">Còn {quota?.remainingInterviewMinutes ?? '—'} phút phỏng vấn</p>
-                        <Button onClick={() => navigate('#interview-plans')} className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold px-5 py-2.5 rounded-lg">Mua thêm phút Interview</Button>
                     </Card>
                 </div>
 

@@ -106,6 +106,7 @@ export function mapImportedCVData(data) {
             details: Array.isArray(item?.details) ? item.details : [],
         })),
         skills: (Array.isArray(source.skills) ? source.skills : []).map(skill => ({
+            ...skill,
             name: skill?.name || '',
             level: skill?.level || null,
             category: skill?.category || '',

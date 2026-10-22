@@ -13,3 +13,10 @@ test('CV date validation rejects impossible dates and future birthdays', () => {
     assert.ok(validateDob('31/02/2000').some(error => error.includes('ngày hợp lệ')));
     assert.ok(validateDob('01/01/2099').some(error => error.includes('không thể ở tương lai')));
 });
+
+test('CV validation checks optional project and certificate URLs without requiring them', () => {
+    assert.deepEqual(validateCVData({projects: [{name: 'Project', url: ''}], certificates: [{name: 'Certificate', url: ''}]}), []);
+    const errors = validateCVData({projects: [{name: 'Project', url: 'not a url'}]});
+    assert.equal(errors.length, 1);
+    assert.match(errors[0], /liên kết không hợp lệ/);
+});
