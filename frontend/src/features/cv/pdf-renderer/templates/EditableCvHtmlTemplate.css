@@ -3311,3 +3311,542 @@
     color: #444;
     font-size: 7.8pt
 }
+
+/* Reference layouts for Data Scientist, Security Analyst and Boardroom Ready. */
+.cv-standard.cv-reference-template {
+    display:block;
+    color:#191919;
+    font-family:Arial,CVNoto,sans-serif;
+    font-size:9.5pt;
+    line-height:1.6;
+    --cv-accent:#111;
+}
+
+.cv-standard.cv-reference-template .cv-standard-main {
+    display:block;
+    width:100%;
+    padding:0;
+    background:white;
+}
+
+.cv-standard.cv-reference-template .cv-standard-sidebar {
+    display:none;
+}
+
+.cv-standard.cv-reference-template .cv-standard-content {
+    display:flex;
+    flex-direction:column;
+    padding:34px 50px 30px;
+    gap:0;
+}
+
+.cv-standard.cv-reference-template .cv-standard-content > .cv-standard-section {
+    position:relative;
+    inset:auto;
+    width:auto;
+    margin:0 0 22px;
+    padding:0;
+    background:transparent;
+}
+
+.cv-standard.cv-reference-template .cv-standard-content > .cv-name-section {
+    position:relative;
+    inset:auto;
+    order:-3;
+    margin:0 0 16px;
+    padding:0;
+    text-align:center;
+}
+
+.cv-standard.cv-reference-template .cv-name-section > .cv-standard-section-heading {
+    height:0;
+    margin:0;
+    padding:0;
+    border:0;
+}
+
+.cv-standard.cv-reference-template .cv-name-section h2 {
+    display:none;
+}
+
+.cv-standard.cv-reference-template .cv-standard-name {
+    margin:0 0 3px;
+    padding:0;
+    color:#111;
+    font-size:23pt;
+    line-height:1.25;
+    text-transform:none;
+}
+
+.cv-standard.cv-reference-template .cv-name-cluster .cv-standard-title {
+    margin:6px 0 0;
+    color:#111;
+    font-size:9.5pt;
+    font-weight:400;
+    letter-spacing:3px;
+    text-transform:uppercase;
+}
+
+.cv-standard.cv-reference-template .cv-standard-section-title {
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin:0 0 12px;
+    padding:0 0 3px;
+    border-bottom:1.5px solid #333;
+    color:#111;
+    font-size:11pt;
+    font-weight:700;
+    letter-spacing:0;
+    text-align:left;
+}
+
+.cv-standard.cv-reference-template .cv-standard-content > [data-section-key="personalInfo"] {
+    order:-2;
+    margin-bottom:28px;
+}
+
+.cv-standard.cv-reference-template [data-section-key="personalInfo"] > .cv-standard-section-heading {
+    height:0;
+    margin:0;
+    padding:0;
+}
+
+.cv-standard.cv-reference-template [data-section-key="personalInfo"] h2 {
+    display:none;
+}
+
+.cv-standard.cv-reference-template .cv-standard-contacts {
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:5px 20px;
+}
+
+.cv-standard.cv-reference-template .cv-standard-contact {
+    display:flex;
+    align-items:center;
+    gap:4px;
+    min-width:0;
+}
+
+.cv-standard.cv-reference-template .cv-standard-contact-icon {
+    display:inline-flex;
+    flex:0 0 13px;
+    width:13px;
+    height:14px;
+    border:0;
+    border-radius:0;
+    color:#333;
+    background:transparent;
+}
+
+.cv-standard.cv-reference-template .cv-standard-contact-icon svg {
+    width:13px;
+    height:13px;
+    stroke-width:1.5;
+}
+
+.cv-standard.cv-reference-template .cv-standard-contact-value {
+    color:#222;
+    font-size:9pt;
+    line-height:1.5;
+}
+
+.cv-standard.cv-reference-template .cv-standard-summary {
+    max-width:none;
+    color:#222;
+    font-size:9.5pt;
+    line-height:1.8;
+}
+
+.cv-standard.cv-reference-template .experience-entry,.cv-standard.cv-reference-template .project-entry {
+    display:block;
+    position:relative;
+    margin:0 0 14px;
+    padding:0 0 12px;
+    border:0;
+    border-bottom:1px solid #ddd;
+    background:transparent;
+}
+
+.cv-standard.cv-reference-template .experience-entry::before,.cv-standard.cv-reference-template .project-entry::before {
+    display:none;
+}
+
+.cv-standard.cv-reference-template .reference-data-heading {
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:16px;
+}
+
+.cv-standard.cv-reference-template .experience-entry h3,.cv-standard.cv-reference-template .project-entry h3 {
+    margin:0;
+    color:#111;
+    font-size:10pt;
+    line-height:1.5;
+}
+
+.cv-standard.cv-reference-template .period {
+    position:static;
+    float:none;
+    margin:0;
+    padding:0;
+    color:#111;
+    font-size:9.5pt;
+    font-weight:700;
+    background:none;
+    border:0;
+}
+
+.cv-standard.cv-reference-template .experience-entry .company {
+    margin:3px 0 7px;
+    color:#111;
+    font-size:9pt;
+    font-weight:700;
+}
+
+.cv-standard.cv-reference-template .bullet-details,.cv-standard.cv-reference-template .project-details {
+    margin:6px 0 0;
+    padding-left:18px;
+    font-size:9.5pt;
+    line-height:1.8;
+}
+
+.cv-standard.cv-reference-template .cv-standard-side-item {
+    position:relative;
+    margin:0 0 12px;
+    padding:0 0 10px;
+    border-bottom:1px solid #ddd;
+}
+
+.cv-standard.cv-reference-template [data-section-key="education"] .cv-standard-side-item {
+    padding-right:140px;
+}
+
+.cv-standard.cv-reference-template .cv-standard-school {
+    margin:0 0 3px;
+    color:#111;
+    font-size:10pt;
+}
+
+.cv-standard.cv-reference-template .cv-standard-degree {
+    margin:0 0 6px;
+    color:#111;
+    font-size:9.5pt;
+    font-weight:700;
+}
+
+.cv-standard.cv-reference-template [data-section-key="education"] .cv-standard-muted {
+    position:absolute;
+    top:0;
+    right:0;
+    color:#111;
+    font-weight:700;
+    font-size:9pt;
+}
+
+.cv-standard.cv-reference-template .cv-skill-group {
+    display:grid;
+    grid-template-columns:100px minmax(0,1fr);
+    gap:12px;
+    align-items:baseline;
+    margin:0 0 10px;
+    padding:0 0 10px;
+    border:0;
+    border-bottom:1px solid #ddd;
+    background:transparent;
+}
+
+.cv-standard.cv-reference-template .cv-skill-category {
+    margin:0;
+    color:#111;
+    font-size:9pt;
+}
+
+.cv-standard.cv-reference-template .chips {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 8px;
+}
+
+.cv-standard.cv-reference-template .chip {
+    display:inline-block;
+    padding:1px 6px;
+    border:0;
+    border-radius:4px;
+    background:#f3f3f3;
+    color:#111;
+    font-size:9pt;
+    line-height:1.7;
+}
+
+.cv-standard.cv-reference-template .cv-skill-level {
+    color:#222;
+    font-size:inherit;
+    font-weight:400;
+}
+
+.cv-standard.cv-reference-template .cv-soft-skills .chips {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:3px;
+}
+
+.cv-standard.cv-reference-template .cv-soft-skills .chip {
+    padding:0;
+    background:transparent;
+    font-weight:400;
+}
+
+.cv-standard.cv-reference-template .cv-soft-skills .chip::before {
+    content:'•';
+    margin-right:8px;
+}
+
+.cv-standard.cv-reference-executive {
+    --cv-accent:#3d595c;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-content {
+    display:grid;
+    grid-template-columns:minmax(0,64fr) minmax(0,36fr);
+    column-gap:24px;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-content > .cv-standard-section {
+    grid-column:1 / -1;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-content > .cv-name-section {
+    grid-row:1;
+    text-align:left;
+    margin-bottom:18px;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-name {
+    color:#3d595c;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-content > [data-section-key="summary"] {
+    order:-2;
+    grid-column:1;
+    grid-row:2;
+    margin:0 -12px 20px -50px;
+    padding:17px 12px 18px 50px;
+    background:#f1f3f3;
+}
+
+.cv-standard.cv-reference-executive [data-section-key="summary"] > .cv-standard-section-heading {
+    height:0;
+    margin:0;
+    padding:0;
+}
+
+.cv-standard.cv-reference-executive [data-section-key="summary"] h2 {
+    display:none;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-content > [data-section-key="personalInfo"] {
+    grid-column:2;
+    grid-row:2;
+    order:-2;
+    margin:0 -50px 20px -12px;
+    padding:17px 50px 18px 12px;
+    background:#f1f3f3;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-summary {
+    font-size:9pt;
+    line-height:1.8;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-contacts {
+    flex-direction:column;
+    justify-content:flex-start;
+    gap:3px;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-contact-value {
+    font-size:9pt;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-section-title {
+    color:#3d595c;
+    border-color:#3d595c;
+}
+
+.cv-standard.cv-reference-executive .cv-reference-section-icon {
+    box-sizing:content-box;
+    width:14px;
+    height:14px;
+    padding:5px;
+    border-radius:3px;
+    background:#3d595c;
+    color:white;
+    stroke-width:1.5;
+}
+
+.cv-standard.cv-reference-executive .cv-skill-group {
+    border:0;
+}
+
+.cv-standard.cv-reference-executive .chip {
+    background:#eaecec;
+    font-weight:700;
+    font-size:8.5pt;
+}
+
+.cv-standard.cv-reference-executive .reference-experience-heading {
+    display:grid;
+    grid-template-columns:1fr 1.2fr auto;
+    align-items:baseline;
+    gap:12px;
+    margin:0 -12px 8px;
+    padding:8px 12px;
+    background:#f1f3f3;
+}
+
+.cv-standard.cv-reference-executive .reference-experience-heading h3 {
+    color:#3d595c;
+}
+
+.cv-standard.cv-reference-executive .reference-experience-heading .company {
+    margin:0;
+    text-align:center;
+}
+
+.cv-standard.cv-reference-executive .experience-entry {
+    margin-bottom:0;
+    padding-bottom:0;
+    border:0;
+}
+
+.cv-standard.cv-reference-executive [data-section-key="projects"] > .cv-standard-section-heading h2 {
+    border:0;
+    padding:0;
+    color:#111;
+    font-size:9.5pt;
+    font-weight:400;
+}
+
+.cv-standard.cv-reference-executive .project-entry {
+    margin:0 0 10px;
+    padding:0;
+    border:0;
+}
+
+.cv-standard.cv-reference-executive .project-entry > .boardroom-entry-heading,.cv-standard.cv-reference-executive .project-entry > .security-entry-date {
+    display:flex;
+    justify-content:flex-start;
+    gap:6px;
+    margin:0;
+    padding:0;
+    border:0;
+    background:transparent;
+}
+
+.cv-standard.cv-reference-executive .project-entry .security-entry-content {
+    padding:0;
+    border:0;
+}
+
+.cv-standard.cv-reference-executive .project-detail {
+    margin:3px 0;
+    padding:0;
+    font-size:9pt;
+}
+
+.cv-standard.cv-reference-executive .reference-project-heading {
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:5px;
+}
+
+.cv-standard.cv-reference-executive .reference-project-heading .period {
+    font-size:9pt;
+    font-weight:400;
+}
+
+.cv-standard.cv-reference-executive .reference-project-heading .period::before {
+    content:'| ';
+}
+
+.cv-standard.cv-reference-executive .project-meta {
+    margin-top:4px;
+}
+
+.cv-standard.cv-template-data-scientist.cv-reference-template .cv-standard-contact:nth-child(4)::before {
+    content:none;
+}
+
+.cv-standard.cv-reference-template .cv-standard-content > .cv-standard-section:last-child {
+    margin-bottom:0;
+}
+
+.cv-standard.cv-reference-template .cv-standard-content > .cv-name-section:first-child {
+    position:relative;
+    inset:auto;
+}
+
+.cv-standard.cv-reference-executive [data-section-key="personalInfo"] .cv-standard-contact {
+    display:flex;
+}
+
+.cv-standard.cv-reference-executive [data-section-key="personalInfo"] .cv-standard-contact-value {
+    color:#222;
+    font-size:9pt;
+}
+
+.cv-standard.cv-reference-executive [data-section-key="personalInfo"] .cv-standard-contact-icon {
+    display:inline-flex;
+}
+
+.cv-standard.cv-reference-executive .cv-standard-content > [data-section-key="skills"] {
+    margin-top:0;
+}
+
+.cv-standard.cv-reference-template .cv-skill-groups {
+    display:block;
+}
+
+.cv-standard.cv-reference-template .cv-standard-section-title {
+    font-family:Arial,CVNoto,sans-serif;
+}
+
+.cv-standard.cv-reference-template [data-section-key="education"] .cv-standard-muted {
+    position:static;
+    font-weight:400;
+}
+
+.cv-standard.cv-reference-template [data-section-key="education"] .cv-education-period {
+    position:absolute;
+    top:0;
+    right:0;
+    font-weight:700;
+}
+
+.cv-standard.cv-reference-template .cv-standard-content > .cv-name-section .cv-standard-title {
+    display:block;
+}
+
+.cv-standard.cv-template-security-analyst.cv-reference-template .cv-standard-content {
+    padding:34px 50px 30px;
+}
+
+.cv-standard.cv-template-data-scientist.cv-reference-template .cv-standard-contacts {
+    max-width:540px;
+    margin:0 auto;
+}
+
+.cv-standard.cv-reference-template .experience-entry {
+    border-top:0;
+}
+
+.cv-standard.cv-reference-template [data-section-key="education"] .cv-standard-side-item:last-child,
+.cv-standard.cv-reference-template .experience-entry:last-child {
+    border-bottom:0;
+}

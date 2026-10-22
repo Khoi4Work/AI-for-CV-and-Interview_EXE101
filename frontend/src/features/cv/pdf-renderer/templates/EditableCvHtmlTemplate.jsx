@@ -1,5 +1,5 @@
 import {getVisibleCvPdfSections} from '../sectionVisibility.js';
-import {ArrowDown, ArrowUp, CalendarDays, ExternalLink, Globe, GripVertical, Mail, MapPin, Phone, Plus, Trash2} from 'lucide-react';
+import {ArrowDown, ArrowUp, BriefcaseBusiness, CalendarDays, ExternalLink, Globe, GripVertical, Mail, MapPin, Phone, Plus, Trash2, Wrench} from 'lucide-react';
 import notoLatinRegular from '@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff?inline';
 import notoLatinBold from '@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff?inline';
 import notoVietnameseRegular from '@fontsource/noto-sans/files/noto-sans-vietnamese-400-normal.woff?inline';
@@ -323,7 +323,7 @@ function CvSection({sectionKey, column, index, count, title, onSectionMove, onSe
     </section>;
 }
 
-function getSkillGroups(skills = [], languages = []) {
+function getSkillGroups(skills = [], languages = [], editing = false) {
     const languageNames = new Set(languages.map(item => value(item.name).toLowerCase()));
     const groups = new Map();
     skills.forEach((skill, index) => {
@@ -332,9 +332,9 @@ function getSkillGroups(skills = [], languages = []) {
         const duplicatesLanguage = name && (
             [...languageNames].some(language => normalizedName === language
                 || normalizedName.startsWith(`${language}:`) || normalizedName.startsWith(`${language} `))
-            || /^english\s*[:\-]/i.test(name)
+            || /^english\s*[:-]/i.test(name)
         );
-        if ((!name && !onEdit) || duplicatesLanguage) return;
+        if ((!name && !editing) || duplicatesLanguage) return;
         const category = value(skill.category) || 'Other';
         if (!groups.has(category)) groups.set(category, []);
         groups.get(category).push({name, level: value(skill.level), index});
@@ -351,7 +351,7 @@ function getCloudSkillTiers(skills = [], languages = [], editing = false) {
         const duplicatesLanguage = name && (
             [...languageNames].some(language => normalizedName === language
                 || normalizedName.startsWith(`${language}:`) || normalizedName.startsWith(`${language} `))
-            || /^english\s*[:\-]/i.test(name)
+            || /^english\s*[:-]/i.test(name)
         );
         if ((!name && !editing) || duplicatesLanguage) return;
         const level = value(skill.level).toUpperCase();
@@ -379,7 +379,7 @@ function SkillGroups({templateId, skills = [], languages = [], onEdit, onAdd, on
                     </EditableItem>)}</div></div>
             </div>)}</div>;
     }
-    const entries = getSkillGroups(skills, languages);
+    const entries = getSkillGroups(skills, languages, typeof onEdit === 'function');
     return <div className={`cv-skill-groups cv-skill-groups-${variant}`}>{entries.map(([category, items], groupIndex) => {
         const categoryField = <EditableText as="strong" className="cv-skill-category"
             onEdit={onRename ? (_, next) => onRename(category, next) : undefined} path="category" placeholder="Tên nhóm kỹ năng">{category}</EditableText>;
@@ -397,7 +397,7 @@ function SkillGroups({templateId, skills = [], languages = [], onEdit, onAdd, on
             onMove={onGroupMove ? (...args) => onGroupMove(category, args[2]) : undefined}
             onRemove={onGroupRemove ? () => onGroupRemove(category) : undefined}
             onAdd={onAdd} addValue={{name:'',category,level:''}} addLabel="nhóm kỹ năng"
-            className={`cv-skill-group cv-skill-group-${variant}`}>{content}</EditableItem>;
+            className={`cv-skill-group cv-skill-group-${variant}${/^soft[\s-]*skills?$/i.test(category) ? ' cv-soft-skills' : ''}`}>{content}</EditableItem>;
     })}</div>;
 }
 
@@ -411,9 +411,8 @@ function ExperienceList({templateId, items = [], onEdit, onMove, onRemove, onAdd
         const cloudCompany = <div className="company cloud-company"><span aria-hidden="true">|</span><EditableText path={`experiences.${index}.company`} onEdit={onEdit} placeholder="Công ty">{value(item.company)}</EditableText></div>;
         const portfolioCompany = <div className="company portfolio-company"><EditableText path={`experiences.${index}.company`} onEdit={onEdit} placeholder="Công ty">{value(item.company)}</EditableText></div>;
         const bullets = <EditableBulletList details={item.details} path={`experiences.${index}.details`} onEdit={onEdit}/>;
-        const content = variant === 'boardroom' ? <><div className="boardroom-entry-heading">{role}{period}</div>{company}{bullets}</>
-            : variant === 'data' ? <><div className="data-entry-period">{period}</div>{role}{company}{bullets}</>
-                : variant === 'security' ? <><div className="security-entry-date">{period}</div><div className="security-entry-content">{role}{company}{bullets}</div></>
+        const content = ['boardroom', 'security'].includes(variant) ? <><div className="reference-experience-heading">{role}{portfolioCompany}{period}</div>{bullets}</>
+            : variant === 'data' ? <><div className="reference-data-heading">{role}{period}</div>{portfolioCompany}{bullets}</>
                     : variant === 'cloud' ? <><div className="cloud-entry-period">{period}</div><div className="cloud-entry-heading">{role}{cloudCompany}</div>{bullets}</>
                         : variant === 'portfolio' ? <><div className="portfolio-entry-heading"><div className="portfolio-role-company">{role}{portfolioCompany}</div>{period}</div>{bullets}</>
                             : <><div className="standard-entry-heading">{period}{role}</div>{company}{bullets}</>;
@@ -461,9 +460,8 @@ function ProjectList({templateId, items = [], onEdit, onMove, onRemove, onAdd, a
             {(onEdit || value(item.teamSize)) && <p className="project-detail"><strong>Team size:</strong> <EditableText path={`projects.${index}.teamSize`} onEdit={onEdit} placeholder="Quy mô nhóm">{value(item.teamSize)}</EditableText></p>}
             {!['cloud', 'portfolio'].includes(variant) && (onEdit || value(item.url)) && <p className="project-detail"><EditableText path={`projects.${index}.url`} onEdit={onEdit} placeholder="Liên kết">{value(item.url)}</EditableText></p>}
         </div>;
-        const content = variant === 'boardroom' ? <><div className="boardroom-entry-heading">{name}{period}</div>{bullets}{metadata}</>
+        const content = ['boardroom', 'security'].includes(variant) ? <><div className="reference-project-heading">{name}{period}</div>{bullets}{metadata}</>
             : variant === 'data' ? <><div className="data-entry-period">{period}</div>{name}{bullets}{metadata}</>
-                : variant === 'security' ? <><div className="security-entry-date">{period}</div><div className="security-entry-content">{name}{bullets}{metadata}</div></>
                     : variant === 'cloud' ? <><div className="cloud-entry-period">{period}</div>{cloudName}{bullets}{metadata}</>
                         : variant === 'portfolio' ? <><div className="portfolio-entry-heading portfolio-project-heading">{portfolioName}{period}</div>{bullets}{metadata}</>
                             : <><div className="standard-entry-heading">{period}{name}</div>{bullets}{metadata}</>;
@@ -488,7 +486,9 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
     const layout = data.editorLayout || {};
     const hidden = new Set((layout.hiddenSections || []).filter(key => key !== 'name'));
     const templateLayout = getCvTemplateLayout(layout, templateId);
-    const contactDefaults = ['portfolio-hybrid', 'cloud-expert'].includes(templateId)
+    const referenceTemplate = ['data-scientist', 'security-analyst', 'boardroom-ready'].includes(templateId);
+    const executiveTemplate = ['security-analyst', 'boardroom-ready'].includes(templateId);
+    const contactDefaults = referenceTemplate || ['portfolio-hybrid', 'cloud-expert'].includes(templateId)
         ? ['phone', 'email', 'dob', 'address', 'linkedin']
         : ['phone', 'email', 'address'];
     const personalContactOrder = ['portfolio-hybrid', 'cloud-expert'].includes(templateId)
@@ -534,9 +534,9 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         const sectionProps = {sectionKey:key, column, index, count:order.length, side,
             onSectionMove, onSectionReorder, onSectionRemove, onAdd};
         if (key === 'name') return <CvSection key={key} {...sectionProps} title="" dragOnly
-            className={`cv-name-section${nameBackgroundMoves ? ' cv-name-section-moves-background' : ''}${templateId === 'security-analyst' ? ' cv-security-name-section' : ''}`}>
-            {nameBackgroundMoves || templateId === 'security-analyst'
-                ? <header className={`cv-standard-header${templateId === 'security-analyst' ? ' cv-security-masthead' : ''}`}>{renderNameCluster()}</header>
+            className={`cv-name-section${nameBackgroundMoves ? ' cv-name-section-moves-background' : ''}`}>
+            {nameBackgroundMoves
+                ? <header className="cv-standard-header">{renderNameCluster()}</header>
                 : renderNameCluster()}
         </CvSection>;
         if (key === 'profilePhoto') {
@@ -563,7 +563,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
                 <div className="cv-standard-contacts">
                     {personalContactOrder.map((field, contactIndex) => {
                         const [label] = contactFields.find(([, fieldKey]) => fieldKey === field);
-                        const ContactIcon = ['cloud-expert', 'portfolio-hybrid'].includes(templateId) ? cloudContactIcons[field] : null;
+                        const ContactIcon = referenceTemplate || ['cloud-expert', 'portfolio-hybrid'].includes(templateId) ? cloudContactIcons[field] : null;
                         return <EditableItem key={field} path="personalInfo.contacts" index={contactIndex} count={personalContactOrder.length}
                             onMove={onMove} onAdd={onAdd ? (_, newField) => onAdd('personalInfo.customFields', newField) : undefined}
                             addValue={{label:'',value:''}} addLabel="thông tin" className="cv-standard-contact">
@@ -587,13 +587,13 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         }
         if (key === 'skills' && !onEdit && !(data.skills || []).some(skill => value(skill.name)
             && !languages.some(language => value(language.name).toLowerCase() === value(skill.name).toLowerCase()))) return null;
-        if (key === 'skills') return <CvSection key={key} {...sectionProps} title={templateId === 'cloud-expert' ? 'Skill' : 'Skills'} addValue={{name:'', category:nextSkillCategory(data.skills), level:''}} addLabel="nhóm kỹ năng">
+        if (key === 'skills') return <CvSection key={key} {...sectionProps} title={referenceTemplate ? <>{executiveTemplate && <Wrench className="cv-reference-section-icon"/>}Skill</> : templateId === 'cloud-expert' ? 'Skill' : 'Skills'} addValue={{name:'', category:nextSkillCategory(data.skills), level:''}} addLabel="nhóm kỹ năng">
             <SkillGroups templateId={templateId} skills={data.skills || []} languages={languages} onEdit={onEdit} onAdd={onAdd} onMove={onMove} onRemove={onRemove}
                 onGroupMove={onSkillGroupMove} onGroupRemove={onSkillGroupRemove} onRename={onSkillRename}/>
         </CvSection>;
         if (key === 'experiences') {
             if (!onEdit && !experiences.length) return null;
-            return <CvSection key={key} {...sectionProps} title="Work Experience"
+            return <CvSection key={key} {...sectionProps} title={<>{executiveTemplate && <BriefcaseBusiness className="cv-reference-section-icon"/>}Work Experience</>}
                 onAdd={experiences.length ? undefined : onAdd} addValue={{role:'',company:'',period:'',details:['']}} addLabel="kinh nghiệm">
                 <ExperienceList templateId={templateId} items={experiences} onEdit={onEdit} onMove={onMove} onRemove={onRemove}
                     onAdd={onAdd} addValue={{role:'',company:'',period:'',details:['']}}/>
@@ -601,7 +601,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         }
         if (key === 'projects') {
             if (!onEdit && !projects.length) return null;
-            const projectTitle = templateId === 'cloud-expert' ? 'Personal Project'
+            const projectTitle = executiveTemplate ? 'Project:' : templateId === 'cloud-expert' ? 'Personal Project'
                 : templateId === 'portfolio-hybrid' ? 'Highlight Project' : 'Projects';
             return <CvSection key={key} {...sectionProps} title={projectTitle} onAdd={projects.length ? undefined : onAdd}
                 addValue={{name:'',period:'',techStack:'',teamSize:'',url:'',details:['']}} addLabel="dự án">
@@ -620,7 +620,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
                 className={`cv-standard-side-item${key === 'languages' ? ' cv-standard-language' : ''}`}>
                 {key === 'education' ? <><EditableText as="h3" className="cv-standard-school" path={`education.${itemIndex}.school`} onEdit={onEdit} placeholder="Trường">{value(item.school)}</EditableText>
                     <EditableText as="div" className="cv-standard-degree" path={`education.${itemIndex}.degree`} onEdit={onEdit} placeholder="Ngành học">{value(item.degree)}</EditableText>
-                    <EditableText as="div" className="cv-standard-muted" path={`education.${itemIndex}.${value(item.year) ? 'year' : 'period'}`} onEdit={onEdit} placeholder="Thời gian">{value(item.year || item.period)}</EditableText>
+                    <EditableText as="div" className="cv-standard-muted cv-education-period" path={`education.${itemIndex}.${value(item.year) ? 'year' : 'period'}`} onEdit={onEdit} placeholder="Thời gian">{value(item.year || item.period)}</EditableText>
                     <EditableGpa path={`education.${itemIndex}.gpa`} value={item.gpa} onEdit={onEdit}/></>
                     : key === 'languages' ? <><EditableText as="strong" path={`languages.${itemIndex}.name`} onEdit={onEdit} placeholder="Ngoại ngữ">{value(item.name)}</EditableText>
                         <EditableText as="span" path={`languages.${itemIndex}.level`} onEdit={onEdit} placeholder="Trình độ">{value(item.level)}</EditableText></>
@@ -676,6 +676,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         }
     };
     const templateClasses = ['cv-standard', `cv-template-${templateId}`,
+        referenceTemplate ? 'cv-reference-template' : '', executiveTemplate ? 'cv-reference-executive' : '',
         templateLayout.columns === 1 ? 'cv-single-column' : '',
         templateLayout.sidebarFirst ? 'cv-sidebar-first' : ''].filter(Boolean).join(' ');
     const renderHeader = className => <header className={`cv-standard-header ${className || ''}`.trim()}>
@@ -686,7 +687,7 @@ export default function EditableCvHtmlTemplate({data: source = {}, templateId = 
         <div className={templateClasses} style={cloudTemplateStyle}>
             <main className="cv-standard-main" onDragOver={onSectionReorder ? handleColumnDragOver : undefined}
             onDragLeave={onSectionReorder ? handleColumnDragLeave : undefined}
-            onDrop={onSectionReorder ? event => handleColumnDrop(event, 'main') : undefined}>{!headerInSidebar && !nameBackgroundMoves && templateId !== 'security-analyst' && templateId !== 'cloud-expert' && templateId !== 'portfolio-hybrid' && renderHeader()}
+            onDrop={onSectionReorder ? event => handleColumnDrop(event, 'main') : undefined}>{!referenceTemplate && !headerInSidebar && !nameBackgroundMoves && templateId !== 'security-analyst' && templateId !== 'cloud-expert' && templateId !== 'portfolio-hybrid' && renderHeader()}
                 <div className="cv-standard-content" onDragOver={onSectionReorder ? handleColumnDragOver : undefined}
                 onDragLeave={onSectionReorder ? handleColumnDragLeave : undefined}
                 onDrop={onSectionReorder ? event => handleColumnDrop(event, 'main') : undefined}>

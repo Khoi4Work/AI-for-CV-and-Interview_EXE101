@@ -571,3 +571,11 @@
 ## 2026-10-22 — Specify CV builder step-four mapping corrections
 - Documented confirmed renderer failure, unconfirmed-input loss, incomplete field contracts and conditional hidden-section behavior in `.spec/cv-builder-step4-mapping-spec.md`, including proposed behavior and acceptance tests.
 - Documentation only; no application changes. The earlier read-only SSR check reproduced blank-skill failures on five templates and confirmed populated item names on all six. Browser interaction and PDF export remain to be verified during implementation. The spec directory remains ignored by Git.
+
+## 2026-10-22 - Align three CV templates with supplied references
+- Data Scientist: centered identity/contact header, monochrome section rules, work/education date alignment, skills by category and soft-skill bullets.
+- Security Analyst and Boardroom Ready: shared single-column reference layout, muted teal headings/icons, gray summary/contact band, skill rows and role/company/date experience headings. Supplied reference images for these two templates are identical.
+- Security Analyst no longer displays a profile photo; stored photo data is retained. Old sidebar section orders migrate into the visible main column without dropping content.
+- Fixed blank skill names referencing an undefined onEdit variable in the shared skill grouping helper.
+- Validation: 15 targeted CV/editor/saved-preview tests passed; targeted ESLint and frontend production build passed. Generated HTML for all six templates and inspected Chromium screenshots of the three changed templates using synthetic data. Live authenticated editor actions and remote PDF service were not exercised.
+- User authorized commit and push to dev; fetched origin and confirmed no divergence, then reran all 15 targeted tests successfully before publishing. Groq 403 was diagnosed only; no backend fix is included.

@@ -4,6 +4,7 @@ import { getVisibleCvPdfSections } from '../src/features/cv/pdf-renderer/section
 import { mapCvDataForPdf } from '../src/features/cv/pdf-renderer/mapCvDataForPdf.js';
 import { PDF_TEMPLATE_IDS } from '../src/features/cv/pdf-renderer/templateRegistry.js';
 import { mapImportedCVData } from '../src/features/cv/mapper/cv-data-mapper.js';
+import { getCvTemplateLayout } from '../src/features/cv/pdf-renderer/templateSectionLayout.js';
 
 test('hides CV sections when their canonical data arrays are empty or blank', () => {
     const sections = getVisibleCvPdfSections({
@@ -123,4 +124,18 @@ test('registers a dedicated PDF template module for all six editor template IDs'
         'cloud-expert',
         'portfolio-hybrid',
     ]);
+});
+
+test('old Security Analyst sidebar sections remain visible after switching to the single-column layout', () => {
+    const layout = getCvTemplateLayout({templateLayouts: {'security-analyst': {
+        mainOrder: ['summary', 'experiences', 'projects', 'awards'],
+        sidebarOrder: ['name', 'profilePhoto', 'personalInfo', 'education', 'skills', 'certificates', 'languages'],
+    }}}, 'security-analyst');
+    assert.equal(layout.columns, 1);
+    assert.deepEqual(layout.sidebarOrder, []);
+    for (const section of ['name', 'personalInfo', 'education', 'skills', 'certificates', 'languages']) {
+        assert.ok(layout.mainOrder.includes(section), section);
+    }
+    assert.equal(new Set(layout.mainOrder).size, layout.mainOrder.length);
+    assert.ok(!layout.mainOrder.includes('profilePhoto'));
 });
