@@ -8,8 +8,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -26,9 +24,9 @@ public class PayOSChecksumUtil {
 
             StringBuilder sb = new StringBuilder();
             sortedParams.forEach((key, value) -> {
-                if (value != null) {
-                    sb.append(key).append("=").append(value).append("&");
-                }
+                // Keep the key: PayOS signs null values as an empty string, not an omitted field.
+                Object normalized = value == null || "null".equals(value) || "undefined".equals(value) ? "" : value;
+                sb.append(key).append("=").append(normalized).append("&");
             });
 
             // Remove the trailing '&'

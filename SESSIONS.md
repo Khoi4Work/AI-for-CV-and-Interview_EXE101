@@ -657,3 +657,17 @@
 - Grouped changes into CV templates/imported previews, confirmation/detail dialogs, and checkout/pricing history. Existing session records are included in a separate documentation commit.
 - Final checks: 19 targeted CV/preview/payment-history tests passed; ESLint passed for every changed JS/JSX file; frontend production build and git diff --check passed. Prior local mocked-browser checks cover confirmation behavior, checkout double-click/retry/redirect, responsive previews and six-template overflow checks.
 - Deployed PDF-service calls and real payment orders were not exercised. No backend or database changes are included.
+
+## 2026-10-23 - Diagnose paid CV Enhance order remaining pending
+- Read-only investigation of order 1792740200: public local catalog confirms its service is CV Enhance, 59,000 VND, four CV credits. Order/quota updates occur only after verified webhook handling.
+- Supplied logs show the channel test (orderCode 123) passed signature verification, while real payment callbacks repeatedly failed with checksum_mismatch/401.
+- Read local ngrok request history without exposing signatures, account values or secrets. Matching payment callbacks contain a null counterAccountName field.
+- PayOSChecksumUtil currently drops null-valued fields entirely; PayOS signature rules require retaining each such key with an empty value. This concrete canonicalization defect explains why sample callbacks can pass while the real callback is rejected.
+- No payment/order/quota state was changed, no webhook was replayed and no application code was edited. Recovery requires correcting verification then reprocessing the authenticated callback for the existing order; redirect UI success alone does not grant quota.
+
+## 2026-10-23 - Fix PayOS webhook checksum normalization
+- PayOSChecksumUtil now retains null-valued keys as empty values and normalizes literal null/undefined strings, while preserving zero/false and alphabetical ordering. Removed unused imports. Checkout signatures with ordinary scalar fields remain unchanged.
+- Signature rejection now reports Invalid payment webhook signature instead of suggesting a user login failure; invalid signatures still return the existing unauthenticated error and cannot settle orders or grant quota.
+- Added independent Node-crypto golden-vector unit tests plus a service test using the real checksum implementation: null-field ENHANCE settlement grants four credits once, duplicate callbacks do not grant twice, and modified signed data cannot access order/quota persistence.
+- Validation: Java 21 Maven targeted build succeeded; 12 checksum/settlement/payment-history tests passed, zero failures/errors; git diff --check passed. Tests use synthetic data/mocks and do not access the live database.
+- No manual webhook replay or payment/database edit was performed. Existing paid order may need its original signed callback resent after the running backend loads the corrected classes. Changes remain uncommitted; no push requested.
