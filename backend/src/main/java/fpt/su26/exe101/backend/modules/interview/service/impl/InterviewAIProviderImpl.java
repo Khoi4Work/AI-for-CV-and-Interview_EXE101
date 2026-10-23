@@ -12,6 +12,9 @@ import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
 import fpt.su26.exe101.backend.base.service.AIChatCompletionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,10 +37,68 @@ public class InterviewAIProviderImpl implements InterviewAIProvider {
                     response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", ""),
                     InterviewEvaluationResponseDTO.class);
             enforcePlanFields(evaluation, plan);
+            normalizeQuestionScores(evaluation, transcript);
             validateEvaluation(evaluation, plan);
             return evaluation;
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("AI returned invalid interview evaluation JSON.", exception);
+        }
+    }
+
+    /** Ensures every asked question contributes equally and unanswered questions cannot inherit an AI-generated score. */
+    private void normalizeQuestionScores(InterviewEvaluationResponseDTO evaluation, Map<String, Object> transcript) {
+        if (evaluation == null) return;
+        Object rawQuestions = transcript.get("questionsAndAnswers");
+        if (!(rawQuestions instanceof List<?> questions) || questions.isEmpty()) return;
+
+        Map<String, InterviewEvaluationResponseDTO.QuestionFeedback> feedbackByQuestion = new HashMap<>();
+        if (evaluation.getQuestionFeedback() != null) {
+            evaluation.getQuestionFeedback().forEach(item -> {
+                if (item != null && item.getQuestionId() != null) {
+                    feedbackByQuestion.put(item.getQuestionId().toString(), item);
+                }
+            });
+        }
+
+        List<InterviewEvaluationResponseDTO.QuestionFeedback> normalized = new ArrayList<>();
+        Map<String, List<Integer>> scoresByCompetency = new HashMap<>();
+        for (Object rawQuestion : questions) {
+            if (!(rawQuestion instanceof Map<?, ?> question)) continue;
+            Object rawId = question.get("questionId");
+            if (rawId == null) continue;
+            String questionId = String.valueOf(rawId);
+            Object rawAnswer = question.get("answer");
+            boolean hasAnswer = rawAnswer != null && !String.valueOf(rawAnswer).isBlank()
+                    && !Boolean.TRUE.equals(question.get("skipped"));
+            InterviewEvaluationResponseDTO.QuestionFeedback item = feedbackByQuestion.get(questionId);
+            if (item == null) {
+                if (hasAnswer) {
+                    throw new IllegalStateException("AI omitted feedback for an answered interview question.");
+                }
+                item = new InterviewEvaluationResponseDTO.QuestionFeedback();
+                item.setQuestionId(java.util.UUID.fromString(questionId));
+                item.setAssessment("Không có câu trả lời được ghi nhận nên chưa có bằng chứng để đánh giá.");
+                item.setImprovementSuggestion("");
+            }
+
+            boolean unanswered = Boolean.TRUE.equals(question.get("unanswered"))
+                    || Boolean.TRUE.equals(question.get("skipped")) || !hasAnswer;
+            int score = unanswered || item.getScore() == null ? 0 : item.getScore();
+            item.setScore(score);
+            normalized.add(item);
+            Object rawCompetency = question.get("competency");
+            String competency = rawCompetency == null || String.valueOf(rawCompetency).isBlank()
+                    ? questionId
+                    : String.valueOf(rawCompetency).trim();
+            scoresByCompetency.computeIfAbsent(competency, ignored -> new ArrayList<>()).add(score);
+        }
+
+        if (!normalized.isEmpty()) {
+            evaluation.setQuestionFeedback(normalized);
+            double competencyScoreTotal = scoresByCompetency.values().stream()
+                    .mapToDouble(scores -> scores.stream().mapToInt(Integer::intValue).average().orElse(0))
+                    .sum();
+            evaluation.setOverallScore((int) Math.round(competencyScoreTotal / scoresByCompetency.size()));
         }
     }
 
