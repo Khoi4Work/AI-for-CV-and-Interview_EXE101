@@ -515,15 +515,15 @@ public class InterviewServiceImpl implements InterviewService {
             if (rawId == null) continue;
             UUID questionId = UUID.fromString(String.valueOf(rawId));
             InterviewAnswer answer = answersByQuestion.get(questionId);
-            if (answer == null) continue;
             Map<String, Object> entry = new HashMap<>();
             entry.put("questionId", questionId.toString());
             entry.put("question", rawMap.get("text"));
             entry.put("category", rawMap.get("category"));
             entry.put("competency", rawMap.get("competency"));
             entry.put("gradingCriteria", rawMap.get("gradingCriteria"));
-            entry.put("answer", answer.getAnswerText());
-            entry.put("skipped", Boolean.TRUE.equals(answer.getIsSkipped()));
+            entry.put("answer", answer == null ? null : answer.getAnswerText());
+            entry.put("skipped", answer == null || Boolean.TRUE.equals(answer.getIsSkipped()));
+            entry.put("unanswered", answer == null);
             transcriptEntries.add(entry);
         }
         return transcriptEntries;

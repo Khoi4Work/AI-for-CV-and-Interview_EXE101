@@ -12,6 +12,13 @@ const MESSAGES = [
   "Đang tạo gợi ý cải thiện...",
 ];
 
+const OPTIMIZATION_ERROR_MESSAGES = {
+  CV_OPTIMIZATION_SCORE_NOT_IMPROVED:
+    'Lần tối ưu này chưa cải thiện điểm phù hợp; CV hiện tại được giữ nguyên.',
+  CV_OPTIMIZATION_SCORE_UNAVAILABLE:
+    'Chưa thể xác định điểm phù hợp để so sánh, nên chưa thể xác nhận mức cải thiện. CV hiện tại được giữ nguyên.',
+};
+
 const CVAnalyzing = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
@@ -54,7 +61,8 @@ const CVAnalyzing = () => {
           return;
         }
         if (status.status === 'FAILED') {
-          setError('AI chưa thể tối ưu CV này. Bạn có thể quay lại và thử lại.');
+          setError(OPTIMIZATION_ERROR_MESSAGES[status.errorCode]
+            || 'Chưa thể hoàn tất tối ưu CV lần này. CV hiện tại được giữ nguyên. Bạn có thể thử lại.');
           return;
         }
         timer = setTimeout(poll, 1500);

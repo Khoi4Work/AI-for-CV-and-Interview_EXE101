@@ -1,4 +1,4 @@
-const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
+import { interviewService } from '../services/interviewService.js';
 
 class ElevenLabsTranscriptionClient {
     constructor(onTranscript) {
@@ -13,27 +13,15 @@ class ElevenLabsTranscriptionClient {
      * Khởi tạo STT Client sử dụng MediaStream có sẵn từ MediaContext
      * @param {MediaStream} stream - Luồng âm thanh được quản lý bởi useMediaDevices
      */
-    async start(stream) {
+    async start(stream, sessionId) {
         try {
-            if (!ELEVENLABS_API_KEY) {
-                throw new Error('Thiếu cấu hình VITE_ELEVENLABS_API_KEY trong file .env');
+            if (!sessionId) {
+                throw new Error('Cần có phiên phỏng vấn hợp lệ trước khi bắt đầu nhận dạng giọng nói.');
             }
 
-            console.log(`[ElevenLabs] Đang lấy Single-Use Token từ máy chủ...`);
-
-            // 1. Gọi API REST để đổi API Key lấy Token dùng 1 lần (Bypass lỗi 1000 Unauthenticated)
-            const tokenResponse = await fetch("https://api.elevenlabs.io/v1/single-use-token/realtime_scribe", {
-                method: "POST",
-                headers: {
-                    "xi-api-key": ELEVENLABS_API_KEY
-                }
-            });
-
-            if (!tokenResponse.ok) {
-                throw new Error(`Lỗi xác thực Token ElevenLabs: ${tokenResponse.status}`);
-            }
-
-            const { token } = await tokenResponse.json();
+            console.log('[ElevenLabs] Đang lấy Single-Use Token từ backend...');
+            const { token } = await interviewService.createSttToken(sessionId);
+            if (!token) throw new Error('Backend không trả về token nhận dạng giọng nói.');
             console.log(`[ElevenLabs] Đã có Token! Đang kết nối Scribe Realtime...`);
 
             // 2. Mở kết nối WebSocket bằng Token vừa lấy

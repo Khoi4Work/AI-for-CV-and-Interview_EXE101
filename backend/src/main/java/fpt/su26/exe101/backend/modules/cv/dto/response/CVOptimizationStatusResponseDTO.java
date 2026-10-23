@@ -10,4 +10,5 @@ public class CVOptimizationStatusResponseDTO {
     private String jobId;
     private String status;
     private Integer progress;
+    private String errorCode;
 }

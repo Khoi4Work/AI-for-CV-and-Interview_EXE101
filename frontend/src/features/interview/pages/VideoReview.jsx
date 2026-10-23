@@ -5,12 +5,13 @@ import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import {interviewService} from '../services/interviewService.js';
-import {downloadInterviewTranscript} from '../services/interviewExports.js';
+import {downloadInterviewReportPdf} from '../services/interviewExports.js';
 
 export function VideoReview() {
     const navigate = useNavigate();
     const {data, update, generateFeedback} = useInterviewSession();
     const [isEvaluating, setIsEvaluating] = useState(false);
+    const [isExportingReport, setIsExportingReport] = useState(false);
     const [error, setError] = useState('');
     const answers = new Map((data.answers || []).map((answer) => [answer.qid, answer]));
 
@@ -48,6 +49,19 @@ export function VideoReview() {
             setError(getApiErrorMessage(requestError, 'Không thể tạo phản hồi phỏng vấn.'));
         } finally {
             setIsEvaluating(false);
+        }
+    };
+
+    const handleDownloadReport = async () => {
+        if (isExportingReport) return;
+        setIsExportingReport(true);
+        setError('');
+        try {
+            await downloadInterviewReportPdf({...data, answers: [...answers.values()]});
+        } catch {
+            setError('Không thể tạo PDF lúc này. Vui lòng thử lại.');
+        } finally {
+            setIsExportingReport(false);
         }
     };
 
@@ -98,10 +112,11 @@ export function VideoReview() {
                     <div className="flex flex-wrap justify-end gap-3">
                         <button
                             type="button"
-                            onClick={() => downloadInterviewTranscript({...data, answers: [...answers.values()]})}
+                            onClick={handleDownloadReport}
+                            disabled={isExportingReport}
                             className="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-2.5 font-semibold text-on-surface hover:bg-surface-container"
                         >
-                            <FileText size={17} /> Tải hội thoại (.txt)
+                            <FileText size={17} /> {isExportingReport ? 'Đang tạo PDF...' : 'Tải biên bản (PDF)'}
                         </button>
                         <button
                             onClick={handleSendFeedback}

@@ -671,3 +671,8 @@
 - Added independent Node-crypto golden-vector unit tests plus a service test using the real checksum implementation: null-field ENHANCE settlement grants four credits once, duplicate callbacks do not grant twice, and modified signed data cannot access order/quota persistence.
 - Validation: Java 21 Maven targeted build succeeded; 12 checksum/settlement/payment-history tests passed, zero failures/errors; git diff --check passed. Tests use synthetic data/mocks and do not access the live database.
 - No manual webhook replay or payment/database edit was performed. Existing paid order may need its original signed callback resent after the running backend loads the corrected classes. Changes remain uncommitted; no push requested.
+
+## 2026-10-23 - Prevent CV optimization score regressions
+- CV optimization now scores the existing CV and proposed CV with the same JD and rubric. Proposals below the current score fail without being returned as completed; equal or higher scores proceed.
+- Optimization job status returns a machine-readable error code. The frontend maps score regression and unavailable scoring to distinct user-facing messages, keeping UI copy out of the backend.
+- Scoring failures also prevent returning an unverified proposal. No test suite was run; git diff --check passed.

@@ -7,6 +7,10 @@ export const interviewService = {
 
   createSession: async (request) => resultOf(await apiClient.post('/interview/sessions', request)),
 
+  createSttToken: async (sessionId) => resultOf(
+    await apiClient.post(`/interview/sessions/${sessionId}/stt-token`),
+  ),
+
   submitAnswer: async (sessionId, request) => resultOf(
     await apiClient.post(`/interview/sessions/${sessionId}/answers`, request),
   ),
