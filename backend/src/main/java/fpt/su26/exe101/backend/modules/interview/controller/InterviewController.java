@@ -10,8 +10,10 @@ import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewAnswerRes
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluationResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionDetailResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.dto.response.CreateInterviewSessionResponseDTO;
+import fpt.su26.exe101.backend.modules.interview.dto.response.SttTokenResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
+import fpt.su26.exe101.backend.modules.interview.service.InterviewSttTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,16 @@ public class InterviewController {
     private static final long MAX_ANSWER_AUDIO_SIZE = 5L * 1024 * 1024;
     private final InterviewService interviewService;
     private final InterviewVoiceService interviewVoiceService;
+    private final InterviewSttTokenService interviewSttTokenService;
+
+    @PostMapping("/sessions/{sessionId}/stt-token")
+    public ResponseEntity<ApiResponse<SttTokenResponseDTO>> createSttToken(@PathVariable UUID sessionId) {
+        // Also verifies that the signed-in user owns this interview session.
+        interviewService.getSessionDetail(sessionId);
+        return ResponseEntity.ok(ApiResponse.success(
+                new SttTokenResponseDTO(interviewSttTokenService.createSingleUseToken()),
+                "Realtime STT token created"));
+    }
 
     @PostMapping("/sessions")
     public ResponseEntity<ApiResponse<CreateInterviewSessionResponseDTO>> createSession(
