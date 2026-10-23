@@ -6,7 +6,7 @@ import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
 import {TAG_DEFINITIONS} from '../constants/feedbackInterviewRubric.js';
 import {getLocalInterviewRecording} from '../services/localInterviewRecording.js';
-import {downloadInterviewTranscript, downloadLocalInterviewAudio} from '../services/interviewExports.js';
+import {downloadInterviewReportPdf, downloadLocalInterviewAudio} from '../services/interviewExports.js';
 import './interview-result.css';
 import {trackEventOnce} from '../../analytics/analyticsClient.js';
 import {useAnalyticsConsent} from '../../analytics/AnalyticsProvider.jsx';
@@ -17,6 +17,8 @@ export function InterviewResults() {
     const {canTrack} = useAnalyticsConsent();
     const [localAudioRecording, setLocalAudioRecording] = useState(null);
     const [recordingError, setRecordingError] = useState('');
+    const [isExportingReport, setIsExportingReport] = useState(false);
+    const [reportExportError, setReportExportError] = useState('');
 
     useEffect(() => {
         update({step: 10});
@@ -55,11 +57,17 @@ export function InterviewResults() {
     const improveCount = transcript.filter((t) => t.status === 'improve').length;
     const skippedCount = transcript.filter((t) => t.status === 'skipped').length;
 
-    const exportPdf = () => {
-        const previousTitle = document.title;
-        document.title = `Bao-cao-phong-van-${String(data.backendSessionId || 'ket-qua').slice(0, 8)}`;
-        window.print();
-        window.setTimeout(() => { document.title = previousTitle; }, 1000);
+    const exportPdf = async () => {
+        if (isExportingReport) return;
+        setIsExportingReport(true);
+        setReportExportError('');
+        try {
+            await downloadInterviewReportPdf(data, feedback);
+        } catch {
+            setReportExportError('Không thể tạo PDF lúc này. Vui lòng thử lại.');
+        } finally {
+            setIsExportingReport(false);
+        }
     };
 
     const exportAudio = () => {
@@ -200,13 +208,6 @@ export function InterviewResults() {
                     <div className="p-4 border-t border-outline-variant bg-interview-card-bg/50 flex flex-wrap justify-end gap-3 shrink-0 no-print">
                         <button
                             type="button"
-                            onClick={() => downloadInterviewTranscript(data, feedback)}
-                            className="flex items-center gap-2 rounded-lg border border-[#70cbb2] bg-[#e5f7f2] px-4 py-2.5 text-sm font-semibold text-[#005845] transition-colors hover:border-[#39b794] hover:bg-[#c8efe2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12c999]"
-                        >
-                            <FileText size={16}/> Tải hội thoại (.txt)
-                        </button>
-                        <button
-                            type="button"
                             disabled={!localAudioRecording}
                             onClick={exportAudio}
                             title={localAudioRecording ? 'Tải bản ghi hội thoại đang lưu trên thiết bị này' : 'Chưa có bản ghi cục bộ cho buổi phỏng vấn này'}
@@ -219,11 +220,13 @@ export function InterviewResults() {
                         </button>
                         <button
                             onClick={exportPdf}
+                            disabled={isExportingReport}
                             className="flex items-center gap-2 rounded-lg border border-[#12c999] bg-[#12c999] px-5 py-2.5 text-sm font-semibold text-[#003828] shadow-sm transition-colors hover:border-[#0dab80] hover:bg-[#0dab80] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12c999]"
                         >
-                            <FileText size={16}/> Xuất báo cáo PDF
+                            <FileText size={16}/> {isExportingReport ? 'Đang tạo báo cáo...' : 'Tải báo cáo feedback (PDF)'}
                         </button>
                     </div>
+                    {reportExportError && <p className="w-full text-right text-sm text-red-700" role="alert">{reportExportError}</p>}
                 </div>
             </main>
 
@@ -231,9 +234,9 @@ export function InterviewResults() {
                 {localAudioRecording
                     ? 'Bản ghi gồm tiếng micro và giọng đọc câu hỏi TTS; file được lưu cục bộ trên thiết bị này.'
                     : data.audioRecordingEnabled
-                        ? (recordingError || data.localAudioRecordingError || data.localAudioRecordingWarning || 'Không tìm thấy file ghi âm cục bộ. Transcript vẫn có thể tải về.')
-                        : 'Bạn chưa bật ghi âm cục bộ; có thể tải transcript văn bản và báo cáo PDF.'}
-                <span className="ml-1">Khi xuất PDF, chọn “Save as PDF/Lưu dưới dạng PDF” trong hộp thoại in của trình duyệt.</span>
+                        ? (recordingError || data.localAudioRecordingError || data.localAudioRecordingWarning || 'Không tìm thấy file ghi âm cục bộ. Báo cáo phỏng vấn PDF vẫn có thể tải về.')
+                        : 'Bạn chưa bật ghi âm cục bộ; vẫn có thể tải báo cáo phỏng vấn PDF.'}
+                <span className="ml-1">Báo cáo PDF được tạo trực tiếp từ phiên phỏng vấn.</span>
                 {localAudioRecording && data.localAudioRecordingWarning && <span className="mt-2 block text-amber-800">{data.localAudioRecordingWarning}</span>}
                 {localAudioRecording && data.localAudioRecordingError && <span className="mt-2 block text-amber-800">{data.localAudioRecordingError}</span>}
             </div>
