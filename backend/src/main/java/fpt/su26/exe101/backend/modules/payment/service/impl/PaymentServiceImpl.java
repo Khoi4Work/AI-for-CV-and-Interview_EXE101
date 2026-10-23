@@ -129,7 +129,7 @@ public class PaymentServiceImpl implements PaymentService {
         String calculatedChecksum = checksumUtil.calculateChecksum(payosChecksumKey, data);
         if (receivedChecksum == null || !calculatedChecksum.equalsIgnoreCase(receivedChecksum)) {
             log.warn("[PAYMENT] Webhook rejected | reason=checksum_mismatch");
-            throw new ApiException(ErrorCode.UNAUTHENTICATED);
+            throw new ApiException(ErrorCode.UNAUTHENTICATED, "Invalid payment webhook signature.");
         }
 
         // 2. Process payment
