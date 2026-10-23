@@ -394,6 +394,17 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                     ? galleryService.findJobDescription(request.getJdId(), cv.getGallery())
                     : findOrCreateJD(request.getJdText(), cv.getGallery());
 
+            CVContent originalContent = objectMapper.convertValue(cv.getContent(), CVContent.class);
+            originalContent.setSourceText(null);
+            originalContent.setSourceTruncated(false);
+            int originalScore;
+            try {
+                originalScore = cvAnalysisService.scoreOptimizedContent(cv, originalContent, jd);
+            } catch (RuntimeException scoringException) {
+                throw new ApiException(ErrorCode.CV_OPTIMIZATION_SCORE_UNAVAILABLE,
+                        "Unable to score the current CV for optimization comparison.", scoringException);
+            }
+
             CVOptimizationResultResponseDTO result = aiProvider.optimizeCV(cv.getContent(), jd.getContent()).join();
             if (result.getOptimizedContent() == null) {
                 throw new ApiException(ErrorCode.INVALID_INPUT, "AI chưa tạo được nội dung CV hợp lệ.");
@@ -401,15 +412,21 @@ public class CVPipelineServiceImpl implements CVPipelineService {
             // The uploaded parser text describes the old CV. Re-evaluate the proposed structured content.
             result.getOptimizedContent().setSourceText(null);
             result.getOptimizedContent().setSourceTruncated(false);
+            int proposedScore;
             try {
-                result.setPostOptimizationScore(cvAnalysisService.scoreOptimizedContent(
-                        cv, result.getOptimizedContent(), jd));
-                result.setScoreNote("Điểm được tính lại theo cùng rubric trên CV đề xuất và JD đã chọn.");
+                proposedScore = cvAnalysisService.scoreOptimizedContent(cv, result.getOptimizedContent(), jd);
             } catch (RuntimeException scoringException) {
                 log.warn("[CV OPTIMIZATION] Could not score proposed content | cvId={} | jobId={}", cvId, jobId, scoringException);
-                result.setPostOptimizationScore(null);
-                result.setScoreNote("Chưa thể tính điểm đáng tin cậy cho bản đề xuất này. Bạn vẫn có thể xem và chỉnh sửa nội dung CV.");
+                throw new ApiException(ErrorCode.CV_OPTIMIZATION_SCORE_UNAVAILABLE,
+                        "Unable to score the proposed CV for optimization comparison.", scoringException);
             }
+            if (proposedScore < originalScore) {
+                throw new ApiException(ErrorCode.CV_OPTIMIZATION_SCORE_NOT_IMPROVED,
+                        "Optimization proposal did not maintain the current CV score.");
+            }
+            result.setPostOptimizationScore(proposedScore);
+            result.setScoreNote("Điểm sau tối ưu được tính theo cùng rubric và JD; điểm trước tối ưu là "
+                    + originalScore + "/100.");
             result.setPredictedScore(null);
 
             job.setProgress(70);
@@ -429,7 +446,9 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                     cvId, galleryId, jobId, e.getClass().getSimpleName(),
                     (System.nanoTime() - startedAtNanos) / 1_000_000, e);
             job.setStatus("FAILED");
-            job.setErrorMessage(e.getMessage());
+            job.setErrorMessage(e instanceof ApiException apiException
+                    ? apiException.getErrorCode().name()
+                    : "OPTIMIZATION_FAILED");
             jobRepository.save(job);
         }
     }
@@ -442,6 +461,7 @@ public class CVPipelineServiceImpl implements CVPipelineService {
                 .jobId(jobId)
                 .status(job.getStatus())
                 .progress(job.getProgress())
+                .errorCode(job.getErrorMessage())
                 .build();
     }
 

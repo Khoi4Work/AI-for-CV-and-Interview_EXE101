@@ -44,6 +44,8 @@ public enum ErrorCode {
     UNSUPPORTED_MEDIA_TYPE(4150, "Unsupported media type", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
     TOO_MANY_REQUESTS(4290, "Too many requests", HttpStatus.TOO_MANY_REQUESTS),
     REQUEST_FAILED(4999, "Request failed", HttpStatus.BAD_REQUEST),
+    CV_OPTIMIZATION_SCORE_NOT_IMPROVED(4094, "CV optimization did not improve the score", HttpStatus.CONFLICT),
+    CV_OPTIMIZATION_SCORE_UNAVAILABLE(5031, "CV optimization score could not be calculated", HttpStatus.SERVICE_UNAVAILABLE),
 
     // Engagement errors
     QUOTA_EXCEEDED(402, "Quota exceeded. Please upgrade your plan", HttpStatus.PAYMENT_REQUIRED),
