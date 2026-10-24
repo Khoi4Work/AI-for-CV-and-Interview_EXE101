@@ -676,3 +676,23 @@
 - CV optimization now scores the existing CV and proposed CV with the same JD and rubric. Proposals below the current score fail without being returned as completed; equal or higher scores proceed.
 - Optimization job status returns a machine-readable error code. The frontend maps score regression and unavailable scoring to distinct user-facing messages, keeping UI copy out of the backend.
 - Scoring failures also prevent returning an unverified proposal. No test suite was run; git diff --check passed.
+
+## 2026-10-24 - Audit deployed email delivery and verification URLs
+- Read-only application audit: screenshot bounces report nonexistent recipients 1@gmail.com and 12@gmail.com (550 5.1.1); these do not establish deployed SMTP failure.
+- EmailService builds verification URLs from app.backend.url/BACKEND_URL and redirects via app.frontend.url/FRONTEND_URL. Shared config defaults both to localhost; dev profile overrides with DEV_BACKEND_URL/DEV_FRONTEND_URL. Production config does not override these defaults.
+- Current delivery uses smtp.gmail.com:587 with GOOGLE_EMAIL/GOOGLE_APP_PASSWORD and scheduled verification_mail_outbox retries. Official Render free-service documentation confirms outbound SMTP 25/465/587 is blocked; applicability depends on the actual backend hosting plan, which was not inspected.
+- No mail sent, registration created, credentials read or deployment settings changed. Deployment logs and environment configuration are needed to confirm the live cause. Only this session record changed.
+
+## 2026-10-24 - Supplement local email environment configuration
+- Added explicit DEV_FRONTEND_URL/DEV_BACKEND_URL for the existing dev profile and verification expiry/polling settings in ignored backend/.env. Preserved all existing assignments and credentials; verified each added active key occurs once.
+- Added commented production URL examples and hosting-dashboard setup notes, including the Render Free SMTP restriction. Actual production domains were not inferred; deploy settings remain unchanged.
+- Validation: existing-assignment preservation check passed; backend/.env remains ignored. No mail sent or application restarted. SESSIONS.md is the only tracked modification and remains uncommitted.
+
+## 2026-10-24 - Set confirmed production frontend URL
+- Set FRONTEND_URL=https://smartfolio-exe101.vercel.app in ignored backend/.env using the user-confirmed domain. Kept the dev profile and DEV_FRONTEND_URL unchanged.
+- BACKEND_URL still requires the deployed backend domain. No hosting environment was changed; the production frontend setting must also be copied to the backend hosting dashboard.
+- Verified the assignment is unique and the dev frontend remains local. No application restart or mail delivery test performed.
+
+## 2026-10-24 - Set confirmed production backend URL
+- Set BACKEND_URL=https://ai-for-cv-and-interview-exe101.onrender.com in ignored backend/.env using the origin of the user-provided payment webhook URL. Excluded the payment endpoint path because EmailService appends /api/auth/verify-email itself.
+- Verified the backend assignment occurs once and DEV_BACKEND_URL remains local. Production hosting settings, active local profile and credentials were unchanged; no email sent.
