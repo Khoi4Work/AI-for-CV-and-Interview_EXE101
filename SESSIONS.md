@@ -696,3 +696,79 @@
 ## 2026-10-24 - Set confirmed production backend URL
 - Set BACKEND_URL=https://ai-for-cv-and-interview-exe101.onrender.com in ignored backend/.env using the origin of the user-provided payment webhook URL. Excluded the payment endpoint path because EmailService appends /api/auth/verify-email itself.
 - Verified the backend assignment occurs once and DEV_BACKEND_URL remains local. Production hosting settings, active local profile and credentials were unchanged; no email sent.
+
+## 2026-10-24 - Add HTTPS email delivery for Render Free
+- Added ResendEmailSender using the HTTPS /emails API with bearer authentication, JSON payloads, bounded connect/read timeouts and acknowledgement validation. Logs report only provider/status/error type, without API keys, recipients, email bodies or verification tokens.
+- EmailService routes verification, reset-password and subscription-expiration messages through the selected provider. Dev defaults to SMTP; production defaults to Resend. SMTP credentials are optional when using HTTPS. Provider errors propagate so the existing verification outbox retains its retry behavior; there is no silent SMTP fallback.
+- Added README deployment instructions and commented configuration examples to ignored backend/.env. Render requires EMAIL_PROVIDER=resend, RESEND_API_KEY, verified EMAIL_FROM, prod profile and the confirmed frontend/backend URLs. No real provider key or sending domain was available; no external mail or deployment was performed.
+- Validation: Java 21 offline Maven build passed with 27 tests across EmailServiceTest, ResendEmailSenderTest, VerificationMailDeliveryTest, EmailVerificationServiceTest and EmailVerificationControllerTest. Coverage includes JSON/auth/link mapping, 401/403/429/500 responses, network failures, missing configuration/acknowledgement, SMTP compatibility and verification retries. git diff --check passed. Changes remain uncommitted.
+
+## 2026-10-24 - Support Render using the dev profile for HTTPS mail
+- User clarified Render runs dev. Shared email transport now defaults to Resend for both profiles; explicitly selected EMAIL_PROVIDER=smtp in ignored local backend/.env preserves local Gmail delivery.
+- Dev URL configuration now prefers DEV_*_URL, falls back to shared FRONTEND_URL/BACKEND_URL and finally localhost. This lets a deployed dev profile use public links while local DEV_* overrides stay local. Database/profile selections were not changed.
+- Updated deployment instructions to retain dev and its DEV_DB settings. Render still needs Resend credentials/sender and public URL settings, with any localhost DEV_*_URL overrides removed or corrected.
+- Validation: 18 targeted Java 21 tests passed, including three environment-resolution cases for deployed dev, explicit local overrides and localhost fallbacks. No external mail or deploy performed. Changes remain uncommitted.
+
+## 2026-10-24 - Configure Resend test credentials locally
+- Set the user-supplied Resend API key only in ignored backend/.env, selected EMAIL_PROVIDER=resend and EMAIL_FROM=Smartfolio <onboarding@resend.dev>. Did not print or record the key in tracked files.
+- This test sender is restricted to the Resend account email; the supplied Gmail address is a test recipient, not a verified sender. No application recipient override was added.
+- Verified the three active assignments occur once and backend/.env remains ignored. No mail sent and no Render environment changed. Deployment still requires copying settings to Render and deploying the pending code.
+
+## 2026-10-24 - Undo Resend integration at user request
+- Restored EmailService, all three application property files and README to HEAD before the Resend changes. Deleted only the five new Resend configuration/service/test files created during this task.
+- Removed Resend API key, EMAIL_FROM, EMAIL_PROVIDER and associated added comments from ignored backend/.env. Preserved existing Gmail credentials and earlier public/local URL configuration. No Render settings or database records were changed.
+- Validation: clean offline Java 21 Maven build passed, 15 existing email verification/controller/delivery tests passed. Clean removed stale compiled Resend classes. Application code matches HEAD; only session records remain modified and uncommitted.
+
+## 2026-10-25 - Save Gmail API OAuth credentials locally
+- User explicitly confirmed retrieving Gmail send OAuth credentials from Google OAuth Playground and saving them to backend/.env. Playground already contained a refresh token after a successful exchange, so no additional token exchange was performed.
+- Saved GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN and GMAIL_SENDER_EMAIL to ignored backend/.env, verified all four values match the observed fields and occur once. No secret values were printed or added to tracked files.
+- No email sent, backend code changed or Render variables updated. SMTP remains the implemented transport; Gmail API integration is still required. OAuth Testing refresh-token lifetime limitation remains applicable.
+
+## 2026-10-25 - Implement Gmail API HTTPS delivery
+- Added GmailApiEmailSender using fixed Google HTTPS token/send endpoints, UTF-8 MIME encoded as base64url, refresh-token OAuth, synchronized access-token caching, bounded timeouts and one refresh/retry after an explicit send 401. Provider errors propagate without printing credentials, raw email content or response bodies; ambiguous network failures are not immediately retried.
+- Routed verification/reset/subscription-expiration emails through the shared Gmail transport, retaining explicit SMTP option and existing verification outbox retry logic. Gmail API is the default for both profiles; ignored local backend/.env selects gmail_api and retains all four previously saved OAuth values. Google login settings and database schema unchanged.
+- Dev URL configuration prefers local DEV_* overrides then public shared URLs, supporting the user's deployed dev profile. README documents exact Render environment values, token Testing lifetime, credential replacement, operational checks and existing SMTP option.
+- Validation: Java 21 offline Maven build passed, 33 targeted Gmail transport/email/environment/verification/controller/outbox tests passed. Initial test matcher was adjusted to accept the valid UTF-8 form content-type parameter, then the complete selected set passed. git diff --check passed; .env remains ignored.
+- No live email request or Render deployment/settings changes performed. Code and updated session records remain uncommitted; existing staged SESSIONS content was preserved.
+
+## 2026-10-25 - Diagnose Gmail API 403 on registration
+- User logs show Gmail HTTP 403 followed by verification outbox retry scheduling. Inspected Gmail API console in the authenticated smartfolio-mail project: the API detail page visibly shows Enable, confirming the API is not enabled in that project.
+- Explained that obtaining gmail.send scope/refresh token does not enable the API. Left the API detail page available for the user to enable it. No API activation, authorization change, external email or backend code change performed in this diagnosis.
+- Existing registered account/outbox retry can be used after activation; no need to register again. Reason-specific logging was considered but not added because the concrete configuration issue was directly observed.
+
+## 2026-10-25 - Audit AI evaluation history display
+- HistoryPage currently merges saved CV creation records and interview sessions. CV detail shows current status only; interview detail already loads saved evaluation summary and question feedback.
+- CVAnalysis persists cv_analyses snapshots/result_json/score/status and CVPipelineController exposes owner-scoped GET /api/cv/analyses/{analysisId}. Existing CV list DTO has no analysis ID and the inspected controller/repository do not expose a user analysis-history listing.
+- Proposed adding paginated owner-scoped analysis history summaries excluding internal optimization analyses, a CV AI evaluation history filter, and loading the existing analysis detail/snapshot only when opened. Read stored data without triggering AI calls or consuming quota. No application code changed in this audit; existing Gmail changes preserved.
+
+## 2026-10-25 - Implement saved AI evaluation history
+- Added authenticated GET /api/cv/analyses with bounded pagination, stable newest-first ordering and current-gallery filtering. Only completed/insufficient-evidence public analyses are listed; internal optimization scoring and other accounts are excluded. Summaries use persisted snapshot names, JD/company, score/status/time; details reuse the existing owned analysis read API.
+- History now merges analysis entries with CV creation/interviews, includes an evaluation filter, incremental loading, independent error/retry states and saved-result detail. Detail shows score, summary, criteria, skill evidence/gaps, per-requirement feedback and saved CV/JD text without calling AI, optimization or quota mutations.
+- Validation: Java 21 offline Maven build passed with eight CVAnalysisRepositoryTest integration tests (including ownership, internal/status filtering, snapshot names, zero score, pagination and unchanged quota); five gallery-data frontend tests passed; targeted ESLint and production Vite build passed. Existing unrelated chunk-size/Lombok warnings remain.
+- Browser inspection could not complete: cached history page was accessible initially but localhost navigation returned connection refused even after briefly starting a verification Vite process. Stopped the temporary Vite process; no live data/AI evaluation created. Restart backend to load the new endpoint before manual verification.
+- Existing pending Gmail changes and staged session records preserved. No database migration, commit or push performed.
+
+## 2026-10-25 - Show CV previews inside history detail
+- CV creation history entries now retain cvId and render the corresponding saved CV through the existing read-only SavedCVPreview component. Template-backed CVs retain their layout; imported CVs show extracted content. Creation detail labels this as current saved content, not a historical snapshot.
+- AI evaluation detail also renders the persisted snapshot CV, using its original selected template when present and snapshot text fallback otherwise. It never substitutes the current CV for historical evidence or enables editor controls.
+- Validation: 14 gallery/preview tests passed, including all six template renderers and retained CV IDs; changed-file ESLint and frontend production build passed. No backend/API/quota changes in this follow-up. Changes remain uncommitted; earlier Gmail/history work preserved.
+
+## 2026-10-25 - Fit saved CV thumbnails and widen preview dialogs
+- Saved template previews now scale the fixed A4 document to the actual container width using ResizeObserver rather than cropping an unscaled editor viewport. Compact cards clip the thumbnail without internal scrollbars; full previews reserve scaled document height, fit the page width and allow vertical scrolling across the full document.
+- Widened My CV preview and CV-related history detail dialogs; full preview height follows viewport size instead of the old fixed 520px. Shared editor/template layout remains unchanged and all saved content stays read-only.
+- Validation: 14 saved-preview/gallery tests passed, changed-file ESLint and production frontend build passed; git diff --check passed. No new live browser visual verification performed. All previous changes and staged session entries preserved; no commit/push.
+
+## 2026-10-25 - Clarify profile and security feature availability
+- Moved My CVs and service-plan summaries immediately below the account banner and before editable profile sections. Profile save now shows a spinner/busy label, disables form fields/save/reset during requests and uses a synchronous ref guard against duplicate requests, releasing on success or failure.
+- Removed fake 2FA toggles from profile and fake activation/device-revocation/security-history handlers and displays from SecurityPage. Unimplemented security features use readable muted cards, explicit Dang cap nhat badges and natively disabled controls. Real password change and Google-account password guidance remain available; password submit also shows pending state and blocks duplicates.
+- Disabled the unimplemented avatar update instead of fabricating a success toast; removed the hardcoded password-last-updated claim and renamed the CV navigation action to View CV. Replaced profile state synchronization effect with a profile-bound draft to avoid cascading renders.
+- Validation: changed-page ESLint and frontend production build passed; git diff --check passed. No real profile/password changes or security permissions were exercised. Existing pending Gmail/history/preview changes and staged session content preserved; no commit/push.
+
+## 2026-10-25 - Hide profile CV summary
+- Removed the My CVs summary and View all action from PersonalInfoPage at user request, including unused CV context/icon references. Dedicated My CVs navigation/page remains unchanged.
+- Validation: page ESLint and git diff --check passed. Existing changes preserved; no commit/push.
+
+## 2026-10-25 - Commit and publish accumulated changes
+- User authorized committing and pushing all pending work. Fetched origin and confirmed dev was synchronized before creating focused Gmail API, evaluation-history/preview and account-security UI commits. Session records are committed separately.
+- Prior validation: 33 email tests, eight CV analysis integration tests, 14 frontend gallery/preview tests, targeted changed-file ESLint and frontend production builds passed. No new functional changes were made during publication.
+- Confirmed backend/.env remains ignored and the staged credential-pattern check passed. OAuth secrets/tokens were not staged. No live email/deploy or authenticated browser verification is claimed.
