@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface CVAnalysisRepository extends JpaRepository<CVAnalysis, UUID> {
+    org.springframework.data.domain.Page<CVAnalysis> findByGalleryIdAndInternalAnalysisFalseAndStatusIn(
+            UUID galleryId, java.util.Collection<AnalysisStatus> statuses, org.springframework.data.domain.Pageable pageable);
     Optional<CVAnalysis> findByGalleryIdAndCacheKey(UUID galleryId, String cacheKey);
     List<CVAnalysis> findTop20ByStatusOrderByCreatedAtAsc(AnalysisStatus status);
     @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select a from CVAnalysis a where a.id=:id")

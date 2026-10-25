@@ -26,6 +26,7 @@ test('history combines real CV creation and interview records, orders dates, ret
     assert.equal(logs[0].score, 0);
     assert.equal(logs[0].details, 'Developer · 15 phút');
     assert.equal(logs[1].type, 'tao_cv');
+    assert.equal(logs[1].cvId, 'cv1');
     assert.equal(logs[1].dateLabel, 'Hôm qua');
     assert.notEqual(logs[0].id, logs[1].id);
 });
@@ -46,4 +47,24 @@ test('empty history and feedback restricted sessions do not fabricate activities
     assert.equal(log.aiComment, undefined);
     assert.equal(log.score, undefined);
     assert.equal(log.time, formatGalleryDate('2026-10-01T12:00:00'));
+});
+
+test('AI history keeps separate evaluations, snapshot names, dates and zero scores', () => {
+    const logs = buildHistory([{ id: 'cv', name: 'Renamed CV', createdAt: '2026-10-01T08:00:00' }], [],
+        new Date(2026, 9, 25, 14), [
+            { analysisId: 'a1', cvId: 'cv', cvName: 'Original CV', jdTitle: 'Backend', companyName: 'Example', score: 0,
+                status: 'COMPLETED', createdAt: '2026-10-25T10:00:00' },
+            { analysisId: 'a2', cvId: 'cv', status: 'INSUFFICIENT_EVIDENCE', score: null, createdAt: '2026-10-24T10:00:00' },
+        ]);
+    assert.equal(logs.length, 3);
+    assert.equal(logs[0].analysisId, 'a1');
+    assert.equal(logs[0].title, 'Original CV');
+    assert.equal(logs[0].score, 0);
+    assert.equal(logs[0].details, 'Backend · Example');
+    assert.equal(logs[0].scoreLabel, 'Điểm đánh giá CV');
+    assert.equal(logs[0].dateLabel, 'Hôm nay');
+    assert.equal(logs[1].type, 'danh_gia_cv');
+    assert.equal(logs[1].score, null);
+    assert.equal(logs[1].statusLabel, 'Chưa đủ thông tin đánh giá');
+    assert.equal(new Set(logs.map(log => log.id)).size, 3);
 });

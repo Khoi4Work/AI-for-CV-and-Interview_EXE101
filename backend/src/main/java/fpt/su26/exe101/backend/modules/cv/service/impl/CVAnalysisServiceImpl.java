@@ -197,6 +197,25 @@ public class CVAnalysisServiceImpl implements CVAnalysisService {
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public fpt.su26.exe101.backend.modules.cv.dto.response.CVAnalysisHistoryResponseDTO history(int page, int size, Gallery owner) {
+        if (page < 0 || size < 1) throw new ApiException(ErrorCode.INVALID_INPUT);
+        var pageable = org.springframework.data.domain.PageRequest.of(page, Math.min(size, 50),
+                org.springframework.data.domain.Sort.by("createdAt", "id").descending());
+        var result = analyses.findByGalleryIdAndInternalAnalysisFalseAndStatusIn(owner.getId(),
+                List.of(AnalysisStatus.COMPLETED, AnalysisStatus.INSUFFICIENT_EVIDENCE), pageable);
+        var items = result.getContent().stream().map(a -> {
+            var snapshot = a.getSnapshot();
+            return new fpt.su26.exe101.backend.modules.cv.dto.response.CVAnalysisHistoryResponseDTO.Item(
+                    a.getId(), a.getCvId(), snapshot == null ? null : snapshot.cvName(),
+                    snapshot == null ? null : snapshot.jdTitle(), snapshot == null ? null : snapshot.companyName(),
+                    a.getStatus(), a.getScore(), a.getCreatedAt());
+        }).toList();
+        return new fpt.su26.exe101.backend.modules.cv.dto.response.CVAnalysisHistoryResponseDTO(
+                items, result.getNumber(), result.getSize(), result.getTotalElements(), result.hasNext());
+    }
+
     private JobDescription resolve(UUID id, Gallery owner) {
         return jds.findById(id).filter(j -> j.isActive() && (j.getSource() == JobDescriptionSource.SYSTEM
                         || (j.getGallery() != null && j.getGallery().getId().equals(owner.getId()))))

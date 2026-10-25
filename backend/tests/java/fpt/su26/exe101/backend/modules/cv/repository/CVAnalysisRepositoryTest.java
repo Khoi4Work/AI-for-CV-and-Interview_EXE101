@@ -59,6 +59,53 @@ class CVAnalysisRepositoryTest {
             .content("Java experience is required. Build Java API services, maintain code, write tests and deliver backend projects with the development team.").build());
         when(normalization.normalize(any(),any())).thenAnswer(inv->{JobDescription job=inv.getArgument(0);return new JobDescriptionNormalizationMetadata(new RoleTaxonomyServiceImpl(new ObjectMapper()).jobRoles(job.getTitle(),job.getContent()),"READY",null,null,"UNVERIFIED",null,List.of());});
     }
+    private CVAnalysis historyEntry(Gallery gallery, AnalysisStatus status, boolean internal, int ageHours) {
+        var analysis = new CVAnalysis();
+        analysis.setGalleryId(gallery.getId()); analysis.setAccountId(gallery.getAccountId());
+        analysis.setCvId(cv.getId()); analysis.setJdId(jd.getId());
+        analysis.setCacheKey(UUID.randomUUID().toString()); analysis.setSnapshot(service.snapshot(cv, jd));
+        analysis.setRubricVersion("test"); analysis.setExtractionVersion("test");
+        analysis.setTaxonomyVersion("test"); analysis.setConfigVersion("test");
+        analysis.setStatus(status); analysis.setInternalAnalysis(internal);
+        analysis.setCreatedAt(java.time.LocalDateTime.now().minusHours(ageHours));
+        analysis.setScore(status == AnalysisStatus.COMPLETED ? 0 : null);
+        return analyses.saveAndFlush(analysis);
+    }
+
+    @Test void historyOnlyListsOwnedFinishedPublicAnalysesAndPreservesSnapshots() {
+        var other = galleries.saveAndFlush(Gallery.builder().accountId(UUID.randomUUID()).build());
+        var completed = historyEntry(owner, AnalysisStatus.COMPLETED, false, 1);
+        historyEntry(owner, AnalysisStatus.INSUFFICIENT_EVIDENCE, false, 2);
+        historyEntry(owner, AnalysisStatus.COMPLETED, true, 0);
+        historyEntry(owner, AnalysisStatus.PROCESSING, false, 0);
+        historyEntry(owner, AnalysisStatus.FAILED, false, 0);
+        var foreign = historyEntry(other, AnalysisStatus.COMPLETED, false, 0);
+        cv.setName("Renamed CV"); cvs.flush();
+        var result = service.history(0, 20, owner);
+        assertEquals(2, result.totalElements()); assertFalse(result.hasNext());
+        assertEquals(completed.getId(), result.items().getFirst().analysisId());
+        assertEquals("CV", result.items().getFirst().cvName());
+        assertEquals("Backend Developer", result.items().getFirst().jdTitle());
+        assertEquals(0, result.items().getFirst().score());
+        assertNull(result.items().getLast().score());
+        assertThrows(ApiException.class, () -> service.read(foreign.getId(), owner));
+        assertEquals(2, cvs.findById(cv.getId()).orElseThrow().getAiAnalysisRemaining());
+        verifyNoInteractions(evidence);
+    }
+
+    @Test void historyPaginatesAndRejectsInvalidPagination() {
+        var newest = historyEntry(owner, AnalysisStatus.COMPLETED, false, 1);
+        var oldest = historyEntry(owner, AnalysisStatus.COMPLETED, false, 2);
+        var first = service.history(0, 1, owner);
+        assertTrue(first.hasNext()); assertEquals(2, first.totalElements());
+        assertEquals(newest.getId(), first.items().getFirst().analysisId());
+        var second = service.history(1, 1, owner);
+        assertFalse(second.hasNext()); assertEquals(oldest.getId(), second.items().getFirst().analysisId());
+        assertEquals(50, service.history(0, 999, owner).size());
+        assertThrows(ApiException.class, () -> service.history(-1, 20, owner));
+        assertThrows(ApiException.class, () -> service.history(0, 0, owner));
+    }
+
     @Test void sameInputAndIdempotencyReserveOnceEvenWhenQuotaRunsOut() {
         var first=service.start(cv.getId(),new CVAnalysisStartRequestDTO(jd.getId(),null,null),"key-1",owner);
         var sameRequest=service.start(cv.getId(),new CVAnalysisStartRequestDTO(jd.getId(),null,null),"key-1",owner);

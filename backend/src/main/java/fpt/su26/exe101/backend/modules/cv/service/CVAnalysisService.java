@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface CVAnalysisService {
     CVAnalysisResponseDTO start(UUID cvId, CVAnalysisStartRequestDTO request, String idempotencyKey, Gallery gallery);
     CVAnalysisResponseDTO read(UUID analysisId, Gallery gallery);
+    fpt.su26.exe101.backend.modules.cv.dto.response.CVAnalysisHistoryResponseDTO history(int page, int size, Gallery gallery);
     CVAnalysisAlternativesResponseDTO startAlternatives(UUID analysisId, Gallery gallery);
     CVAnalysisAlternativesResponseDTO readAlternatives(UUID analysisId, Gallery gallery);
     int scoreOptimizedContent(CV cv, CVContent content, JobDescription jd);

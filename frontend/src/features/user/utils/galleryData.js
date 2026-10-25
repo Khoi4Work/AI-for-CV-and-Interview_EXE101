@@ -33,10 +33,16 @@ export function mapCV(cv) {
         updatedLabel: formatGalleryDate(cv.updatedAt || cv.createdAt) };
 }
 
-export function buildHistory(cvs = [], sessions = [], now = new Date()) {
+export function buildHistory(cvs = [], sessions = [], now = new Date(), analyses = []) {
     const cvNames = new Map(cvs.map(cv => [cv.id, cv.name]));
     const logs = [
-        ...cvs.map(cv => ({ id: `cv-${cv.id}`, type: 'tao_cv', typeLabel: 'Tạo CV',
+        ...analyses.map(analysis => ({ id: `analysis-${analysis.analysisId}`, analysisId: analysis.analysisId,
+            type: 'danh_gia_cv', typeLabel: 'Đánh giá CV', title: analysis.cvName?.trim() || 'CV chưa đặt tên',
+            date: analysis.createdAt, score: analysis.score, scoreLabel: 'Điểm đánh giá CV',
+            statusLabel: analysis.status === 'INSUFFICIENT_EVIDENCE' ? 'Chưa đủ thông tin đánh giá' : 'Đã đánh giá',
+            details: [analysis.jdTitle, analysis.companyName].filter(Boolean).join(' · ') || 'Đánh giá CV bằng AI',
+        })),
+        ...cvs.map(cv => ({ id: `cv-${cv.id}`, cvId: cv.id, type: 'tao_cv', typeLabel: 'Tạo CV',
             title: cv.name?.trim() || 'CV chưa đặt tên', date: cv.createdAt,
             details: 'CV đã được tạo và lưu trong tài khoản.', statusLabel: mapCV(cv).statusLabel })),
         ...sessions.map(session => ({ id: `interview-${session.id}`, sessionId: session.id,

@@ -148,6 +148,12 @@ public class CVPipelineController {
     public ResponseEntity<ApiResponse<CVAnalysisResponseDTO>> getAnalysis(@PathVariable UUID analysisId) {
         return ResponseEntity.ok(ApiResponse.success(analysisService.read(analysisId, currentGallery())));
     }
+
+    @GetMapping("/analyses")
+    public ResponseEntity<ApiResponse<CVAnalysisHistoryResponseDTO>> getAnalysisHistory(
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.success(analysisService.history(page, size, currentGallery())));
+    }
     @PostMapping("/analyses/{analysisId}/alternatives")
     public ResponseEntity<ApiResponse<CVAnalysisAlternativesResponseDTO>> startAlternatives(@PathVariable UUID analysisId) {
         return ResponseEntity.ok(ApiResponse.success(analysisService.startAlternatives(analysisId, currentGallery())));
