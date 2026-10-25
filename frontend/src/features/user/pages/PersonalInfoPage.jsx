@@ -1,30 +1,27 @@
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {Package, Camera, Link, Globe, Code, Sparkles, Shield, User, FileText, ChevronRight} from 'lucide-react';
+import {Package, Camera, Link, Globe, Code, Sparkles, Shield, User, LoaderCircle} from 'lucide-react';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
-import {Card, Button, Input, Toggle, Badge, SectionHeader} from '../components/Layout.jsx';
-import { Footer } from '../../../components/layout/Footer.jsx';
+import {Card, Button, Input, Badge, SectionHeader} from '../components/Layout.jsx';
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import { validateProfile } from '../../../utils/inputValidation.js';
 
 const PersonalInfoPage = () => {
     const navigate = useNavigate();
-    const {profile, updateProfile, handle2faToggle, is2faEnabled, isLoading} = useAuth();
-    const {cvs, showToast} = useApp();
+    const {profile, updateProfile, isLoading} = useAuth();
+    const {showToast} = useApp();
 
-    const [formData, setFormData] = useState({...profile});
-    const [local2fa, setLocal2fa] = useState(is2faEnabled);
+    const [draft, setDraft] = useState(null);
+    const formData = draft?.source === profile ? draft.data : profile;
+    const setFormData = update => setDraft(previous => ({
+        source: profile,
+        data: typeof update === 'function' ? update(previous?.source === profile ? previous.data : profile) : update,
+    }));
+    const [isSaving, setIsSaving] = useState(false);
+    const savingRef = useRef(false);
     const [usageQuota, setUsageQuota] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
-
-    useEffect(() => {
-        setFormData({...profile});
-    }, [profile]);
-
-    useEffect(() => {
-        setLocal2fa(is2faEnabled);
-    }, [is2faEnabled]);
 
     useEffect(() => {
         let active = true;
@@ -37,6 +34,7 @@ const PersonalInfoPage = () => {
     }, []);
 
     const handleChange = (e) => {
+        if (savingRef.current) return;
         const {name, value} = e.target;
         setValidationErrors((previous) => ({ ...previous, [name]: undefined }));
         setFormData((prev) => ({
@@ -46,33 +44,30 @@ const PersonalInfoPage = () => {
     };
 
     const handleSave = async () => {
+        if (savingRef.current) return;
         const errors = validateProfile(formData);
         setValidationErrors(errors);
         if (Object.keys(errors).length) {
             showToast('Vui lòng kiểm tra lại các trường thông tin được đánh dấu.', 'error');
             return;
         }
+        savingRef.current = true;
+        setIsSaving(true);
         try {
             await updateProfile({ ...formData, fullName: formData.fullName.trim() });
-            handle2faToggle(local2fa);
             showToast('Đã lưu các thay đổi thông tin cá nhân thành công!', 'success');
         } catch (err) {
             showToast(getApiErrorMessage(err), 'error');
+        } finally {
+            savingRef.current = false;
+            setIsSaving(false);
         }
     };
 
     const handleReset = () => {
         setFormData({...profile});
         setValidationErrors({});
-        setLocal2fa(is2faEnabled);
         showToast('Đã khôi phục thông tin ban đầu.', 'info');
-    };
-
-    const handlePhotoUpload = () => {
-        showToast('Đang tải ảnh đại diện lên...', 'info');
-        setTimeout(() => {
-            showToast('Đã cập nhật ảnh đại diện thành công!', 'success');
-        }, 1500);
     };
 
     const getInitials = (name) => {
@@ -113,8 +108,10 @@ const PersonalInfoPage = () => {
                             {getInitials(formData.fullName)}
                         </div>
                         <button
-                            onClick={handlePhotoUpload}
-                            className="absolute bottom-0 right-0 bg-[#10B981] p-1.5 rounded-full border-2 border-[#CBD5E1] text-white hover:bg-emerald-600 transition-colors shadow-sm cursor-pointer"
+                            disabled
+                            aria-label="Đổi ảnh đại diện — đang cập nhật"
+                            title="Đổi ảnh đại diện đang cập nhật"
+                            className="absolute bottom-0 right-0 bg-slate-400 p-1.5 rounded-full border-2 border-[#CBD5E1] text-white cursor-not-allowed"
                         >
                             <Camera size={14}/>
                         </button>
@@ -130,167 +127,6 @@ const PersonalInfoPage = () => {
                     </div>
                 </div>
             </Card>
-
-            {/* Personal Info Section */}
-            <div className="mb-8">
-                <SectionHeader title="Thông tin cá nhân" icon={<User size={18}/>}/>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input
-                        label="Họ và tên"
-                        name="fullName"
-                        value={formData.fullName || ''}
-                        onChange={handleChange}
-                        maxLength={255}
-                        aria-invalid={Boolean(validationErrors.fullName)}
-                        placeholder="Nhập họ và tên..."
-                    />
-                    {validationErrors.fullName && <p role="alert" className="text-sm text-red-600">{validationErrors.fullName}</p>}
-                    <Input
-                        label="Địa chỉ Email"
-                        name="email"
-                        type="email"
-                        value={formData.email || ''}
-                        readOnly
-                        maxLength={254}
-                        placeholder="Nhập địa chỉ email..."
-                    />
-                    <p className="text-xs text-slate-500">Email tài khoản không thể thay đổi tại đây.</p>
-                    <Input
-                        label="Số điện thoại"
-                        name="phone"
-                        value={formData.phone || ''}
-                        onChange={handleChange}
-                        maxLength={24}
-                        aria-invalid={Boolean(validationErrors.phone)}
-                        placeholder="Nhập số điện thoại..."
-                    />
-                    {validationErrors.phone && <p role="alert" className="text-sm text-red-600">{validationErrors.phone}</p>}
-                    <Input
-                        label="Vị trí"
-                        name="location"
-                        value={formData.location || ''}
-                        onChange={handleChange}
-                        maxLength={255}
-                        placeholder="Thành phố, Quốc gia..."
-                    />
-                    <div className="md:col-span-2">
-                        <Input
-                            label="Nghề nghiệp"
-                            name="profession"
-                            value={formData.profession || ''}
-                            onChange={handleChange}
-                            maxLength={255}
-                            placeholder="Nhập ngành nghề của bạn..."
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Career Links Section */}
-            <div className="mb-8">
-                <SectionHeader title="Liên kết sự nghiệp" icon={<Globe size={18}/>}/>
-                <div className="space-y-4">
-                    <Input
-                        label="URL LinkedIn"
-                        name="linkedin"
-                        icon={<Link size={16}/>}
-                        value={formData.linkedin || ''}
-                        onChange={handleChange}
-                        maxLength={255}
-                        aria-invalid={Boolean(validationErrors.linkedin)}
-                        placeholder="https://linkedin.com/in/username"
-                    />
-                    {validationErrors.linkedin && <p role="alert" className="text-sm text-red-600">{validationErrors.linkedin}</p>}
-                    <Input
-                        label="URL Portfolio"
-                        name="portfolio"
-                        icon={<Globe size={16}/>}
-                        value={formData.portfolio || ''}
-                        onChange={handleChange}
-                        maxLength={255}
-                        aria-invalid={Boolean(validationErrors.portfolio)}
-                        placeholder="https://myportfolio.com"
-                    />
-                    {validationErrors.portfolio && <p role="alert" className="text-sm text-red-600">{validationErrors.portfolio}</p>}
-                    <Input
-                        label="URL GitHub"
-                        name="github"
-                        icon={<Code size={16}/>}
-                        value={formData.github || ''}
-                        onChange={handleChange}
-                        maxLength={255}
-                        aria-invalid={Boolean(validationErrors.github)}
-                        placeholder="https://github.com/username"
-                    />
-                    {validationErrors.github && <p role="alert" className="text-sm text-red-600">{validationErrors.github}</p>}
-                </div>
-            </div>
-
-            {/* Account Settings Summary */}
-            <div className="mb-8">
-                <SectionHeader title="Cài đặt tài khoản" icon={<Shield size={18}/>}/>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="p-5 flex flex-col justify-between bg-[#CBD5E1] border-none shadow-sm ">
-                        <h4 className="text-[#0F172A] font-medium mb-1">Quản lý mật khẩu</h4>
-                        <p className="text-[#475569] text-sm mb-3">Cập nhật lần cuối 3 tháng trước.</p>
-                        <button
-                            onClick={() => navigate('/security')}
-                            className="text-[#10B981] text-sm font-medium hover:underline text-left"
-                        >
-                            Đổi mật khẩu ›
-                        </button>
-                    </Card>
-                    <Card className="p-5 flex items-center justify-between bg-[#CBD5E1]  border-none shadow-sm">
-                        <div>
-                            <h4 className="text-[#0F172A] font-medium mb-1">Xác thực hai yếu tố</h4>
-                            <p className="text-[#475569] text-sm">Tăng cường bảo vệ tài khoản.</p>
-                        </div>
-                        <Toggle
-                            checked={local2fa}
-                            onChange={(checked) => {
-                                setLocal2fa(checked);
-                                showToast(
-                                    checked ? 'Đã kích hoạt 2FA tạm thời. Hãy nhấp Lưu thay đổi!' : 'Đã ấn tắt 2FA tạm thời. Hãy nhấp Lưu thay đổi!',
-                                    'info'
-                                );
-                            }}
-                        />
-                    </Card>
-                </div>
-            </div>
-
-            {/* My CVs Summary */}
-            <div className="mb-8 ">
-                <div className="flex items-center justify-between mb-4 " >
-                    <SectionHeader title="CV của tôi" icon={<FileText size={18}/>}/>
-                    <button
-                        onClick={() => navigate('/my-cvs')}
-                        className="text-[#10B981] text-sm font-medium hover:underline"
-                    >
-                        Xem tất cả
-                    </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {(cvs || []).slice(0, 2).map((cv) => (
-                        <Card key={cv.id }
-                              className="p-4 flex items-center justify-between bg-[#CBD5E1]  border-none shadow-sm">
-                            <div>
-                                <h4 className="text-[#0F172A] font-medium">{cv.title}</h4>
-                                <p className="text-[#475569] text-xs">
-                                    {cv.status} • Cập nhật {cv.updatedAt}
-                                </p>
-                            </div>
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => navigate('/my-cvs')}
-                            >
-                                Chỉnh sửa
-                            </Button>
-                        </Card>
-                    ))}
-                </div>
-            </div>
 
             {/* Subscription Summary */}
             <div className="mb-8">
@@ -316,6 +152,133 @@ const PersonalInfoPage = () => {
                 </Card>
             </div>
 
+            {/* Personal Info Section */}
+            <div className="mb-8">
+                <SectionHeader title="Thông tin cá nhân" icon={<User size={18}/>}/>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                        disabled={isSaving}
+                        label="Họ và tên"
+                        name="fullName"
+                        value={formData.fullName || ''}
+                        onChange={handleChange}
+                        maxLength={255}
+                        aria-invalid={Boolean(validationErrors.fullName)}
+                        placeholder="Nhập họ và tên..."
+                    />
+                    {validationErrors.fullName && <p role="alert" className="text-sm text-red-600">{validationErrors.fullName}</p>}
+                    <Input
+                        disabled={isSaving}
+                        label="Địa chỉ Email"
+                        name="email"
+                        type="email"
+                        value={formData.email || ''}
+                        readOnly
+                        maxLength={254}
+                        placeholder="Nhập địa chỉ email..."
+                    />
+                    <p className="text-xs text-slate-500">Email tài khoản không thể thay đổi tại đây.</p>
+                    <Input
+                        disabled={isSaving}
+                        label="Số điện thoại"
+                        name="phone"
+                        value={formData.phone || ''}
+                        onChange={handleChange}
+                        maxLength={24}
+                        aria-invalid={Boolean(validationErrors.phone)}
+                        placeholder="Nhập số điện thoại..."
+                    />
+                    {validationErrors.phone && <p role="alert" className="text-sm text-red-600">{validationErrors.phone}</p>}
+                    <Input
+                        disabled={isSaving}
+                        label="Vị trí"
+                        name="location"
+                        value={formData.location || ''}
+                        onChange={handleChange}
+                        maxLength={255}
+                        placeholder="Thành phố, Quốc gia..."
+                    />
+                    <div className="md:col-span-2">
+                        <Input
+                        disabled={isSaving}
+                            label="Nghề nghiệp"
+                            name="profession"
+                            value={formData.profession || ''}
+                            onChange={handleChange}
+                            maxLength={255}
+                            placeholder="Nhập ngành nghề của bạn..."
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Career Links Section */}
+            <div className="mb-8">
+                <SectionHeader title="Liên kết sự nghiệp" icon={<Globe size={18}/>}/>
+                <div className="space-y-4">
+                    <Input
+                        disabled={isSaving}
+                        label="URL LinkedIn"
+                        name="linkedin"
+                        icon={<Link size={16}/>}
+                        value={formData.linkedin || ''}
+                        onChange={handleChange}
+                        maxLength={255}
+                        aria-invalid={Boolean(validationErrors.linkedin)}
+                        placeholder="https://linkedin.com/in/username"
+                    />
+                    {validationErrors.linkedin && <p role="alert" className="text-sm text-red-600">{validationErrors.linkedin}</p>}
+                    <Input
+                        disabled={isSaving}
+                        label="URL Portfolio"
+                        name="portfolio"
+                        icon={<Globe size={16}/>}
+                        value={formData.portfolio || ''}
+                        onChange={handleChange}
+                        maxLength={255}
+                        aria-invalid={Boolean(validationErrors.portfolio)}
+                        placeholder="https://myportfolio.com"
+                    />
+                    {validationErrors.portfolio && <p role="alert" className="text-sm text-red-600">{validationErrors.portfolio}</p>}
+                    <Input
+                        disabled={isSaving}
+                        label="URL GitHub"
+                        name="github"
+                        icon={<Code size={16}/>}
+                        value={formData.github || ''}
+                        onChange={handleChange}
+                        maxLength={255}
+                        aria-invalid={Boolean(validationErrors.github)}
+                        placeholder="https://github.com/username"
+                    />
+                    {validationErrors.github && <p role="alert" className="text-sm text-red-600">{validationErrors.github}</p>}
+                </div>
+            </div>
+
+            {/* Account Settings Summary */}
+            <div className="mb-8">
+                <SectionHeader title="Cài đặt tài khoản" icon={<Shield size={18}/>}/>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="p-5 flex flex-col justify-between bg-[#CBD5E1] border-none shadow-sm ">
+                        <h4 className="text-[#0F172A] font-medium mb-1">Quản lý mật khẩu</h4>
+                        <p className="text-[#475569] text-sm mb-3">Quản lý mật khẩu và phương thức đăng nhập.</p>
+                        <button
+                            onClick={() => navigate('/security')}
+                            className="text-[#10B981] text-sm font-medium hover:underline text-left"
+                        >
+                            Đổi mật khẩu ›
+                        </button>
+                    </Card>
+                    <Card className="p-5 flex items-center justify-between gap-3 bg-slate-200 border border-slate-300 shadow-sm">
+                        <div>
+                            <h4 className="text-[#0F172A] font-medium mb-1">Xác thực hai yếu tố</h4>
+                            <p className="text-[#475569] text-sm">Chưa hỗ trợ bật xác thực hai yếu tố.</p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Đang cập nhật</span>
+                    </Card>
+                </div>
+            </div>
+
             {/* AI Suggestion Banner */}
             <Card className="p-4 bg-gradient-to-r from-[#34D399] to-[#10B981] border-none flex items-center gap-3 mb-8">
                 <Sparkles size={18} className="text-white"/>
@@ -329,14 +292,20 @@ const PersonalInfoPage = () => {
                 <Button
                     variant="outline"
                     onClick={handleReset}
+                    disabled={isSaving}
+                    className="disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                     Hủy
                 </Button>
                 <Button
                     variant="primary"
                     onClick={handleSave}
+                    disabled={isSaving}
+                    aria-busy={isSaving}
+                    className="gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                    Lưu thay đổi
+                    {isSaving && <LoaderCircle size={16} className="animate-spin" aria-hidden="true"/>}
+                    {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </Button>
             </div>
         </div>
