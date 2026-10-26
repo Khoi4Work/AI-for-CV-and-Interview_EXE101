@@ -6,6 +6,9 @@ import { getApiErrorMessage } from '../../../service/apiClient';
 import { interviewService } from '../../interview/services/interviewService.js';
 import { useGalleryData } from '../hooks/useGalleryData';
 import { buildHistory } from '../utils/galleryData';
+import { useAnalysisHistory } from '../hooks/useAnalysisHistory.js';
+import CVAnalysisHistoryDetail from '../components/CVAnalysisHistoryDetail.jsx';
+import SavedCVPreview from '../components/SavedCVPreview.jsx';
 
 function InterviewDetail({ sessionId }) {
     const [state, setState] = useState({ loading: true, detail: null, error: null });
@@ -45,25 +48,29 @@ function InterviewDetail({ sessionId }) {
 
 export default function HistoryPage() {
     const { cvs, sessions, loading, errors, reload } = useGalleryData(true);
+    const analyses = useAnalysisHistory();
     const [filter, setFilter] = useState('all');
     const [limit, setLimit] = useState(10);
     const [selected, setSelected] = useState(null);
-    const logs = buildHistory(cvs, sessions);
+    const selectedCV = selected?.cvId ? cvs.find(cv => cv.id === selected.cvId) : null;
+    const logs = buildHistory(cvs, sessions, new Date(), analyses.items);
     const filtered = logs.filter(log => filter === 'all' || log.type === filter);
     const visible = filtered.slice(0, limit);
     const groups = ['Hôm nay', 'Hôm qua', 'Trước đó', 'Chưa có ngày'];
     return <div className="max-w-4xl mx-auto pb-12">
         <h1 className="text-2xl font-bold text-[#10B981] mb-6">Lịch sử hoạt động</h1>
-        <p className="text-sm text-slate-400 mb-6">Các CV đang lưu và phiên phỏng vấn trong tài khoản của bạn.</p>
+        <p className="text-sm text-slate-400 mb-6">CV, kết quả đánh giá AI đã lưu và các phiên phỏng vấn của bạn.</p>
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex flex-wrap gap-2 bg-white rounded-xl p-2">
-                {[['all', 'Tất cả'], ['tao_cv', 'Tạo CV'], ['phong_van', 'Phỏng vấn']].map(([id, label]) => <button key={id}
+                {[['all', 'Tất cả'], ['tao_cv', 'Tạo CV'], ['danh_gia_cv', 'Đánh giá CV'], ['phong_van', 'Phỏng vấn']].map(([id, label]) => <button key={id}
                     onClick={() => { setFilter(id); setLimit(10); }}
                     className={`px-4 py-2 rounded-full text-sm ${filter === id ? 'bg-emerald-500 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>{label}</button>)}
             </div>
-            <p className="bg-white text-slate-600 rounded-xl px-4 py-3 text-sm">Tổng hoạt động: {logs.length}</p>
+            <p className="bg-white text-slate-600 rounded-xl px-4 py-3 text-sm">Hoạt động đã tải: {logs.length}</p>
         </div>
         {loading ? <p role="status" className="text-center py-16 text-slate-400">Đang tải lịch sử hoạt động...</p> : <>
+            {analyses.error && <div role="alert" className="mb-4 space-y-3 rounded-2xl bg-white p-4 text-red-600"><p>Đánh giá CV: {analyses.error}</p><Button disabled={analyses.loading} onClick={analyses.retry}>Thử lại</Button></div>}
+            {analyses.loading && <p role="status" className="mb-4 text-sm text-slate-400">Đang tải lịch sử đánh giá CV...</p>}
             {errors.length > 0 && <div role="alert" className="bg-white rounded-2xl p-4 mb-4 text-red-600 space-y-3">
                 <p>Một phần dữ liệu chưa tải được.</p>{errors.map(error => <p key={error} className="text-sm">{error}</p>)}<Button onClick={reload}>Thử lại</Button>
             </div>}
@@ -81,7 +88,7 @@ export default function HistoryPage() {
                             <Card className="flex-1 p-4 bg-slate-100 rounded-2xl space-y-3">
                                 <div className="flex flex-wrap justify-between gap-2"><h3 className="font-semibold text-emerald-600">{log.title}</h3><span className="text-xs text-slate-500">{log.time}</span></div>
                                 {log.details && <p className="text-sm text-slate-600">{log.details}</p>}
-                                {log.score != null && <p className="text-sm font-semibold text-emerald-700">Điểm phỏng vấn: {log.score}</p>}
+                                {log.score != null && <p className="text-sm font-semibold text-emerald-700">{log.scoreLabel || 'Điểm phỏng vấn'}: {log.score}</p>}
                                 <div className="flex flex-wrap items-center gap-3"><Badge variant="success">{log.typeLabel}</Badge><span className="text-xs text-slate-600">{log.statusLabel}</span>
                                     <button onClick={() => setSelected(log)} className="text-xs text-emerald-700 hover:underline">Xem chi tiết ›</button></div>
                             </Card>
@@ -89,14 +96,25 @@ export default function HistoryPage() {
                     </section>;
                 })}
                 {visible.length < filtered.length && <div className="text-center"><Button onClick={() => setLimit(previous => previous + 10)} className="gap-2 rounded-full">Hiển thị thêm<ChevronDown size={16} /></Button></div>}
+                {['all', 'danh_gia_cv'].includes(filter) && analyses.hasNext && !analyses.error && <div className="mt-4 text-center"><Button disabled={analyses.loading} onClick={() => {
+                    analyses.loadMore(); setLimit(previous => previous + 20);
+                }}>{analyses.loading ? 'Đang tải...' : 'Tải thêm đánh giá CV cũ'}</Button></div>}
             </div>
         </>}
-        <Modal solid isOpen={Boolean(selected)} onClose={() => setSelected(null)} title={selected?.title || 'Chi tiết hoạt động'}>
+        <Modal solid size={selected?.analysisId || selected?.cvId ? 'wide' : 'default'} isOpen={Boolean(selected)} onClose={() => setSelected(null)} title={selected?.title || 'Chi tiết hoạt động'}>
             {selected && <div className="space-y-4 text-slate-700">
                 <p className="flex gap-2 text-sm"><Clock size={16} />{selected.time}</p>
                 <p className="text-sm">{selected.details}</p>
                 {selected.score != null && <p className="font-semibold text-emerald-700">Điểm: {selected.score}</p>}
-                {selected.sessionId ? <InterviewDetail key={selected.sessionId} sessionId={selected.sessionId} /> : <p className="text-sm">Trạng thái hiện tại: {selected.statusLabel}</p>}
+                {selected.analysisId ? <CVAnalysisHistoryDetail key={selected.analysisId} analysisId={selected.analysisId} />
+                    : selected.sessionId ? <InterviewDetail key={selected.sessionId} sessionId={selected.sessionId} /> : <>
+                        <p className="text-sm">Trạng thái hiện tại: {selected.statusLabel}</p>
+                        {selectedCV ? <section className="space-y-3">
+                            <h3 className="font-semibold text-slate-900">Nội dung CV đang lưu</h3>
+                            {selectedCV.template?.name && <p className="text-sm text-slate-500">Mẫu: {selectedCV.template.name}</p>}
+                            <SavedCVPreview cv={selectedCV} />
+                        </section> : <p className="text-sm text-slate-500">CV này không còn trong danh sách đang lưu.</p>}
+                    </>}
             </div>}
         </Modal>
     </div>;

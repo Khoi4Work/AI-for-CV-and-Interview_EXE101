@@ -30,6 +30,7 @@ export const cvPipelineService = {
     evaluateCVText: async (id, jdText) => getResult(await apiClient.get(`/cv/${id}/evaluations`, {params: {jdText}})),
     analyzeCV: async (id, selection, key) => getResult(await apiClient.post(`/cv/${id}/analysis`, selection, { headers: {'Idempotency-Key': key} })),
     getAnalysis: async (id, signal) => getResult(await apiClient.get(`/cv/analyses/${id}`, {signal})),
+    getAnalysisHistory: async (page = 0, signal) => getResult(await apiClient.get('/cv/analyses', {params: {page, size: 20}, signal})),
     getEvidence: async (id) => getResult(await apiClient.get(`/cv/analyses/${id}/evidence`)),
     startAlternatives: async (id) => getResult(await apiClient.post(`/cv/analyses/${id}/alternatives`)),
     getAlternatives: async (id) => getResult(await apiClient.get(`/cv/analyses/${id}/alternatives`)),

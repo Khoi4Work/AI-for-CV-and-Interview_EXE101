@@ -92,7 +92,7 @@ export default function MyCVsPage() {
                     </div>
                 </>
             )}
-            <Modal solid isOpen={Boolean(previewCV)} onClose={() => setPreviewCV(null)} title={previewCV?.title || 'Xem trước CV'}>
+            <Modal solid size="wide" isOpen={Boolean(previewCV)} onClose={() => setPreviewCV(null)} title={previewCV?.title || 'Xem trước CV'}>
                 {previewCV && <SavedCVPreview key={previewCV.id} cv={previewCV} />}
             </Modal>
         </div>
