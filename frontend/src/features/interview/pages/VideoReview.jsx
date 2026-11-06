@@ -6,6 +6,7 @@ import {useInterviewSession} from '../hooks/useInterviewSession.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import {interviewService} from '../services/interviewService.js';
 import {downloadInterviewReportPdf} from '../services/interviewExports.js';
+import './interview-pages.css';
 
 export function VideoReview() {
     const navigate = useNavigate();
@@ -66,8 +67,8 @@ export function VideoReview() {
     };
 
     return (
-        <MainLayout>
-            <div className="w-full max-w-5xl mx-auto flex flex-col pt-4">
+        <MainLayout bgClass="interview-review-background">
+            <div className="interview-review-surface w-full max-w-5xl mx-auto flex flex-col pt-4">
                 <p className="text-center text-sm text-gray-500 font-medium mb-6">Bước 9 trên 10 • 90% hoàn tất</p>
 
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium">
