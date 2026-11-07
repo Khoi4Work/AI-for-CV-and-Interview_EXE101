@@ -8,6 +8,7 @@ import {TAG_DEFINITIONS} from '../constants/feedbackInterviewRubric.js';
 import {getLocalInterviewRecording} from '../services/localInterviewRecording.js';
 import {downloadInterviewReportPdf, downloadLocalInterviewAudio} from '../services/interviewExports.js';
 import './interview-result.css';
+import './interview-pages.css';
 import {trackEventOnce} from '../../analytics/analyticsClient.js';
 import {useAnalyticsConsent} from '../../analytics/AnalyticsProvider.jsx';
 
@@ -76,7 +77,7 @@ export function InterviewResults() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-interview-radial text-on-surface font-sans selection:bg-primary-container/20">
+        <div className="interview-result-page min-h-screen flex flex-col bg-interview-radial text-on-surface font-sans selection:bg-primary-container/20">
             <Header/>
 
             <main id="interview-report" className="interview-report flex-1 w-full max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6">
@@ -116,7 +117,7 @@ export function InterviewResults() {
                                     <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--color-outline)" strokeWidth="8"/>
                                     <circle
                                         cx="50" cy="50" r="40" fill="transparent"
-                                        stroke="var(--color-primary)" strokeWidth="8"
+                                        stroke={overallScore >= 80 ? '#087b5b' : overallScore >= 50 ? '#b7791f' : '#b64d56'} strokeWidth="8"
                                         strokeDasharray="251"
                                         strokeDashoffset={251 - (251 * overallScore / 100)}
                                         strokeLinecap="round"
@@ -157,7 +158,10 @@ export function InterviewResults() {
                                     <div className="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
                                         <div
                                             className={`h-full ${item.color} rounded-full transition-all`}
-                                            style={{width: `${item.score}%`}}
+                                            style={{
+                                                width: `${item.score}%`,
+                                                backgroundColor: item.score >= 80 ? '#087b5b' : item.score >= 50 ? '#c08a2b' : '#b64d56',
+                                            }}
                                         />
                                     </div>
                                 </div>

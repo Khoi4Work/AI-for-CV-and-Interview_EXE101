@@ -1,0 +1,186 @@
+/* Shared, calmer palette for the final review and interview report screens. */
+.interview-review-background {
+    background: #0d1b2a;
+    color: #e0e1dd;
+}
+
+.interview-review-background.bg-surface-dim {
+    background: #0d1b2a;
+}
+
+.interview-review-surface {
+    --color-interview-card-bg: #ffffff;
+    --color-outline-variant: #d7e3e0;
+    --color-outline: #b7c8c3;
+    --color-primary: #087b5b;
+    --color-on-primary: #ffffff;
+    --color-interview-selection-border: #68b99d;
+    --color-surface-container: #e8f1ef;
+}
+
+.interview-review-surface h1 {
+    color: #f2f7f5;
+    letter-spacing: -0.025em;
+}
+
+.interview-review-surface > p.text-center {
+    color: #b8cbc6;
+}
+
+.interview-review-surface > p.text-gray-600 {
+    color: #c4d2cf;
+}
+
+.interview-review-surface .text-gray-500 {
+    color: #b8cbc6;
+}
+
+.interview-review-surface .text-gray-900 {
+    color: #f2f7f5;
+}
+
+.interview-review-surface .hover\:text-gray-900:hover {
+    color: #ffffff;
+}
+
+.interview-review-surface article,
+.interview-review-surface > div.rounded-xl {
+    border-color: #d7e3e0;
+    box-shadow: 0 8px 24px -20px rgba(15, 48, 57, 0.42);
+}
+
+.interview-review-surface article {
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.interview-review-surface article:hover {
+    border-color: #8fc9b5;
+    box-shadow: 0 12px 26px -20px rgba(15, 79, 62, 0.38);
+    transform: translateY(-1px);
+}
+
+.interview-review-surface button:not([disabled]) {
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.interview-review-surface button:focus-visible,
+.interview-result-page button:focus-visible {
+    outline: 3px solid rgba(8, 123, 91, 0.28);
+    outline-offset: 2px;
+}
+
+.interview-result-page {
+    --color-interview-card-bg: #ffffff;
+    --color-outline-variant: #d7e3e0;
+    --color-outline: #c5d4d0;
+    --color-primary: #087b5b;
+    --color-on-primary: #ffffff;
+    --color-interview-selection-border: #68b99d;
+    --color-surface-container: #e8f1ef;
+    color: #172c3d;
+}
+
+.interview-result-page.text-on-surface {
+    color: #172c3d;
+}
+
+.interview-result-page .bg-interview-card-bg {
+    background-color: #ffffff;
+}
+
+.interview-result-page .border-outline-variant {
+    border-color: #d7e3e0;
+}
+
+.interview-result-page .text-primary {
+    color: #087b5b;
+}
+
+.interview-result-page .text-outline {
+    color: #61766f;
+}
+
+.interview-result-page .bg-primary {
+    background-color: #087b5b;
+    color: #ffffff;
+}
+
+.interview-result-page .text-on-primary {
+    color: #ffffff;
+}
+
+.interview-result-page .bg-amber-500,
+.interview-result-page .bg-amber-600 {
+    background-color: #fff1cf;
+    color: #80520b;
+    border-color: #e9ce8d;
+}
+
+.interview-result-page .bg-rose-500,
+.interview-result-page .bg-rose-600 {
+    background-color: #ffebeb;
+    color: #9b3038;
+    border-color: #efb5b9;
+}
+
+.interview-result-page .bg-slate-500,
+.interview-result-page .bg-gray-400 {
+    background-color: #e8eef2;
+    color: #415464;
+    border-color: #cfdae1;
+}
+
+.interview-result-page [class*="bg-blue-"] {
+    background-color: #0b8965;
+}
+
+.interview-result-page .selection-card-hover {
+    background-color: #f3faf7;
+    border-color: #b7d7ca;
+    color: #155e4c;
+}
+
+.interview-result-page .selection-card-hover:hover {
+    background-color: #e5f4ed;
+    border-color: #68b99d;
+    box-shadow: 0 8px 18px -14px rgba(8, 123, 91, 0.5);
+}
+
+.interview-result-page .border-rose-500 {
+    border-color: #e7aeb2;
+}
+
+.interview-result-page .border-selection-border {
+    border-color: #a9d6c5;
+}
+
+.interview-result-page .interview-report > div {
+    border-color: #d2e1dc;
+}
+
+.interview-result-page .interview-report > div {
+    box-shadow: 0 14px 38px -28px rgba(15, 48, 57, 0.38);
+}
+
+.interview-result-page .interview-report > div > div {
+    border-radius: 1.1rem;
+}
+
+.interview-result-page .custom-scrollbar::-webkit-scrollbar-track {
+    background: #edf3f1;
+}
+
+.interview-result-page .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #b7ccc5;
+}
+
+.interview-result-page .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #71998a;
+}
+
+@media (max-width: 1023px) {
+    .interview-result-page .interview-report > div:last-child {
+        position: static;
+        height: min(70vh, 44rem);
+    }
+}
