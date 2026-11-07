@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, Mic, MicOff } from 'lucide-react';
 import { RecruiterAvatar } from '../components/RecruiterAvatar';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
+import './interview-pages.css';
 import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
 import { END_PHRASES_VN, END_PHRASES_EN } from '../constants/questionBank.js';
 import { useElevenLabsTTS } from '../hooks/useElevenLabsTTS';
@@ -613,7 +614,7 @@ export function InterviewRoom() {
 
     if (phase === 'error') {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-interview-radial p-6">
+            <div className="interview-flow-page font-sans items-center justify-center p-6">
                 <div className="error-card rounded-xl bg-interview-card-bg p-6 text-center shadow-lg">
                     <h1 className="mb-2 text-xl font-bold text-black">Không lưu được câu trả lời</h1>
                     <p className="mb-5 text-sm text-black/70">{data.sessionError || 'Hãy kiểm tra kết nối rồi thử lại.'}</p>
@@ -626,7 +627,7 @@ export function InterviewRoom() {
     if (currentIndex >= questions.length) return null;
 
     return (
-        <div className="min-h-screen flex flex-col bg-interview-radial font-sans">
+        <div className="interview-flow-page font-sans">
             <header
                 className="w-full h-16 flex items-center justify-between px-6 bg-surface-container border-b border-outline-variant shadow-sm">
                 <div className="flex items-center gap-2">

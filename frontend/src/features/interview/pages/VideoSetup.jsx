@@ -6,6 +6,7 @@ import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
+import './interview-pages.css';
 
 export function VideoSetup() {
   const navigate = useNavigate();
@@ -40,11 +41,11 @@ export function VideoSetup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-interview-radial font-sans relative text-on-surface">
+    <div className="interview-flow-page font-sans relative">
       <Header />
       <main className="flex-grow flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-5xl mx-auto">
-          <p className="text-center text-sm text-white/60 font-medium mb-6">Bước 7 trên 10 • 70% hoàn tất</p>
+          <p className="interview-flow-progress-label text-center text-sm font-medium mb-6">Bước 7 trên 10 • 70% hoàn tất</p>
 
           <h1 className="text-3xl font-display font-semibold text-center mb-8 text-on-surface">Chuẩn bị Phỏng vấn Ghi hình</h1>
 
@@ -161,13 +162,13 @@ export function VideoSetup() {
           <div className="flex flex-col items-center justify-center mt-12 gap-3">
             <button
               onClick={() => navigate('/audio-setup')}
-              className="w-full max-w-2xl flex items-center justify-center bg-surface-container border border-on-primary text-outline py-3.5 rounded-xl text-sm font-bold hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
+              className="interview-flow-button-secondary w-full max-w-2xl flex items-center justify-center py-3.5 text-sm shadow-sm"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>
             <button
               onClick={handleStart}
-              className="hover:text-on-primary hover:opacity-90 w-full max-w-2xl flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
+              className="interview-flow-button-primary w-full max-w-2xl flex items-center justify-center py-3.5 text-sm shadow-md"
             >
               Bắt đầu phỏng vấn <ArrowRight className="w-4 h-4 ml-2" />
             </button>

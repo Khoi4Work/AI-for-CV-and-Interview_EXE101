@@ -6,6 +6,7 @@ import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
+import './interview-pages.css';
 
 export function AudioSetup() {
   const navigate = useNavigate();
@@ -51,17 +52,17 @@ export function AudioSetup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-interview-radial font-sans relative text-on-surface">
+    <div className="interview-flow-page font-sans relative">
       <Header />
       <main className="flex-grow flex items-center justify-center p-6">
-        <div className="bg-interview-card-bg rounded-xl shadow-sm border border-outline-variant w-full p-8 max-w-3xl">
+        <div className="interview-flow-card w-full p-8 max-w-3xl">
           <div className="flex items-center justify-center gap-2 mb-8">
             <div className="h-1.5 w-24 bg-primary rounded-full"></div>
             <div className="h-1.5 w-24 bg-gray-300 rounded-full"></div>
             <div className="h-1.5 w-24 bg-gray-300 rounded-full border border-gray-400"></div>
           </div>
 
-          <p className="text-center text-sm text-black/60 font-medium mb-4">Bước 6 trên 10 • 60% hoàn tất</p>
+          <p className="interview-flow-progress-label text-center text-sm font-medium mb-4">Bước 6 trên 10 • 60% hoàn tất</p>
 
           <div className="text-center mb-6">
             <h1 className="text-2xl font-display font-semibold mb-2 text-black">Kiểm tra âm thanh trước khi bắt đầu</h1>
@@ -158,13 +159,13 @@ export function AudioSetup() {
           <div className="flex flex-col gap-3 pt-2">
             <button
                 onClick={handleBack}
-                className="w-full flex items-center justify-center bg-surface-container border border-on-primary text-outline py-3.5 rounded-xl text-sm font-bold hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
+                className="interview-flow-button-secondary w-full flex items-center justify-center py-3.5 text-sm shadow-sm"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>
             <button
                 onClick={handleContinue}
-                className="hover:text-on-primary hover:opacity-90 w-full flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
+                className="interview-flow-button-primary w-full flex items-center justify-center py-3.5 text-sm shadow-md"
             >
               Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
             </button>

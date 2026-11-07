@@ -106,7 +106,7 @@ export function VideoReview() {
                 <div className="flex items-center justify-between gap-4">
                     <button
                         onClick={() => navigate('/interview/job-selection')}
-                        className="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-2.5 font-medium text-gray-700 hover:bg-surface-container"
+                        className="interview-review-exit flex items-center gap-2 rounded-xl border px-5 py-2.5 font-medium"
                     >
                         <ArrowLeft size={17} /> Thoát
                     </button>
@@ -115,14 +115,14 @@ export function VideoReview() {
                             type="button"
                             onClick={handleDownloadReport}
                             disabled={isExportingReport}
-                            className="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-2.5 font-semibold text-on-surface hover:bg-surface-container"
+                            className="interview-review-download flex items-center gap-2 rounded-xl border px-5 py-2.5 font-semibold"
                         >
                             <FileText size={17} /> {isExportingReport ? 'Đang tạo PDF...' : 'Tải biên bản (PDF)'}
                         </button>
                         <button
                             onClick={handleSendFeedback}
                             disabled={isEvaluating}
-                            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-bold text-on-primary shadow-md transition-colors hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                            className="interview-review-submit flex items-center gap-2 rounded-xl px-6 py-2.5 font-bold shadow-md transition-colors disabled:cursor-wait"
                         >
                             {isEvaluating ? <LoaderCircle size={18} className="animate-spin" /> : <Sparkles size={18} />}
                             {isEvaluating ? 'Đang đánh giá...' : 'Nhận kết quả phản hồi'}

@@ -7,6 +7,7 @@ import { Footer } from '../../../components/layout/Footer.jsx';
 import { JOBS } from '../constants/jobs.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { paymentService } from '../../payment/services/paymentService.js';
+import './interview-pages.css';
 
 const ICONS = { Code, Monitor, Server, Cloud, Bug, Database };
 
@@ -59,7 +60,7 @@ export default function JobSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-interview-radial flex flex-col font-sans relative">
+    <div className="interview-flow-page font-sans relative">
       <Header />
       <div className="flex-1 pt-8 px-6 max-w-3xl mx-auto w-full">
         <ProgressBar current={1} />
@@ -83,7 +84,7 @@ export default function JobSelection() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-11 pr-4 py-3.5 glass-panel border border-outline-variant rounded-xl text-on-surface placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+            className="interview-flow-control block w-full pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             placeholder="Ví dụ: Senior Software Engineer, Marketing Manager..."
           />
         </div>
@@ -96,8 +97,8 @@ export default function JobSelection() {
               <div
                 key={job.id}
                 onClick={() => { setSelectedId(job.id); update({ job }); }}
-                className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-md bg-interview-card-bg ${
-                  isSelected ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
+                className={`interview-flow-choice flex flex-col items-center justify-center p-6 border-2 rounded-2xl cursor-pointer ${
+                  isSelected ? 'selection-card-selected' : 'shadow-sm'
                 }`}
               >
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-interview-icon-bg text-interview-icon-text`}>
@@ -113,18 +114,14 @@ export default function JobSelection() {
         <div className="flex justify-between items-center mt-12 pb-24">
           <button
             onClick={() => navigate('/interview')}
-            className="flex items-center text-outline hover:text-on-surface font-medium transition-colors"
+            className="interview-flow-back-button flex items-center transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
           </button>
           <button
             onClick={handleNext}
             disabled={!selectedId || quotaLoading || Boolean(quotaError) || !data.quotaSnapshot}
-            className={`flex items-center px-6 py-2.5 rounded-lg font-medium transition-colors ${
-              selectedId && !quotaLoading && !quotaError && data.quotaSnapshot
-                ? 'bg-primary text-on-primary hover:bg-primary-container'
-                : 'bg-surface-container text-outline cursor-not-allowed'
-            }`}
+            className="interview-flow-button-primary flex items-center px-6 py-2.5"
           >
             Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
           </button>
@@ -139,10 +136,10 @@ function ProgressBar({ current }) {
   const total = 10;
   return (
     <div className="flex flex-col items-center mb-10">
-      <p className="text-sm text-on-surface-variant font-medium mb-3">Bước {current} trên {total} • {Math.round((current / total) * 100)}% hoàn tất</p>
-      <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+      <p className="interview-flow-progress-label text-sm font-medium mb-3">Bước {current} trên {total} • {Math.round((current / total) * 100)}% hoàn tất</p>
+      <div className="interview-flow-progress-track w-full">
         <div
-          className="bg-primary h-full rounded-full transition-all"
+          className="interview-flow-progress-fill"
           style={{ width: `${(current / total) * 100}%` }}
         />
       </div>

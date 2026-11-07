@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
+import './interview-pages.css';
 
 const SUGGESTIONS = [
   '+ Học hỏi công nghệ mới',
@@ -38,35 +39,35 @@ export default function CareerGoal() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-interview-radial font-sans text-on-surface">
+    <div className="interview-flow-page font-sans">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-10 px-6 pb-20">
         <div className="w-full max-w-2xl">
           <div className="flex flex-col items-center mb-10 w-full max-w-2xl mx-auto">
-            <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-4">
-              <div className="bg-primary h-full rounded-full transition-all" style={{ width: '40%' }} />
+            <div className="interview-flow-progress-track w-full mb-4">
+              <div className="interview-flow-progress-fill" style={{ width: '40%' }} />
             </div>
-            <p className="text-sm text-on-surface-variant font-medium">Bước 4 trên 10 • 40% hoàn tất</p>
+            <p className="interview-flow-progress-label text-sm font-medium">Bước 4 trên 10 • 40% hoàn tất</p>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-on-surface mb-3">Mục tiêu nghề nghiệp?</h1>
-            <p className="text-on-surface-variant text-base">Mô tả ngắn gọn về định hướng và giá trị bạn muốn mang lại. AI của chúng tôi sẽ giúp bạn hoàn thiện nó.</p>
+            <h1 className="interview-flow-heading text-3xl font-bold mb-3">Mục tiêu nghề nghiệp?</h1>
+            <p className="interview-flow-description text-base">Mô tả ngắn gọn về định hướng và giá trị bạn muốn mang lại. AI của chúng tôi sẽ giúp bạn hoàn thiện nó.</p>
           </div>
 
-          <div className="bg-interview-card-bg rounded-2xl border border-outline-variant shadow-sm overflow-hidden mb-12">
+          <div className="interview-flow-card overflow-hidden mb-12">
             <textarea
               value={goal}
               onChange={(e) => { const nextGoal = e.target.value.slice(0, MAX_GOAL_LENGTH); setGoal(nextGoal); update({ careerGoal: nextGoal }); }}
               maxLength={MAX_GOAL_LENGTH}
               aria-label="Mục tiêu nghề nghiệp"
-              className="w-full h-40 p-5 text-black placeholder-outline-variant focus:outline-none resize-none bg-interview-card-bg  rounded-t-2xl"
+              className="interview-flow-control w-full h-40 p-5 focus:outline-none resize-none rounded-t-2xl"
               placeholder="Tôi muốn đóng góp vào các dự án..."
             />
             <p className="px-5 pb-3 text-right text-xs text-on-surface-variant">{goal.length}/{MAX_GOAL_LENGTH}</p>
 
-            <div className="bg-interview-card-bg p-5 border-t border-outline-variant">
+            <div className="bg-white p-5 border-t border-outline-variant">
               <div className="flex items-center gap-2 mb-3">
                 <p className="text-sm font-bold text-black">Gợi ý từ AI</p>
               </div>
@@ -91,13 +92,13 @@ export default function CareerGoal() {
           <div className="flex flex-col gap-3 w-full">
             <button
               onClick={() => navigate('/interview/experience-level')}
-              className="w-full flex items-center justify-center bg-surface-container border border-on-primary text-outline py-3.5 rounded-xl text-sm font-bold hover:text-on-surface hover:bg-surface-container-low transition-colors shadow-sm"
+              className="interview-flow-button-secondary w-full flex items-center justify-center py-3.5 text-sm shadow-sm"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>
             <button
               onClick={handleNext}
-              className="hover:text-on-primary hover:opacity-90 w-full flex items-center justify-center bg-primary text-on-primary/60 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
+              className="interview-flow-button-primary w-full flex items-center justify-center py-3.5 text-sm shadow-md"
             >
               Bắt đầu ngay
               <ArrowRight className="w-4 h-4 ml-2" />

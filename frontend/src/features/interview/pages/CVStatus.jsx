@@ -7,6 +7,7 @@ import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { interviewService } from '../services/interviewService.js';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
+import './interview-pages.css';
 
 export default function CvStatus() {
   const navigate = useNavigate();
@@ -56,28 +57,28 @@ export default function CvStatus() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-interview-radial font-sans relative">
+    <div className="interview-flow-page font-sans relative">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-16 px-6 relative pb-32">
         <div className="w-full max-w-3xl">
           <div className="flex flex-col items-center mb-10 w-full max-w-3xl mx-auto">
-            <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-4">
-              <div className="bg-primary h-full rounded-full transition-all" style={{ width: '20%' }} />
+            <div className="interview-flow-progress-track w-full mb-4">
+              <div className="interview-flow-progress-fill" style={{ width: '20%' }} />
             </div>
-            <p className="text-sm text-on-surface-variant font-medium">Bước 2 trên 10 • 20% hoàn tất</p>
+            <p className="interview-flow-progress-label text-sm font-medium">Bước 2 trên 10 • 20% hoàn tất</p>
           </div>
 
           <div className="text-center mb-12">
-            <h1 className="text-3xl font-bold text-on-surface mb-4">Bạn đã có CV chưa?</h1>
-            <p className="text-on-surface-variant">Smartfolio sẽ giúp bạn tối ưu hóa hồ sơ dựa trên tình trạng hiện tại.</p>
+            <h1 className="interview-flow-heading text-3xl font-bold mb-4">Bạn đã có CV chưa?</h1>
+            <p className="interview-flow-description">Smartfolio sẽ giúp bạn tối ưu hóa hồ sơ dựa trên tình trạng hiện tại.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-16">
             <div
               onClick={handleSelectHaveCv}
-              className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-interview-card-bg ${
-                selected === 'have' ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
+              className={`interview-flow-card interview-flow-choice p-8 border-2 cursor-pointer transition-all duration-200 flex flex-col ${
+                selected === 'have' ? 'selection-card-selected' : 'shadow-sm'
               }`}
             >
               <div className="w-14 h-14 rounded-xl bg-interview-icon-bg text-interview-icon-text flex items-center justify-center mb-6">
@@ -94,8 +95,8 @@ export default function CvStatus() {
 
             <div
               onClick={() => { setSelected('nothave'); setCvId(''); update({ cvStatus: 'nothave', cvId: null }); }}
-              className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col bg-interview-card-bg ${
-                selected === 'nothave' ? 'selection-card-selected' : 'border-transparent shadow-sm hover:border-primary'
+              className={`interview-flow-card interview-flow-choice p-8 border-2 cursor-pointer transition-all duration-200 flex flex-col ${
+                selected === 'nothave' ? 'selection-card-selected' : 'shadow-sm'
               }`}
             >
               <div className="w-14 h-14 rounded-xl bg-interview-icon-bg text-interview-icon-text flex items-center justify-center mb-6">
@@ -112,11 +113,11 @@ export default function CvStatus() {
           </div>
 
           {selected === 'have' && (
-            <div className="bg-interview-card-bg rounded-xl border border-outline-variant p-5 mb-8">
+            <div className="interview-flow-card p-5 mb-8">
               <label htmlFor="interview-cv" className="block text-sm font-semibold text-black mb-2">Chọn CV đã lưu</label>
               {loadingCvs ? <p className="text-sm text-black/60">Đang tải CV...</p> : (
                 <select id="interview-cv" value={cvId} onChange={(event) => { setCvId(event.target.value); update({ cvId: event.target.value || null }); }}
-                  className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2.5 text-sm text-black">
+                  className="interview-flow-control w-full px-3 py-2.5 text-sm">
                   <option value="">-- Chọn CV --</option>
                   {cvs.map((cv) => <option key={cv.id} value={cv.id}>{cv.name || 'CV chưa đặt tên'}</option>)}
                 </select>
@@ -129,7 +130,7 @@ export default function CvStatus() {
           <div className="flex items-center justify-between w-full mt-4">
             <button
               onClick={() => navigate('/interview/job-selection')}
-              className="flex items-center text-outline hover:text-on-surface font-medium transition-colors"
+              className="interview-flow-back-button flex items-center transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
             </button>
@@ -139,9 +140,7 @@ export default function CvStatus() {
             <button
               onClick={handleNext}
               disabled={!selected || (selected === 'have' && (!cvId || loadingCvs))}
-              className={`px-8 py-3 rounded-lg font-medium transition-colors shadow-sm ${
-                selected && (selected !== 'have' || (cvId && !loadingCvs)) ? 'bg-primary text-on-primary hover:bg-primary-container' : 'bg-surface-container text-outline cursor-not-allowed'
-              }`}
+              className="interview-flow-button-primary px-8 py-3 shadow-sm"
             >
               Tiếp tục
             </button>
