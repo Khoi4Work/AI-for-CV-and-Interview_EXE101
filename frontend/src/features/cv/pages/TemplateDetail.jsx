@@ -20,8 +20,8 @@ import {Footer} from "../../../components/layout/Footer.jsx";
 import {paymentService} from '../../payment/services/paymentService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
-import {trackEvent} from '../../analytics/analyticsClient.js';
-import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
+import {trackEvent} from '../../analytics/tracking/analyticsClient.js';
+import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
 
 export default function TemplateDetail() {
     const {id} = useParams();

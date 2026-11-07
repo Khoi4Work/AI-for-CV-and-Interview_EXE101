@@ -22,8 +22,8 @@ import {paymentService} from '../../payment/services/paymentService.js';
 import {checkBuilderQuota} from '../services/builderQuota.js';
 import {validateCVDataFields} from '../../../utils/inputValidation.js';
 import galleryService from '../../../service/galleryService.js';
-import {trackEvent} from '../../analytics/analyticsClient.js';
-import {categorizeAnalyticsError, safeFileType} from '../../analytics/sanitizeAnalytics.js';
+import {trackEvent} from '../../analytics/tracking/analyticsClient.js';
+import {categorizeAnalyticsError, safeFileType} from '../../analytics/privacy/sanitizeAnalytics.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();

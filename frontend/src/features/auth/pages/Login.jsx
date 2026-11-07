@@ -7,8 +7,8 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
-import { setAnalyticsEligibility, trackEvent } from '../../analytics/analyticsClient.js';
-import { categorizeAnalyticsError } from '../../analytics/sanitizeAnalytics.js';
+import { setAnalyticsEligibility, trackEvent } from '../../analytics/tracking/analyticsClient.js';
+import { categorizeAnalyticsError } from '../../analytics/privacy/sanitizeAnalytics.js';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);

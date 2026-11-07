@@ -8,9 +8,9 @@ import Modal from '../../../components/ui/Modal.jsx';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
 import {getApiErrorMessage, getUserFriendlyMessage} from '../../../service/apiClient.js';
 import {useInterviewSession} from '../../interview/hooks/useInterviewSession.js';
-import {trackEventOnce} from '../../analytics/analyticsClient.js';
-import {normalizeJdOrigin} from '../../analytics/sanitizeAnalytics.js';
-import {useAnalyticsConsent} from '../../analytics/AnalyticsProvider.jsx';
+import {trackEventOnce} from '../../analytics/tracking/analyticsClient.js';
+import {normalizeJdOrigin} from '../../analytics/privacy/sanitizeAnalytics.js';
+import {useAnalyticsConsent} from '../../analytics/consent/AnalyticsProvider.jsx';
 import {ArrowRight, ChevronDown, LoaderCircle, Sparkles} from 'lucide-react';
 
 const assessments = {MET:'Đã nêu trong CV', PARTIAL:'Đã nêu một phần', NOT_EVIDENCED:'Chưa thấy trong CV', NOT_APPLICABLE:'Không áp dụng', UNCERTAIN:'Chưa có đủ thông tin'};

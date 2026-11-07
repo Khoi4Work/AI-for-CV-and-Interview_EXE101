@@ -3,8 +3,8 @@ import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { HR_PERSONAS, labelForScore } from '../constants/feedbackInterviewRubric.js';
 import { interviewService } from '../services/interviewService.js';
 import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../services/interviewConfiguration.js';
-import {trackEvent, trackEventOnce} from '../../analytics/analyticsClient.js';
-import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
+import {trackEvent, trackEventOnce} from '../../analytics/tracking/analyticsClient.js';
+import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
 
 const SESSION_KEY = 'interview_session_v1';
 

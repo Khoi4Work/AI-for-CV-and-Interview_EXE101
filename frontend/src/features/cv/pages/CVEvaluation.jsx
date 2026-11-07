@@ -13,8 +13,8 @@ import { getApiErrorMessage } from '../../../service/apiClient.js';
 import {analysisSelection, createRequestGuard, pollAnalysis} from '../services/analysisFlow.js';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
 import {MainLayout} from '../../interview/components/MainLayout.jsx';
-import {trackEvent, trackEventOnce} from '../../analytics/analyticsClient.js';
-import {categorizeAnalyticsError, normalizeJdOrigin, safeFileType} from '../../analytics/sanitizeAnalytics.js';
+import {trackEvent, trackEventOnce} from '../../analytics/tracking/analyticsClient.js';
+import {categorizeAnalyticsError, normalizeJdOrigin, safeFileType} from '../../analytics/privacy/sanitizeAnalytics.js';
 
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_JD_LENGTH = 50000;

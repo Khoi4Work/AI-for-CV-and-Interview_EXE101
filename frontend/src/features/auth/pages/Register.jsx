@@ -8,8 +8,8 @@ import { useApp } from '../contexts/AppContext.jsx';
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
-import { setAnalyticsEligibility, trackEvent } from '../../analytics/analyticsClient.js';
-import { categorizeAnalyticsError } from '../../analytics/sanitizeAnalytics.js';
+import { setAnalyticsEligibility, trackEvent } from '../../analytics/tracking/analyticsClient.js';
+import { categorizeAnalyticsError } from '../../analytics/privacy/sanitizeAnalytics.js';
 
 export default function Register() {
   const panelRef = useRef(null);

@@ -7,7 +7,7 @@ import {
   setAnalyticsEligibility,
   trackEvent,
   trackPageView,
-} from '../src/features/analytics/analyticsClient.js';
+} from '../src/features/analytics/tracking/analyticsClient.js';
 
 function createBrowserMock() {
   const values = new Map();

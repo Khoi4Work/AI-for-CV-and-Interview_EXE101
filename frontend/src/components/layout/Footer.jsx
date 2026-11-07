@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useAnalyticsConsent } from '../../features/analytics/AnalyticsProvider.jsx';
+import { useAnalyticsConsent } from '../../features/analytics/consent/AnalyticsProvider.jsx';
 
 export function Footer() {
   const { available, openPreferences } = useAnalyticsConsent();
