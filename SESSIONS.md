@@ -1,5 +1,11 @@
 # Session History
 
+## 2026-11-07 — Record mentor feedback on CV and interview experience
+
+- Recorded the mentor's feedback, assessment, and suggested priorities in the root NOTE.md as requested; added NOTE.md to .gitignore so the note remains local.
+- Preserved the recommendation to balance CV screening support with interview practice, offer selectable interview voice options, clarify data handling, and research industry-specific CV styles before expanding templates.
+- Verification: checked the note exists and is ignored by Git; no tests run because this was a documentation-only change.
+
 ## 2026-10-22 — Synchronize CV Builder step-four mapping
 
 - Replaced the quick-add inputs for projects, certificates, languages, and awards with editable canonical fields that update CV context on every change; stopped generating dates and preserved imported record fields when one value changes.

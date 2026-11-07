@@ -38,6 +38,7 @@ target/
 # Project specific
 importedCode/
 .claude/settings.local.json
+/NOTE.md
 
 # Local browser profiles and review configuration
 /.codex-chrome-profile/
