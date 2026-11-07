@@ -1,4 +1,4 @@
-import { PdfTemplateLayout } from '../PdfTemplateLayout.jsx';
+import { PdfTemplateLayout } from '../../../../shared/PdfTemplateLayout.jsx';
 
 export default function CloudExpertPdfTemplate({ data }) {
     return <PdfTemplateLayout data={data} templateId="cloud-expert" />;

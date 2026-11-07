@@ -146,6 +146,12 @@ export default function TemplateList() {
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
+    const categories = useMemo(() => [
+        {id: 'all', label: 'Tất cả'},
+        ...[...new Set(templates.map(template => template.category).filter(Boolean))]
+            .map(category => ({id: category, label: category})),
+    ], [templates]);
+    const styles = useMemo(() => [...new Set(templates.map(template => template.style).filter(Boolean))], [templates]);
 
     return (
         <>
@@ -160,6 +166,8 @@ export default function TemplateList() {
                         setActiveCategory={(category) => { setActiveCategory(category); setCurrentPage(1); }}
                         activeStyle={activeStyle}
                         setActiveStyle={(style) => { setActiveStyle(style); setCurrentPage(1); }}
+                        categories={categories}
+                        styles={styles}
                     />
 
                     {/* Main Display */}

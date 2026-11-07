@@ -11,7 +11,7 @@ import notoLatinRegular from '@fontsource/noto-sans/files/noto-sans-latin-400-no
 import notoLatinBold from '@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff';
 import notoVietnameseRegular from '@fontsource/noto-sans/files/noto-sans-vietnamese-400-normal.woff';
 import notoVietnameseBold from '@fontsource/noto-sans/files/noto-sans-vietnamese-700-normal.woff';
-import { getVisibleCvPdfSections } from '../sectionVisibility.js';
+import { getVisibleCvPdfSections } from '../../../../sectionVisibility.js';
 
 Font.register({
     family: 'Noto Sans Latin',

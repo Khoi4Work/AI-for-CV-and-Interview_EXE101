@@ -1,7 +1,7 @@
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
-import EditableCvHtmlTemplate, {cvTemplateFontCss} from './templates/EditableCvHtmlTemplate.jsx';
-import templateCss from './templates/EditableCvHtmlTemplate.css?inline';
+import EditableCvHtmlTemplate, {cvTemplateFontCss} from './shared/EditableCvHtmlTemplate.jsx';
+import templateCss from './shared/EditableCvHtmlTemplate.css?inline';
 
 async function inlineProfilePhoto(source) {
     if (!source) return '';

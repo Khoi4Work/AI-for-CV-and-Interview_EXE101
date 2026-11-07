@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
     Briefcase,
     Zap,
@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {Link, useLocation, useParams, useNavigate} from 'react-router-dom';
 import TopAction from "../components/TopAction.jsx";
-import {TEMPLATES_DATA} from '../constants/templates.js';
+import galleryService from '../../../service/galleryService.js';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
@@ -32,9 +32,37 @@ export default function TemplateDetail() {
     const {setTemplate} = useCV();
     const [checkingQuota, setCheckingQuota] = useState(false);
     const [quotaError, setQuotaError] = useState(null);
+    const [templates, setTemplates] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
 
-    // Tìm thông tin template từ constants dựa trên id từ URL
-    const template = TEMPLATES_DATA.find(t => t.id === id);
+    useEffect(() => {
+        let active = true;
+        galleryService.getTemplates().then(data => {
+            if (active) setTemplates(data);
+        }).catch(error => {
+            console.error('[TemplateDetail] Error loading templates:', error);
+            if (active) setLoadError(true);
+        }).finally(() => {
+            if (active) setIsLoading(false);
+        });
+        return () => { active = false; };
+    }, []);
+
+    const template = templates.find(item => item.id === id);
+
+    if (isLoading) {
+        return <div className="flex min-h-screen items-center justify-center text-gray-500">Đang tải mẫu CV...</div>;
+    }
+
+    if (loadError) {
+        return (
+            <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+                <p className="text-gray-600">Không thể tải thông tin mẫu CV.</p>
+                <button className="rounded-xl bg-green-700 px-6 py-2 font-medium text-white" onClick={() => window.location.reload()}>Thử lại</button>
+            </div>
+        );
+    }
 
     if (!template) {
         return (
@@ -84,7 +112,7 @@ export default function TemplateDetail() {
         toggleFavorite(id);
 
         const actionText = isFavorite ? 'đã xóa khỏi' : 'đã thêm vào';
-        showToast(`Mẫu "${template.title}" ${actionText} danh sách yêu thích!`, 'success');
+        showToast(`Mẫu "${template.name}" ${actionText} danh sách yêu thích!`, 'success');
     };
 
     return (
@@ -101,8 +129,8 @@ export default function TemplateDetail() {
                             <div
                                 className="bg-white rounded-2xl overflow-hidden border border-gray-200 custom-shadow transition-all duration-300 group-hover:shadow-xl">
                                 <img
-                                    src={template.image}
-                                    alt={template.title}
+                                    src={template.previewImage}
+                                    alt={template.name}
                                     className="w-full h-auto block"
                                 />
                             </div>
@@ -112,8 +140,8 @@ export default function TemplateDetail() {
                         <div className="flex gap-4 mt-6">
                             <div
                                 className="w-24 h-32 border-2 border-green-600 rounded-xl bg-white cursor-pointer overflow-hidden shadow-sm">
-                                {template.image &&
-                                    <img src={template.image} className="w-full h-full object-cover" alt="preview 1"/>}
+                                {template.previewImage &&
+                                    <img src={template.previewImage} className="w-full h-full object-cover" alt="preview 1"/>}
                             </div>
                             <div
                                 className="w-24 h-32 border border-gray-200 rounded-xl bg-white cursor-pointer hover:border-gray-400 transition-all overflow-hidden shadow-sm hover:shadow-md">
@@ -145,11 +173,11 @@ export default function TemplateDetail() {
                                     {template.badgeText}
                                 </span>
                             </div>
-                            <h1 className="text-4xl font-bold text-white-500 tracking-tight">{template.title}</h1>
+                            <h1 className="text-4xl font-bold text-white-500 tracking-tight">{template.name}</h1>
                             <div className="flex gap-6 text-white-500">
                                 <span className="flex items-center gap-2 text-sm font-medium">
                                     <Briefcase className="h-5 w-5 text-green-600"/>
-                                    {template.categoryText}
+                                    {template.category}
                                 </span>
                                 <span className="flex items-center gap-2 text-sm font-medium">
                                     <MonitorPlay className="h-5 w-5 text-green-600"/>
@@ -169,7 +197,7 @@ export default function TemplateDetail() {
                                 Tại sao mẫu này hiệu quả?
                             </div>
                             <p className="text-gray-700 leading-relaxed relative z-10">
-                                {template.description || `Mẫu ${template.title} được tối ưu hóa cho phong cách ${template.style}, kết hợp giữa tính thẩm mỹ hiện đại và cấu trúc chuẩn ATS. Điều này giúp hồ sơ của bạn không chỉ thu hút nhà tuyển dụng mà còn dễ dàng vượt qua các hệ thống lọc tự động.`}
+                                {template.description || `Mẫu ${template.name} được tối ưu hóa cho phong cách ${template.style}, kết hợp giữa tính thẩm mỹ hiện đại và cấu trúc chuẩn ATS. Điều này giúp hồ sơ của bạn không chỉ thu hút nhà tuyển dụng mà còn dễ dàng vượt qua các hệ thống lọc tự động.`}
                             </p>
                         </div>
 
@@ -243,7 +271,7 @@ export default function TemplateDetail() {
                             </Link>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {TEMPLATES_DATA
+                            {templates
                                 .filter(t => t.style === template.style && t.id !== template.id)
                                 .slice(0, 4)
                                 .map(similar => (
@@ -251,8 +279,8 @@ export default function TemplateDetail() {
                                         <Link to={`/template/${similar.id}`}>
                                             <div
                                                 className="relative aspect-[1/1.4] rounded-2xl overflow-hidden shadow-md border border-slate-200 mb-4 transition-all group-hover:-translate-y-2 group-hover:shadow-xl">
-                                                <img src={similar.image} className="w-full h-full object-cover"
-                                                     alt={similar.title}/>
+                                                <img src={similar.previewImage} className="w-full h-full object-cover"
+                                                     alt={similar.name}/>
                                                 <div
                                                     className="absolute inset-0 bg-green-700/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                     <span
@@ -262,7 +290,7 @@ export default function TemplateDetail() {
                                                 </div>
                                             </div>
                                             <div className="text-center">
-                                                <h4 className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">{similar.title}</h4>
+                                                <h4 className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">{similar.name}</h4>
                                                 <p className="text-xs text-gray-500">{similar.style} • {similar.badgeText}</p>
                                             </div>
                                         </Link>
