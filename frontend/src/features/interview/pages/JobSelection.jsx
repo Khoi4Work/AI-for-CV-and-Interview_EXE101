@@ -84,7 +84,7 @@ export default function JobSelection() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="interview-flow-control block w-full pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+            className="interview-flow-control interview-flow-control--glass block w-full pl-11 pr-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             placeholder="Ví dụ: Senior Software Engineer, Marketing Manager..."
           />
         </div>
@@ -97,7 +97,7 @@ export default function JobSelection() {
               <div
                 key={job.id}
                 onClick={() => { setSelectedId(job.id); update({ job }); }}
-                className={`interview-flow-choice flex flex-col items-center justify-center p-6 border-2 rounded-2xl cursor-pointer ${
+                className={`interview-flow-choice interview-flow-choice--lift flex flex-col items-center justify-center p-6 border-2 rounded-2xl cursor-pointer ${
                   isSelected ? 'selection-card-selected' : 'shadow-sm'
                 }`}
               >
@@ -121,7 +121,7 @@ export default function JobSelection() {
           <button
             onClick={handleNext}
             disabled={!selectedId || quotaLoading || Boolean(quotaError) || !data.quotaSnapshot}
-            className="interview-flow-button-primary flex items-center px-6 py-2.5"
+            className="interview-flow-button-primary interview-flow-button-primary--rounded-lg interview-flow-button-primary--muted-disabled interview-flow-button-primary--container-hover flex items-center px-6 py-2.5"
           >
             Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
           </button>

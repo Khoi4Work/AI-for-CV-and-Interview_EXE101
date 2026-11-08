@@ -24,11 +24,14 @@ export default function InterviewSetup() {
   const [duration, setDuration] = useState(savedDraft.duration || 10);
   const [jd, setJd] = useState(savedDraft.jd || '');
   const [jdId, setJdId] = useState(savedDraft.jdId || null);
+  const [feedbackStyle, setFeedbackStyle] = useState(
+    ['SUPPORTIVE', 'DIRECT', 'COACHING'].includes(savedDraft.feedbackStyle) ? savedDraft.feedbackStyle : 'SUPPORTIVE',
+  );
   const [jdError, setJdError] = useState('');
 
   const quota = data.quotaSnapshot;
   const persistDraft = (patch) => update({
-    interviewSetupDraft: { type, language, duration, jd, jdId, ...patch },
+    interviewSetupDraft: { type, language, duration, jd, jdId, feedbackStyle, ...patch },
   });
 
   const maxDuration = quota?.interviewPlan === 'ENHANCE' ? 15 : quota?.interviewPlan === 'MIDDLE' ? 10 : 5;
@@ -56,8 +59,9 @@ export default function InterviewSetup() {
         duration:chosenDuration,
         jd,
         jdId,
+        feedbackStyle,
       },
-      interviewSetupDraft: { type, language, duration: chosenDuration, jd, jdId },
+      interviewSetupDraft: { type, language, duration: chosenDuration, jd, jdId, feedbackStyle },
     });
     navigate('/audio-setup');
   };
@@ -82,7 +86,7 @@ export default function InterviewSetup() {
             <p className="interview-flow-description text-sm">Thiết lập buổi luyện tập với các chi tiết để AI cá nhân hóa.</p>
           </div>
 
-          <div className="interview-flow-card p-8 lg:p-10 w-full z-20">
+          <div className="interview-flow-card interview-flow-card--prominent p-8 lg:p-10 w-full z-20">
             <div className="space-y-6">
               {/* Company context is resolved from the selected JD on the server. */}
               <div>
@@ -147,7 +151,7 @@ export default function InterviewSetup() {
                         onClick={() => { setDuration(d.value); persistDraft({ duration: d.value }); }}
                         disabled={!canChooseDuration(d.value)}
                         title={!canChooseDuration(d.value) ? (d.value > maxDuration ? `Gói hiện tại chỉ hỗ trợ tối đa ${maxDuration} phút/buổi` : 'Quota còn lại không đủ cho thời lượng này') : ''}
-                        className={`interview-flow-choice py-2.5 px-1 rounded-xl text-center disabled:opacity-60 disabled:cursor-not-allowed ${
+                        className={`interview-flow-choice interview-flow-choice--thin-border py-2.5 px-1 rounded-xl text-center disabled:opacity-40 disabled:cursor-not-allowed ${
                           chosenDuration === d.value
                             ? 'selection-card-selected'
                             : 'shadow-sm'
@@ -179,6 +183,29 @@ export default function InterviewSetup() {
                   )}
                 </div>
               </div>
+
+              <fieldset>
+                <legend className="block text-sm font-semibold text-black mb-2">Cách AI phản hồi</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { id: 'SUPPORTIVE', title: 'Khích lệ', description: 'Nhẹ nhàng, tập trung vào tiến bộ.' },
+                    { id: 'DIRECT', title: 'Trực tiếp', description: 'Nêu rõ điểm cần sửa, ngắn gọn.' },
+                    { id: 'COACHING', title: 'Huấn luyện', description: 'Gợi ý từng bước để tự cải thiện.' },
+                  ].map((style) => (
+                    <button
+                      key={style.id}
+                      type="button"
+                      aria-pressed={feedbackStyle === style.id}
+                      onClick={() => { setFeedbackStyle(style.id); persistDraft({ feedbackStyle: style.id }); }}
+                      className={`interview-flow-choice text-left p-3 rounded-xl border-2 ${feedbackStyle === style.id ? 'selection-card-selected' : 'shadow-sm'}`}
+                    >
+                      <span className="block font-bold text-black text-sm">{style.title}</span>
+                      <span className="block text-black text-xs mt-1">{style.description}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-black/60 mt-2">Cách diễn đạt thay đổi; tiêu chí và điểm đánh giá vẫn giữ nguyên.</p>
+              </fieldset>
 
               {/* JD */}
               <div>
@@ -215,7 +242,7 @@ export default function InterviewSetup() {
                 <button
                   onClick={handleNext}
                   disabled={!canChooseDuration(Number(chosenDuration))}
-                  className="interview-flow-button-primary w-full flex items-center justify-center py-3.5 text-sm shadow-md"
+                  className="interview-flow-button-primary interview-flow-button-primary--dim-disabled w-full flex items-center justify-center py-3.5 text-sm shadow-md"
                 >
                   Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
                 </button>

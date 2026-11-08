@@ -28,4 +28,6 @@ public class CreateInterviewSessionRequestDTO {
 
     @Builder.Default
     private Boolean adaptiveMode = false;
+
+    private String feedbackStyle;
 }

@@ -57,17 +57,19 @@ export default function CareerGoal() {
           </div>
 
           <div className="interview-flow-card overflow-hidden mb-12">
-            <textarea
-              value={goal}
-              onChange={(e) => { const nextGoal = e.target.value.slice(0, MAX_GOAL_LENGTH); setGoal(nextGoal); update({ careerGoal: nextGoal }); }}
-              maxLength={MAX_GOAL_LENGTH}
-              aria-label="Mục tiêu nghề nghiệp"
-              className="interview-flow-control w-full h-40 p-5 focus:outline-none resize-none rounded-t-2xl"
-              placeholder="Tôi muốn đóng góp vào các dự án..."
-            />
-            <p className="px-5 pb-3 text-right text-xs text-on-surface-variant">{goal.length}/{MAX_GOAL_LENGTH}</p>
+            <div className="career-goal-input-wrap">
+              <textarea
+                value={goal}
+                onChange={(e) => { const nextGoal = e.target.value.slice(0, MAX_GOAL_LENGTH); setGoal(nextGoal); update({ careerGoal: nextGoal }); }}
+                maxLength={MAX_GOAL_LENGTH}
+                aria-label="Mục tiêu nghề nghiệp"
+                className="interview-flow-control w-full h-40 p-5 focus:outline-none resize-none"
+                placeholder="Tôi muốn đóng góp vào các dự án..."
+              />
+              <span className="career-goal-counter text-xs text-on-surface-variant">{goal.length}/{MAX_GOAL_LENGTH}</span>
+            </div>
 
-            <div className="bg-white p-5 border-t border-outline-variant">
+            <div className="bg-interview-card-bg p-5 border-t border-outline-variant">
               <div className="flex items-center gap-2 mb-3">
                 <p className="text-sm font-bold text-black">Gợi ý từ AI</p>
               </div>

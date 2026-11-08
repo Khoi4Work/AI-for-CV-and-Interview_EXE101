@@ -45,7 +45,7 @@ export function VideoSetup() {
       <Header />
       <main className="flex-grow flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-5xl mx-auto">
-          <p className="interview-flow-progress-label text-center text-sm font-medium mb-6">Bước 7 trên 10 • 70% hoàn tất</p>
+          <p className="interview-flow-progress-label interview-flow-progress-label--muted-white text-center text-sm font-medium mb-6">Bước 7 trên 10 • 70% hoàn tất</p>
 
           <h1 className="text-3xl font-display font-semibold text-center mb-8 text-on-surface">Chuẩn bị Phỏng vấn Ghi hình</h1>
 

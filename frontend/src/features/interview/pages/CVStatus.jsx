@@ -113,11 +113,11 @@ export default function CvStatus() {
           </div>
 
           {selected === 'have' && (
-            <div className="interview-flow-card p-5 mb-8">
+            <div className="interview-flow-card interview-flow-card--rounded-xl interview-flow-card--flat p-5 mb-8">
               <label htmlFor="interview-cv" className="block text-sm font-semibold text-black mb-2">Chọn CV đã lưu</label>
               {loadingCvs ? <p className="text-sm text-black/60">Đang tải CV...</p> : (
                 <select id="interview-cv" value={cvId} onChange={(event) => { setCvId(event.target.value); update({ cvId: event.target.value || null }); }}
-                  className="interview-flow-control w-full px-3 py-2.5 text-sm">
+                  className="interview-flow-control interview-flow-control--rounded-lg interview-flow-control--white w-full px-3 py-2.5 text-sm">
                   <option value="">-- Chọn CV --</option>
                   {cvs.map((cv) => <option key={cv.id} value={cv.id}>{cv.name || 'CV chưa đặt tên'}</option>)}
                 </select>
@@ -140,7 +140,7 @@ export default function CvStatus() {
             <button
               onClick={handleNext}
               disabled={!selected || (selected === 'have' && (!cvId || loadingCvs))}
-              className="interview-flow-button-primary px-8 py-3 shadow-sm"
+              className="interview-flow-button-primary interview-flow-button-primary--rounded-lg interview-flow-button-primary--muted-disabled interview-flow-button-primary--container-hover px-8 py-3 shadow-sm"
             >
               Tiếp tục
             </button>

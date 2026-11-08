@@ -226,16 +226,12 @@
 
 /* Shared visual language for the interview setup flow. */
 .interview-flow-page {
-    --color-interview-card-bg: #ffffff;
-    --color-outline-variant: #d7e3e0;
-    --color-primary: #087b5b;
-    --color-on-primary: #ffffff;
-    --color-surface-container: #e8f1ef;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: radial-gradient(circle at center, #0f3940 0%, #0c1830 100%);
-    color: #f2f7f5;
+    background: radial-gradient(circle at center, var(--color-interview-bg-start) 0%, var(--color-interview-bg-end) 100%);
+    background-attachment: fixed;
+    color: var(--color-on-surface);
     font-family: inherit;
 }
 
@@ -243,112 +239,201 @@
     height: 0.375rem;
     overflow: hidden;
     border-radius: 9999px;
-    background: rgba(232, 241, 239, 0.28);
+    background: var(--color-surface-container);
 }
 
 .interview-flow-page .interview-flow-progress-fill {
     height: 100%;
     border-radius: inherit;
-    background: #4ab183;
+    background: var(--color-primary);
     transition: width 200ms ease;
 }
 
 .interview-flow-page .interview-flow-progress-label {
-    color: #d3e2de;
+    color: var(--color-on-surface-variant);
+}
+
+.interview-flow-page .interview-flow-progress-label--muted-black {
+    color: rgb(0 0 0 / 0.6);
+}
+
+.interview-flow-page .interview-flow-progress-label--muted-white {
+    color: rgb(255 255 255 / 0.6);
 }
 
 .interview-flow-page .interview-flow-heading {
-    color: #f2f7f5;
+    color: var(--color-on-surface);
 }
 
 .interview-flow-page .interview-flow-description {
-    color: #c4d2cf;
+    color: var(--color-on-surface-variant);
 }
 
 .interview-flow-page .interview-flow-card {
-    border: 1px solid #d7e3e0;
+    border: 1px solid var(--color-outline-variant);
     border-radius: 1rem;
-    background: #ffffff;
-    color: #172c3d;
-    box-shadow: 0 8px 24px -20px rgba(15, 48, 57, 0.42);
+    background: var(--color-interview-card-bg);
+    color: #000000;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 1px -1px rgb(0 0 0 / 0.05);
+}
+
+.interview-flow-page .interview-flow-card--rounded-xl {
+    border-radius: 0.75rem;
+}
+
+.interview-flow-page .interview-flow-card--prominent {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.interview-flow-page .interview-flow-card--flat {
+    box-shadow: none;
 }
 
 .interview-flow-page .interview-flow-choice {
     border-color: transparent;
     border-width: 2px;
-    background: #ffffff;
-    color: #172c3d;
+    background: var(--color-interview-card-bg);
+    color: #000000;
     transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
 }
 
+.interview-flow-page .interview-flow-choice--thin-border {
+    border-width: 1px;
+}
+
 .interview-flow-page .interview-flow-choice:hover:not(.selection-card-selected) {
-    border-color: #68b99d;
-    box-shadow: 0 8px 18px -14px rgba(8, 123, 91, 0.5);
+    border-color: var(--color-primary);
+}
+
+.interview-flow-page .interview-flow-choice--lift:hover:not(.selection-card-selected) {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 .interview-flow-page .interview-flow-button-primary {
-    border: 1px solid #087b5b;
+    border: 0;
     border-radius: 0.75rem;
-    background: #087b5b;
-    color: #ffffff;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
     font-weight: 700;
     transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .interview-flow-page .interview-flow-button-primary:hover:not(:disabled) {
-    border-color: #066849;
-    background: #066849;
+    border-color: var(--color-primary-container);
+    background: var(--color-primary-container);
+    opacity: 0.9;
 }
 
-.interview-flow-page .interview-flow-button-primary:disabled {
-    border-color: #c7d6d1;
-    background: #e8f1ef;
-    color: #526b63;
-    cursor: not-allowed;
-    box-shadow: none;
+.interview-flow-page .interview-flow-button-primary--container-hover:hover:not(:disabled) {
     opacity: 1;
 }
 
+.interview-flow-page .interview-flow-button-primary:disabled {
+    cursor: not-allowed;
+}
+
+.interview-flow-page .interview-flow-button-primary--rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.interview-flow-page .interview-flow-button-primary--dim-disabled:disabled {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    opacity: 0.5;
+}
+
+.interview-flow-page .interview-flow-button-primary--muted-disabled:disabled {
+    background: var(--color-surface-container);
+    color: var(--color-outline);
+    box-shadow: none;
+}
+
 .interview-flow-page .interview-flow-button-secondary {
-    border: 1px solid #c7d6d1;
+    border: 1px solid var(--color-on-primary);
     border-radius: 0.75rem;
-    background: #ffffff;
-    color: #245246;
+    background: var(--color-surface-container);
+    color: var(--color-outline);
     font-weight: 600;
     transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
 .interview-flow-page .interview-flow-button-secondary:hover:not(:disabled) {
-    border-color: #68b99d;
-    background: #e8f3ef;
-    color: #174b3d;
+    border-color: var(--color-outline-variant);
+    background: var(--color-surface-container-low);
+    color: var(--color-on-surface);
 }
 
 .interview-flow-page .interview-flow-back-button {
-    color: #d3e2de;
+    color: var(--color-outline);
     font-weight: 600;
     transition: color 160ms ease;
 }
 
 .interview-flow-page .interview-flow-back-button:hover {
-    color: #ffffff;
+    color: var(--color-on-surface);
 }
 
 .interview-flow-page .interview-flow-control {
-    border: 1px solid #c7d6d1;
+    border: 1px solid var(--color-outline-variant);
     border-radius: 0.75rem;
-    background: #ffffff;
-    color: #172c3d;
+    background: var(--color-interview-card-bg);
+    color: #000000;
 }
 
 .interview-flow-page .interview-flow-control::placeholder {
-    color: #647a73;
+    color: var(--color-outline-variant);
 }
 
 .interview-flow-page .interview-flow-control:focus-visible {
-    border-color: #087b5b;
-    outline: 3px solid rgba(8, 123, 91, 0.22);
+    border-color: var(--color-primary);
+    outline: 3px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
     outline-offset: 1px;
+}
+
+.interview-flow-page .interview-flow-control--glass {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-on-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.interview-flow-page .interview-flow-control--glass::placeholder {
+    color: var(--color-outline);
+}
+
+.interview-flow-page .interview-flow-control--rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.interview-flow-page .interview-flow-control--white {
+    background: #ffffff;
+}
+
+.interview-flow-page .career-goal-input-wrap {
+    position: relative;
+}
+
+.interview-flow-page .career-goal-input-wrap .interview-flow-control {
+    display: block;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    box-shadow: none;
+    padding-bottom: 2.5rem;
+    background: transparent;
+}
+
+.interview-flow-page .career-goal-input-wrap:focus-within {
+    box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+.interview-flow-page .career-goal-counter {
+    position: absolute;
+    right: 1.25rem;
+    bottom: 0.75rem;
+    line-height: 1;
+    pointer-events: none;
 }
 
 @media (max-width: 1023px) {

@@ -1,16 +1,18 @@
 // /src/pages/interview/InterviewRoom.jsx
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Mic, MicOff } from 'lucide-react';
+import { Clock, Mic, MicOff, LoaderCircle } from 'lucide-react';
+import logo from '../../../assets/logo.jpg';
 import { RecruiterAvatar } from '../components/RecruiterAvatar';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
+import ElevenLabsTranscriptionClient from '../hooks/useElevenlabsSTT.js';
 import './interview-pages.css';
 import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
 import { END_PHRASES_VN, END_PHRASES_EN } from '../constants/questionBank.js';
 import { useElevenLabsTTS } from '../hooks/useElevenLabsTTS';
-import ElevenLabsTranscriptionClient from '../hooks/useElevenlabsSTT.js';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { saveLocalInterviewRecording } from '../services/localInterviewRecording.js';
+import { canAcceptInterviewAnswer, getInterviewRoomPrompt, isTranscriptChanging } from '../services/interviewRoomStatus.js';
 
 const PROCESSING_DURATION = 1200;
 const IN_QUESTION_TIMEOUT = 600000;
@@ -61,8 +63,10 @@ export function InterviewRoom() {
     const [codeLanguage, setCodeLanguage] = useState('text');
     const [isCodeEditorOpen, setIsCodeEditorOpen] = useState(false);
     const writtenAnswerRef = useRef('');
-    // 'connecting' | 'elevenlabs' | 'webspeech' | 'none'
+    // 'apiSTT' | 'webspeech' | 'none'
     const [sttEngine, setSttEngine] = useState('none');
+    const [sttStatus, setSttStatus] = useState('idle'); // idle | connecting | ready | unavailable
+    const [noAnswerReminderActive, setNoAnswerReminderActive] = useState(false);
 
     const processingTimerRef = useRef(null);
     const audioQuestionIdRef = useRef(null);
@@ -76,9 +80,8 @@ export function InterviewRoom() {
     const currentIndexRef = useRef(currentIndex);
     const listeningQuestionIdRef = useRef(null);
     const recognitionRef = useRef(null);
-    const elevenLabsSttRef = useRef(null);
-    const elevenLabsPreparationRef = useRef(null);
-    const elevenLabsPreparationFailureRef = useRef(null);
+    const apiSttRef = useRef(null);
+    const apiSttPreparationFailedRef = useRef(false);
     const sttGenerationRef = useRef(0);
     const processingRef = useRef(false);
     const firstSpokeAtRef = useRef(null);
@@ -182,32 +185,71 @@ export function InterviewRoom() {
     const questions = useMemo(() => data.questions || [], [data.questions]);
     const currentQ = questions[currentIndex];
     const isTechnicalInterview = data.interviewConfig?.type === 'TECHNICAL';
+    const canArmNoAnswerReminder = canAcceptInterviewAnswer({
+        phase,
+        sttStatus,
+        isCodeEditorOpen: isTechnicalInterview && isCodeEditorOpen,
+        isReminderActive: noAnswerReminderActive,
+    });
 
-    const handleSttTranscript = useCallback(({transcript, isFinal}) => {
-        if (phaseRef.current !== 'recording' || silencePromptActiveRef.current || !transcript) return;
-
+    const createElevenLabsClient = useCallback((generation) => new ElevenLabsTranscriptionClient(({transcript, isFinal}) => {
+        if (silencePromptActiveRef.current || generation !== sttGenerationRef.current || !transcript) return;
         if (isFinal) {
-            const newTranscript = (lastTranscriptRef.current + ' ' + transcript).trim();
+            const newTranscript = \`\${lastTranscriptRef.current} \${transcript}\`.trim();
             lastTranscriptRef.current = newTranscript;
-            interimTranscriptRef.current = '';
             setFinalTranscript(newTranscript);
+            interimTranscriptRef.current = '';
             setInterimTranscript('');
         } else {
             interimTranscriptRef.current = transcript;
             setInterimTranscript(transcript);
         }
-    }, []);
+    }), []);
 
-    const startBrowserSTT = useCallback(() => {
-        if (recognitionRef.current) {
-            setSttEngine('webspeech');
-            return true;
+    const prepareElevenLabsSTT = useCallback((questionId) => {
+        if (!data.backendSessionId || !questionId || apiSttRef.current) return;
+        const client = createElevenLabsClient(sttGenerationRef.current);
+        apiSttRef.current = client;
+        apiSttPreparationFailedRef.current = false;
+        const language = data.interviewConfig?.language === 'en' ? 'en' : 'vi';
+        client.connect(data.backendSessionId, language).catch((error) => {
+            if (apiSttRef.current !== client) return;
+            console.warn('[STT] Could not pre-connect ElevenLabs before the question.', error);
+            apiSttPreparationFailedRef.current = true;
+            apiSttRef.current = null;
+            client.stop();
+        });
+    }, [createElevenLabsClient, data.backendSessionId, data.interviewConfig]);
+    const startSTT = useCallback(async (stream) => {
+        if (recognitionRef.current) return;
+        const generation = sttGenerationRef.current;
+
+        try {
+            if (apiSttPreparationFailedRef.current) throw new Error('ElevenLabs preconnect failed; use browser fallback.');
+            const apiStt = apiSttRef.current || createElevenLabsClient(generation);
+            apiSttRef.current = apiStt;
+            await apiStt.start(stream, data.backendSessionId, data.interviewConfig?.language);
+            if (generation !== sttGenerationRef.current || silencePromptActiveRef.current) {
+                apiStt.stop();
+                if (apiSttRef.current === apiStt) apiSttRef.current = null;
+                return;
+            }
+            setSttEngine('apiSTT');
+            setSttStatus('ready');
+            return;
+        } catch (error) {
+            console.warn('[STT] Realtime STT unavailable; trying browser speech recognition.', error);
+            apiSttRef.current?.stop();
+            apiSttRef.current = null;
         }
+
+        if (generation !== sttGenerationRef.current || silencePromptActiveRef.current) return;
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            console.info('[STT] Browser speech recognition is unavailable; this browser cannot produce interview transcript text.');
+            console.error('[STT] Neither realtime nor browser speech recognition is available.');
             setSttEngine('none');
-            return false;
+            setSttStatus('unavailable');
+            return;
         }
 
         const recognition = new SpeechRecognition();
@@ -216,144 +258,69 @@ export function InterviewRoom() {
         recognition.interimResults = true;
 
         recognition.onresult = (event) => {
+            if (silencePromptActiveRef.current || generation !== sttGenerationRef.current) return;
             let finalPart = '';
             let interimPart = '';
-
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalPart += event.results[i][0].transcript + ' ';
-                } else {
-                    interimPart += event.results[i][0].transcript;
-                }
+                if (event.results[i].isFinal) finalPart += `${event.results[i][0].transcript} `;
+                else interimPart += event.results[i][0].transcript;
             }
-
-            if (finalPart) handleSttTranscript({transcript: finalPart.trim(), isFinal: true});
-            handleSttTranscript({transcript: interimPart, isFinal: false});
+            if (finalPart) {
+                const newTranscript = `${lastTranscriptRef.current} ${finalPart}`.trim();
+                lastTranscriptRef.current = newTranscript;
+                setFinalTranscript(newTranscript);
+            }
+            interimTranscriptRef.current = interimPart;
+            setInterimTranscript(interimPart);
         };
 
-        recognition.onerror = (error) => {
-            console.error('Browser Speech Recognition Error:', error);
-            if (['not-allowed', 'service-not-allowed', 'audio-capture'].includes(error.error)) {
-                recognition.onend = null;
-                recognitionRef.current = null;
-                setSttEngine('none');
-            }
-        };
+        recognition.onerror = (error) => console.error('Speech Recognition Error:', error);
         recognition.onend = () => {
-            if (recognitionRef.current === recognition && phaseRef.current === 'recording') {
+            if (phaseRef.current === 'recording' && generation === sttGenerationRef.current
+                && recognitionRef.current === recognition && !silencePromptActiveRef.current) {
                 try { recognition.start(); } catch { /* recognition may already be active */ }
             }
         };
 
         recognitionRef.current = recognition;
-        try {
-            recognition.start();
-            setSttEngine('webspeech');
-            return true;
-        } catch (error) {
-            console.error('Could not start browser speech recognition:', error);
-            recognitionRef.current = null;
-            setSttEngine('none');
-            return false;
-        }
-    }, [data.interviewConfig?.language, handleSttTranscript]);
-
-    const createElevenLabsClient = useCallback((questionId) => {
-        let client;
-        client = new ElevenLabsTranscriptionClient(handleSttTranscript, (error) => {
-            if (elevenLabsSttRef.current !== client) return;
-            console.warn('[STT] ElevenLabs connection failed; switching to browser recognition.', error);
-            elevenLabsSttRef.current = null;
-            client.stop();
-            if (phaseRef.current === 'recording') startBrowserSTT();
-            else elevenLabsPreparationFailureRef.current = questionId;
-        });
-        return client;
-    }, [handleSttTranscript, startBrowserSTT]);
-
-    const prepareElevenLabsSTT = useCallback((questionId) => {
-        if (!data.backendSessionId || !questionId) {
-            elevenLabsPreparationFailureRef.current = questionId;
-            return;
-        }
-        if (elevenLabsPreparationRef.current?.questionId === questionId) return;
-
-        const client = createElevenLabsClient(questionId);
-        const language = data.interviewConfig?.language === 'en' ? 'en' : 'vi';
-        const preparation = {questionId, client};
-        elevenLabsPreparationRef.current = preparation;
-        elevenLabsSttRef.current = client;
-        elevenLabsPreparationFailureRef.current = null;
-        client.connect(data.backendSessionId, language).catch((error) => {
-            if (elevenLabsSttRef.current !== client) return;
-            console.warn('[STT] ElevenLabs could not pre-connect before the answer turn.', error);
-            elevenLabsPreparationFailureRef.current = questionId;
-            client.stop();
-        });
+        recognition.start();
+        setSttEngine('webspeech');
+        setSttStatus('ready');
     }, [createElevenLabsClient, data.backendSessionId, data.interviewConfig]);
-
-    const startSTT = useCallback(async (stream) => {
-        const questionId = currentQ?.id;
-        const generation = ++sttGenerationRef.current;
-        setSttEngine('connecting');
-
-        if (elevenLabsPreparationFailureRef.current === questionId || !data.backendSessionId) {
-            if (startBrowserSTT()) return;
-            return;
-        }
-
-        const client = elevenLabsSttRef.current || createElevenLabsClient(questionId);
-        elevenLabsSttRef.current = client;
-        try {
-            const language = data.interviewConfig?.language === 'en' ? 'en' : 'vi';
-            await client.start(stream, data.backendSessionId, language);
-            if (generation !== sttGenerationRef.current || elevenLabsSttRef.current !== client) return;
-            setSttEngine('elevenlabs');
-        } catch (error) {
-            if (generation !== sttGenerationRef.current) return;
-            console.warn('[STT] ElevenLabs failed; using browser recognition as fallback.', error);
-            if (elevenLabsSttRef.current === client) {
-                elevenLabsSttRef.current = null;
-                client.stop();
-            }
-            elevenLabsPreparationFailureRef.current = questionId;
-            startBrowserSTT();
-        }
-    }, [createElevenLabsClient, currentQ?.id, data.backendSessionId, data.interviewConfig, startBrowserSTT]);
 
     const stopSTT = useCallback(() => {
         sttGenerationRef.current += 1;
-        const client = elevenLabsSttRef.current;
-        elevenLabsSttRef.current = null;
-        elevenLabsPreparationRef.current = null;
-        elevenLabsPreparationFailureRef.current = null;
-        client?.stop();
+        apiSttPreparationFailedRef.current = false;
+        if (apiSttRef.current) {
+            apiSttRef.current.stop();
+            apiSttRef.current = null;
+        }
         if (recognitionRef.current) {
+            recognitionRef.current.onresult = null;
             recognitionRef.current.onend = null;
             recognitionRef.current.stop();
             recognitionRef.current = null;
         }
         setInterimTranscript('');
         setSttEngine('none');
+        setSttStatus('idle');
     }, []);
 
     const onQuestionAudioEnd = useCallback(() => {
-        if (isTechnicalInterview) {
-            questionStartedAtRef.current = Date.now();
-            addTranscript('ai', currentQ?.text || '');
-        }
         setPhase('recording');
-    }, [addTranscript, currentQ, isTechnicalInterview]);
+    }, []);
     const { playTTS, stopAudio } = useElevenLabsTTS(onQuestionAudioEnd, {
         sessionId: data.backendSessionId,
         onAudioElement: attachTtsAudioToRecording,
         onFallback: handleTtsFallback,
     });
 
-    const endInterview = useCallback(async ({ withClosing = false } = {}) => {
+    const endInterview = useCallback(async ({ withClosing = true } = {}) => {
         setPhase('done');
         if (noAnswerTimerRef.current) clearTimeout(noAnswerTimerRef.current);
         if (withClosing && currentQ?.id) {
+            silencePromptActiveRef.current = true;
+            stopSTT();
             await new Promise((resolve) => {
                 playTTS(null, currentQ.id, data.interviewConfig?.language, 'CLOSING', {onEnd: resolve});
                 window.setTimeout(resolve, 10000);
@@ -391,7 +358,6 @@ export function InterviewRoom() {
     const transitionToProcessing = useCallback(async () => {
         if (phaseRef.current !== 'recording' || processingRef.current) return;
         processingRef.current = true;
-        phaseRef.current = 'processing';
         setPhase('processing');
         stopSTT();
 
@@ -441,20 +407,67 @@ export function InterviewRoom() {
         }, PROCESSING_DURATION);
     }, [questions, saveAnswer, stopSTT, update, transitionToNext]);
 
+    const startListening = useCallback(async () => {
+        const resumingSameQuestion = listeningQuestionIdRef.current === currentQ?.id;
+        if (resumingSameQuestion && (recognitionRef.current || apiSttRef.current)) {
+            console.debug('Live transcription already started for this question; skipping duplicate start.');
+            return;
+        }
+
+        setSttStatus('connecting');
+        listeningQuestionIdRef.current = currentQ?.id;
+
+        setTimeout(() => setShowCurrent(true), 0);
+        if (!resumingSameQuestion) {
+            questionStartedAtRef.current = Date.now();
+            lastSpeechActivityAtRef.current = null;
+            firstSpokeAtRef.current = null;
+            lastTranscriptRef.current = '';
+            prevTranscriptRef.current = '';
+            setFinalTranscript('');
+        }
+
+        try {
+            const stream = await ensureStream();
+            await startLocalInterviewRecording(stream);
+            setMicState('active');
+            startAudioAnalysis();
+            await startSTT(stream);
+        } catch (e) {
+            console.error("Media setup failed:", e);
+            setMicState('denied');
+            setSttStatus('unavailable');
+            listeningQuestionIdRef.current = null;
+        }
+
+        if (inQuestionTimerRef.current) clearTimeout(inQuestionTimerRef.current);
+        inQuestionTimerRef.current = setTimeout(() => {
+            if (phaseRef.current === 'recording') transitionToProcessing();
+        }, IN_QUESTION_TIMEOUT);
+    }, [ensureStream, startAudioAnalysis, startSTT, transitionToProcessing, currentQ, startLocalInterviewRecording]);
+
     const promptAfterSilence = useCallback(() => {
         if (phaseRef.current !== 'recording' || lastTranscriptRef.current.trim()
             || interimTranscriptRef.current.trim() || writtenAnswerRef.current.trim()) return;
         noAnswerStageRef.current = 'speaking-reminder';
+        setNoAnswerReminderActive(true);
         silencePromptActiveRef.current = true;
+        stopSTT();
+        setSttStatus('paused');
 
         const finishReminder = () => {
             if (noAnswerStageRef.current !== 'speaking-reminder') return;
-            silencePromptActiveRef.current = false;
             noAnswerStageRef.current = 'after-reminder';
+            window.setTimeout(() => {
+                if (phaseRef.current !== 'recording' || noAnswerStageRef.current !== 'after-reminder') return;
+                silencePromptActiveRef.current = false;
+                startListening().catch((error) => console.error('Could not resume speech recognition:', error));
+            }, 500);
             noAnswerTimerRef.current = window.setTimeout(() => {
                 const hasAnswer = lastTranscriptRef.current.trim() || interimTranscriptRef.current.trim() || writtenAnswerRef.current.trim();
                 if (phaseRef.current === 'recording' && noAnswerStageRef.current === 'after-reminder' && !hasAnswer) {
                     noAnswerStageRef.current = 'idle';
+                    setNoAnswerReminderActive(false);
                     transitionToProcessing();
                 }
             }, NO_ANSWER_SKIP_MS);
@@ -465,7 +478,7 @@ export function InterviewRoom() {
             return;
         }
         playTTS(null, currentQ.id, data.interviewConfig?.language, 'NO_ANSWER_REMINDER', {onEnd: finishReminder});
-    }, [data.interviewConfig?.language, currentQ, playTTS, transitionToProcessing]);
+    }, [data.interviewConfig?.language, currentQ, playTTS, startListening, stopSTT, transitionToProcessing]);
 
     const armNoAnswerReminder = useCallback(() => {
         if (noAnswerTimerRef.current) clearTimeout(noAnswerTimerRef.current);
@@ -474,45 +487,6 @@ export function InterviewRoom() {
             if (noAnswerStageRef.current === 'waiting') promptAfterSilence();
         }, NO_ANSWER_REMINDER_MS);
     }, [promptAfterSilence]);
-
-    const startListening = useCallback(async () => {
-        const resumingSameQuestion = listeningQuestionIdRef.current === currentQ?.id;
-        if (resumingSameQuestion && (recognitionRef.current || elevenLabsSttRef.current)) {
-            console.debug('Live transcription already started for this question; skipping duplicate start.');
-            return;
-        }
-
-        listeningQuestionIdRef.current = currentQ?.id;
-
-        setTimeout(() => setShowCurrent(true), 0);
-        if (!resumingSameQuestion) {
-            if (!isTechnicalInterview) addTranscript('ai', currentQ?.text || '');
-            questionStartedAtRef.current = Date.now();
-            lastSpeechActivityAtRef.current = null;
-            firstSpokeAtRef.current = null;
-            lastTranscriptRef.current = '';
-            setFinalTranscript('');
-        }
-
-        setSttEngine('connecting');
-        try {
-            const stream = await ensureStream();
-            await startLocalInterviewRecording(stream);
-            setMicState('active');
-            startAudioAnalysis();
-            await startSTT(stream);
-        } catch (e) {
-            console.error("Media setup failed:", e);
-            setMicState('denied');
-            setSttEngine('none');
-            listeningQuestionIdRef.current = null;
-        }
-
-        if (inQuestionTimerRef.current) clearTimeout(inQuestionTimerRef.current);
-        inQuestionTimerRef.current = setTimeout(() => {
-            if (phaseRef.current === 'recording') transitionToProcessing();
-        }, IN_QUESTION_TIMEOUT);
-    }, [ensureStream, startAudioAnalysis, startSTT, transitionToProcessing, addTranscript, currentQ, startLocalInterviewRecording, isTechnicalInterview]);
 
     useEffect(() => {
         let recordingTimeout;
@@ -529,9 +503,7 @@ export function InterviewRoom() {
                     questionAudioTimeout = setTimeout(async () => {
                         if (audioQuestionIdRef.current === currentQ.id) return;
                         audioQuestionIdRef.current = currentQ.id;
-                        if (!isTechnicalInterview || !isCodeEditorOpen) {
-                            prepareElevenLabsSTT(currentQ.id);
-                        }
+                        addTranscript('ai', currentQ.text);
                         const previousQuestion = currentIndex > 0 ? questions[currentIndex - 1] : null;
                         const previousAnswer = previousQuestion
                             ? data.answers.find((answer) => answer.qid === previousQuestion.id)
@@ -547,6 +519,7 @@ export function InterviewRoom() {
                                 update({localAudioRecordingError: 'Không truy cập được micro. Hãy kiểm tra kết nối và quyền sử dụng micro rồi thử lại.'});
                             }
                         }
+                        if (!isTechnicalInterview || !isCodeEditorOpen) prepareElevenLabsSTT(currentQ.id);
                         playTTS(currentQ.text, currentQ.id, data.interviewConfig?.language, transition);
                     }, 0);
                 }
@@ -566,10 +539,10 @@ export function InterviewRoom() {
             if (recordingTimeout) clearTimeout(recordingTimeout);
             if (questionAudioTimeout) clearTimeout(questionAudioTimeout);
         };
-    }, [phase, questions, currentQ, currentIndex, data.answers, startListening, prepareElevenLabsSTT, playTTS, data.interviewConfig?.language, data.interviewConfig?.type, data.audioRecordingEnabled, ensureStream, startLocalInterviewRecording, isTechnicalInterview, isCodeEditorOpen, update]);
+    }, [phase, questions, currentQ, currentIndex, data.answers, startListening, prepareElevenLabsSTT, playTTS, data.interviewConfig?.language, data.interviewConfig?.type, data.audioRecordingEnabled, ensureStream, startLocalInterviewRecording, isTechnicalInterview, isCodeEditorOpen, addTranscript, update]);
 
     useEffect(() => {
-        if (phase !== 'recording') {
+        if (!canArmNoAnswerReminder) {
             if (noAnswerTimerRef.current) clearTimeout(noAnswerTimerRef.current);
             noAnswerStageRef.current = 'idle';
             silencePromptActiveRef.current = false;
@@ -581,7 +554,7 @@ export function InterviewRoom() {
             noAnswerStageRef.current = 'idle';
             silencePromptActiveRef.current = false;
         };
-    }, [phase, currentQ?.id, armNoAnswerReminder]);
+    }, [canArmNoAnswerReminder, currentQ?.id, armNoAnswerReminder]);
 
     useEffect(() => {
         if (phase !== 'recording') return;
@@ -589,7 +562,7 @@ export function InterviewRoom() {
             const now = Date.now();
 
             const currentFullText = (lastTranscriptRef.current + ' ' + interimTranscript).trim();
-            const isTextChanging = currentFullText !== prevTranscriptRef.current;
+            const isTextChanging = isTranscriptChanging(prevTranscriptRef.current, currentFullText);
             prevTranscriptRef.current = currentFullText;
 
             const hasAudio = volumeRef.current > VAD_THRESHOLD;
@@ -601,6 +574,7 @@ export function InterviewRoom() {
                     if (noAnswerTimerRef.current) clearTimeout(noAnswerTimerRef.current);
                     noAnswerTimerRef.current = null;
                     noAnswerStageRef.current = 'idle';
+                    setNoAnswerReminderActive(false);
                 }
                 if (!firstSpokeAtRef.current) {
                     firstSpokeAtRef.current = now;
@@ -739,9 +713,7 @@ export function InterviewRoom() {
             <header
                 className="w-full h-16 flex items-center justify-between px-6 bg-surface-container border-b border-outline-variant shadow-sm">
                 <div className="flex items-center gap-2">
-                    <div
-                        className="w-6 h-6 bg-primary rounded-md flex items-center justify-center text-on-primary font-bold text-xs italic">S
-                    </div>
+                    <img src={logo} alt="Smartfolio Logo" className="w-6 h-6 rounded-md object-cover" />
                     <span className="font-display font-bold text-xl tracking-tight text-primary">Smartfolio</span>
                 </div>
                 <div className="flex items-center gap-2 bg-primary/10 px-4 py-1.5 rounded-full border border-primary/30">
@@ -749,7 +721,7 @@ export function InterviewRoom() {
                     <span className="text-sm font-semibold text-primary tracking-wide">PHÒNG PHỎNG VẤN</span>
                 </div>
                 <div className="flex items-center gap-4 text-on-surface-variant font-medium text-sm">
-                    {data.audioRecordingEnabled && <span className="flex items-center gap-1.5 text-rose-600" title="Đang ghi âm micro và giọng đọc câu hỏi vào thiết bị này">
+                    {data.audioRecordingEnabled && <span className="flex items-center gap-1.5 text-rose-300" title="Đang ghi âm micro và giọng đọc câu hỏi vào thiết bị này">
                         <Mic size={15} /> Ghi âm hội thoại
                     </span>}
                     <span className="flex items-center gap-2"><Clock size={16}/><span>Thời gian: {formatTime(elapsed)}</span></span>
@@ -767,7 +739,7 @@ export function InterviewRoom() {
                              style={{height: `${h}px`, minHeight: '4px'}}/>
                     ))}
                 </div>
-                <StatusPill phase={phase} sttEngine={sttEngine} currentIndex={currentIndex} total={questions.length}/>
+                <StatusPill phase={phase} currentIndex={currentIndex} total={questions.length} sttStatus={sttStatus}/>
                 {showCurrent && currentQ && (
                     <div
                         className="mt-6 max-w-2xl w-full glass-panel border border-outline-variant rounded-2xl p-6 shadow-sm animate-fade-in">
@@ -878,11 +850,11 @@ export function InterviewRoom() {
                 </div>
                 <div className="absolute left-1/2 -translate-x-1/2">
                     <div className="text-sm text-on-surface-variant font-medium w-64 text-center">
-                        {phase === 'asking' ? 'AI đang đọc câu hỏi...' : phase === 'recording' ? isTechnicalInterview && isCodeEditorOpen ? 'Hãy viết và gửi lời giải của bạn' : sttEngine === 'connecting' ? 'Đang kết nối nhận diện giọng nói...' : sttEngine === 'none' ? 'Không thể khởi động nhận diện giọng nói' : 'Nói "xin hết" khi bạn đã trả lời xong' : phase === 'processing' ? 'Đang xử lý...' : ''}
+                        {phase === 'asking' ? 'AI đang đọc câu hỏi...' : phase === 'recording' ? isTechnicalInterview && isCodeEditorOpen ? 'Hãy viết và gửi lời giải của bạn' : getInterviewRoomPrompt({ phase, sttStatus }) : phase === 'processing' ? 'Đang xử lý...' : ''}
                     </div>
-                    {phase === 'recording' && (sttEngine === 'elevenlabs' || sttEngine === 'webspeech') && (
+                    {phase === 'recording' && sttEngine !== 'none' && (
                         <span className="text-[10px] uppercase font-bold text-outline mt-1 tracking-wider">
-                            {sttEngine === 'elevenlabs' ? 'ElevenLabs · STT chính' : 'Trình duyệt · STT dự phòng'}
+                            LIVE CAPTIONS · {sttEngine === 'webspeech' ? 'BROWSER' : 'BE TRANSCRIPTION'}
                         </span>
                     )}
                 </div>
@@ -892,26 +864,24 @@ export function InterviewRoom() {
     );
 }
 
-function StatusPill({phase, sttEngine, currentIndex, total}) {
+function StatusPill({phase, currentIndex, total, sttStatus}) {
     if (phase === 'asking') return <div
         className="bg-primary/20 text-primary px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>AI đang đọc câu
         hỏi {currentIndex + 1}/{total}</div>;
-    if (phase === 'recording' && sttEngine === 'connecting') return <div
-        className="bg-amber-500/20 text-amber-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>ĐANG KẾT NỐI STT —
-        Câu {currentIndex + 1}/{total}</div>;
-    if (phase === 'recording' && sttEngine === 'none') return <div
-        className="bg-rose-500/20 text-rose-600 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
-        <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>STT KHÔNG KHẢ DỤNG —
-        Câu {currentIndex + 1}/{total}</div>;
-    if (phase === 'recording') return <div
+    if (phase === 'recording' && (sttStatus === 'idle' || sttStatus === 'connecting')) return <div
+        className="bg-surface-container text-on-surface-variant px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><LoaderCircle size={14} className="animate-spin"/>ĐANG KẾT NỐI NHẬN DIỆN</div>;
+    if (phase === 'recording' && sttStatus === 'unavailable') return <div
+        className="bg-rose-500/20 text-rose-300 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><span className="w-1.5 h-1.5 rounded-full bg-rose-300"></span>CHƯA KẾT NỐI ĐƯỢC</div>;
+    if (phase === 'recording' && sttStatus === 'paused') return <div
+        className="bg-surface-container text-on-surface-variant px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold"><LoaderCircle size={14} className="animate-spin"/>AI ĐANG NHẮC LẠI</div>;
+    if (phase === 'recording' && sttStatus === 'ready') return <div
         className="bg-primary/20 text-primary px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>ĐANG NHẬN DIỆN —
         Câu {currentIndex + 1}/{total}</div>;
     if (phase === 'processing') return <div
-        className="bg-amber-500/20 text-amber-700 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>AI đang xử lý...
+        className="bg-rose-500/20 text-rose-300 px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-semibold">
+        <span className="w-1.5 h-1.5 rounded-full bg-rose-300 animate-pulse"></span>AI đang xử lý...
     </div>;
     return null;
 }

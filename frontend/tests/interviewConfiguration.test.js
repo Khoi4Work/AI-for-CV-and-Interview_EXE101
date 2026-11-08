@@ -21,3 +21,13 @@ test('request preserves selected JD identity and selected level without sending 
     assert.equal(payload.jdId,'saved-jd');assert.ok(!('jdText' in payload));assert.ok(!('company' in payload));
     assert.equal(payload.experienceLevel,'FRESHER');assert.equal(payload.interviewType,'BEHAVIORAL');assert.equal(payload.adaptiveMode,false);
 });
+test('feedback style defaults to SUPPORTIVE, is sent to backend, and changes the reuse fingerprint',()=>{
+    const input=config();
+    assert.equal(interviewPayload(input).feedbackStyle,'SUPPORTIVE');
+    const baseline=interviewFingerprint(input);
+    for(const feedbackStyle of ['SUPPORTIVE','DIRECT','COACHING']) {
+        input.interviewConfig.feedbackStyle=feedbackStyle;
+        assert.equal(interviewPayload(input).feedbackStyle,feedbackStyle);
+    }
+    assert.notEqual(interviewFingerprint(input),baseline);
+});

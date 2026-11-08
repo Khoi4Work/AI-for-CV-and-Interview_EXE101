@@ -4,7 +4,6 @@ import {Header} from '../../../components/layout/PublicHeader.jsx';
 import {Footer} from '../../../components/layout/Footer.jsx';
 import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
-import {TAG_DEFINITIONS} from '../constants/feedbackInterviewRubric.js';
 import {getLocalInterviewRecording} from '../services/localInterviewRecording.js';
 import {downloadInterviewReportPdf, downloadLocalInterviewAudio} from '../services/interviewExports.js';
 import './interview-result.css';
@@ -210,7 +209,7 @@ export function InterviewResults() {
                     </div>
 
                     <div className="p-4 border-t border-outline-variant bg-interview-card-bg/50 flex flex-wrap justify-end gap-3 shrink-0 no-print">
-                        <button
+                        {data.audioRecordingEnabled && <button
                             type="button"
                             disabled={!localAudioRecording}
                             onClick={exportAudio}
@@ -221,7 +220,7 @@ export function InterviewResults() {
                             }`}
                         >
                             <Download size={16}/> Tải bản ghi âm
-                        </button>
+                        </button>}
                         <button
                             onClick={exportPdf}
                             disabled={isExportingReport}
@@ -256,7 +255,7 @@ function TranscriptBlock({entry, persona}) {
 
     const statusBadge = () => {
         if (status === 'skipped') {
-            return <span className="bg-outline text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Bỏ qua</span>;
+            return <span className="bg-slate-200 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Bỏ qua</span>;
         }
         if (status === 'pass') {
             return <span className="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide">Đạt</span>;
@@ -291,18 +290,12 @@ function TranscriptBlock({entry, persona}) {
                 </div>
 
                 {suggestions && suggestions.length > 0 && suggestions.map((s, i) => {
-                    const isMustHave = s.tag === 'must-have';
-                    const tagDef = TAG_DEFINITIONS[s.tag] || TAG_DEFINITIONS['nice-to-have'];
+                    const isFocusFirst = s.priority === 'FOCUS_FIRST';
                     return (
-                        <div key={i} className={`bg-interview-card-bg border-2 ${isMustHave ? 'border-rose-500' : 'border-selection-border'} rounded-lg p-4 mb-2 shadow-sm`}>
-                            <div className={`flex items-center gap-2 ${isMustHave ? 'text-rose-600' : 'text-primary'} mb-2`}>
+                        <div key={i} className={`bg-interview-card-bg border-2 ${isFocusFirst ? 'border-rose-500' : 'border-selection-border'} rounded-lg p-4 mb-2 shadow-sm`}>
+                            <div className={`flex items-center gap-2 ${isFocusFirst ? 'text-rose-600' : 'text-primary'} mb-2`}>
                                 <Sparkles size={14}/>
-                                <span className="text-xs font-bold uppercase tracking-wider">
-                                    {isMustHave ? 'Phải cải thiện' : 'Gợi ý thêm'}
-                                </span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isMustHave ? 'bg-rose-600 text-white' : 'bg-primary text-on-primary'}`}>
-                                    {tagDef.label}
-                                </span>
+                                {s.priorityLabel && <span className="text-xs font-bold uppercase tracking-wider">{s.priorityLabel}</span>}
                             </div>
                             <p className="text-black/80 text-sm">{s.text}</p>
                         </div>

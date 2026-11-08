@@ -6,9 +6,11 @@ export function normalizeInterviewType(value) {
 }
 export function interviewPayload(data) {
     const config=data.interviewConfig || {};
+    const feedbackStyle=['SUPPORTIVE','DIRECT','COACHING'].includes(String(config.feedbackStyle || '').toUpperCase())
+        ? String(config.feedbackStyle || '').toUpperCase() : 'SUPPORTIVE';
     const payload={interviewType:normalizeInterviewType(config.type),durationMinutes:Number(config.duration),
         experienceLevel:String(data.experienceLevel || '').toUpperCase(),language:config.language || 'vi',
-        cvId:data.cvId || undefined,adaptiveMode:false};
+        cvId:data.cvId || undefined,adaptiveMode:false,feedbackStyle};
     if(config.jdId) payload.jdId=config.jdId;
     else if(config.jd?.trim()) payload.jdText=config.jd.trim();
     return payload;

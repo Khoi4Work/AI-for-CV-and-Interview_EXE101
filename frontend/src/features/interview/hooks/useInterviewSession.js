@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { HR_PERSONAS, labelForScore } from '../constants/feedbackInterviewRubric.js';
+import { suggestionsForFeedback } from '../services/interviewFeedbackPresentation.js';
 import { interviewService } from '../services/interviewService.js';
 import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../services/interviewConfiguration.js';
 import {trackEvent, trackEventOnce} from '../../analytics/tracking/analyticsClient.js';
@@ -90,9 +91,7 @@ function toFeedback(evaluation, state) {
       const answer = answers.get(question.id);
       const skipped = !answer || answer.skipped;
       const perQuestion = questionFeedback.get(question.id);
-      const suggestions = perQuestion?.improvementSuggestion
-        ? [{ tag: 'must-have', text: perQuestion.improvementSuggestion }]
-        : [];
+      const suggestions = suggestionsForFeedback(perQuestion, skipped);
       return {
         qid: question.id,
         question: question.text,

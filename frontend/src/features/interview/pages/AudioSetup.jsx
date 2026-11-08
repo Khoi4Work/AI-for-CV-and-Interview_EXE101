@@ -55,14 +55,14 @@ export function AudioSetup() {
     <div className="interview-flow-page font-sans relative">
       <Header />
       <main className="flex-grow flex items-center justify-center p-6">
-        <div className="interview-flow-card w-full p-8 max-w-3xl">
+        <div className="interview-flow-card interview-flow-card--rounded-xl w-full p-8 max-w-3xl">
           <div className="flex items-center justify-center gap-2 mb-8">
             <div className="h-1.5 w-24 bg-primary rounded-full"></div>
             <div className="h-1.5 w-24 bg-gray-300 rounded-full"></div>
             <div className="h-1.5 w-24 bg-gray-300 rounded-full border border-gray-400"></div>
           </div>
 
-          <p className="interview-flow-progress-label text-center text-sm font-medium mb-4">Bước 6 trên 10 • 60% hoàn tất</p>
+          <p className="interview-flow-progress-label interview-flow-progress-label--muted-black text-center text-sm font-medium mb-4">Bước 6 trên 10 • 60% hoàn tất</p>
 
           <div className="text-center mb-6">
             <h1 className="text-2xl font-display font-semibold mb-2 text-black">Kiểm tra âm thanh trước khi bắt đầu</h1>

@@ -47,7 +47,7 @@ export function downloadInterviewTranscript(data, feedback = null) {
         lines.push('ỨNG VIÊN', skipped ? '(Đã bỏ qua câu hỏi này)' : (answerText || '(Chưa có câu trả lời)'), '');
         if (assessment?.assessment) lines.push('ĐÁNH GIÁ', assessment.assessment, '');
         for (const suggestion of assessment?.suggestions || []) {
-            if (suggestion?.text) lines.push('GỢI Ý', suggestion.text, '');
+            if (suggestion?.text) lines.push('GỢI Ý', suggestion.priorityLabel ? `${suggestion.priorityLabel}: ${suggestion.text}` : suggestion.text, '');
         }
         lines.push('');
     });
@@ -95,7 +95,7 @@ function buildInterviewReportHtml(data, feedback = null) {
             <h3>${escapeHtml(question.text || 'Câu hỏi')}</h3>
             <div class="answer"><div class="label">TRẢ LỜI</div><p>${escapeHtml(skipped ? 'Ứng viên đã bỏ qua câu hỏi này.' : (answerText || 'Chưa có câu trả lời.'))}</p></div>
             ${assessment?.assessment ? `<div class="feedback"><div class="label">NHẬN XÉT</div><p>${escapeHtml(assessment.assessment)}</p></div>` : ''}
-            ${suggestions.length ? `<div class="feedback"><div class="label">GỢI Ý CẢI THIỆN</div>${reportList(suggestions.map((item) => item.text))}</div>` : ''}
+            ${suggestions.length ? `<div class="feedback"><div class="label">GỢI Ý CẢI THIỆN</div>${reportList(suggestions.map((item) => `${item.priorityLabel ? `${item.priorityLabel}: ` : ''}${item.text}`))}</div>` : ''}
         </article>`;
     }).join('');
     const criteria = (feedback?.criteria || []).map((item) => `<div class="criterion"><div><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.score)}/100</strong></div><div class="meter"><i style="width:${Math.max(0, Math.min(100, Number(item.score) || 0))}%"></i></div>${item.feedback ? `<p>${escapeHtml(item.feedback)}</p>` : ''}</div>`).join('');

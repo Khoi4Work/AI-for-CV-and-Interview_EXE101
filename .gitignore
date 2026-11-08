@@ -12,7 +12,8 @@ Thumbs.db
 .env.local
 .env.*.local
 .submission/
-.spec/
+.spec/*
+!/.spec/interview-feedback-personalization-spec.md
 
 # Node.js / Frontend
 node_modules/
