@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from '../src/features/cv/services/editorSave.js';
+import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from '../src/features/cv/domain/editorSave.js';
 
 test('catalog fails closed for paid, missing and unspecified access flags', () => {
     const catalog = [{ id: 'free', locked: false }, { id: 'paid', locked: true }, { id: 'unknown' }];

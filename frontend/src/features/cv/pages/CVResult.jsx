@@ -1,4 +1,4 @@
-import "../styles/cv.css";
+import "../cv.css";
 import {useEffect, useMemo, useState} from 'react';
 import {CheckCircle2} from 'lucide-react';
 import {MainLayout} from '../../interview/components/MainLayout.jsx';

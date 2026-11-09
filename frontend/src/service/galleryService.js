@@ -1,4 +1,3 @@
-import apiClient from './apiClient.js';
 import userGalleryService from '../features/user/services/galleryService.js';
 import templateService from '../features/cv/services/templateService.js';
 

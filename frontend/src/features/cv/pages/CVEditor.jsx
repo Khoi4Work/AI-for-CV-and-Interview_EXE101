@@ -1,4 +1,4 @@
-import "../styles/cv.css";
+import "../cv.css";
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';

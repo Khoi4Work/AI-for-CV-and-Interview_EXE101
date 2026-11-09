@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeAnalyticsRoute, normalizeJdOrigin, safeCampaign, sanitizeReferrer} from '../src/features/analytics/privacy/sanitizeAnalytics.js';
-import {sanitizeEvent} from '../src/features/analytics/tracking/eventSchema.js';
+import {normalizeAnalyticsRoute, normalizeJdOrigin, safeCampaign, sanitizeReferrer} from '../src/features/analytics/utils/sanitizeAnalytics.js';
+import {sanitizeEvent} from '../src/features/analytics/domain/eventSchema.js';
 
 test('route sanitizer removes business IDs, tokens, hashes, and unsupported query fields', () => {
   assert.deepEqual(

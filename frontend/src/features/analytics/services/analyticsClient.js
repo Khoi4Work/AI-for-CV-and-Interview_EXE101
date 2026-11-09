@@ -1,6 +1,6 @@
 import { analyticsConfig } from '../domain/analyticsConfig.js';
-import { sanitizeEvent } from './eventSchema.js';
-import { claimAnalyticsKey, clearAnalyticsDedupe } from './analyticsDedupe.js';
+import { sanitizeEvent } from '../domain/eventSchema.js';
+import { claimAnalyticsKey, clearAnalyticsDedupe } from '../domain/analyticsDedupe.js';
 
 const SCRIPT_ID = 'smartfolio-ga4-tag';
 const MAX_QUEUE = 50;

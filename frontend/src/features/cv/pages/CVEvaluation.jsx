@@ -1,4 +1,4 @@
-import "../styles/cv.css";
+import "../cv.css";
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, FileQuestion, LoaderCircle, BrainCircuit } from 'lucide-react';

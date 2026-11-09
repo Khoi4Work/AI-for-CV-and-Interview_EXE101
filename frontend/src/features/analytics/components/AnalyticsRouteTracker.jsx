@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAnalyticsConsent } from '../components/AnalyticsProvider.jsx';
-import { trackPageView } from './analyticsClient.js';
+import { useAnalyticsConsent } from './AnalyticsProvider.jsx';
+import { trackPageView } from '../services/analyticsClient.js';
 import { normalizeAnalyticsRoute, sanitizeReferrer } from '../utils/sanitizeAnalytics.js';
 
 export default function AnalyticsRouteTracker() {
