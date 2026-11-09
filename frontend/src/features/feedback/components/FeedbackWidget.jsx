@@ -1,3 +1,4 @@
+import "../feedback.css";
 import {useEffect, useRef, useState} from "react";
 import {
     MessageSquare, X, Bug, Palette, Gauge, Lightbulb, HelpCircle,
