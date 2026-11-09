@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import {Link, useLocation, useParams, useNavigate} from 'react-router-dom';
 import TopAction from "../components/TopAction.jsx";
-import galleryService from '../../../service/galleryService.js';
+import galleryService from '../services/templateService.js';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
@@ -19,7 +19,7 @@ import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from "../../../components/layout/Footer.jsx";
 import {paymentService} from '../../payment/services/paymentService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
-import {checkBuilderQuota} from '../services/builderQuota.js';
+import {checkBuilderQuota} from '../domain/builderQuota.js';
 import {trackEvent} from '../../analytics/tracking/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
 

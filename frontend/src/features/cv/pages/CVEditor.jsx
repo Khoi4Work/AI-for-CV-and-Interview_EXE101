@@ -1,3 +1,4 @@
+import "../styles/cv.css";
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
@@ -9,7 +10,7 @@ import { PDF_TEMPLATE_LOADERS } from '../pdf-renderer/templateRegistry.js';
 import galleryService from '../../../service/galleryService.js';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
 import { cvPipelineService } from '../services/cvPipelineService.js';
-import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from '../services/editorSave.js';
+import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from '../domain/editorSave.js';
 import { validateCVData } from '../../../utils/inputValidation.js';
 import {getCvTemplateLayout, updateCvTemplateLayout} from '../pdf-renderer/templateSectionLayout.js';
 import {trackEvent} from '../../analytics/tracking/analyticsClient.js';

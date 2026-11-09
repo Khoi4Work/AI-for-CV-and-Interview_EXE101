@@ -4,7 +4,7 @@ import {Footer} from '../components/layout/Footer.jsx';
 import FloatingCVCard from '../features/user/components/FloatingCVCard.jsx';
 import {ArrowRight, FileText, Bot, BarChart2, MessageSquare, ExternalLink, Zap} from 'lucide-react';
 import {useNavigate} from "react-router-dom";
-import galleryService from '../service/galleryService.js';
+import galleryService from '../features/cv/services/templateService.js';
 
 export default function Home() {
     const navigate = useNavigate();

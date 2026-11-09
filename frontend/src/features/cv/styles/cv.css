@@ -1,0 +1,50 @@
+/* CV Feature Shared Styles */
+:root {
+    --color-cv-dark-blue: #0D1B2A;
+    --color-cv-grey: #85948c;
+    --color-cv-text-dark: #E0E1DD;
+    --color-cv-sidebar-blue: #1B4332;
+    --color-cv-accent-blue: #12C999;
+    --color-smartfolio-blue: #12C999;
+    --color-cream: #1B263B;
+    --color-cream-deep: #0D1B2A;
+
+    --color-cv-result-card-bg: rgba(255, 255, 255, 0.8);
+    --color-cv-result-card-text: #0D774B;
+    --color-cv-result-inner-bg: #F3F4F5;
+    --color-cv-result-inner-text: #434653;
+    --color-cv-result-text-black: #000000;
+    --color-cv-result-skill-name: #191C1D;
+    --color-cv-result-matched-bg: #F0FDF4;
+    --color-cv-result-matched-badge-bg: #BBF7D0;
+    --color-cv-result-matched-text: #16A34A;
+    --color-cv-result-missing-bg: #FEF2F2;
+    --color-cv-result-missing-text: #DC2626;
+    --color-cv-result-add-bg: #7B7B7B;
+    --color-cv-result-add-text: #FFFFFF;
+    --color-cv-result-added-text: #7B7B7B;
+    --color-cv-result-added-skill: #191C1D;
+    --color-cv-result-added-icon: #434653;
+    --color-cv-result-ats-tag-border: #0D774B;
+    --color-cv-result-ats-tag-bg: rgba(130, 131, 132, 0.1);
+    --color-cv-result-ats-tag-text: #0D774B;
+    --color-cv-result-ai-desc: #434653;
+    --color-cv-result-score-border-bg: #C7FEF1;
+    --color-cv-result-score-btn-ai-bg: #0F766E;
+    --color-cv-result-score-btn-int-bg: #075F4E;
+}
+
+.editor-body {
+    background-color: #2a2e2a;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.cv-page-container {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    min-height: 1200px;
+    width: 850px;
+}
+
+.cv-print-text {
+    display: none;
+}

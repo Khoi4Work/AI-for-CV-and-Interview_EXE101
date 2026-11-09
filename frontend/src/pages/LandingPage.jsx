@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import FloatingCVCard from '../features/user/components/FloatingCVCard.jsx';
 import GuestHeader from '../components/layout/GuestHeader.jsx';
-import galleryService from '../service/galleryService.js';
+import galleryService from '../features/cv/services/templateService.js';
 
 const LandingPage = () => {
     const navigate = useNavigate();

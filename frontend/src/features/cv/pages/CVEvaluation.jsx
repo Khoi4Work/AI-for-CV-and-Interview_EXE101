@@ -1,3 +1,4 @@
+import "../styles/cv.css";
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, FileQuestion, LoaderCircle, BrainCircuit } from 'lucide-react';
@@ -10,7 +11,7 @@ import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import { getApiErrorMessage } from '../../../service/apiClient.js';
-import {analysisSelection, createRequestGuard, pollAnalysis} from '../services/analysisFlow.js';
+import {analysisSelection, createRequestGuard, pollAnalysis} from '../domain/analysisFlow.js';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
 import {MainLayout} from '../../interview/components/MainLayout.jsx';
 import {trackEvent, trackEventOnce} from '../../analytics/tracking/analyticsClient.js';

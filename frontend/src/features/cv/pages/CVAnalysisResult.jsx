@@ -3,7 +3,7 @@ import {useNavigate} from 'react-router-dom';
 import {cvPipelineService} from '../services/cvPipelineService.js';
 import {useCV} from '../contexts/CVContext.jsx';
 import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
-import {pollAnalysis} from '../services/analysisFlow.js';
+import {pollAnalysis} from '../domain/analysisFlow.js';
 import Modal from '../../../components/ui/Modal.jsx';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
 import {getApiErrorMessage, getUserFriendlyMessage} from '../../../service/apiClient.js';

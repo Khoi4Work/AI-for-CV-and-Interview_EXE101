@@ -1,3 +1,4 @@
+import "../styles/cv.css";
 import {useState, useEffect, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
@@ -19,9 +20,9 @@ import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
 import {paymentService} from '../../payment/services/paymentService.js';
-import {checkBuilderQuota} from '../services/builderQuota.js';
+import {checkBuilderQuota} from '../domain/builderQuota.js';
 import {validateCVDataFields} from '../../../utils/inputValidation.js';
-import galleryService from '../../../service/galleryService.js';
+import galleryService from '../../../features/user/services/galleryService.js';
 import {trackEvent} from '../../analytics/tracking/analyticsClient.js';
 import {categorizeAnalyticsError, safeFileType} from '../../analytics/privacy/sanitizeAnalytics.js';
 
