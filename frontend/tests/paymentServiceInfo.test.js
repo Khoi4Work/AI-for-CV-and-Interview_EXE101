@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getPaymentServiceInfo } from '../src/features/payment/components/paymentServiceInfo.js';
+import { getPaymentServiceInfo } from '../src/features/payment/utils/paymentServiceInfo.js';
 
 test('maps one-time catalog products with non-expiring quotas', () => {
     for (const [category, name, packageCode, billingUnits, price] of [

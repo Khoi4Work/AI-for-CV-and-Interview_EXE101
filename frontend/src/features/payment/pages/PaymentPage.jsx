@@ -6,7 +6,7 @@ import { PaymentMethods } from '../components/PaymentMethods';
 import { PaymentNotes } from '../components/PaymentNotes';
 import { OrderSummary } from '../components/OrderSummary';
 import { paymentService } from '../services/paymentService';
-import { getPaymentServiceInfo } from '../components/paymentServiceInfo';
+import { getPaymentServiceInfo } from '../utils/paymentServiceInfo.js';
 import {trackEvent, trackEventBeforeRedirectOnce} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/utils/sanitizeAnalytics.js';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
