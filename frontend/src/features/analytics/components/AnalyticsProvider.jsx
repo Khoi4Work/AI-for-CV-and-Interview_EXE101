@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import AnalyticsConsent from './AnalyticsConsent.jsx';
-import { analyticsConfig } from '../config/analyticsConfig.js';
-import { configureAnalytics, resetAnalyticsContext, setAnalyticsConsent, setAnalyticsEligibility } from '../tracking/analyticsClient.js';
+import { analyticsConfig } from '../domain/analyticsConfig.js';
+import { configureAnalytics, resetAnalyticsContext, setAnalyticsConsent, setAnalyticsEligibility } from '../services/analyticsClient.js';
 
 const CONSENT_KEY = 'smartfolio.analytics.consent.v1';
 const CONSENT_VERSION = 1;

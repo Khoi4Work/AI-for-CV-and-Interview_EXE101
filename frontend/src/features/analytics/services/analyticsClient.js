@@ -1,4 +1,4 @@
-import { analyticsConfig } from '../config/analyticsConfig.js';
+import { analyticsConfig } from '../domain/analyticsConfig.js';
 import { sanitizeEvent } from './eventSchema.js';
 import { claimAnalyticsKey, clearAnalyticsDedupe } from './analyticsDedupe.js';
 

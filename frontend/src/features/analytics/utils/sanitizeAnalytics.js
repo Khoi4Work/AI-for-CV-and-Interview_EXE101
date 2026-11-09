@@ -1,4 +1,4 @@
-import { TEMPLATE_IDS } from '../tracking/eventSchema.js';
+import { TEMPLATE_IDS } from '../domain/eventSchema.js';
 
 const EXACT_ROUTES = new Map([
   ['/', ['/', 'landing', 'Trang chủ']],

@@ -5,8 +5,8 @@ import { CVProvider } from './features/cv/contexts/CVContext.jsx';
 import { MediaProvider } from './contexts/MediaContext';
 import AppLayout from './components/layout/AppLayout';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { AnalyticsProvider } from './features/analytics/consent/AnalyticsProvider.jsx';
-import AnalyticsRouteTracker from './features/analytics/tracking/AnalyticsRouteTracker.jsx';
+import { AnalyticsProvider } from './features/analytics/components/AnalyticsProvider.jsx';
+import AnalyticsRouteTracker from './features/analytics/components/AnalyticsRouteTracker.jsx';
 
 function App() {
   return (
