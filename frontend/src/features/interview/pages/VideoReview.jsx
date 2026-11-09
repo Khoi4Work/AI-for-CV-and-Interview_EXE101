@@ -6,7 +6,7 @@ import {useInterviewSession} from '../hooks/useInterviewSession.js';
 import {getApiErrorMessage} from '../../../services/apiClient.js';
 import {interviewService} from '../services/interviewService.js';
 import {downloadInterviewReportPdf} from '../services/interviewExports.js';
-import './interview-pages.css';
+import '../interview.css';
 
 export function VideoReview() {
     const navigate = useNavigate();

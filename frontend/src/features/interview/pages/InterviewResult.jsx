@@ -6,8 +6,8 @@ import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
 import {getLocalInterviewRecording} from '../services/localInterviewRecording.js';
 import {downloadInterviewReportPdf, downloadLocalInterviewAudio} from '../services/interviewExports.js';
-import './interview-result.css';
-import './interview-pages.css';
+import '../interview.css';
+import '../interview.css';
 import {trackEventOnce} from '../../analytics/services/analyticsClient.js';
 import {useAnalyticsConsent} from '../../analytics/components/AnalyticsProvider.jsx';
 

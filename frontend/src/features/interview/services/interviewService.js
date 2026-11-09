@@ -3,8 +3,6 @@ import apiClient from '../../../services/apiClient.js';
 const resultOf = (response) => response.data?.result ?? response.data;
 
 export const interviewService = {
-  getGalleryAssets: async () => resultOf(await apiClient.get('/gallery/assets')),
-
   createSession: async (request) => resultOf(await apiClient.post('/interview/sessions', request)),
 
   createSttToken: async (sessionId) => resultOf(

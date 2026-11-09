@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { canAcceptInterviewAnswer, getInterviewRoomPrompt, isTranscriptChanging } from '../src/features/interview/services/interviewRoomStatus.js';
+import { canAcceptInterviewAnswer, getInterviewRoomPrompt, isTranscriptChanging } from '../src/features/interview/domain/interviewRoomStatus.js';
 
 test('keeps the answer timer paused while speech recognition is connecting', () => {
   assert.equal(canAcceptInterviewAnswer({ phase: 'recording', sttStatus: 'connecting' }), false);
@@ -28,7 +28,7 @@ test('reports recognition failure without inviting the user to speak', () => {
   assert.equal(canAcceptInterviewAnswer({ phase: 'recording', sttStatus: 'unavailable' }), false);
   assert.equal(getInterviewRoomPrompt({ phase: 'recording', sttStatus: 'unavailable' }), 'Không kết nối được nhận diện giọng nói. Hãy kiểm tra micro hoặc mạng.');
 });
-import { BoundedAudioChunkBuffer } from '../src/features/interview/services/boundedAudioChunkBuffer.js';
+import { BoundedAudioChunkBuffer } from '../src/features/interview/utils/boundedAudioChunkBuffer.js';
 
 test('buffers speech chunks in order while STT connects and keeps only the latest bounded window', () => {
   const buffer = new BoundedAudioChunkBuffer(3);

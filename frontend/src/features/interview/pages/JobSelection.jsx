@@ -7,7 +7,7 @@ import { Footer } from '../../../components/layout/Footer.jsx';
 import { JOBS } from '../constants/jobs.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { paymentService } from '../../payment/services/paymentService.js';
-import './interview-pages.css';
+import '../interview.css';
 
 const ICONS = { Code, Monitor, Server, Cloud, Bug, Database };
 

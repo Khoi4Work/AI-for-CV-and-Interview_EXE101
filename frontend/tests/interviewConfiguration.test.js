@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {interviewPayload,interviewFingerprint,normalizeInterviewType} from '../src/features/interview/services/interviewConfiguration.js';
+import {interviewPayload,interviewFingerprint,normalizeInterviewType} from '../src/features/interview/domain/interviewConfiguration.js';
 const config=(type='HR')=>({cvId:'cv-id',experienceLevel:'fresher',interviewConfig:{type,duration:5,language:'vi',jd:'Java API requirements'}});
 test('STAR and both enum spellings map to BEHAVIORAL instead of HR',()=>{
     for(const type of ['STAR','Behavioral','BEHAVIORAL']) assert.equal(normalizeInterviewType(type),'BEHAVIORAL');

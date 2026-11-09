@@ -5,14 +5,14 @@ import { Clock, Mic, MicOff, LoaderCircle } from 'lucide-react';
 import logo from '../../../assets/logo.jpg';
 import { RecruiterAvatar } from '../components/RecruiterAvatar';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
-import ElevenLabsTranscriptionClient from '../hooks/useElevenlabsSTT.js';
-import './interview-pages.css';
+import ElevenLabsTranscriptionClient from '../services/elevenLabsTranscriptionClient.js';
+import '../interview.css';
 import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
-import { END_PHRASES_VN, END_PHRASES_EN } from '../constants/questionBank.js';
+import { END_PHRASES_VN, END_PHRASES_EN } from '../constants/terminalPhrases.js';
 import { useElevenLabsTTS } from '../hooks/useElevenLabsTTS';
 import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { saveLocalInterviewRecording } from '../services/localInterviewRecording.js';
-import { canAcceptInterviewAnswer, getInterviewRoomPrompt, isTranscriptChanging } from '../services/interviewRoomStatus.js';
+import { canAcceptInterviewAnswer, getInterviewRoomPrompt, isTranscriptChanging } from '../domain/interviewRoomStatus.js';
 
 const PROCESSING_DURATION = 1200;
 const IN_QUESTION_TIMEOUT = 600000;

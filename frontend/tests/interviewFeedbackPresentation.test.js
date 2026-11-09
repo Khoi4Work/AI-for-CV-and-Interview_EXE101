@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { suggestionsForFeedback } from '../src/features/interview/services/interviewFeedbackPresentation.js';
+import { suggestionsForFeedback } from '../src/features/interview/utils/interviewFeedbackPresentation.js';
 const feedback = (suggestionPriority) => ({ improvementSuggestion: 'Explain the result', suggestionPriority });
 
 test('returned priorities map to localized labels without score-based defaults', () => {

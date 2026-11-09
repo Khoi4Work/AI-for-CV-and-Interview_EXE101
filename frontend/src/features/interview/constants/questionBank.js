@@ -2,8 +2,6 @@
 // Mỗi câu: { id, type, level, text, tags[], mustHave, sampleAnswer, keywordsForMatch[] }
 // Câu Technical tham khảo docs/FPT/All.csv (LeetCode frequency)
 
-const END_PHRASES_VN = ['xin hết', 'hết rồi', 'xong rồi', 'hết câu', 'tôi xin hết', 'em xin hết'];
-const END_PHRASES_EN = ["that's it", "that is it", "i'm done", "im done", "i am done"];
 
 // HR — văn hóa FPT, teamwork, mục tiêu nghề nghiệp
 const HR_QUESTIONS = [
@@ -260,5 +258,3 @@ export function pickQuestionsForSession({ type, level, duration, seed }) {
   }
   return result.slice(0, totalCount);
 }
-
-export { END_PHRASES_VN, END_PHRASES_EN };

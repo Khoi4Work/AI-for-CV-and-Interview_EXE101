@@ -5,9 +5,9 @@ import { Sparkles, ArrowLeft, Upload, Lock } from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
-import { interviewService } from '../services/interviewService.js';
+import galleryService from '../../user/services/galleryService.js';
 import { getApiErrorMessage } from '../../../services/apiClient.js';
-import './interview-pages.css';
+import '../interview.css';
 
 export default function CvStatus() {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function CvStatus() {
   useEffect(() => {
     if (selected !== 'have') return undefined;
     let active = true;
-    interviewService.getGalleryAssets()
+    galleryService.getGalleryAssets()
       .then((assets) => {
         if (!active) return;
         const availableCvs = assets?.cvs || [];

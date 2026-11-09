@@ -6,8 +6,8 @@ import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../constants/interviewTypes.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
-import {normalizeInterviewType} from '../services/interviewConfiguration.js';
-import './interview-pages.css';
+import {normalizeInterviewType} from '../domain/interviewConfiguration.js';
+import '../interview.css';
 
 const MAX_JD_LENGTH = 50000;
 

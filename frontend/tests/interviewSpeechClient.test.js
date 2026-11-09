@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import ElevenLabsTranscriptionClient from '../src/features/interview/hooks/useElevenlabsSTT.js';
+import ElevenLabsTranscriptionClient from '../src/features/interview/services/elevenLabsTranscriptionClient.js';
 import { interviewService } from '../src/features/interview/services/interviewService.js';
 
 test('preconnects the speech socket before a microphone stream is attached', async () => {

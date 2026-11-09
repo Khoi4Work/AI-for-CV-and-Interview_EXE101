@@ -236,23 +236,6 @@ body {
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
-.bg-interview-radial {
-    background: radial-gradient(circle at center, var(--color-interview-bg-start) 0%, var(--color-interview-bg-end) 100%);
-    background-attachment: fixed;
-}
-
-.selection-card-selected {
-    background-color: var(--color-interview-selection-bg) !important;
-    border-color: var(--color-interview-selection-border) !important;
-    box-shadow: 0 0 0 3px var(--color-interview-selection-border), 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
-}
-
-.selection-card-hover:hover {
-    background-color: var(--color-interview-selection-bg) !important;
-    border-color: var(--color-interview-selection-border) !important;
-    box-shadow: 0 0 0 3px var(--color-interview-selection-border), 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
-}
-
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { HR_PERSONAS, labelForScore } from '../constants/feedbackInterviewRubric.js';
-import { suggestionsForFeedback } from '../services/interviewFeedbackPresentation.js';
+import { suggestionsForFeedback } from '../utils/interviewFeedbackPresentation.js';
 import { interviewService } from '../services/interviewService.js';
-import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../services/interviewConfiguration.js';
+import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../domain/interviewConfiguration.js';
 import {trackEvent, trackEventOnce} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/utils/sanitizeAnalytics.js';
 

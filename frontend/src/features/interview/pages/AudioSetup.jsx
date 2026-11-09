@@ -6,7 +6,7 @@ import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
-import './interview-pages.css';
+import '../interview.css';
 
 export function AudioSetup() {
   const navigate = useNavigate();

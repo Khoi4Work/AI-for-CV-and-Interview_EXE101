@@ -6,7 +6,7 @@ import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { EXPERIENCE_LEVELS } from '../constants/experienceLevels.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
-import './interview-pages.css';
+import '../interview.css';
 
 const ICONS = { GraduationCap, Rocket, Medal, Crown };
 
