@@ -1,4 +1,4 @@
-import apiClient from '../../../service/apiClient.js';
+import apiClient from '../../../services/apiClient.js';
 
 const resultOf = (response) => response.data?.result ?? response.data;
 

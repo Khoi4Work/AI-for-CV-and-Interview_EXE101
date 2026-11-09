@@ -4,11 +4,11 @@ import { Footer } from '../../../components/layout/Footer.jsx';
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useAuth } from "../contexts/AuthContext.jsx";
-import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
+import apiClient, { getApiErrorMessage } from '../../../services/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
 import { setAnalyticsEligibility, trackEvent } from '../../analytics/services/analyticsClient.js';
-import { categorizeAnalyticsError } from '../../analytics/privacy/sanitizeAnalytics.js';
+import { categorizeAnalyticsError } from '../../analytics/utils/sanitizeAnalytics.js';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);

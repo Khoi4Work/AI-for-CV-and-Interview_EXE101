@@ -2,7 +2,7 @@ import {useRef, useState} from 'react';
 import {Shield, ShieldCheck, Laptop, RefreshCw, KeyRound, LoaderCircle} from 'lucide-react';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
-import {getApiErrorMessage} from '../../../service/apiClient.js';
+import {getApiErrorMessage} from '../../../services/apiClient.js';
 import {Card, Button, Input, SectionHeader} from '../components/Layout.jsx';
 
 const upcomingFeatures = [

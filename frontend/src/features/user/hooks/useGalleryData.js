@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import galleryService from '../services/galleryService';
-import { getApiErrorMessage } from '../../../service/apiClient';
+import { getApiErrorMessage } from '../../../services/apiClient';
 
 export function useGalleryData(includeInterviews = false) {
     const [data, setData] = useState({ cvs: [], jds: [], sessions: [], errors: [], loading: true });

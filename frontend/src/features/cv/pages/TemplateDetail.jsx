@@ -18,10 +18,10 @@ import {Header} from "../../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from "../../../components/layout/Footer.jsx";
 import {paymentService} from '../../payment/services/paymentService.js';
-import {getApiErrorMessage} from '../../../service/apiClient.js';
+import {getApiErrorMessage} from '../../../services/apiClient.js';
 import {checkBuilderQuota} from '../domain/builderQuota.js';
 import {trackEvent} from '../../analytics/services/analyticsClient.js';
-import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
+import {categorizeAnalyticsError} from '../../analytics/utils/sanitizeAnalytics.js';
 
 export default function TemplateDetail() {
     const {id} = useParams();

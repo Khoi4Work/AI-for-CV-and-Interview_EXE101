@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Clock, FileText, Video, ChevronDown } from 'lucide-react';
 import Modal from '../../../components/ui/Modal.jsx';
 import { Card, Badge, Button } from '../components/Layout.jsx';
-import { getApiErrorMessage } from '../../../service/apiClient';
+import { getApiErrorMessage } from '../../../services/apiClient';
 import { interviewService } from '../../interview/services/interviewService.js';
 import { useGalleryData } from '../hooks/useGalleryData';
 import { buildHistory } from '../utils/galleryData';

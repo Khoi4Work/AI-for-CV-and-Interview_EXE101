@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { Card, Badge, Button } from '../components/Layout.jsx';
 import galleryService from '../services/galleryService';
-import { getApiErrorMessage } from '../../../service/apiClient';
+import { getApiErrorMessage } from '../../../services/apiClient';
 import { useGalleryData } from '../hooks/useGalleryData';
 import { mapCV } from '../utils/galleryData';
 import SavedCVPreview from '../components/SavedCVPreview.jsx';

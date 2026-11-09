@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect, useSyncExternalStore } from 'react';
-import apiClient from '../../../service/apiClient.js';
+import apiClient from '../../../services/apiClient.js';
 import { createAuthSession } from '../services/authSession.js';
 import LogoutLoading from '../components/LogoutLoading.jsx';
 import { useNavigate } from 'react-router-dom';

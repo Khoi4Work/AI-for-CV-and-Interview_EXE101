@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { HR_PERSONAS, labelForScore } from '../constants/feedbackInterviewRubric.js';
 import { suggestionsForFeedback } from '../services/interviewFeedbackPresentation.js';
 import { interviewService } from '../services/interviewService.js';
 import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../services/interviewConfiguration.js';
 import {trackEvent, trackEventOnce} from '../../analytics/services/analyticsClient.js';
-import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
+import {categorizeAnalyticsError} from '../../analytics/utils/sanitizeAnalytics.js';
 
 const SESSION_KEY = 'interview_session_v1';
 

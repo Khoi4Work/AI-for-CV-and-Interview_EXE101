@@ -9,7 +9,7 @@ import {downloadInterviewReportPdf, downloadLocalInterviewAudio} from '../servic
 import './interview-result.css';
 import './interview-pages.css';
 import {trackEventOnce} from '../../analytics/services/analyticsClient.js';
-import {useAnalyticsConsent} from '../../analytics/consent/AnalyticsProvider.jsx';
+import {useAnalyticsConsent} from '../../analytics/components/AnalyticsProvider.jsx';
 
 export function InterviewResults() {
     const navigate = useNavigate();

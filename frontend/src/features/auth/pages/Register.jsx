@@ -5,11 +5,11 @@ import { Footer } from '../../../components/layout/Footer.jsx';
 import { ChartPie, Bot, User, Mail, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useApp } from '../contexts/AppContext.jsx';
-import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
+import apiClient, { getApiErrorMessage } from '../../../services/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
 import { setAnalyticsEligibility, trackEvent } from '../../analytics/services/analyticsClient.js';
-import { categorizeAnalyticsError } from '../../analytics/privacy/sanitizeAnalytics.js';
+import { categorizeAnalyticsError } from '../../analytics/utils/sanitizeAnalytics.js';
 
 export default function Register() {
   const panelRef = useRef(null);

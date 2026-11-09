@@ -10,7 +10,7 @@ import './interview-pages.css';
 import { useMediaDevices } from '../../../hooks/useMediaDevices.js';
 import { END_PHRASES_VN, END_PHRASES_EN } from '../constants/questionBank.js';
 import { useElevenLabsTTS } from '../hooks/useElevenLabsTTS';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { saveLocalInterviewRecording } from '../services/localInterviewRecording.js';
 import { canAcceptInterviewAnswer, getInterviewRoomPrompt, isTranscriptChanging } from '../services/interviewRoomStatus.js';
 

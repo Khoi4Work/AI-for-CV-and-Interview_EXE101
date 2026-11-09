@@ -4,7 +4,7 @@ import {
     FileText, MessageCircle, ImagePlus, Check, Loader2, Send,
 } from "lucide-react";
 import {feedbackService} from "../services/feedbackService.js";
-import {getApiErrorMessage} from "../../../service/apiClient.js";
+import {getApiErrorMessage} from "../../../services/apiClient.js";
 
 /**
  * FeedbackWidget

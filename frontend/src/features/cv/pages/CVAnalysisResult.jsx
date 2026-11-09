@@ -6,11 +6,11 @@ import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
 import {pollAnalysis} from '../domain/analysisFlow.js';
 import Modal from '../../../components/ui/Modal.jsx';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
-import {getApiErrorMessage, getUserFriendlyMessage} from '../../../service/apiClient.js';
+import {getApiErrorMessage, getUserFriendlyMessage} from '../../../services/apiClient.js';
 import {useInterviewSession} from '../../interview/hooks/useInterviewSession.js';
 import {trackEventOnce} from '../../analytics/services/analyticsClient.js';
-import {normalizeJdOrigin} from '../../analytics/privacy/sanitizeAnalytics.js';
-import {useAnalyticsConsent} from '../../analytics/consent/AnalyticsProvider.jsx';
+import {normalizeJdOrigin} from '../../analytics/utils/sanitizeAnalytics.js';
+import {useAnalyticsConsent} from '../../analytics/components/AnalyticsProvider.jsx';
 import {ArrowRight, ChevronDown, LoaderCircle, Sparkles} from 'lucide-react';
 
 const assessments = {MET:'Đã nêu trong CV', PARTIAL:'Đã nêu một phần', NOT_EVIDENCED:'Chưa thấy trong CV', NOT_APPLICABLE:'Không áp dụng', UNCERTAIN:'Chưa có đủ thông tin'};

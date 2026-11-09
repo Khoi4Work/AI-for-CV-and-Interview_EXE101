@@ -7,14 +7,14 @@ import { useCV } from '../contexts/CVContext.jsx';
 import CvPdfPreview from '../components/CvPdfPreview.jsx';
 import CVContentEditor from '../components/CVContentEditor.jsx';
 import { PDF_TEMPLATE_LOADERS } from '../pdf-renderer/templateRegistry.js';
-import galleryService from '../../../service/galleryService.js';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import galleryService from '../services/templateService.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { cvPipelineService } from '../services/cvPipelineService.js';
 import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from '../domain/editorSave.js';
 import { validateCVData } from '../../../utils/inputValidation.js';
 import {getCvTemplateLayout, updateCvTemplateLayout} from '../pdf-renderer/templateSectionLayout.js';
 import {trackEvent} from '../../analytics/services/analyticsClient.js';
-import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
+import {categorizeAnalyticsError} from '../../analytics/utils/sanitizeAnalytics.js';
 import ConfirmationDialog from '../../../components/ui/ConfirmationDialog.jsx';
 import {useConfirmation} from '../../../components/ui/useConfirmation.js';
 

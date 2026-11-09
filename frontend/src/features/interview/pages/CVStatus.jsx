@@ -6,7 +6,7 @@ import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import { interviewService } from '../services/interviewService.js';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import './interview-pages.css';
 
 export default function CvStatus() {

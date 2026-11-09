@@ -8,7 +8,7 @@ import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from '../../../components/layout/Footer.jsx';
 import {useAuth} from "../../auth/contexts/AuthContext.jsx";
 import galleryService from '../services/templateService.js';
-import {getApiErrorMessage} from '../../../service/apiClient';
+import {getApiErrorMessage} from '../../../services/apiClient';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import TemplateFeedbackModal from '../../feedback/components/TemplateFeedbackModal.jsx';
 

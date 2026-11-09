@@ -10,12 +10,12 @@ import { cvPipelineService } from '../services/cvPipelineService.js';
 import { mapImportedCVData } from '../mapper/cv-data-mapper.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import {analysisSelection, createRequestGuard, pollAnalysis} from '../domain/analysisFlow.js';
 import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
 import {MainLayout} from '../../interview/components/MainLayout.jsx';
 import {trackEvent, trackEventOnce} from '../../analytics/services/analyticsClient.js';
-import {categorizeAnalyticsError, normalizeJdOrigin, safeFileType} from '../../analytics/privacy/sanitizeAnalytics.js';
+import {categorizeAnalyticsError, normalizeJdOrigin, safeFileType} from '../../analytics/utils/sanitizeAnalytics.js';
 
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_JD_LENGTH = 50000;

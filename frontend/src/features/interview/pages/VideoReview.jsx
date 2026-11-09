@@ -3,7 +3,7 @@ import {ArrowLeft, Check, FileText, LoaderCircle, Sparkles} from 'lucide-react';
 import {MainLayout} from '../components/MainLayout.jsx';
 import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
-import {getApiErrorMessage} from '../../../service/apiClient.js';
+import {getApiErrorMessage} from '../../../services/apiClient.js';
 import {interviewService} from '../services/interviewService.js';
 import {downloadInterviewReportPdf} from '../services/interviewExports.js';
 import './interview-pages.css';

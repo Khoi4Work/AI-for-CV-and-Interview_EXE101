@@ -4,7 +4,7 @@ import {Package, Camera, Link, Globe, Code, Sparkles, Shield, User, LoaderCircle
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Input, Badge, SectionHeader} from '../components/Layout.jsx';
-import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
+import apiClient, { getApiErrorMessage } from '../../../services/apiClient.js';
 import { validateProfile } from '../../../utils/inputValidation.js';
 
 const PersonalInfoPage = () => {

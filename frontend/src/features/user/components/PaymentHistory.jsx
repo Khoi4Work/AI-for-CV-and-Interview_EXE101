@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Copy, ChevronDown, ReceiptText, CalendarDays } from 'lucide-react';
 import { paymentService } from '../../payment/services/paymentService.js';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
 import { Card, Button } from './Layout.jsx';
