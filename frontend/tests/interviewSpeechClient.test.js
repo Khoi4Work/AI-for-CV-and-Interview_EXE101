@@ -19,6 +19,7 @@ test('preconnects the speech socket before a microphone stream is attached', asy
       queueMicrotask(() => {
         this.readyState = FakeWebSocket.OPEN;
         this.onopen?.();
+        this.onmessage?.({ data: JSON.stringify({ message_type: 'session_started' }) });
       });
     }
 
