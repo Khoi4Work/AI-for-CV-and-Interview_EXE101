@@ -18,6 +18,13 @@ AI for CV and Interview is a web application for CV improvement and interview pr
 - Run the relevant verification for code changes when requested or needed to support a completion claim. Report what was run and any failures; do not claim checks passed without evidence.
 - Ask only when a missing decision materially affects the result or an action is destructive, external, or not clearly authorized. Do not stage, commit, push, deploy, or modify unrelated user work unless asked.
 
+## Terminal and file editing
+
+- Use PowerShell commands such as `Get-Content` and `rg` for reading and searching files. Use `git status` and `git diff` to inspect repository changes.
+- Create, edit, move, or delete project files with `apply_patch` or the editor. Do not write files through shell commands, including `Set-Content`, `Out-File`, redirection, or scripts.
+- Before running commands that install packages, delete or move files, or stage or commit Git changes, explain the exact command and ask the user for approval.
+- Keep all Git commands in this repository and on the current branch unless the user explicitly directs otherwise.
+
 ## Project conventions
 
 - Backend code follows the existing layered architecture: Controller → Service → Repository.
