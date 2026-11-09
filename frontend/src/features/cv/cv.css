@@ -1,4 +1,6 @@
 /* CV Feature Shared Styles */
+.card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2); }
+
 :root {
     --color-cv-dark-blue: #0D1B2A;
     --color-cv-grey: #85948c;
@@ -45,6 +47,140 @@
     width: 850px;
 }
 
+.input-underlined {
+    border: none;
+    border-bottom: 1px solid var(--color-outline-variant);
+    border-radius: 0;
+    padding-left: 0;
+    padding-right: 0;
+    background: transparent;
+}
+.input-underlined:focus {
+    outline: none;
+    border-bottom: 1px solid var(--color-primary);
+    box-shadow: none;
+}
+
 .cv-print-text {
     display: none;
+}
+
+.cv-profile-photo-frame {
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+@page {
+    size: A4 portrait;
+    margin: 0;
+}
+
+@media print {
+    html,
+    body,
+    #root {
+        width: 210mm !important;
+        min-width: 210mm !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    .cv-editor-shell,
+    .cv-editor-shell * {
+        visibility: visible !important;
+    }
+
+    .cv-editor-toolbar {
+        display: none !important;
+    }
+
+    .cv-editor-shell {
+        display: block !important;
+        width: 210mm !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+    }
+
+    .cv-editor-preview {
+        display: block !important;
+        width: 210mm !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    .cv-page-container {
+        display: block !important;
+        width: 210mm !important;
+        max-width: none !important;
+        height: auto !important;
+        margin: 0 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .cv-page-container > div {
+        width: 210mm !important;
+        max-width: none !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .cv-page-container > div > div {
+        width: 210mm !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        height: auto !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .cv-editable-field {
+        display: none !important;
+    }
+
+    .cv-profile-photo-action,
+    .cv-profile-photo-hint,
+    .cv-profile-photo-empty > svg {
+        display: none !important;
+    }
+
+    .cv-print-text {
+        display: inline-block !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        white-space: pre-wrap !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        vertical-align: top !important;
+    }
+
+    .cv-page-container h1,
+    .cv-page-container h2,
+    .cv-page-container h3,
+    .cv-page-container li {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
 }
