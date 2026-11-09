@@ -8,7 +8,7 @@ const server = await createServer({
     server: { middlewareMode: true, hmr: false },
     appType: 'custom',
 });
-const { default: apiClient, getApiErrorMessage, getUserFriendlyMessage } = await server.ssrLoadModule('/src/service/apiClient.js');
+const { default: apiClient, getApiErrorMessage, getUserFriendlyMessage } = await server.ssrLoadModule('/src/services/apiClient.js');
 let refreshAdapter;
 apiClient.interceptors.request.use(config => {
     if (config.url === '/auth/tokens/refresh') config.adapter = refreshAdapter;
