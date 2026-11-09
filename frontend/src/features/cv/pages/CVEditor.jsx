@@ -13,7 +13,7 @@ import { cvPipelineService } from '../services/cvPipelineService.js';
 import { buildEditorPayload, createEditorWriter, getAllowedEditorTemplate } from '../domain/editorSave.js';
 import { validateCVData } from '../../../utils/inputValidation.js';
 import {getCvTemplateLayout, updateCvTemplateLayout} from '../pdf-renderer/templateSectionLayout.js';
-import {trackEvent} from '../../analytics/tracking/analyticsClient.js';
+import {trackEvent} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
 import ConfirmationDialog from '../../../components/ui/ConfirmationDialog.jsx';
 import {useConfirmation} from '../../../components/ui/useConfirmation.js';

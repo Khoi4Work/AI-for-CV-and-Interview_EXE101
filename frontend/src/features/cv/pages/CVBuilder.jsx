@@ -23,7 +23,7 @@ import {paymentService} from '../../payment/services/paymentService.js';
 import {checkBuilderQuota} from '../domain/builderQuota.js';
 import {validateCVDataFields} from '../../../utils/inputValidation.js';
 import galleryService from '../../../features/user/services/galleryService.js';
-import {trackEvent} from '../../analytics/tracking/analyticsClient.js';
+import {trackEvent} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError, safeFileType} from '../../analytics/privacy/sanitizeAnalytics.js';
 
 export default function CVBuilder() {

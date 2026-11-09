@@ -14,6 +14,7 @@ Thumbs.db
 .submission/
 .spec/*
 !/.spec/interview-feedback-personalization-spec.md
+!/.spec/frontend-structure-cleanup-spec.md
 
 # Node.js / Frontend
 node_modules/

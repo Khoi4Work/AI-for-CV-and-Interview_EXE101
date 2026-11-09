@@ -20,7 +20,7 @@ import {Footer} from "../../../components/layout/Footer.jsx";
 import {paymentService} from '../../payment/services/paymentService.js';
 import {getApiErrorMessage} from '../../../service/apiClient.js';
 import {checkBuilderQuota} from '../domain/builderQuota.js';
-import {trackEvent} from '../../analytics/tracking/analyticsClient.js';
+import {trackEvent} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
 
 export default function TemplateDetail() {

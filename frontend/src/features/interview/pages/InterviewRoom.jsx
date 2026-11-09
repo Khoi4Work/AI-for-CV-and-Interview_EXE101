@@ -195,7 +195,7 @@ export function InterviewRoom() {
     const createElevenLabsClient = useCallback((generation) => new ElevenLabsTranscriptionClient(({transcript, isFinal}) => {
         if (silencePromptActiveRef.current || generation !== sttGenerationRef.current || !transcript) return;
         if (isFinal) {
-            const newTranscript = \`\${lastTranscriptRef.current} \${transcript}\`.trim();
+            const newTranscript = `${lastTranscriptRef.current} ${transcript}`.trim();
             lastTranscriptRef.current = newTranscript;
             setFinalTranscript(newTranscript);
             interimTranscriptRef.current = '';

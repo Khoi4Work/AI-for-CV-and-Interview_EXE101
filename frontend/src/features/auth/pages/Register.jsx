@@ -8,7 +8,7 @@ import { useApp } from '../contexts/AppContext.jsx';
 import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
-import { setAnalyticsEligibility, trackEvent } from '../../analytics/tracking/analyticsClient.js';
+import { setAnalyticsEligibility, trackEvent } from '../../analytics/services/analyticsClient.js';
 import { categorizeAnalyticsError } from '../../analytics/privacy/sanitizeAnalytics.js';
 
 export default function Register() {

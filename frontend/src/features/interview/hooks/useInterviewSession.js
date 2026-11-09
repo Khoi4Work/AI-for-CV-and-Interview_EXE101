@@ -4,7 +4,7 @@ import { HR_PERSONAS, labelForScore } from '../constants/feedbackInterviewRubric
 import { suggestionsForFeedback } from '../services/interviewFeedbackPresentation.js';
 import { interviewService } from '../services/interviewService.js';
 import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../services/interviewConfiguration.js';
-import {trackEvent, trackEventOnce} from '../../analytics/tracking/analyticsClient.js';
+import {trackEvent, trackEventOnce} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/privacy/sanitizeAnalytics.js';
 
 const SESSION_KEY = 'interview_session_v1';
