@@ -7,7 +7,7 @@ import { Card, Button } from '../components/Layout.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
 import ConfirmationDialog from '../../../components/ui/ConfirmationDialog.jsx';
 import {useConfirmation} from '../../../components/ui/useConfirmation.js';
-import galleryService from '../../../service/galleryService';
+import galleryService from '../services/galleryService';
 import { getApiErrorMessage } from '../../../service/apiClient';
 import { useGalleryData } from '../hooks/useGalleryData';
 

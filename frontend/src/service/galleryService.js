@@ -1,4 +1,5 @@
-import apiClient from './apiClient';
+import apiClient from './apiClient.js';
+import userGalleryService from '../features/user/services/galleryService.js';
 
 const TEMPLATE_CACHE_TTL_MS = 60_000;
 const templateCache = new Map();
@@ -25,51 +26,15 @@ function fetchTemplates(cacheKey, accessToken) {
 }
 
 const galleryService = {
-    async getGalleryAssets() {
-        try {
-            const response = await apiClient.get('/gallery/assets');
-            const data = response.data?.result;
-            if (!data || (Array.isArray(data) && data.length === 0)) {
-                console.log('[GalleryService] No data found for gallery assets');
-                return [];
-            }
-            return data;
-        } catch (error) {
-            console.error('[GalleryService] Error fetching gallery assets:', error);
-            throw error;
-        }
-    },
+    // Delegate to User Service
+    async getGalleryAssets() { return userGalleryService.getGalleryAssets(); },
+    async deleteCV(id) { return userGalleryService.deleteCV(id); },
+    async deleteJD(id) { return userGalleryService.deleteJD(id); },
+    async updateJD(id, payload) { return userGalleryService.updateJD(id, payload); },
+    async getInterviewHistory() { return userGalleryService.getInterviewHistory(); },
+    async getInterviewAnswers(sessionId) { return userGalleryService.getInterviewAnswers(sessionId); },
 
-    async deleteCV(id) {
-        try {
-            const response = await apiClient.delete(`/gallery/cv/${id}`);
-            return response.data?.result;
-        } catch (error) {
-            console.error(`[GalleryService] Error deleting CV ${id}:`, error);
-            throw error;
-        }
-    },
-
-    async deleteJD(id) {
-        try {
-            const response = await apiClient.delete(`/gallery/jd/${id}`);
-            return response.data?.result;
-        } catch (error) {
-            console.error(`[GalleryService] Error deleting JD ${id}:`, error);
-            throw error;
-        }
-    },
-
-    async updateJD(id, payload) {
-        try {
-            const response = await apiClient.put(`/gallery/jd/${id}`, payload);
-            return response.data?.result;
-        } catch (error) {
-            console.error(`[GalleryService] Error updating JD ${id}:`, error);
-            throw error;
-        }
-    },
-
+    // Template methods remain here until CV stage
     async getTemplates() {
         const accessToken = localStorage.getItem('accessToken');
         const cacheKey = getTemplateCacheKey(accessToken);
@@ -99,36 +64,6 @@ const galleryService = {
             throw error;
         }
     },
-
-    async getInterviewHistory() {
-        try {
-            const response = await apiClient.get('/gallery/interviews');
-            const data = response.data?.result;
-            if (!data || (Array.isArray(data) && data.length === 0)) {
-                console.log('[GalleryService] No data found for interview history');
-                return [];
-            }
-            return data;
-        } catch (error) {
-            console.error('[GalleryService] Error fetching interview history:', error);
-            throw error;
-        }
-    },
-
-    async getInterviewAnswers(sessionId) {
-        try {
-            const response = await apiClient.get(`/gallery/interviews/${sessionId}/answers`);
-            const data = response.data?.result;
-            if (!data) {
-                console.log(`[GalleryService] No answers found for session ${sessionId}`);
-                return null;
-            }
-            return data;
-        } catch (error) {
-            console.error(`[GalleryService] Error fetching answers for session ${sessionId}:`, error);
-            throw error;
-        }
-    }
 };
 
 export default galleryService;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import galleryService from '../../../service/galleryService';
+import galleryService from '../services/galleryService';
 import { getApiErrorMessage } from '../../../service/apiClient';
 
 export function useGalleryData(includeInterviews = false) {

@@ -3,7 +3,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
 import { Card, Badge, Button } from '../components/Layout.jsx';
-import galleryService from '../../../service/galleryService';
+import galleryService from '../services/galleryService';
 import { getApiErrorMessage } from '../../../service/apiClient';
 import { useGalleryData } from '../hooks/useGalleryData';
 import { mapCV } from '../utils/galleryData';
