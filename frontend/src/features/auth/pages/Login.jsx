@@ -9,6 +9,8 @@ import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
 import { setAnalyticsEligibility, trackEvent } from '../../analytics/services/analyticsClient.js';
 import { categorizeAnalyticsError } from '../../analytics/utils/sanitizeAnalytics.js';
+import AuthJourneyPanel from '../components/AuthJourneyPanel.jsx';
+import '../components/auth-experience.css';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -123,20 +125,12 @@ export default function Login() {
     return (
         <>
         {loading && <LoginLoading success={loginSuccess} />}
-        <div inert={loading} aria-busy={loading} className="flex flex-col min-h-screen w-full bg-surface">
+        <div inert={loading} aria-busy={loading} className="auth-page auth-page--login flex flex-col min-h-screen w-full">
             <GuestHeader/>
-            <main className="flex-grow flex items-center justify-center py-xl px-sm relative overflow-hidden w-full">
-                {/* Atmospheric Ambient Elements */}
-                <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-10 overflow-hidden">
-                    <div
-                        className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary rounded-full blur-[120px]"></div>
-                    <div
-                        className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-tertiary-container rounded-full blur-[100px]"></div>
-                </div>
-
-                {/* Login Card */}
-                <div
-                    className="glass-panel w-full max-w-[480px] p-lg md:p-xl rounded-xl custom-shadow border border-outline-variant relative z-10">
+            <main className="auth-page__main">
+                <div className="auth-page__layout">
+                <AuthJourneyPanel mode="login" />
+                <div className="auth-card relative z-10 p-lg md:p-xl">
                     <div className="text-center mb-lg">
                         <h1 className="font-display-lg text-[36px] leading-[1.2] text-primary mb-xs font-extrabold tracking-tight">Đăng
                             nhập</h1>
@@ -266,6 +260,7 @@ export default function Login() {
                                   to="/register">Đăng ký ngay</Link>
                         </p>
                     </div>
+                </div>
                 </div>
             </main>
             <Footer/>

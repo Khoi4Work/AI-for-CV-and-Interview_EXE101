@@ -11,12 +11,12 @@ export function Footer() {
             {/*<span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>*/}
             <span className="font-title-md text-title-md font-bold text-primary dark:text-primary">Smartfolio</span>
           </div>
-          <p className="font-label-sm text-label-sm text-secondary">© 2026 Smartfolio. Giải pháp tối ưu dành cho giới chuyên nghiệp.</p>
+          <p className="font-label-sm text-label-sm text-secondary">© {new Date().getFullYear()} Smartfolio. CV, JD và luyện phỏng vấn.</p>
         </div>
         <div className="flex gap-lg">
-          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Chính sách bảo mật</Link>
-          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Điều khoản dịch vụ</Link>
-          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Hỗ trợ</Link>
+          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="/templates">Mẫu CV</Link>
+          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="/interview">Luyện phỏng vấn</Link>
+          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="/pricing">Gói dịch vụ</Link>
           {available && <button type="button" onClick={openPreferences} className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100">Tùy chọn đo lường</button>}
         </div>
       </div>

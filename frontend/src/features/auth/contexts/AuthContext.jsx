@@ -2,6 +2,7 @@ import { createContext, useState, useContext, useEffect, useSyncExternalStore } 
 import apiClient from '../../../services/apiClient.js';
 import { createAuthSession } from '../services/authSession.js';
 import LogoutLoading from '../components/LogoutLoading.jsx';
+import AuthProgress from '../components/AuthProgress.jsx';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -130,7 +131,7 @@ export function AuthProvider({ children }) {
     }}>
       {isLoggingOut && <LogoutLoading />}
       <div inert={isLoggingOut}>
-      {isLoading && !isSigningIn ? <div role="status" className="flex min-h-screen items-center justify-center bg-surface text-on-surface">Đang xác minh tài khoản…</div>
+      {isLoading && !isSigningIn ? <AuthProgress overlay={false} title="Đang xác minh tài khoản" message="Đang kiểm tra phiên đăng nhập an toàn của bạn…" />
         : auth.status === 'error' ? <div role="alert" className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface p-6 text-center text-on-surface">
           <p>{auth.error}</p>
           <button onClick={retryAuth} className="rounded-xl bg-primary px-5 py-2 text-on-primary">Thử lại</button>
