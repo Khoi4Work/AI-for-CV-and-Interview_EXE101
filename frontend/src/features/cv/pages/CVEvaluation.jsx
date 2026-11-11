@@ -1,7 +1,7 @@
 import "../cv.css";
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Upload, FileText, Trash2, TextCursor, CheckCircle2, X, FileQuestion, LoaderCircle, BrainCircuit } from 'lucide-react';
+import { Upload, FileText, Trash2, TextCursor, CheckCircle2, FileQuestion, LoaderCircle, BrainCircuit } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCV } from '../contexts/CVContext.jsx';
 import Modal from '../../../components/ui/Modal.jsx';
@@ -395,13 +395,6 @@ const CVEvaluation = () => {
   return (
     <MainLayout bgClass="bg-background">
     <div className="relative bg-background p-0 md:p-4 font-sans antialiased text-on-surface">
-      <button
-        onClick={() => navigate('/')}
-        className="absolute left-6 top-6 p-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all z-10"
-        aria-label="Close"
-      >
-        <X className="w-6 h-6" />
-      </button>
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="mb-10 text-center md:text-left">
