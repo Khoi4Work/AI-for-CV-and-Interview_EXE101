@@ -13,4 +13,5 @@ public class RegisterRequestDTO {
     private String confirmPassword;
     private AccountRole role;
     private String displayName;
+    private Boolean termsAccepted;
 }

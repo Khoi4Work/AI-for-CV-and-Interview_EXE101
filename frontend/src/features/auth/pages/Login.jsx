@@ -9,6 +9,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
 import { setAnalyticsEligibility, trackEvent } from '../../analytics/services/analyticsClient.js';
 import { categorizeAnalyticsError } from '../../analytics/utils/sanitizeAnalytics.js';
+import TermsAcceptanceDialog from '../components/TermsAcceptanceDialog.jsx';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +18,8 @@ export default function Login() {
     const loginInProgress = useRef(false);
     const [error, setError] = useState(null);
     const [emailDraft, setEmailDraft] = useState('');
+    const [pendingGoogleToken, setPendingGoogleToken] = useState(null);
+    const [termsDialogOpen, setTermsDialogOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const { handleLogin, isLoggedIn, sessionExpired: authSessionExpired } = useAuth();
@@ -95,6 +98,13 @@ export default function Login() {
                 token: idToken
             }, { publicRequest: true, anonymousRequest: true });
             const tokens = response.data?.result || response.data?.data || {};
+            if (tokens.termsAcceptanceRequired) {
+                setPendingGoogleToken(idToken);
+                setTermsDialogOpen(true);
+                setLoading(false);
+                loginInProgress.current = false;
+                return;
+            }
             if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
             const authenticatedProfile = await handleLogin(null, tokens);
             setLoginSuccess(true);
@@ -114,6 +124,28 @@ export default function Login() {
         }
     };
 
+    const acceptGoogleTerms = async () => {
+        if (!pendingGoogleToken) return;
+        loginInProgress.current = true;
+        setLoading(true);
+        try {
+            const response = await apiClient.post('/auth/oauth/google', { token: pendingGoogleToken, termsAccepted: true }, { publicRequest: true, anonymousRequest: true });
+            const tokens = response.data?.result || response.data?.data || {};
+            if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
+            const profile = await handleLogin(null, tokens);
+            setLoginSuccess(true);
+            const excluded = String(profile?.role || '').toUpperCase() === 'ADMIN' || profile?.analyticsExcluded === true;
+            setAnalyticsEligibility(!excluded);
+            if (!excluded) trackEvent('login', { method: 'google' });
+            setTermsDialogOpen(false);
+            navigate(getPostLoginDestination(), { replace: sessionExpired });
+        } catch (err) {
+            setError(getApiErrorMessage(err));
+            setLoading(false);
+            loginInProgress.current = false;
+        }
+    };
+
     const handleGoogleError = () => {
         setError('Google login failed. Please try again.');
     };
@@ -122,6 +154,7 @@ export default function Login() {
 
     return (
         <>
+        <TermsAcceptanceDialog isOpen={termsDialogOpen} loading={loading} onAccept={acceptGoogleTerms} onCancel={() => { setTermsDialogOpen(false); setPendingGoogleToken(null); }} />
         {loading && <LoginLoading success={loginSuccess} />}
         <div inert={loading} aria-busy={loading} className="flex flex-col min-h-screen w-full bg-surface">
             <GuestHeader/>

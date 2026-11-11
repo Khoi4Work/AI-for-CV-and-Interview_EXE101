@@ -11,4 +11,6 @@ public class AuthResponseDTO {
     private String refreshToken;
     private String role;
     private String status;
+    @Builder.Default
+    private boolean termsAcceptanceRequired = false;
 }

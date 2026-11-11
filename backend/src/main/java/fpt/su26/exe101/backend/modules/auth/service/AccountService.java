@@ -8,6 +8,7 @@ public interface AccountService {
     RegisterResponseDTO register(RegisterRequestDTO request);
     void verifyEmail(String token);
     Account createOAuthAccount(String email, String name);
+    Account createOAuthAccount(String email, String name, boolean termsAccepted);
     void updateProfile(java.util.UUID accountId, UpdateProfileRequestDTO request);
     Account getAccountByEmail(String email);
     void changePassword(String email, ChangePasswordRequestDTO request);

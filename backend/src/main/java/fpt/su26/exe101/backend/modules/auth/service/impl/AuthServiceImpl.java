@@ -121,8 +121,11 @@ public class AuthServiceImpl implements AuthService {
 
         String email = verifyGoogleToken(request.getToken());
 
-        Account account = accountRepository.findByEmail(email)
-                .orElseGet(() -> accountService.createOAuthAccount(email, "OAuth User"));
+        java.util.Optional<Account> existingAccount = accountRepository.findByEmail(email);
+        if (existingAccount.isEmpty() && !Boolean.TRUE.equals(request.getTermsAccepted())) {
+            return AuthResponseDTO.builder().termsAcceptanceRequired(true).build();
+        }
+        Account account = existingAccount.orElseGet(() -> accountService.createOAuthAccount(email, "OAuth User", true));
 
         requireActive(account);
 
