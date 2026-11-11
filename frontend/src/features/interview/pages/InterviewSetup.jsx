@@ -8,7 +8,6 @@ import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../constants/interviewTyp
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import {normalizeInterviewType} from '../domain/interviewConfiguration.js';
 import '../interview.css';
-import DataUseNotice from '../../../components/privacy/DataUseNotice.jsx';
 
 const MAX_JD_LENGTH = 50000;
 
@@ -232,8 +231,6 @@ export default function InterviewSetup() {
                   </p>
                 </div>
               </div>
-
-              <DataUseNotice kind="interview" />
 
               <div className="flex flex-col gap-3 pt-2">
                 <button

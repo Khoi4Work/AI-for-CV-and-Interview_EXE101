@@ -25,7 +25,6 @@ import {validateCVDataFields} from '../../../utils/inputValidation.js';
 import galleryService from '../../../features/user/services/galleryService.js';
 import {trackEvent} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError, safeFileType} from '../../analytics/utils/sanitizeAnalytics.js';
-import DataUseNotice from '../../../components/privacy/DataUseNotice.jsx';
 
 export default function CVBuilder() {
     const {showToast} = useApp();
@@ -253,9 +252,6 @@ export default function CVBuilder() {
 
                         {/* Stepper Header */}
                         <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-                            <div className="mb-5">
-                                <DataUseNotice kind="cv" />
-                            </div>
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
                                 <div className="flex items-center gap-2">
                                     <div

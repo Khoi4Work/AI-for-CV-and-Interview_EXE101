@@ -71,8 +71,8 @@ export default function DataTransparencyPage() {
     <div className="flex min-h-screen flex-col bg-background font-sans text-on-surface">
       <GuestHeader />
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-margin-mobile py-10 md:px-margin-desktop lg:px-gutter sm:py-14">
-        <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant transition-colors hover:text-primary">
-          <ArrowLeft size={16} aria-hidden="true" /> Về trang chủ
+        <Link to="/docs" className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant transition-colors hover:text-primary">
+          <ArrowLeft size={16} aria-hidden="true" /> Tất cả tài liệu
         </Link>
 
         <header className="mb-9 border-b border-outline-variant pb-8 sm:mb-12 sm:pb-10">

@@ -197,8 +197,7 @@ const LandingPage = () => {
                     <p>© 2026 Smartfolio. Precision built for professionals.</p>
                 </div>
                 <div className="flex items-center space-x-6 font-medium">
-                    <Link to="/privacy" className="hover:text-primary">Dữ liệu & quyền riêng tư</Link>
-                    <Link to="/terms" className="hover:text-primary">Điều khoản dịch vụ</Link>
+                    <Link to="/docs" className="hover:text-primary">Tài liệu</Link>
                     <a href="#support" onClick={(e) => {
                         e.preventDefault();
                         navigate('/login');

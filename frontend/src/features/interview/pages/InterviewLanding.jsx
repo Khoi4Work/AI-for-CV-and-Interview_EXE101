@@ -18,7 +18,6 @@ import {Header} from "../../../components/layout/PublicHeader.jsx";
 import {Footer} from "../../../components/layout/Footer.jsx";
 import {useAuth} from "../../auth/contexts/AuthContext.jsx";
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
-import DataUseNotice from '../../../components/privacy/DataUseNotice.jsx';
 
 export default function InterviewLanding() {
     const navigate = useNavigate();
@@ -53,9 +52,6 @@ export default function InterviewLanding() {
                                 className="glass-panel text-on-surface-variant border border-outline-variant px-6 py-3.5 rounded-xl font-medium hover:bg-surface-container-low transition-all shadow-sm cursor-pointer">
                                 Xem bản demo
                             </button>
-                        </div>
-                        <div className="mt-6 max-w-2xl">
-                            <DataUseNotice kind="interview" />
                         </div>
                     </div>
                     <div
