@@ -16,6 +16,7 @@ import {formatJD, jdSourceLabel} from '../../../utils/jdContent.js';
 import {MainLayout} from '../../interview/components/MainLayout.jsx';
 import {trackEvent, trackEventOnce} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError, normalizeJdOrigin, safeFileType} from '../../analytics/utils/sanitizeAnalytics.js';
+import DataUseNotice from '../../../components/privacy/DataUseNotice.jsx';
 
 const MAX_CV_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_JD_LENGTH = 50000;
@@ -407,6 +408,10 @@ const CVEvaluation = () => {
         <div className="mb-10 text-center md:text-left">
           <h1 className="text-3xl font-bold text-on-surface mb-2">Đánh giá CV AI</h1>
           <p className="text-on-surface-variant">Tải CV lên để tìm vị trí phù hợp, hoặc dán mô tả công việc để đánh giá.</p>
+        </div>
+
+        <div className="mb-6">
+          <DataUseNotice kind="cv" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

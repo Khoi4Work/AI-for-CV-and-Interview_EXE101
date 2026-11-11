@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import {useAuth} from '../features/auth/contexts/AuthContext.jsx';
 import {
     Sparkles, ArrowRight, Cpu, FileText, Zap, ChevronRight, BarChart2, MessageSquare, ExternalLink
@@ -197,14 +197,8 @@ const LandingPage = () => {
                     <p>© 2026 Smartfolio. Precision built for professionals.</p>
                 </div>
                 <div className="flex items-center space-x-6 font-medium">
-                    <a href="#privacy" onClick={(e) => {
-                        e.preventDefault();
-                        navigate('/login');
-                    }} className="hover:text-primary">Chính sách bảo mật</a>
-                    <a href="#terms" onClick={(e) => {
-                        e.preventDefault();
-                        navigate('/login');
-                    }} className="hover:text-primary">Điều khoản dịch vụ</a>
+                    <Link to="/privacy" className="hover:text-primary">Dữ liệu & quyền riêng tư</Link>
+                    <Link to="/terms" className="hover:text-primary">Điều khoản dịch vụ</Link>
                     <a href="#support" onClick={(e) => {
                         e.preventDefault();
                         navigate('/login');

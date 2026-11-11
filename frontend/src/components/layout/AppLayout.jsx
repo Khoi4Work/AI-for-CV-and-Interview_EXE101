@@ -46,6 +46,8 @@ import ScrollToTop from "../transitions/ScrollToTop.jsx";
 import RouteProgressBar from "../transitions/RouteProgressBar.jsx";
 import {useInterviewSession} from "../../features/interview/hooks/useInterviewSession.js";
 import InterviewSessionLoading from '../../features/interview/components/InterviewSessionLoading.jsx';
+import DataTransparencyPage from '../../pages/DataTransparencyPage.jsx';
+import ServiceTermsPage from '../../pages/ServiceTermsPage.jsx';
 
 /**
  * Guard cho InterviewRoom: cần interviewConfig (đã setup xong) + questions.
@@ -189,6 +191,10 @@ function AppLayout() {
                        element={<PageTransition key={location.pathname}><ForgotPassword/></PageTransition>}/>
                 <Route path="/reset-password"
                        element={<PageTransition key={location.pathname}><ResetPassword/></PageTransition>}/>
+                <Route path="/privacy"
+                       element={<PageTransition key={location.pathname}><DataTransparencyPage/></PageTransition>}/>
+                <Route path="/terms"
+                       element={<PageTransition key={location.pathname}><ServiceTermsPage/></PageTransition>}/>
                 <Route path="/interview"
                        element={<PageTransition key={location.pathname}><InterviewLanding/></PageTransition>}/>
                 <Route path="/templates"

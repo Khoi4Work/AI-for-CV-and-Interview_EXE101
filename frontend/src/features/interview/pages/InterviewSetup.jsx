@@ -8,6 +8,7 @@ import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../constants/interviewTyp
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
 import {normalizeInterviewType} from '../domain/interviewConfiguration.js';
 import '../interview.css';
+import DataUseNotice from '../../../components/privacy/DataUseNotice.jsx';
 
 const MAX_JD_LENGTH = 50000;
 
@@ -232,6 +233,8 @@ export default function InterviewSetup() {
                 </div>
               </div>
 
+              <DataUseNotice kind="interview" />
+
               <div className="flex flex-col gap-3 pt-2">
                 <button
                   onClick={() => navigate('/interview/career-goal')}
@@ -248,7 +251,6 @@ export default function InterviewSetup() {
                 </button>
               </div>
 
-              <p className="text-center text-[10px] text-outline mt-4">© 2024 Smartfolio AI Platform. Bảo mật thông tin người dùng là ưu tiên hàng đầu.</p>
             </div>
           </div>
         </div>

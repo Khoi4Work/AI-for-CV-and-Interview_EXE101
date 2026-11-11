@@ -14,8 +14,8 @@ export function Footer() {
           <p className="font-label-sm text-label-sm text-secondary">© 2026 Smartfolio. Giải pháp tối ưu dành cho giới chuyên nghiệp.</p>
         </div>
         <div className="flex gap-lg">
-          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Chính sách bảo mật</Link>
-          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Điều khoản dịch vụ</Link>
+          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="/privacy">Dữ liệu & quyền riêng tư</Link>
+          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="/terms">Điều khoản dịch vụ</Link>
           <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Hỗ trợ</Link>
           {available && <button type="button" onClick={openPreferences} className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100">Tùy chọn đo lường</button>}
         </div>
