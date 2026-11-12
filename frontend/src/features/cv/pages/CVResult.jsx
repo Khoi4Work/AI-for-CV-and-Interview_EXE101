@@ -1,3 +1,4 @@
+import "../cv.css";
 import {useEffect, useMemo, useState} from 'react';
 import {CheckCircle2} from 'lucide-react';
 import {MainLayout} from '../../interview/components/MainLayout.jsx';
@@ -5,7 +6,7 @@ import {useNavigate,useLocation} from 'react-router-dom';
 import {useCV} from '../contexts/CVContext.jsx';
 import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
 import CvPdfPreview from '../components/CvPdfPreview.jsx';
-import galleryService from '../../../service/galleryService.js';
+import galleryService from '../services/templateService.js';
 import {PDF_TEMPLATE_LOADERS} from '../pdf-renderer/templateRegistry.js';
 import {formatOptimizationSectionName} from '../utils/optimizationSectionName.js';
 import CVAnalysisResult from './CVAnalysisResult.jsx';

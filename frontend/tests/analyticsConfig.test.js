@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createAnalyticsConfig} from '../src/features/analytics/analyticsConfig.js';
+import {createAnalyticsConfig} from '../src/features/analytics/domain/analyticsConfig.js';
 
 const validEnv = {
   VITE_ANALYTICS_ENABLED: 'true',

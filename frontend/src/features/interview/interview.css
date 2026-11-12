@@ -1,0 +1,546 @@
+/* Shared, calmer palette for the final review and interview report screens. */
+.interview-review-background {
+    background: #0d1b2a;
+    color: #e0e1dd;
+}
+
+.interview-review-background.bg-surface-dim {
+    background: #0d1b2a;
+}
+
+.interview-review-surface {
+    --color-interview-card-bg: #ffffff;
+    --color-outline-variant: #d7e3e0;
+    --color-outline: #b7c8c3;
+    --color-primary: #087b5b;
+    --color-on-primary: #ffffff;
+    --color-interview-selection-border: #68b99d;
+    --color-surface-container: #e8f1ef;
+}
+
+.interview-review-surface h1 {
+    color: #f2f7f5;
+    letter-spacing: -0.025em;
+}
+
+.interview-review-surface > p.text-center {
+    color: #b8cbc6;
+}
+
+.interview-review-surface > p.text-gray-600 {
+    color: #c4d2cf;
+}
+
+.interview-review-surface .text-gray-500 {
+    color: #b8cbc6;
+}
+
+.interview-review-surface .text-gray-900 {
+    color: #f2f7f5;
+}
+
+.interview-review-surface .hover\:text-gray-900:hover {
+    color: #ffffff;
+}
+
+.interview-review-surface article,
+.interview-review-surface > div.rounded-xl {
+    border-color: #d7e3e0;
+    box-shadow: 0 8px 24px -20px rgba(15, 48, 57, 0.42);
+}
+
+.interview-review-surface article {
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.interview-review-surface article:hover {
+    border-color: #8fc9b5;
+    box-shadow: 0 12px 26px -20px rgba(15, 79, 62, 0.38);
+    transform: translateY(-1px);
+}
+
+.interview-review-surface button:not([disabled]) {
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+/* Keep review actions readable against the dark interview background. */
+.interview-review-exit {
+    border-color: #a8c2bb;
+    background-color: #0d1b2a;
+    color: #f2f7f5;
+}
+
+.interview-review-exit:hover {
+    border-color: #d6e6e1;
+    background-color: #1b3442;
+    color: #ffffff;
+}
+
+.interview-review-download {
+    border-color: #c7ded5;
+    background-color: #e8f3ef;
+    color: #174b3d;
+}
+
+.interview-review-download:hover:not(:disabled) {
+    border-color: #a6cebd;
+    background-color: #ffffff;
+    color: #103d31;
+}
+
+.interview-review-download:disabled {
+    border-color: #b9d1c8;
+    background-color: #d8e8e2;
+    color: #345c50;
+}
+
+.interview-review-submit {
+    background-color: #087b5b;
+    color: #ffffff;
+}
+
+.interview-review-submit:hover:not(:disabled) {
+    background-color: #066849;
+}
+
+.interview-review-submit:disabled {
+    background-color: #087b5b;
+    color: #ffffff;
+    opacity: 0.78;
+}
+
+.interview-review-surface button:focus-visible,
+.interview-result-page button:focus-visible {
+    outline: 3px solid rgba(8, 123, 91, 0.28);
+    outline-offset: 2px;
+}
+
+.interview-result-page {
+    --color-interview-card-bg: #ffffff;
+    --color-outline-variant: #d7e3e0;
+    --color-outline: #c5d4d0;
+    --color-primary: #087b5b;
+    --color-on-primary: #ffffff;
+    --color-interview-selection-border: #68b99d;
+    --color-surface-container: #e8f1ef;
+    color: #172c3d;
+}
+
+.interview-result-page.text-on-surface {
+    color: #172c3d;
+}
+
+.interview-result-page .bg-interview-card-bg {
+    background-color: #ffffff;
+}
+
+.interview-result-page .border-outline-variant {
+    border-color: #d7e3e0;
+}
+
+.interview-result-page .text-primary {
+    color: #087b5b;
+}
+
+.interview-result-page .text-outline {
+    color: #61766f;
+}
+
+.interview-result-page .bg-primary {
+    background-color: #087b5b;
+    color: #ffffff;
+}
+
+.interview-result-page .text-on-primary {
+    color: #ffffff;
+}
+
+.interview-result-page .bg-amber-500,
+.interview-result-page .bg-amber-600 {
+    background-color: #fff1cf;
+    color: #80520b;
+    border-color: #e9ce8d;
+}
+
+.interview-result-page .bg-rose-500,
+.interview-result-page .bg-rose-600 {
+    background-color: #ffebeb;
+    color: #9b3038;
+    border-color: #efb5b9;
+}
+
+.interview-result-page .bg-slate-500,
+.interview-result-page .bg-gray-400 {
+    background-color: #e8eef2;
+    color: #415464;
+    border-color: #cfdae1;
+}
+
+.interview-result-page [class*="bg-blue-"] {
+    background-color: #0b8965;
+}
+
+.interview-result-page .selection-card-hover {
+    background-color: #f3faf7;
+    border-color: #b7d7ca;
+    color: #155e4c;
+}
+
+.interview-result-page .selection-card-hover:hover {
+    background-color: #e5f4ed;
+    border-color: #68b99d;
+    box-shadow: 0 8px 18px -14px rgba(8, 123, 91, 0.5);
+}
+
+.interview-result-page .border-rose-500 {
+    border-color: #e7aeb2;
+}
+
+.interview-result-page .border-selection-border {
+    border-color: #a9d6c5;
+}
+
+.interview-result-page .interview-report > div {
+    border-color: #d2e1dc;
+}
+
+.interview-result-page .interview-report > div {
+    box-shadow: 0 14px 38px -28px rgba(15, 48, 57, 0.38);
+}
+
+.interview-result-page .interview-report > div > div {
+    border-radius: 1.1rem;
+}
+
+.interview-result-page .custom-scrollbar::-webkit-scrollbar-track {
+    background: #edf3f1;
+}
+
+.interview-result-page .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #b7ccc5;
+}
+
+.interview-result-page .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #71998a;
+}
+
+/* Shared visual language for the interview setup flow. */
+.interview-flow-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(circle at center, var(--color-interview-bg-start) 0%, var(--color-interview-bg-end) 100%);
+    background-attachment: fixed;
+    color: var(--color-on-surface);
+    font-family: inherit;
+}
+
+.interview-flow-page .interview-flow-progress-track {
+    height: 0.375rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--color-surface-container);
+}
+
+.interview-flow-page .interview-flow-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    transition: width 200ms ease;
+}
+
+.interview-flow-page .interview-flow-progress-label {
+    color: var(--color-on-surface-variant);
+}
+
+.interview-flow-page .interview-flow-progress-label--muted-black {
+    color: rgb(0 0 0 / 0.6);
+}
+
+.interview-flow-page .interview-flow-progress-label--muted-white {
+    color: rgb(255 255 255 / 0.6);
+}
+
+.interview-flow-page .interview-flow-heading {
+    color: var(--color-on-surface);
+}
+
+.interview-flow-page .interview-flow-description {
+    color: var(--color-on-surface-variant);
+}
+
+.interview-flow-page .interview-flow-card {
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 1rem;
+    background: var(--color-interview-card-bg);
+    color: #000000;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 1px -1px rgb(0 0 0 / 0.05);
+}
+
+.interview-flow-page .interview-flow-card--rounded-xl {
+    border-radius: 0.75rem;
+}
+
+.interview-flow-page .interview-flow-card--prominent {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.interview-flow-page .interview-flow-card--flat {
+    box-shadow: none;
+}
+
+.interview-flow-page .interview-flow-choice {
+    border-color: transparent;
+    border-width: 2px;
+    background: var(--color-interview-card-bg);
+    color: #000000;
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.interview-flow-page .interview-flow-choice--thin-border {
+    border-width: 1px;
+}
+
+.interview-flow-page .interview-flow-choice:hover:not(.selection-card-selected) {
+    border-color: var(--color-primary);
+}
+
+.interview-flow-page .interview-flow-choice--lift:hover:not(.selection-card-selected) {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.interview-flow-page .interview-flow-button-primary {
+    border: 0;
+    border-radius: 0.75rem;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-weight: 700;
+    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.interview-flow-page .interview-flow-button-primary:hover:not(:disabled) {
+    border-color: var(--color-primary-container);
+    background: var(--color-primary-container);
+    opacity: 0.9;
+}
+
+.interview-flow-page .interview-flow-button-primary--container-hover:hover:not(:disabled) {
+    opacity: 1;
+}
+
+.interview-flow-page .interview-flow-button-primary:disabled {
+    cursor: not-allowed;
+}
+
+.interview-flow-page .interview-flow-button-primary--rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.interview-flow-page .interview-flow-button-primary--dim-disabled:disabled {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    opacity: 0.5;
+}
+
+.interview-flow-page .interview-flow-button-primary--muted-disabled:disabled {
+    background: var(--color-surface-container);
+    color: var(--color-outline);
+    box-shadow: none;
+}
+
+.interview-flow-page .interview-flow-button-secondary {
+    border: 1px solid var(--color-on-primary);
+    border-radius: 0.75rem;
+    background: var(--color-surface-container);
+    color: var(--color-outline);
+    font-weight: 600;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.interview-flow-page .interview-flow-button-secondary:hover:not(:disabled) {
+    border-color: var(--color-outline-variant);
+    background: var(--color-surface-container-low);
+    color: var(--color-on-surface);
+}
+
+.interview-flow-page .interview-flow-back-button {
+    color: var(--color-outline);
+    font-weight: 600;
+    transition: color 160ms ease;
+}
+
+.interview-flow-page .interview-flow-back-button:hover {
+    color: var(--color-on-surface);
+}
+
+.interview-flow-page .interview-flow-control {
+    border: 1px solid var(--color-outline-variant);
+    border-radius: 0.75rem;
+    background: var(--color-interview-card-bg);
+    color: #000000;
+}
+
+.interview-flow-page .interview-flow-control::placeholder {
+    color: var(--color-outline-variant);
+}
+
+.interview-flow-page .interview-flow-control:focus-visible {
+    border-color: var(--color-primary);
+    outline: 3px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
+    outline-offset: 1px;
+}
+
+.interview-flow-page .interview-flow-control--glass {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-on-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.interview-flow-page .interview-flow-control--glass::placeholder {
+    color: var(--color-outline);
+}
+
+.interview-flow-page .interview-flow-control--rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.interview-flow-page .interview-flow-control--white {
+    background: #ffffff;
+}
+
+.interview-flow-page .career-goal-input-wrap {
+    position: relative;
+}
+
+.interview-flow-page .career-goal-input-wrap .interview-flow-control {
+    display: block;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    box-shadow: none;
+    padding-bottom: 2.5rem;
+    background: transparent;
+}
+
+.interview-flow-page .career-goal-input-wrap:focus-within {
+    box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+.interview-flow-page .career-goal-counter {
+    position: absolute;
+    right: 1.25rem;
+    bottom: 0.75rem;
+    line-height: 1;
+    pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+    .interview-result-page .interview-report > div:last-child {
+        position: static;
+        height: min(70vh, 44rem);
+    }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-surface-container);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-on-surface-variant);
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 14mm;
+    }
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    #interview-report,
+    #interview-report * {
+        visibility: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    #interview-report {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #111 !important;
+    }
+
+    #interview-report > div {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        margin: 0 0 12px !important;
+        overflow: visible !important;
+    }
+
+    #interview-report .sticky {
+        position: static !important;
+        top: auto !important;
+    }
+
+    #interview-report .overflow-hidden,
+    #interview-report .overflow-y-auto,
+    #interview-report .custom-scrollbar {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    #interview-report .no-print {
+        display: none !important;
+    }
+
+    #interview-report .truncate {
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
+    }
+
+    #interview-report .group {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 18px;
+    }
+
+    #interview-report * {
+        box-shadow: none !important;
+    }
+}
+
+.bg-interview-radial {
+    background: radial-gradient(circle at center, var(--color-interview-bg-start) 0%, var(--color-interview-bg-end) 100%);
+    background-attachment: fixed;
+}
+.selection-card-selected {
+    background-color: var(--color-interview-selection-bg) !important;
+    border-color: var(--color-interview-selection-border) !important;
+    box-shadow: 0 0 0 3px var(--color-interview-selection-border), 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+}
+.selection-card-hover:hover {
+    background-color: var(--color-interview-selection-bg) !important;
+    border-color: var(--color-interview-selection-border) !important;
+    box-shadow: 0 0 0 3px var(--color-interview-selection-border), 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+}

@@ -1,5 +1,11 @@
 # Session History
 
+## 2026-11-07 — Record mentor feedback on CV and interview experience
+
+- Recorded the mentor's feedback, assessment, and suggested priorities in the root NOTE.md as requested; added NOTE.md to .gitignore so the note remains local.
+- Preserved the recommendation to balance CV screening support with interview practice, offer selectable interview voice options, clarify data handling, and research industry-specific CV styles before expanding templates.
+- Verification: checked the note exists and is ignored by Git; no tests run because this was a documentation-only change.
+
 ## 2026-10-22 — Synchronize CV Builder step-four mapping
 
 - Replaced the quick-add inputs for projects, certificates, languages, and awards with editable canonical fields that update CV context on every change; stopped generating dates and preserved imported record fields when one value changes.
@@ -772,3 +778,12 @@
 - User authorized committing and pushing all pending work. Fetched origin and confirmed dev was synchronized before creating focused Gmail API, evaluation-history/preview and account-security UI commits. Session records are committed separately.
 - Prior validation: 33 email tests, eight CV analysis integration tests, 14 frontend gallery/preview tests, targeted changed-file ESLint and frontend production builds passed. No new functional changes were made during publication.
 - Confirmed backend/.env remains ignored and the staged credential-pattern check passed. OAuth secrets/tokens were not staged. No live email/deploy or authenticated browser verification is claimed.
+
+## 2026-11-06 - Refresh interview review and result colors
+- Refined the interview review/result component colors while preserving the original backgrounds. Review uses the original deep navy surface; result retains its original dark teal/navy radial background. Both use white content cards, emerald actions, higher-contrast headings and softened semantic status colors. Low score gauge/progress bars use muted rose; retry button is softly tinted green. Interview content and behavior remain unchanged.
+- Validation: frontend build and targeted ESLint passed; both populated review and result routes were visually inspected in the local browser. Repository-wide lint still reports existing unrelated errors in other files.
+## 2026-11-08 - Personalize interview feedback
+- Added SUPPORTIVE, DIRECT and COACHING voice choices to interview setup. The selected voice is included in the session reuse fingerprint and persisted in the existing context snapshot; old or invalid values default to SUPPORTIVE without a database migration.
+- Evaluation now uses the saved voice for wording only and requests rubric-grounded FOCUS_FIRST/NEXT_STEP/null suggestion priorities. Skipped answers are normalized to a neutral assessment with no suggestion or priority; unknown priority values fail JSON parsing.
+- Results and PDF/text exports show localized priority labels from the backend response. Removed the frontend behavior that marked every suggestion as must-have; legacy feedback still renders without an invented priority.
+- Validation: frontend focused tests (6/6) and production Vite build passed; backend InterviewAIProviderImplTest, InterviewConfigurationTest and InterviewFreeFeedbackTest passed (9/9). Existing Vite large-chunk and Lombok builder warnings remain. No commit or push.

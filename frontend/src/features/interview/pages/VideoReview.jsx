@@ -3,9 +3,10 @@ import {ArrowLeft, Check, FileText, LoaderCircle, Sparkles} from 'lucide-react';
 import {MainLayout} from '../components/MainLayout.jsx';
 import {useNavigate} from 'react-router-dom';
 import {useInterviewSession} from '../hooks/useInterviewSession.js';
-import {getApiErrorMessage} from '../../../service/apiClient.js';
+import {getApiErrorMessage} from '../../../services/apiClient.js';
 import {interviewService} from '../services/interviewService.js';
 import {downloadInterviewReportPdf} from '../services/interviewExports.js';
+import '../interview.css';
 
 export function VideoReview() {
     const navigate = useNavigate();
@@ -66,8 +67,8 @@ export function VideoReview() {
     };
 
     return (
-        <MainLayout>
-            <div className="w-full max-w-5xl mx-auto flex flex-col pt-4">
+        <MainLayout bgClass="interview-review-background">
+            <div className="interview-review-surface w-full max-w-5xl mx-auto flex flex-col pt-4">
                 <p className="text-center text-sm text-gray-500 font-medium mb-6">Bước 9 trên 10 • 90% hoàn tất</p>
 
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium">
@@ -105,7 +106,7 @@ export function VideoReview() {
                 <div className="flex items-center justify-between gap-4">
                     <button
                         onClick={() => navigate('/interview/job-selection')}
-                        className="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-2.5 font-medium text-gray-700 hover:bg-surface-container"
+                        className="interview-review-exit flex items-center gap-2 rounded-xl border px-5 py-2.5 font-medium"
                     >
                         <ArrowLeft size={17} /> Thoát
                     </button>
@@ -114,14 +115,14 @@ export function VideoReview() {
                             type="button"
                             onClick={handleDownloadReport}
                             disabled={isExportingReport}
-                            className="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-2.5 font-semibold text-on-surface hover:bg-surface-container"
+                            className="interview-review-download flex items-center gap-2 rounded-xl border px-5 py-2.5 font-semibold"
                         >
                             <FileText size={17} /> {isExportingReport ? 'Đang tạo PDF...' : 'Tải biên bản (PDF)'}
                         </button>
                         <button
                             onClick={handleSendFeedback}
                             disabled={isEvaluating}
-                            className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 font-bold text-on-primary shadow-md transition-colors hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                            className="interview-review-submit flex items-center gap-2 rounded-xl px-6 py-2.5 font-bold shadow-md transition-colors disabled:cursor-wait"
                         >
                             {isEvaluating ? <LoaderCircle size={18} className="animate-spin" /> : <Sparkles size={18} />}
                             {isEvaluating ? 'Đang đánh giá...' : 'Nhận kết quả phản hồi'}

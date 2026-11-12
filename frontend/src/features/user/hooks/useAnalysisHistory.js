@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { cvPipelineService } from '../../cv/services/cvPipelineService.js';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 
 export function useAnalysisHistory() {
     const [page, setPage] = useState(0);

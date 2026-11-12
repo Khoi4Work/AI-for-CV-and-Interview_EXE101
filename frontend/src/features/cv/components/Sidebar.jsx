@@ -1,8 +1,6 @@
 import {Sparkles} from 'lucide-react';
 import {Link} from 'react-router-dom';
-import { TEMPLATE_CATEGORIES, TEMPLATE_STYLES } from '../constants/templates.js';
-
-export default function Sidebar({ activeCategory, setActiveCategory, activeStyle, setActiveStyle }){
+export default function Sidebar({ activeCategory, setActiveCategory, activeStyle, setActiveStyle, categories = [], styles = [] }){
     return(
         <>
             {/* Sidebar */}
@@ -11,7 +9,7 @@ export default function Sidebar({ activeCategory, setActiveCategory, activeStyle
                 <section>
                     <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Categories</h3>
                     <ul className="space-y-1">
-                        {TEMPLATE_CATEGORIES.map(cat => (
+                        {categories.map(cat => (
                             <li key={cat.id}>
                                 <button
                                     onClick={() => setActiveCategory(cat.id)}
@@ -32,7 +30,7 @@ export default function Sidebar({ activeCategory, setActiveCategory, activeStyle
                 <section>
                     <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Design Style</h3>
                     <div className="grid grid-cols-2 gap-2">
-                        {TEMPLATE_STYLES.map(style => (
+                        {styles.map(style => (
                             <button
                                 key={style}
                                 onClick={() => setActiveStyle(prev => prev === style ? null : style)}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {analysisSelection,createRequestGuard,pollAnalysis} from '../src/features/cv/services/analysisFlow.js';
+import {analysisSelection,createRequestGuard,pollAnalysis} from '../src/features/cv/domain/analysisFlow.js';
 import {formatJD,jdSourceLabel} from '../src/utils/jdContent.js';
 test('selection uses saved JD identity and ignores displayed draft',()=>{
     assert.deepEqual(analysisSelection({id:'saved'},'draft'),{jdId:'saved'});

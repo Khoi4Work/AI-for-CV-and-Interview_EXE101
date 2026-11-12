@@ -8,6 +8,7 @@ import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewEvaluatio
 import fpt.su26.exe101.backend.modules.interview.dto.InterviewQuestionGenerationDTO;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.ExperienceLevel;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewType;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewFeedbackStyle;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewAIProvider;
 import fpt.su26.exe101.backend.base.service.AIChatCompletionService;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,10 @@ public class InterviewAIProviderImpl implements InterviewAIProvider {
     public InterviewEvaluationResponseDTO evaluate(Map<String, Object> transcript, UserPlan plan) {
         try {
             String transcriptJson = objectMapper.writeValueAsString(transcript);
+            String feedbackStyle = InterviewFeedbackStyle
+                    .from(String.valueOf(transcript.getOrDefault("feedbackStyle", "SUPPORTIVE"))).name();
             String response = aiChatCompletionService.generateJson(
-                    Prompt.interviewEvaluation(transcriptJson, plan), null, MAX_JSON_OUTPUT_TOKENS,
+                    Prompt.interviewEvaluation(transcriptJson, plan, feedbackStyle), null, MAX_JSON_OUTPUT_TOKENS,
                     "interview", "interview-evaluation");
             InterviewEvaluationResponseDTO evaluation = objectMapper.readValue(
                     response.trim().replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", ""),
@@ -83,6 +86,14 @@ public class InterviewAIProviderImpl implements InterviewAIProvider {
 
             boolean unanswered = Boolean.TRUE.equals(question.get("unanswered"))
                     || Boolean.TRUE.equals(question.get("skipped")) || !hasAnswer;
+            if (unanswered) {
+                item.setAssessment("Không có câu trả lời được ghi nhận nên chưa có bằng chứng để đánh giá.");
+                item.setImprovementSuggestion("");
+                item.setSuggestionPriority(null);
+            } else if (item.getSuggestionPriority() != null
+                    && (item.getImprovementSuggestion() == null || item.getImprovementSuggestion().isBlank())) {
+                item.setSuggestionPriority(null);
+            }
             int score = unanswered || item.getScore() == null ? 0 : item.getScore();
             item.setScore(score);
             normalized.add(item);

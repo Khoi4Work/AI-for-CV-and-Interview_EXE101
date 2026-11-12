@@ -3,6 +3,7 @@ package fpt.su26.exe101.backend.modules.interview.dto.response;
 import lombok.*;
 import java.util.List;
 import java.util.UUID;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSuggestionPriority;
 
 @Data
 @Builder
@@ -37,5 +38,6 @@ public class InterviewEvaluationResponseDTO {
         private Integer score;
         private String assessment;
         private String improvementSuggestion;
+        private InterviewSuggestionPriority suggestionPriority;
     }
 }

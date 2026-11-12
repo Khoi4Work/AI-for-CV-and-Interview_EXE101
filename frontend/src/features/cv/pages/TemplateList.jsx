@@ -7,8 +7,8 @@ import {Header} from "../../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from '../../../components/layout/Footer.jsx';
 import {useAuth} from "../../auth/contexts/AuthContext.jsx";
-import galleryService from '../../../service/galleryService';
-import {getApiErrorMessage} from '../../../service/apiClient';
+import galleryService from '../services/templateService.js';
+import {getApiErrorMessage} from '../../../services/apiClient';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import TemplateFeedbackModal from '../../feedback/components/TemplateFeedbackModal.jsx';
 
@@ -146,6 +146,12 @@ export default function TemplateList() {
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
+    const categories = useMemo(() => [
+        {id: 'all', label: 'Tất cả'},
+        ...[...new Set(templates.map(template => template.category).filter(Boolean))]
+            .map(category => ({id: category, label: category})),
+    ], [templates]);
+    const styles = useMemo(() => [...new Set(templates.map(template => template.style).filter(Boolean))], [templates]);
 
     return (
         <>
@@ -160,6 +166,8 @@ export default function TemplateList() {
                         setActiveCategory={(category) => { setActiveCategory(category); setCurrentPage(1); }}
                         activeStyle={activeStyle}
                         setActiveStyle={(style) => { setActiveStyle(style); setCurrentPage(1); }}
+                        categories={categories}
+                        styles={styles}
                     />
 
                     {/* Main Display */}

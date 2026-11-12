@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {interviewPayload,interviewFingerprint,normalizeInterviewType} from '../src/features/interview/services/interviewConfiguration.js';
+import {interviewPayload,interviewFingerprint,normalizeInterviewType} from '../src/features/interview/domain/interviewConfiguration.js';
 const config=(type='HR')=>({cvId:'cv-id',experienceLevel:'fresher',interviewConfig:{type,duration:5,language:'vi',jd:'Java API requirements'}});
 test('STAR and both enum spellings map to BEHAVIORAL instead of HR',()=>{
     for(const type of ['STAR','Behavioral','BEHAVIORAL']) assert.equal(normalizeInterviewType(type),'BEHAVIORAL');
@@ -20,4 +20,14 @@ test('request preserves selected JD identity and selected level without sending 
     const payload=interviewPayload(input);
     assert.equal(payload.jdId,'saved-jd');assert.ok(!('jdText' in payload));assert.ok(!('company' in payload));
     assert.equal(payload.experienceLevel,'FRESHER');assert.equal(payload.interviewType,'BEHAVIORAL');assert.equal(payload.adaptiveMode,false);
+});
+test('feedback style defaults to SUPPORTIVE, is sent to backend, and changes the reuse fingerprint',()=>{
+    const input=config();
+    assert.equal(interviewPayload(input).feedbackStyle,'SUPPORTIVE');
+    const baseline=interviewFingerprint(input);
+    for(const feedbackStyle of ['SUPPORTIVE','DIRECT','COACHING']) {
+        input.interviewConfig.feedbackStyle=feedbackStyle;
+        assert.equal(interviewPayload(input).feedbackStyle,feedbackStyle);
+    }
+    assert.notEqual(interviewFingerprint(input),baseline);
 });

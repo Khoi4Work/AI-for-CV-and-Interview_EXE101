@@ -11,8 +11,8 @@ import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Badge} from '../components/Layout.jsx';
 import {paymentService} from '../../payment/services/paymentService.js';
 import PaymentHistory from '../components/PaymentHistory.jsx';
-import {trackNavigationEvent} from '../../analytics/analyticsClient.js';
-import {useAnalyticsConsent} from '../../analytics/AnalyticsProvider.jsx';
+import {trackNavigationEvent} from '../../analytics/services/analyticsClient.js';
+import {useAnalyticsConsent} from '../../analytics/components/AnalyticsProvider.jsx';
 
 // Keep package quantities aligned with QuotaBenefitConfig and the payment catalog.
 const cvComparisonRows = [

@@ -6,7 +6,8 @@ import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import { INTERVIEW_TYPES, LANGUAGES, DURATIONS } from '../constants/interviewTypes.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
-import {normalizeInterviewType} from '../services/interviewConfiguration.js';
+import {normalizeInterviewType} from '../domain/interviewConfiguration.js';
+import '../interview.css';
 
 const MAX_JD_LENGTH = 50000;
 
@@ -23,11 +24,14 @@ export default function InterviewSetup() {
   const [duration, setDuration] = useState(savedDraft.duration || 10);
   const [jd, setJd] = useState(savedDraft.jd || '');
   const [jdId, setJdId] = useState(savedDraft.jdId || null);
+  const [feedbackStyle, setFeedbackStyle] = useState(
+    ['SUPPORTIVE', 'DIRECT', 'COACHING'].includes(savedDraft.feedbackStyle) ? savedDraft.feedbackStyle : 'SUPPORTIVE',
+  );
   const [jdError, setJdError] = useState('');
 
   const quota = data.quotaSnapshot;
   const persistDraft = (patch) => update({
-    interviewSetupDraft: { type, language, duration, jd, jdId, ...patch },
+    interviewSetupDraft: { type, language, duration, jd, jdId, feedbackStyle, ...patch },
   });
 
   const maxDuration = quota?.interviewPlan === 'ENHANCE' ? 15 : quota?.interviewPlan === 'MIDDLE' ? 10 : 5;
@@ -55,8 +59,9 @@ export default function InterviewSetup() {
         duration:chosenDuration,
         jd,
         jdId,
+        feedbackStyle,
       },
-      interviewSetupDraft: { type, language, duration: chosenDuration, jd, jdId },
+      interviewSetupDraft: { type, language, duration: chosenDuration, jd, jdId, feedbackStyle },
     });
     navigate('/audio-setup');
   };
@@ -64,24 +69,24 @@ export default function InterviewSetup() {
   if (!quota) return <Navigate to="/interview/job-selection" replace />;
 
   return (
-    <div className="min-h-screen flex flex-col bg-interview-radial font-sans text-on-surface">
+    <div className="interview-flow-page font-sans">
       <Header />
 
       <main className="flex-grow flex flex-col items-center pt-8 px-6 pb-20 relative">
         <div className="w-full max-w-3xl">
           <div className="flex flex-col items-center mb-10">
-            <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-4">
-              <div className="bg-primary h-full rounded-full transition-all" style={{ width: '50%' }} />
+            <div className="interview-flow-progress-track w-full mb-4">
+              <div className="interview-flow-progress-fill" style={{ width: '50%' }} />
             </div>
-            <p className="text-sm text-on-surface-variant font-medium">Bước 5 trên 10 • 50% hoàn tất</p>
+            <p className="interview-flow-progress-label text-sm font-medium">Bước 5 trên 10 • 50% hoàn tất</p>
           </div>
 
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-on-surface mb-2">Cấu hình phỏng vấn</h1>
-            <p className="text-on-surface-variant text-sm">Thiết lập buổi luyện tập với các chi tiết để AI cá nhân hóa.</p>
+            <h1 className="interview-flow-heading text-2xl font-bold mb-2">Cấu hình phỏng vấn</h1>
+            <p className="interview-flow-description text-sm">Thiết lập buổi luyện tập với các chi tiết để AI cá nhân hóa.</p>
           </div>
 
-          <div className="bg-interview-card-bg rounded-2xl border border-outline-variant shadow-xl p-8 lg:p-10 w-full z-20">
+          <div className="interview-flow-card interview-flow-card--prominent p-8 lg:p-10 w-full z-20">
             <div className="space-y-6">
               {/* Company context is resolved from the selected JD on the server. */}
               <div>
@@ -101,10 +106,10 @@ export default function InterviewSetup() {
                     <button
                       key={t.id}
                       onClick={() => { setType(t.id); persistDraft({ type: t.id }); }}
-                      className={`text-left p-3 rounded-xl border-2 transition-all bg-interview-card-bg ${
+                      className={`interview-flow-choice text-left p-3 rounded-xl border-2 ${
                         type === t.id
                           ? 'selection-card-selected'
-                          : 'border-transparent shadow-sm hover:border-primary'
+                          : 'shadow-sm'
                       }`}
                     >
                       <div className="font-bold text-black text-sm mb-1">{t.title}</div>
@@ -122,7 +127,7 @@ export default function InterviewSetup() {
                     <select
                       value={language}
                       onChange={(e) => { setLanguage(e.target.value); persistDraft({ language: e.target.value }); }}
-                      className="w-full appearance-none bg-interview-card-bg border border-outline-variant text-black font-medium py-3 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                      className="interview-flow-control w-full appearance-none font-medium py-3 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                     >
                       {LANGUAGES.map((l) => (
                         <option key={l.id} value={l.id}>{l.label}</option>
@@ -146,10 +151,10 @@ export default function InterviewSetup() {
                         onClick={() => { setDuration(d.value); persistDraft({ duration: d.value }); }}
                         disabled={!canChooseDuration(d.value)}
                         title={!canChooseDuration(d.value) ? (d.value > maxDuration ? `Gói hiện tại chỉ hỗ trợ tối đa ${maxDuration} phút/buổi` : 'Quota còn lại không đủ cho thời lượng này') : ''}
-                        className={`py-2.5 px-1 border rounded-xl text-center transition-colors bg-interview-card-bg disabled:opacity-40 disabled:cursor-not-allowed ${
+                        className={`interview-flow-choice interview-flow-choice--thin-border py-2.5 px-1 rounded-xl text-center disabled:opacity-40 disabled:cursor-not-allowed ${
                           chosenDuration === d.value
                             ? 'selection-card-selected'
-                            : 'border-transparent shadow-sm hover:border-primary'
+                            : 'shadow-sm'
                         }`}
                       >
                         <div className={`font-bold text-lg text-black`}>{d.value}</div>
@@ -179,6 +184,29 @@ export default function InterviewSetup() {
                 </div>
               </div>
 
+              <fieldset>
+                <legend className="block text-sm font-semibold text-black mb-2">Cách AI phản hồi</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { id: 'SUPPORTIVE', title: 'Khích lệ', description: 'Nhẹ nhàng, tập trung vào tiến bộ.' },
+                    { id: 'DIRECT', title: 'Trực tiếp', description: 'Nêu rõ điểm cần sửa, ngắn gọn.' },
+                    { id: 'COACHING', title: 'Huấn luyện', description: 'Gợi ý từng bước để tự cải thiện.' },
+                  ].map((style) => (
+                    <button
+                      key={style.id}
+                      type="button"
+                      aria-pressed={feedbackStyle === style.id}
+                      onClick={() => { setFeedbackStyle(style.id); persistDraft({ feedbackStyle: style.id }); }}
+                      className={`interview-flow-choice text-left p-3 rounded-xl border-2 ${feedbackStyle === style.id ? 'selection-card-selected' : 'shadow-sm'}`}
+                    >
+                      <span className="block font-bold text-black text-sm">{style.title}</span>
+                      <span className="block text-black text-xs mt-1">{style.description}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-black/60 mt-2">Cách diễn đạt thay đổi; tiêu chí và điểm đánh giá vẫn giữ nguyên.</p>
+              </fieldset>
+
               {/* JD */}
               <div>
                 <label className="block text-sm font-semibold text-black mb-2">Mô tả công việc (JD)</label>
@@ -187,7 +215,7 @@ export default function InterviewSetup() {
                   maxLength={MAX_JD_LENGTH}
                   onChange={(e) => { const nextJd = e.target.value; setJd(nextJd); setJdId(null); setJdError(''); persistDraft({ jd: nextJd, jdId: null }); }}
                   rows={4}
-                  className="w-full bg-interview-card-bg border border-outline-variant text-black py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none"
+                  className="interview-flow-control w-full py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none"
                   placeholder="Dán JD vào đây để AI cá nhân hóa câu hỏi (tùy chọn)..."
                 />
                 <p className="text-xs text-black/60 mt-1">{jd.length}/{MAX_JD_LENGTH} ký tự · JD tùy chọn</p>
@@ -207,38 +235,19 @@ export default function InterviewSetup() {
               <div className="flex flex-col gap-3 pt-2">
                 <button
                   onClick={() => navigate('/interview/career-goal')}
-                  className="
-                  w-full
-                  flex
-                  items-center
-                  justify-center
-                  bg-surface-container
-                  border
-                  border-on-primary
-                  text-outline
-                  py-3.5
-                  rounded-xl
-                  text-sm
-                  font-bold
-                  hover:text-on-surface
-                  hover:bg-surface-container-low
-                   transition-colors shadow-sm"
+                  className="interview-flow-button-secondary w-full flex items-center justify-center py-3.5 text-sm shadow-sm"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại
                 </button>
                 <button
                   onClick={handleNext}
                   disabled={!canChooseDuration(Number(chosenDuration))}
-                  className="
-                  hover:text-on-primary
-                  hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
-                  w-full flex items-center justify-center bg-primary text-on-primary py-3.5 rounded-xl text-sm font-bold transition-colors shadow-md"
+                  className="interview-flow-button-primary interview-flow-button-primary--dim-disabled w-full flex items-center justify-center py-3.5 text-sm shadow-md"
                 >
                   Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />
                 </button>
               </div>
 
-              <p className="text-center text-[10px] text-outline mt-4">© 2024 Smartfolio AI Platform. Bảo mật thông tin người dùng là ưu tiên hàng đầu.</p>
             </div>
           </div>
         </div>

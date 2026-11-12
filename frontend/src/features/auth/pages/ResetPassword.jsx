@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Footer } from '../../../components/layout/Footer.jsx';
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
-import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
+import apiClient, { getApiErrorMessage } from '../../../services/apiClient.js';
 import { useApp } from "../contexts/AppContext.jsx";
 
 export default function ResetPassword() {

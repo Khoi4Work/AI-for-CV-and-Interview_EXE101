@@ -3,8 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { MailCheck, LoaderCircle, ArrowLeft } from 'lucide-react';
 import GuestHeader from '../../../components/layout/GuestHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
-import { getResendWaitSeconds, resendVerificationEmail } from '../../../service/emailVerificationService.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
+import { resendVerificationEmail } from '../services/emailVerificationService.js';
+import { getResendWaitSeconds } from '../utils/emailVerification.js';
 
 export default function CheckEmail() {
     const location = useLocation();

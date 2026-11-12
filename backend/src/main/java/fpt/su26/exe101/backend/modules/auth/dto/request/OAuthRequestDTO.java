@@ -8,4 +8,5 @@ import lombok.*;
 @AllArgsConstructor
 public class OAuthRequestDTO {
     private String token;
+    private Boolean termsAccepted;
 }

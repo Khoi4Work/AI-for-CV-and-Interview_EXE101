@@ -1,13 +1,20 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Header} from '../components/layout/PublicHeader.jsx';
 import {Footer} from '../components/layout/Footer.jsx';
 import FloatingCVCard from '../features/user/components/FloatingCVCard.jsx';
 import {ArrowRight, FileText, Bot, BarChart2, MessageSquare, ExternalLink, Zap} from 'lucide-react';
 import {useNavigate} from "react-router-dom";
-import { TEMPLATES_DATA } from '../features/cv/constants/templates.js';
+import galleryService from '../features/cv/services/templateService.js';
 
 export default function Home() {
     const navigate = useNavigate();
+    const [templates, setTemplates] = useState([]);
+
+    useEffect(() => {
+        galleryService.getTemplates().then(setTemplates).catch(error => {
+            console.error('[Home] Error loading templates:', error);
+        });
+    }, []);
 
     return (
         <div className="flex flex-col min-h-screen w-full bg-background text-on-surface font-sans antialiased">
@@ -133,12 +140,12 @@ export default function Home() {
                             </a>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
-                            {TEMPLATES_DATA.slice(0, 4).map((template) => (
+                            {templates.slice(0, 4).map((template) => (
                                 <div key={template.id} className="group cursor-pointer">
                                     <div
                                         className="relative aspect-3/4 rounded-xl overflow-hidden shadow-md border border-outline-variant mb-sm transition-transform group-hover:-translate-y-2">
-                                        <img className="border-3 border-primary  rounded-2xl w-full h-full object-cover" alt={template.title}
-                                             src={template.image}/>
+                                        <img className="border-3 border-primary  rounded-2xl w-full h-full object-cover" alt={template.name}
+                                             src={template.previewImage}/>
                                         <div
                                             className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <button
@@ -148,7 +155,7 @@ export default function Home() {
                                             </button>
                                         </div>
                                     </div>
-                                    <h4 className="font-label-md text-label-md text-primary text-center">{template.title}</h4>
+                                    <h4 className="font-label-md text-label-md text-primary text-center">{template.name}</h4>
                                 </div>))}
                         </div>
                     </div>

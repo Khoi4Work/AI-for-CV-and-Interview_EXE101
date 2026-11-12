@@ -29,6 +29,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Slf4j
 public class AccountServiceImpl implements AccountService {
+    private static final String CURRENT_TERMS_VERSION = "2026-11-11";
     private final AccountRepository accountRepository;
     private final AttendanceRepository attendanceRepository;
     private final AttendanceInfoRepository attendanceInfoRepository;
@@ -42,6 +43,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public RegisterResponseDTO register(RegisterRequestDTO request) {
+        if (request == null || !Boolean.TRUE.equals(request.getTermsAccepted())) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Bạn cần đồng ý với Điều khoản dịch vụ để tạo tài khoản.");
+        }
         if (request.getRole() == AccountRole.ADMIN) {
             throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Không thể đăng ký tài khoản quản trị.");
         }
@@ -64,6 +68,8 @@ public class AccountServiceImpl implements AccountService {
                 .provider(AccountProvider.LOCAL)
                 .role(request.getRole() != null ? request.getRole() : AccountRole.ATTENDANCE)
                 .status("PENDING_VERIFICATION")
+                .termsVersion(CURRENT_TERMS_VERSION)
+                .termsAcceptedAt(java.time.LocalDateTime.now())
                 .build();
 
         account = accountRepository.save(account);
@@ -114,6 +120,23 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public Account createOAuthAccount(String email, String name) {
+        String normalizedEmail = email.trim().toLowerCase(java.util.Locale.ROOT);
+        Optional<Account> existingAccount = accountRepository.findByEmail(normalizedEmail);
+        if (existingAccount.isPresent()) {
+            if (!"ACTIVE".equals(existingAccount.get().getStatus())) {
+                throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Vui lòng xác thực email trước khi đăng nhập Google.");
+            }
+            return existingAccount.get();
+        }
+        throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Tài khoản Google mới cần chấp thuận Điều khoản dịch vụ qua luồng đăng ký.");
+    }
+
+    @Override
+    @Transactional
+    public Account createOAuthAccount(String email, String name, boolean termsAccepted) {
+        if (!termsAccepted) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Bạn cần đồng ý với Điều khoản dịch vụ để tạo tài khoản.");
+        }
         email = email.trim().toLowerCase(java.util.Locale.ROOT);
         Optional<Account> existingAccount = accountRepository.findByEmail(email);
         if (existingAccount.isPresent()) {
@@ -128,6 +151,8 @@ public class AccountServiceImpl implements AccountService {
                 .provider(AccountProvider.GOOGLE)
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
+                .termsVersion(CURRENT_TERMS_VERSION)
+                .termsAcceptedAt(java.time.LocalDateTime.now())
                 .build();
 
         account = accountRepository.save(account);

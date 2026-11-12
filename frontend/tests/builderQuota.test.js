@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checkBuilderQuota, CV_CREATION_QUOTA_MESSAGE } from '../src/features/cv/services/builderQuota.js';
+import { checkBuilderQuota, CV_CREATION_QUOTA_MESSAGE } from '../src/features/cv/domain/builderQuota.js';
 
 test('builder blocks exhausted CV creation quota even when AI and interview quota remain', async () => {
     await assert.rejects(checkBuilderQuota(async () => ({ remainingCvCount: 0, remainingAiCvCnt: 10, remainingInterviewMinutes: 60 })),

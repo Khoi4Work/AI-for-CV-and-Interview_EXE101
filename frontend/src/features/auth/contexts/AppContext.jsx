@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext } from 'react';
-import { TEMPLATES_DATA } from '../../cv/constants/templates';
 
 const AppContext = createContext();
 

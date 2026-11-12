@@ -23,6 +23,7 @@ import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionDe
 import fpt.su26.exe101.backend.modules.interview.dto.response.InterviewSessionResponseDTO;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.ExperienceLevel;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewSessionStatus;
+import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewFeedbackStyle;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.InterviewType;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.QuestionContextType;
 import fpt.su26.exe101.backend.modules.interview.entity.enums.QuestionRole;
@@ -184,6 +185,7 @@ public class InterviewServiceImpl implements InterviewService {
         snapshot.put("adaptiveMode", false);
         snapshot.put("interviewType",type.name());snapshot.put("experienceLevel",level.name());
         snapshot.put("durationMinutes",request.getDurationMinutes());
+        snapshot.put("feedbackStyle", InterviewFeedbackStyle.from(request.getFeedbackStyle()).name());
         Map<String,Object> companySnapshot=objectMapper.convertValue(companyContext,new TypeReference<Map<String,Object>>(){});
         snapshot.put("companyContext",companySnapshot);
         if (cv != null) {
@@ -387,6 +389,8 @@ public class InterviewServiceImpl implements InterviewService {
         transcript.put("interviewType", session.getInterviewType().name());
         transcript.put("experienceLevel", session.getCandidateExperienceLevel());
         transcript.put("durationMinutes", session.getDurationMinutes());
+        transcript.put("feedbackStyle", InterviewFeedbackStyle.from(
+                Objects.toString(session.getContextSnapshot() == null ? null : session.getContextSnapshot().get("feedbackStyle"), null)).name());
         transcript.put("questionsAndAnswers", buildQuestionsAndAnswers(session, answers));
         long startedAtNanos = System.nanoTime();
         InterviewEvaluationResponseDTO evaluation;

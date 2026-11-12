@@ -1,16 +1,23 @@
-import React from 'react';
-import {useNavigate} from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Link, useNavigate} from 'react-router-dom';
 import {useAuth} from '../features/auth/contexts/AuthContext.jsx';
 import {
     Sparkles, ArrowRight, Cpu, FileText, Zap, ChevronRight, BarChart2, MessageSquare, ExternalLink
 } from 'lucide-react';
 import FloatingCVCard from '../features/user/components/FloatingCVCard.jsx';
 import GuestHeader from '../components/layout/GuestHeader.jsx';
-import {TEMPLATES_DATA} from "../features/cv/constants/templates.js";
+import galleryService from '../features/cv/services/templateService.js';
 
 const LandingPage = () => {
     const navigate = useNavigate();
     const {isLoggedIn} = useAuth();
+    const [templates, setTemplates] = useState([]);
+
+    useEffect(() => {
+        galleryService.getTemplates().then(setTemplates).catch(error => {
+            console.error('[LandingPage] Error loading templates:', error);
+        });
+    }, []);
 
     return (<div className="min-h-screen bg-background text-on-surface font-sans flex flex-col antialiased">
         <GuestHeader/>
@@ -142,12 +149,12 @@ const LandingPage = () => {
                     </a>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
-                    {TEMPLATES_DATA.slice(0, 4).map((template) => (
+                    {templates.slice(0, 4).map((template) => (
                         <div key={template.id} className="group cursor-pointer">
                             <div
                                 className="relative aspect-3/4 rounded-xl overflow-hidden shadow-md border border-outline-variant mb-sm transition-transform group-hover:-translate-y-2">
-                                <img className="border-3 border-primary  rounded-2xl w-full h-full object-cover" alt={template.title}
-                                     src={template.image}/>
+                                <img className="border-3 border-primary  rounded-2xl w-full h-full object-cover" alt={template.name}
+                                     src={template.previewImage}/>
                                 <div
                                     className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <button
@@ -157,7 +164,7 @@ const LandingPage = () => {
                                     </button>
                                 </div>
                             </div>
-                            <h4 className="font-label-md text-label-md text-primary text-center">{template.title}</h4>
+                            <h4 className="font-label-md text-label-md text-primary text-center">{template.name}</h4>
                         </div>))}
                 </div>
             </div>
@@ -190,14 +197,7 @@ const LandingPage = () => {
                     <p>© 2026 Smartfolio. Precision built for professionals.</p>
                 </div>
                 <div className="flex items-center space-x-6 font-medium">
-                    <a href="#privacy" onClick={(e) => {
-                        e.preventDefault();
-                        navigate('/login');
-                    }} className="hover:text-primary">Chính sách bảo mật</a>
-                    <a href="#terms" onClick={(e) => {
-                        e.preventDefault();
-                        navigate('/login');
-                    }} className="hover:text-primary">Điều khoản dịch vụ</a>
+                    <Link to="/docs" className="hover:text-primary">Tài liệu</Link>
                     <a href="#support" onClick={(e) => {
                         e.preventDefault();
                         navigate('/login');

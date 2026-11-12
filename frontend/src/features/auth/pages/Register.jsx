@@ -5,11 +5,12 @@ import { Footer } from '../../../components/layout/Footer.jsx';
 import { ChartPie, Bot, User, Mail, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useApp } from '../contexts/AppContext.jsx';
-import apiClient, { getApiErrorMessage } from '../../../service/apiClient.js';
+import apiClient, { getApiErrorMessage } from '../../../services/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
-import { setAnalyticsEligibility, trackEvent } from '../../analytics/analyticsClient.js';
-import { categorizeAnalyticsError } from '../../analytics/sanitizeAnalytics.js';
+import { setAnalyticsEligibility, trackEvent } from '../../analytics/services/analyticsClient.js';
+import { categorizeAnalyticsError } from '../../analytics/utils/sanitizeAnalytics.js';
+import TermsAcceptanceDialog from '../components/TermsAcceptanceDialog.jsx';
 
 export default function Register() {
   const panelRef = useRef(null);
@@ -26,6 +27,8 @@ export default function Register() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const loginInProgress = useRef(false);
   const [error, setError] = useState(null);
+  const [pendingGoogleToken, setPendingGoogleToken] = useState(null);
+  const [termsDialogOpen, setTermsDialogOpen] = useState(false);
 
   useEffect(() => {
     const panel = panelRef.current;
@@ -68,6 +71,7 @@ export default function Register() {
       email: formData.get('email').trim(),
       password: formData.get('password'),
       confirmPassword: formData.get('confirmPassword'),
+      termsAccepted: formData.get('termsAccepted') === 'true',
     };
 
     try {
@@ -98,6 +102,13 @@ export default function Register() {
         token: idToken
       }, { publicRequest: true, anonymousRequest: true });
       const tokens = response.data?.result || response.data?.data || {};
+      if (tokens.termsAcceptanceRequired) {
+        setPendingGoogleToken(idToken);
+        setTermsDialogOpen(true);
+        setLoading(false);
+        loginInProgress.current = false;
+        return;
+      }
       if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
       const authenticatedProfile = await handleLogin(null, tokens);
       setLoginSuccess(true);
@@ -117,6 +128,28 @@ export default function Register() {
     }
   };
 
+  const acceptGoogleTerms = async () => {
+    if (!pendingGoogleToken) return;
+    loginInProgress.current = true;
+    setLoading(true);
+    try {
+      const response = await apiClient.post('/auth/oauth/google', { token: pendingGoogleToken, termsAccepted: true }, { publicRequest: true, anonymousRequest: true });
+      const tokens = response.data?.result || response.data?.data || {};
+      if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
+      const profile = await handleLogin(null, tokens);
+      setLoginSuccess(true);
+      const excluded = String(profile?.role || '').toUpperCase() === 'ADMIN' || profile?.analyticsExcluded === true;
+      setAnalyticsEligibility(!excluded);
+      if (!excluded) trackEvent('login', { method: 'google' });
+      setTermsDialogOpen(false);
+      navigate('/home');
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+      setLoading(false);
+      loginInProgress.current = false;
+    }
+  };
+
   const handleGoogleError = () => {
     setError('Google login failed. Please try again.');
   };
@@ -125,6 +158,7 @@ export default function Register() {
 
   return (
     <>
+    <TermsAcceptanceDialog isOpen={termsDialogOpen} loading={loading} onAccept={acceptGoogleTerms} onCancel={() => { setTermsDialogOpen(false); setPendingGoogleToken(null); }} />
     {loading && <LoginLoading success={loginSuccess} />}
     <div inert={loading || registering} aria-busy={loading || registering} className="flex flex-col min-h-screen w-full bg-transparent page-enter">
       <GuestHeader />
@@ -232,12 +266,14 @@ export default function Register() {
                 <div className="flex items-center gap-xs py-base">
                   <input
                     required
+                    name="termsAccepted"
+                    value="true"
                     className="w-5 h-5 text-primary border-outline-variant rounded focus:ring-primary transition-all cursor-pointer"
                     id="terms"
                     type="checkbox"
                   />
                   <label className="font-body-sm text-body-sm text-on-surface-variant flex items-center flex-wrap gap-1" htmlFor="terms">
-                    Tôi đồng ý với các <Link className="text-primary font-medium hover:underline" to="#">Điều khoản & Điều kiện</Link>
+                    Tôi đồng ý với <Link className="text-primary font-medium hover:underline" to="/terms">Điều khoản dịch vụ</Link>
                   </label>
                 </div>
 

@@ -1,4 +1,4 @@
-import apiClient from '../../../service/apiClient.js';
+import apiClient from '../../../services/apiClient.js';
 
 export const adminService = {
     async get(path, params = {}) {

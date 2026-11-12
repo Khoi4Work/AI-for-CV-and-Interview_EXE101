@@ -40,6 +40,12 @@ public class Account extends BaseEntity {
     private LocalDateTime verifiedAt;
     private LocalDateTime verificationManagedAt;
 
+    @Column(name = "terms_version")
+    private String termsVersion;
+
+    @Column(name = "terms_accepted_at")
+    private LocalDateTime termsAcceptedAt;
+
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
 }

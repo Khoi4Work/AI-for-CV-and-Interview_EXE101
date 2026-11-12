@@ -1,4 +1,4 @@
-import EditableCvHtmlTemplate from '../pdf-renderer/templates/EditableCvHtmlTemplate.jsx';
+import EditableCvHtmlTemplate from '../pdf-renderer/shared/EditableCvHtmlTemplate.jsx';
 import {useEffect, useRef, useState} from 'react';
 
 const A4_PAGE_HEIGHT_PX = 297 * 96 / 25.4;

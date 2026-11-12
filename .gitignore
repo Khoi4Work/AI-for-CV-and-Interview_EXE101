@@ -12,7 +12,9 @@ Thumbs.db
 .env.local
 .env.*.local
 .submission/
-.spec/
+.spec/*
+!/.spec/interview-feedback-personalization-spec.md
+!/.spec/frontend-structure-cleanup-spec.md
 
 # Node.js / Frontend
 node_modules/
@@ -38,6 +40,7 @@ target/
 # Project specific
 importedCode/
 .claude/settings.local.json
+/NOTE.md
 
 # Local browser profiles and review configuration
 /.codex-chrome-profile/

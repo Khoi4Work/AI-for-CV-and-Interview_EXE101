@@ -1,3 +1,4 @@
+import "../cv.css";
 import {useState, useEffect, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
@@ -16,14 +17,14 @@ import {useCV} from '../contexts/CVContext.jsx';
 import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
 import {Footer} from "../../../components/layout/Footer.jsx";
 import {extractCV} from '../services/cvImportService.js';
-import {getApiErrorMessage} from '../../../service/apiClient.js';
+import {getApiErrorMessage} from '../../../services/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
 import {paymentService} from '../../payment/services/paymentService.js';
-import {checkBuilderQuota} from '../services/builderQuota.js';
+import {checkBuilderQuota} from '../domain/builderQuota.js';
 import {validateCVDataFields} from '../../../utils/inputValidation.js';
-import galleryService from '../../../service/galleryService.js';
-import {trackEvent} from '../../analytics/analyticsClient.js';
-import {categorizeAnalyticsError, safeFileType} from '../../analytics/sanitizeAnalytics.js';
+import galleryService from '../../../features/user/services/galleryService.js';
+import {trackEvent} from '../../analytics/services/analyticsClient.js';
+import {categorizeAnalyticsError, safeFileType} from '../../analytics/utils/sanitizeAnalytics.js';
 
 export default function CVBuilder() {
     const {showToast} = useApp();

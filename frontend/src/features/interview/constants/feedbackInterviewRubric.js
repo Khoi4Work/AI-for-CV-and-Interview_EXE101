@@ -13,10 +13,14 @@ export const CRITERIA = [
   },
 ];
 
-export const TAG_DEFINITIONS = {
-  'must-have': { color: 'red', label: 'Must-have', bgClass: 'bg-red-50 border-red-200', textClass: 'text-red-700' },
-  'nice-to-have': { color: 'green', label: 'Nice-to-have', bgClass: 'bg-green-50 border-green-200', textClass: 'text-green-700' },
+export const SUGGESTION_PRIORITY_LABELS = {
+  FOCUS_FIRST: 'Ưu tiên luyện trước',
+  NEXT_STEP: 'Có thể cải thiện thêm',
 };
+
+export function suggestionPriorityLabel(priority) {
+  return SUGGESTION_PRIORITY_LABELS[priority] || null;
+}
 
 export const HR_PERSONAS = {
   GENERAL: {

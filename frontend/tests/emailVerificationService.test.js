@@ -10,8 +10,9 @@ const server = await createServer({
     optimizeDeps: { noDiscovery: true, include: [] },
     server: { middlewareMode: true, hmr: false }, appType: 'custom',
 });
-const { default: apiClient } = await server.ssrLoadModule('/src/service/apiClient.js');
-const { resendVerificationEmail, getResendWaitSeconds } = await server.ssrLoadModule('/src/service/emailVerificationService.js');
+const { default: apiClient } = await server.ssrLoadModule('/src/services/apiClient.js');
+const { resendVerificationEmail } = await server.ssrLoadModule('/src/features/auth/services/emailVerificationService.js');
+const { getResendWaitSeconds } = await server.ssrLoadModule('/src/features/auth/utils/emailVerification.js');
 const oldStorage = globalThis.localStorage;
 const oldWindow = globalThis.window;
 after(async () => {

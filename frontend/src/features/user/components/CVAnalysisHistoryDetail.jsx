@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { cvPipelineService } from '../../cv/services/cvPipelineService.js';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { Button } from './Layout.jsx';
 import SavedCVPreview from './SavedCVPreview.jsx';
 

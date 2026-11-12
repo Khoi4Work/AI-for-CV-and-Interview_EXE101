@@ -18,7 +18,7 @@ import { motion, useReducedMotion } from 'framer-motion';
  * route change. If you forget the key, transitions stop.
  *
  * Easing: same custom curve used by the rest of the design system
- * (.fw-*, .page-enter in index.css) so motion feels consistent.
+ * (.fw-* in feedback.css, .page-enter in index.css) so motion feels consistent.
  */
 
 const EASE = [0.22, 1, 0.36, 1];

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { HR_PERSONAS, labelForScore } from '../constants/feedbackInterviewRubric.js';
+import { suggestionsForFeedback } from '../utils/interviewFeedbackPresentation.js';
 import { interviewService } from '../services/interviewService.js';
-import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../services/interviewConfiguration.js';
-import {trackEvent, trackEventOnce} from '../../analytics/analyticsClient.js';
-import {categorizeAnalyticsError} from '../../analytics/sanitizeAnalytics.js';
+import {normalizeInterviewType,interviewPayload,interviewFingerprint} from '../domain/interviewConfiguration.js';
+import {trackEvent, trackEventOnce} from '../../analytics/services/analyticsClient.js';
+import {categorizeAnalyticsError} from '../../analytics/utils/sanitizeAnalytics.js';
 
 const SESSION_KEY = 'interview_session_v1';
 
@@ -90,9 +91,7 @@ function toFeedback(evaluation, state) {
       const answer = answers.get(question.id);
       const skipped = !answer || answer.skipped;
       const perQuestion = questionFeedback.get(question.id);
-      const suggestions = perQuestion?.improvementSuggestion
-        ? [{ tag: 'must-have', text: perQuestion.improvementSuggestion }]
-        : [];
+      const suggestions = suggestionsForFeedback(perQuestion, skipped);
       return {
         qid: question.id,
         question: question.text,

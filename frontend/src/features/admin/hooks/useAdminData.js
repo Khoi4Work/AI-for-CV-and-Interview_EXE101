@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { adminService } from '../services/adminService.js';
-import { getApiErrorMessage } from '../../../service/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 
 export function useAdminData(path, params = {}) {
     const key = JSON.stringify(params);

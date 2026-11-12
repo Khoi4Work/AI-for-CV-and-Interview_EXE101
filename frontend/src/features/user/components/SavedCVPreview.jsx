@@ -1,6 +1,6 @@
 import { FileText } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import EditableCvHtmlTemplate from '../../cv/pdf-renderer/templates/EditableCvHtmlTemplate.jsx';
+import EditableCvHtmlTemplate from '../../cv/pdf-renderer/shared/EditableCvHtmlTemplate.jsx';
 import { PDF_TEMPLATE_LOADERS } from '../../cv/pdf-renderer/templateRegistry.js';
 import { getSavedCVPreviewData } from '../utils/savedCVPreview.js';
 import ImportedCVPreview from './ImportedCVPreview.jsx';

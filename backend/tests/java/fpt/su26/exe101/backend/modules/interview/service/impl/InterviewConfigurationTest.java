@@ -21,8 +21,8 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 class InterviewConfigurationTest {
-    @ParameterizedTest @CsvSource({"HR,FRESHER,vi","STAR,FRESHER,vi","TECHNICAL,FRESHER,vi","HR,INTERN,en","BEHAVIORAL,JUNIOR,en","TECHNICAL,JUNIOR,en"})
-    void selectedTypeLevelLanguageAndJDReachGenerationWithoutSharedPrivateQuestions(String inputType,ExperienceLevel level,String language) {
+    @ParameterizedTest @CsvSource(value={"HR,FRESHER,vi,SUPPORTIVE,SUPPORTIVE","STAR,FRESHER,vi,DIRECT,DIRECT","TECHNICAL,FRESHER,vi,COACHING,COACHING","HR,INTERN,en,NULL,SUPPORTIVE","BEHAVIORAL,JUNIOR,en,unknown,SUPPORTIVE","TECHNICAL,JUNIOR,en,SUPPORTIVE,SUPPORTIVE"},nullValues="NULL")
+    void selectedTypeLevelLanguageAndFeedbackStyleReachSessionWithoutSharedPrivateQuestions(String inputType,ExperienceLevel level,String language,String feedbackStyle,String expectedFeedbackStyle) {
         InterviewType type="STAR".equals(inputType)?InterviewType.BEHAVIORAL:InterviewType.valueOf(inputType);
         var sessions=mock(InterviewSessionRepository.class);var galleryService=mock(GalleryService.class);
         var questions=mock(InterviewQuestionRepository.class);var banks=mock(InterviewQuestionBankRepository.class);
@@ -45,9 +45,12 @@ class InterviewConfigurationTest {
                 .text(theme+" "+i).category(type.name()).competency(theme).sampleAnswer("Outline").gradingCriteria(Map.of("keyPoints",List.of("Evidence"))).build()).toList()).build();
         });
         when(sessions.save(any())).thenAnswer(inv->{InterviewSession s=inv.getArgument(0);s.setId(UUID.randomUUID());return s;});
-        var request=CreateInterviewSessionRequestDTO.builder().interviewType(inputType).experienceLevel(level.name()).durationMinutes(5).language(language)
+        var request=CreateInterviewSessionRequestDTO.builder().interviewType(inputType).experienceLevel(level.name()).durationMinutes(5).language(language).feedbackStyle(feedbackStyle)
             .cvId(cv.getId()).jdId(jd.getId()).adaptiveMode(false).build();
         var result=service.createSession(request);
+        var sessionCaptor=org.mockito.ArgumentCaptor.forClass(InterviewSession.class);
+        verify(sessions).save(sessionCaptor.capture());
+        assertEquals(expectedFeedbackStyle,sessionCaptor.getValue().getContextSnapshot().get("feedbackStyle"));
         assertEquals(type,result.getInterviewType());assertEquals(level,result.getExperienceLevel());assertEquals(language,result.getLanguage());
         assertEquals(3,result.getQuestions().size());assertTrue(result.getQuestions().stream().allMatch(q->q.getInterviewType().equals(type.name()) && q.getSource().equals("GENERATED")));
         assertEquals("FPT Telecom",result.getCompanyContext().get("companyName"));assertEquals(false,result.getCompanyContext().get("verified"));

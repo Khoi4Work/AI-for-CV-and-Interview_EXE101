@@ -8,13 +8,13 @@ const server = await createServer({
     server: { middlewareMode: true, hmr: false },
     appType: 'custom',
 });
-const { default: apiClient, getApiErrorMessage, getUserFriendlyMessage } = await server.ssrLoadModule('/src/service/apiClient.js');
+const { default: apiClient, getApiErrorMessage, getUserFriendlyMessage } = await server.ssrLoadModule('/src/services/apiClient.js');
 let refreshAdapter;
 apiClient.interceptors.request.use(config => {
     if (config.url === '/auth/tokens/refresh') config.adapter = refreshAdapter;
     return config;
 });
-const { default: galleryService } = await server.ssrLoadModule('/src/service/galleryService.js');
+const { default: galleryService } = await server.ssrLoadModule('/src/features/cv/services/templateService.js');
 const { adminService } = await server.ssrLoadModule('/src/features/admin/services/adminService.js');
 const { paymentService } = await server.ssrLoadModule('/src/features/payment/services/paymentService.js');
 const savedStorage = globalThis.localStorage;
