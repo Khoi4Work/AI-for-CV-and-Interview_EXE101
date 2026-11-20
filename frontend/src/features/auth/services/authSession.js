@@ -1,4 +1,4 @@
-const ROLES = new Set(['ADMIN', 'ATTENDANCE', 'PARTNER']);
+const ROLES = new Set(['ADMIN', 'ATTENDANCE', 'PARTNER', 'TESTER']);
 
 export function createAuthSession(client, storage) {
     let state = { status: 'checking', profile: null, error: '', sessionExpired: false };

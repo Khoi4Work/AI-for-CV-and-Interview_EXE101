@@ -87,7 +87,7 @@ public class InterviewServiceImpl implements InterviewService {
         String language = request.getLanguage().trim().toLowerCase(Locale.ROOT);
 
         UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
-        int maxDuration = switch (plan) {
+        int maxDuration = usageQuotaService.isQuotaExempt(gallery.getAccountId()) ? 15 : switch (plan) {
             case FREE -> 5;
             case MIDDLE -> 10;
             case ENHANCE -> 15;

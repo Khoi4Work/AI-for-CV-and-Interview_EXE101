@@ -73,7 +73,7 @@ export default function JobSelection() {
         <p className="text-center text-sm text-on-surface-variant mb-5" aria-live="polite">
           {quotaLoading ? 'Đang kiểm tra số phút Interview…' : quotaError ? (
             <>{quotaError} <button type="button" onClick={() => setQuotaRetry((value) => value + 1)} className="font-semibold text-primary underline">Thử lại</button></>
-          ) : `Đã kiểm tra số phút Interview: ${Number(data.quotaSnapshot?.remainingInterviewMinutes ?? 0)} phút còn lại`}
+          ) : data.quotaSnapshot?.quotaExempt ? 'Tài khoản tester: không giới hạn quota phỏng vấn' : `Đã kiểm tra số phút Interview: ${Number(data.quotaSnapshot?.remainingInterviewMinutes ?? 0)} phút còn lại`}
         </p>
 
         <div className="relative mb-8 shadow-sm rounded-xl">

@@ -24,6 +24,10 @@ public class AdminController {
             @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) { return ApiResponse.success(service.users(search,status,role,provider,plan,from,to,page,size)); }
     @GetMapping("/users/{id}")
     public ApiResponse<Map<String,Object>> user(@PathVariable UUID id) { return ApiResponse.success(service.user(id)); }
+    @PutMapping("/users/{id}/tester")
+    public ApiResponse<Map<String,Object>> assignTester(@PathVariable UUID id) { return ApiResponse.success(service.setTesterRole(id,true)); }
+    @DeleteMapping("/users/{id}/tester")
+    public ApiResponse<Map<String,Object>> removeTester(@PathVariable UUID id) { return ApiResponse.success(service.setTesterRole(id,false)); }
     @GetMapping("/payments")
     public ApiResponse<AdminRepository.Page> payments(@RequestParam(defaultValue="") String search,@RequestParam(defaultValue="") String status,
             @RequestParam(defaultValue="") String category,@RequestParam(defaultValue="false") boolean includeTest,

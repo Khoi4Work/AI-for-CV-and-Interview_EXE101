@@ -17,6 +17,7 @@ public class QuotaResponseDTO {
     private fpt.su26.exe101.backend.base.enums.UserPlan interviewPlan;
     private Boolean cvNonExpiring;
     private Boolean interviewNonExpiring;
+    private Boolean quotaExempt;
     private LocalDateTime cvPeriodEnd;
     private LocalDateTime interviewPeriodEnd;
 }

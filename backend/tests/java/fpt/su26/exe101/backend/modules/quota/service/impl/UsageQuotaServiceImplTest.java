@@ -5,6 +5,7 @@ import fpt.su26.exe101.backend.base.exception.ApiException;
 import fpt.su26.exe101.backend.modules.quota.config.QuotaBenefitConfig;
 import fpt.su26.exe101.backend.modules.quota.entity.UserUsageQuota;
 import fpt.su26.exe101.backend.modules.quota.repository.UserUsageQuotaRepository;
+import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.*;
 class UsageQuotaServiceImplTest {
     private final UserUsageQuotaRepository repository = mock(UserUsageQuotaRepository.class);
     private final UsageQuotaServiceImpl service = new UsageQuotaServiceImpl(
-            repository, mock(ApplicationEventPublisher.class), new QuotaBenefitConfig());
+            repository, mock(ApplicationEventPublisher.class), new QuotaBenefitConfig(), mock(AccountRepository.class));
 
     @Test
     void creatingCvConsumesCreationCreditAndAssignsItsPerCvAnalysisAllowance() {

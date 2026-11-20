@@ -8,6 +8,7 @@ import fpt.su26.exe101.backend.modules.payment.repository.*;
 import fpt.su26.exe101.backend.modules.payment.service.impl.PaymentServiceImpl;
 import fpt.su26.exe101.backend.modules.payment.util.PayOSChecksumUtil;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
+import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.util.*;
@@ -20,7 +21,7 @@ class PaymentWebhookChecksumTest {
     private final UsageQuotaService quota = mock(UsageQuotaService.class);
     private final PaymentServiceImpl service = new PaymentServiceImpl(orders, logs,
             mock(PaymentServiceEntityRepository.class), mock(CVBenefitRepository.class),
-            mock(InterviewBenefitRepository.class), quota, new PayOSChecksumUtil());
+            mock(InterviewBenefitRepository.class), quota, mock(AccountRepository.class), new PayOSChecksumUtil());
 
     private Map<String, Object> data() {
         ReflectionTestUtils.setField(service, "payosChecksumKey", "test-checksum-key");

@@ -44,6 +44,7 @@ public class QuotaController {
                 .interviewPlan(quota.getInterviewPlan())
                 .cvNonExpiring(true)
                 .interviewNonExpiring(true)
+                .quotaExempt(usageQuotaService.isQuotaExempt(account.getId()))
                 .cvPeriodEnd(quota.getCvPeriodEnd())
                 .interviewPeriodEnd(quota.getInterviewPeriodEnd())
                 .build();

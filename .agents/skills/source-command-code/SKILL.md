@@ -1,11 +1,11 @@
 ---
-name: "source-command-code"
-description: "Migrated source command `code`"
+name: "code"
+description: "Run the project feature-development workflow from the user's feature request. Invoke with `$code`."
 ---
 
-# source-command-code
+# code
 
-Use this skill when the user asks to run the migrated source command `code`.
+Use this skill when the user invokes `$code` or asks to run the project feature-development workflow.
 
 ## Command Template
 
@@ -40,4 +40,4 @@ This command triggers a strict sequential AI SDLC flow to implement a feature ba
 - Leave all changes on the current branch for the user to review manually.
 
 ## Usage
-`/code <feature_description_or_notes>`
+Invoke this skill as `$code <feature_description_or_notes>`.

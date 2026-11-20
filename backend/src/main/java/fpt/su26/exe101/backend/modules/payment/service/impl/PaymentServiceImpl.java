@@ -14,6 +14,8 @@ import fpt.su26.exe101.backend.modules.payment.repository.PaymentServiceEntityRe
 import fpt.su26.exe101.backend.modules.payment.repository.CVBenefitRepository;
 import fpt.su26.exe101.backend.modules.payment.repository.InterviewBenefitRepository;
 import fpt.su26.exe101.backend.modules.payment.service.PaymentService;
+import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
+import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
 import fpt.su26.exe101.backend.modules.payment.util.PayOSChecksumUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +48,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final CVBenefitRepository cvBenefitRepository;
     private final InterviewBenefitRepository interviewBenefitRepository;
     private final UsageQuotaService usageQuotaService;
+    private final AccountRepository accountRepository;
     private final PayOSChecksumUtil checksumUtil;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -95,6 +98,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .paymentStatus(Order.PaymentStatus.PENDING)
                 .paymentMethod(Order.PaymentMethod.valueOf(request.getPaymentMethod().name()))
                 .orderedAt(LocalDateTime.now())
+                .isTest(accountRepository.existsByIdAndRole(accountId, AccountRole.TESTER))
                 .build();
 
         order.setCheckoutUrl(createPayOSPaymentLink(order));
@@ -206,6 +210,7 @@ public class PaymentServiceImpl implements PaymentService {
                         .interviewPlan(quota.getInterviewPlan())
                         .cvNonExpiring(true)
                         .interviewNonExpiring(true)
+                        .quotaExempt(usageQuotaService.isQuotaExempt(accountId))
                         .cvPeriodEnd(quota.getCvPeriodEnd())
                         .interviewPeriodEnd(quota.getInterviewPeriodEnd())
                         .build())
@@ -213,6 +218,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void updateUserQuota(Order order) {
+        if (order.isTest()) return;
         PaymentServiceEntity service = order.getService();
         UUID accountId = order.getAccountId();
 

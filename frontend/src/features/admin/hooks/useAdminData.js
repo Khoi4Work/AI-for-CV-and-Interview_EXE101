@@ -4,7 +4,9 @@ import { getApiErrorMessage } from '../../../services/apiClient.js';
 
 const CACHE_TTL_MS = 30_000;
 const CACHE_MAX_ENTRIES = 50;
+const USERS_CACHE_VERSION = 'users-v2';
 const responseCache = new Map();
+const requestVersions = new Map();
 
 function cacheResponse(key, value) {
     if (!responseCache.has(key) && responseCache.size >= CACHE_MAX_ENTRIES) {
@@ -19,15 +21,20 @@ export function useAdminData(path, params = {}) {
     const [retry, setRetry] = useState(0);
     const [state, setState] = useState({ loading: true, data: null, error: '' });
     const previousRetry = useRef(retry);
-    const cacheKey = `${path}:${key}`;
+    const cacheKey = `${path === 'users' ? USERS_CACHE_VERSION : path}:${key}`;
     useEffect(() => {
         let active = true;
         if (!path) return;
         const retryRequested = retry !== previousRetry.current;
         previousRetry.current = retry;
-        const cached = responseCache.get(cacheKey);
+        let cached = responseCache.get(cacheKey);
+        if (retryRequested) {
+            requestVersions.set(cacheKey, (requestVersions.get(cacheKey) || 0) + 1);
+            responseCache.delete(cacheKey);
+            cached = undefined;
+        }
         if (cached?.data !== undefined) {
-            setState({ loading: false, data: cached.data, error: '' });
+            setState({ loading: retryRequested, data: cached.data, error: '' });
             if (!retryRequested && Date.now() - cached.updatedAt < CACHE_TTL_MS) {
                 return () => { active = false; };
             }
@@ -36,16 +43,21 @@ export function useAdminData(path, params = {}) {
         }
 
         let pending = cached?.pending;
+        let requestVersion = cached?.requestVersion;
         if (!pending) {
+            requestVersion = (requestVersions.get(cacheKey) || 0) + 1;
+            requestVersions.set(cacheKey, requestVersion);
             pending = adminService.get(path, JSON.parse(key));
-            cacheResponse(cacheKey, { ...cached, pending });
+            cacheResponse(cacheKey, { ...cached, pending, requestVersion });
         }
         pending
             .then(data => {
-                cacheResponse(cacheKey, { data, updatedAt: Date.now(), pending: null });
+                if (requestVersions.get(cacheKey) !== requestVersion) return;
+                cacheResponse(cacheKey, { data, updatedAt: Date.now(), pending: null, requestVersion });
                 if (active) setState({ loading: false, data, error: '' });
             })
             .catch(error => {
+                if (requestVersions.get(cacheKey) !== requestVersion) return;
                 const previous = responseCache.get(cacheKey);
                 cacheResponse(cacheKey, { ...previous, pending: null });
                 if (active) setState({ loading: false, data: previous?.data ?? null, error: getApiErrorMessage(error) });

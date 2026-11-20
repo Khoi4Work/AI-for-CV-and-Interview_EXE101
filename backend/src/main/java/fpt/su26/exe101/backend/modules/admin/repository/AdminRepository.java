@@ -94,10 +94,11 @@ public class AdminRepository {
         Map<String,Object> args = range(from,to);
         Map<String,Object> result = new LinkedHashMap<>();
         Map<String,Object> userStats = jdbc.query("""
-            select count(a.id) as total_users,
-            coalesce(sum(case when a.created_at>=:from and a.created_at<:to then 1 else 0 end),0) as new_users,
-            coalesce(sum(case when coalesce(q.cv_plan,'FREE')<>'FREE' or coalesce(q.interview_plan,'FREE')<>'FREE' then 1 else 0 end),0) as paid_users
+            select count(distinct a.id) as total_users,
+            count(distinct case when a.created_at>=:from and a.created_at<:to then a.id end) as new_users,
+            count(distinct case when coalesce(q.cv_plan,'FREE')<>'FREE' or coalesce(q.interview_plan,'FREE')<>'FREE' then a.id end) as paid_users
             from account a left join user_usage_quotas q on q.account_id=a.id
+            where a.role not in ('ADMIN','TESTER') and a.status<>'PENDING_VERIFICATION'
             """,args,ROW).getFirst();
         result.putAll(userStats);
         long totalUsers = ((Number) userStats.get("totalUsers")).longValue();
@@ -123,6 +124,9 @@ public class AdminRepository {
             )
             """,args,ROW).getFirst());
         return result;
+    }
+    public void markTesterOrdersAsTest(UUID accountId) {
+        jdbc.update("update orders set is_test=true where account_id=:accountId", Map.of("accountId",accountId));
     }
     public List<Map<String,Object>> daily(LocalDateTime from, LocalDateTime to) {
         return jdbc.query("""

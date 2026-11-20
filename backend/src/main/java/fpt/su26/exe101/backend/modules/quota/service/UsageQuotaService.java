@@ -7,6 +7,7 @@ import java.util.Optional;
 
 /** Shared account quota contract for CV and Interview services. */
 public interface UsageQuotaService {
+    boolean isQuotaExempt(UUID accountId);
     void initializeDefaultQuota(UUID accountId);
     UserPlan getCvPlan(UUID accountId);
     UserPlan getInterviewPlan(UUID accountId);
