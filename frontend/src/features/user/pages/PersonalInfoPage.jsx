@@ -156,52 +156,65 @@ const PersonalInfoPage = () => {
             <div className="mb-8">
                 <SectionHeader title="Thông tin cá nhân" icon={<User size={18}/>}/>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input
-                        disabled={isSaving}
-                        label="Họ và tên"
-                        name="fullName"
-                        value={formData.fullName || ''}
-                        onChange={handleChange}
-                        maxLength={255}
-                        aria-invalid={Boolean(validationErrors.fullName)}
-                        placeholder="Nhập họ và tên..."
-                    />
-                    {validationErrors.fullName && <p role="alert" className="text-sm text-red-600">{validationErrors.fullName}</p>}
-                    <Input
-                        disabled={isSaving}
-                        label="Địa chỉ Email"
-                        name="email"
-                        type="email"
-                        value={formData.email || ''}
-                        readOnly
-                        maxLength={254}
-                        placeholder="Nhập địa chỉ email..."
-                    />
-                    <p className="text-xs text-slate-500">Email tài khoản không thể thay đổi tại đây.</p>
-                    <Input
-                        disabled={isSaving}
-                        label="Số điện thoại"
-                        name="phone"
-                        value={formData.phone || ''}
-                        onChange={handleChange}
-                        maxLength={24}
-                        aria-invalid={Boolean(validationErrors.phone)}
-                        placeholder="Nhập số điện thoại..."
-                    />
-                    {validationErrors.phone && <p role="alert" className="text-sm text-red-600">{validationErrors.phone}</p>}
-                    <Input
-                        disabled={isSaving}
-                        label="Vị trí"
-                        name="location"
-                        value={formData.location || ''}
-                        onChange={handleChange}
-                        maxLength={255}
-                        placeholder="Thành phố, Quốc gia..."
-                    />
+                    <div className="min-w-0">
+                        <Input
+                            disabled={isSaving}
+                            label="Họ và tên"
+                            labelClassName="text-slate-700"
+                            name="fullName"
+                            value={formData.fullName || ''}
+                            onChange={handleChange}
+                            maxLength={255}
+                            aria-invalid={Boolean(validationErrors.fullName)}
+                            placeholder="Nhập họ và tên..."
+                        />
+                        {validationErrors.fullName && <p role="alert" className="mt-1.5 text-sm text-red-600">{validationErrors.fullName}</p>}
+                    </div>
+                    <div className="min-w-0">
+                        <Input
+                            disabled={isSaving}
+                            label="Địa chỉ Email"
+                            labelClassName="text-slate-700"
+                            name="email"
+                            type="email"
+                            value={formData.email || ''}
+                            readOnly
+                            maxLength={254}
+                            placeholder="Nhập địa chỉ email..."
+                        />
+                        <p className="mt-1.5 text-xs text-slate-500">Email tài khoản không thể thay đổi tại đây.</p>
+                    </div>
+                    <div className="min-w-0">
+                        <Input
+                            disabled={isSaving}
+                            label="Số điện thoại"
+                            labelClassName="text-slate-700"
+                            name="phone"
+                            value={formData.phone || ''}
+                            onChange={handleChange}
+                            maxLength={24}
+                            aria-invalid={Boolean(validationErrors.phone)}
+                            placeholder="Nhập số điện thoại..."
+                        />
+                        {validationErrors.phone && <p role="alert" className="mt-1.5 text-sm text-red-600">{validationErrors.phone}</p>}
+                    </div>
+                    <div className="min-w-0">
+                        <Input
+                            disabled={isSaving}
+                            label="Vị trí"
+                            labelClassName="text-slate-700"
+                            name="location"
+                            value={formData.location || ''}
+                            onChange={handleChange}
+                            maxLength={255}
+                            placeholder="Thành phố, Quốc gia..."
+                        />
+                    </div>
                     <div className="md:col-span-2">
                         <Input
-                        disabled={isSaving}
+                            disabled={isSaving}
                             label="Nghề nghiệp"
+                            labelClassName="text-slate-700"
                             name="profession"
                             value={formData.profession || ''}
                             onChange={handleChange}
@@ -219,6 +232,7 @@ const PersonalInfoPage = () => {
                     <Input
                         disabled={isSaving}
                         label="URL LinkedIn"
+                        labelClassName="text-slate-700"
                         name="linkedin"
                         icon={<Link size={16}/>}
                         value={formData.linkedin || ''}
@@ -231,6 +245,7 @@ const PersonalInfoPage = () => {
                     <Input
                         disabled={isSaving}
                         label="URL Portfolio"
+                        labelClassName="text-slate-700"
                         name="portfolio"
                         icon={<Globe size={16}/>}
                         value={formData.portfolio || ''}
@@ -243,6 +258,7 @@ const PersonalInfoPage = () => {
                     <Input
                         disabled={isSaving}
                         label="URL GitHub"
+                        labelClassName="text-slate-700"
                         name="github"
                         icon={<Code size={16}/>}
                         value={formData.github || ''}
