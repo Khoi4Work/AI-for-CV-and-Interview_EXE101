@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import { LayoutDashboard, Users, CreditCard, ArrowLeft, RefreshCw, CalendarDays, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAdminData } from '../hooks/useAdminData.js';
 import { money, dateTime, dateOnly, statuses, initialRange, fillDaily } from '../utils/adminFormat.js';
+import { readAdminSessionState, writeAdminSessionState } from '../utils/adminSessionState.js';
 
 const inputClass = 'rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900';
 const buttonClass = 'rounded-xl bg-[#0b3c8f] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40';
@@ -83,23 +84,33 @@ function DateInputs({ value, onChange, required = true, fromLabel = 'Từ ngày'
         <DateInput label={toLabel} value={value.to} min={value.from} required={required} onChange={date => onChange({ ...value, to: date })} /></>;
 }
 function Dashboard() {
-    const [range, setRange] = useState(initialRange);
-    const [draft, setDraft] = useState(range);
+    const [savedState] = useState(() => {
+        const range = initialRange();
+        return readAdminSessionState('dashboard', { range, draft: range });
+    });
+    const [range, setRange] = useState(savedState.range);
+    const [draft, setDraft] = useState(savedState.draft);
+    useEffect(() => writeAdminSessionState('dashboard', { range, draft }), [range, draft]);
     const request = useAdminData('statistics', range);
     const data = request.data;
     const daily = data ? fillDaily(data.daily, data.from, data.to) : [];
     const max = Math.max(1, ...daily.map(day => Number(day.revenue)));
     return <><h1 className="text-2xl font-bold">Tổng quan website</h1>
-        <form className="my-6 flex flex-wrap items-center gap-3" onSubmit={e => { e.preventDefault(); setRange({ ...draft }); }}>
+        <form className="my-6 grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]" onSubmit={e => { e.preventDefault(); setRange({ ...draft }); }}>
             <DateInputs value={draft} onChange={setDraft} /><button className={buttonClass}>Áp dụng</button>
-            <button type="button" onClick={request.retry} aria-label="Làm mới" className={inputClass}><RefreshCw size={18} /></button>
+            <button type="button" onClick={request.retry} aria-label="Tải lại dữ liệu theo bộ lọc hiện tại" title="Tải lại dữ liệu theo bộ lọc hiện tại" className={inputClass} disabled={request.loading}><RefreshCw size={18} className={request.loading ? 'animate-spin' : ''} /></button>
         </form><RequestState request={request} />
         {data && <>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {[['Tổng người dùng', data.overview.totalUsers], ['Người dùng mới', data.overview.newUsers], ['Người dùng trả phí', data.overview.paidUsers], ['Người dùng chưa trả phí', data.overview.freeUsers], ['Tiền thu thành công', money(data.overview.grossRevenue)], ['Tiền hoàn trong kỳ', money(data.overview.refundAmount)]].map(([label, value]) =>
                     <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-2xl font-bold text-[#0b3c8f]">{typeof value === 'number' ? new Intl.NumberFormat('vi-VN').format(value) : value}</p></div>)}
             </div>
-            <p className="my-4 text-sm text-slate-500">Người dùng trả phí là tài khoản có gói CV hoặc Interview khác FREE. Ngày thống kê theo giờ Việt Nam; tiền thu tính theo ngày thanh toán thành công, tiền hoàn theo ngày hoàn. Đơn test không được cộng vào thống kê.</p>
+            <ul className="my-4 list-disc space-y-1 pl-5 text-sm text-slate-500">
+                <li>Tổng người dùng: không tính tài khoản quản trị và tài khoản chưa xác thực.</li>
+                <li>Người dùng mới: áp dụng cùng bộ lọc, trong khoảng ngày đã chọn.</li>
+                <li>Trả phí / chưa trả phí: áp dụng cùng bộ lọc tài khoản; tài khoản tạm khóa vẫn được tính.</li>
+                <li>Giao dịch: đơn test không được tính.</li>
+            </ul>
             {Number(data.overview.undatedPaidOrders) > 0 && <p className="mb-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Có {data.overview.undatedPaidOrders} đơn cũ, tổng {money(data.overview.undatedPaidAmount)}, chưa có ngày thanh toán; chưa được cộng vào biểu đồ và doanh thu theo ngày.</p>}
             {Number(data.overview.undatedRefundedOrders) > 0 && <p className="mb-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Có {data.overview.undatedRefundedOrders} đơn hoàn tiền chưa có ngày hoàn, tổng {money(data.overview.undatedRefundedAmount)}; chưa được cộng vào tiền hoàn theo ngày.</p>}
             <section className="rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-bold">Doanh thu theo ngày</h2>
@@ -136,12 +147,18 @@ function Detail({ path, onClose }) {
     </section>;
 }
 function Records({ payments = false }) {
-    const [draft, setDraft] = useState(() => ({ search: '', status: '', role: '', provider: '', plan: '', category: '', includeTest: false, ...(payments ? initialRange() : { from: '', to: '' }) }));
-    const [filters, setFilters] = useState(draft);
-    const [page, setPage] = useState(0);
-    const [size, setSize] = useState(20);
+    const storageKey = payments ? 'payments' : 'users';
+    const [savedState] = useState(() => {
+        const draft = { search: '', status: '', role: '', provider: '', plan: '', category: '', includeTest: false, ...(payments ? initialRange() : { from: '', to: '' }) };
+        return readAdminSessionState(storageKey, { draft, filters: draft, page: 0, size: 20 });
+    });
+    const [draft, setDraft] = useState(savedState.draft);
+    const [filters, setFilters] = useState(savedState.filters);
+    const [page, setPage] = useState(savedState.page);
+    const [size, setSize] = useState(savedState.size);
     const [detail, setDetail] = useState(null);
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    useEffect(() => writeAdminSessionState(storageKey, { draft, filters, page, size }), [storageKey, draft, filters, page, size]);
     const path = payments ? 'payments' : 'users';
     const userFilters = { search: filters.search, status: filters.status, role: filters.role, provider: filters.provider, plan: filters.plan, ...(filters.from ? { from: filters.from } : {}), ...(filters.to ? { to: filters.to } : {}) };
     const request = useAdminData(path, { ...(payments ? filters : userFilters), page, size });
@@ -164,7 +181,7 @@ function Records({ payments = false }) {
                 {!payments && <button type="button" aria-expanded={showAdvancedFilters} onClick={() => setShowAdvancedFilters(value => !value)} className={`${inputClass} inline-flex items-center gap-2 whitespace-nowrap`}>
                     <SlidersHorizontal size={16}/><span>Bộ lọc{activeAdvancedFilterCount > 0 ? ` (${activeAdvancedFilterCount})` : ''}</span>{showAdvancedFilters ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
                 </button>}
-                <button className={buttonClass}>Lọc</button><button type="button" onClick={request.retry} className={inputClass} aria-label="Làm mới"><RefreshCw size={18}/></button>
+                <button className={buttonClass}>Lọc</button><button type="button" onClick={request.retry} className={inputClass} aria-label="Tải lại dữ liệu theo bộ lọc hiện tại" title="Tải lại dữ liệu theo bộ lọc hiện tại" disabled={request.loading}><RefreshCw size={18} className={request.loading ? 'animate-spin' : ''}/></button>
             </div>
         </form><RequestState request={request} />
         {data && <><div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white"><table className="w-full text-left text-sm"><thead className="bg-slate-50"><tr>{(payments ? ['Mã đơn', 'Người dùng', 'Dịch vụ', 'Số tiền', 'Trạng thái', 'Ngày tạo', ''] : ['Người dùng', 'Email', 'Vai trò', 'Trạng thái', 'Ngày tạo', '']).map((label, index) => <th key={index} className="whitespace-nowrap p-4">{label}</th>)}</tr></thead>

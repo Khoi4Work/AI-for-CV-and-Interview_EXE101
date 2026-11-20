@@ -27,7 +27,7 @@ export function useAdminData(path, params = {}) {
         previousRetry.current = retry;
         const cached = responseCache.get(cacheKey);
         if (cached?.data !== undefined) {
-            setState({ loading: false, data: cached.data, error: '' });
+            setState({ loading: retryRequested, data: cached.data, error: '' });
             if (!retryRequested && Date.now() - cached.updatedAt < CACHE_TTL_MS) {
                 return () => { active = false; };
             }
