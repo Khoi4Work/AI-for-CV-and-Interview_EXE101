@@ -25,7 +25,16 @@ public class AdminService {
         if(page<0 || size<1 || size>100) throw new ApiException(ErrorCode.INVALID_INPUT,"Phân trang không hợp lệ.");
     }
     public AdminRepository.Page users(String search,String status,int page,int size) {
-        page(page,size); return repository.users(search,status,page,size);
+        return users(search,status,"","","",null,null,page,size);
+    }
+    public AdminRepository.Page users(String search,String status,String role,String provider,String plan,LocalDate from,LocalDate to,int page,int size) {
+        page(page,size);
+        if(!status.isEmpty() && !Set.of("ACTIVE","PENDING_VERIFICATION","SUSPENDED").contains(status)) throw new ApiException(ErrorCode.INVALID_INPUT,"Trạng thái tài khoản không hợp lệ.");
+        if(!role.isEmpty() && !Set.of("ATTENDANCE","PARTNER","ADMIN").contains(role)) throw new ApiException(ErrorCode.INVALID_INPUT,"Vai trò không hợp lệ.");
+        if(!provider.isEmpty() && !Set.of("LOCAL","GOOGLE").contains(provider)) throw new ApiException(ErrorCode.INVALID_INPUT,"Phương thức đăng ký không hợp lệ.");
+        if(!plan.isEmpty() && !Set.of("FREE","PAID").contains(plan)) throw new ApiException(ErrorCode.INVALID_INPUT,"Nhóm gói không hợp lệ.");
+        if(from!=null && to!=null && (from.isAfter(to) || ChronoUnit.DAYS.between(from,to)>365)) throw new ApiException(ErrorCode.INVALID_INPUT,"Khoảng ngày tạo không hợp lệ hoặc vượt quá 366 ngày.");
+        return repository.users(search,status,role,provider,plan,from==null?null:from.atStartOfDay(),to==null?null:to.plusDays(1).atStartOfDay(),page,size);
     }
     public Map<String,Object> user(UUID id) { return repository.user(id).orElseThrow(()->new ApiException(ErrorCode.RESOURCE_NOT_FOUND)); }
     public AdminRepository.Page payments(String search,String status,String category,boolean includeTest,LocalDate from,LocalDate to,int page,int size) {

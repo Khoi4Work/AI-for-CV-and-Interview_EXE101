@@ -18,7 +18,10 @@ public class AdminController {
     private final AdminService service;
     @GetMapping("/users")
     public ApiResponse<AdminRepository.Page> users(@RequestParam(defaultValue="") String search,@RequestParam(defaultValue="") String status,
-            @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) { return ApiResponse.success(service.users(search,status,page,size)); }
+            @RequestParam(defaultValue="") String role,@RequestParam(defaultValue="") String provider,@RequestParam(defaultValue="") String plan,
+            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) { return ApiResponse.success(service.users(search,status,role,provider,plan,from,to,page,size)); }
     @GetMapping("/users/{id}")
     public ApiResponse<Map<String,Object>> user(@PathVariable UUID id) { return ApiResponse.success(service.user(id)); }
     @GetMapping("/payments")
