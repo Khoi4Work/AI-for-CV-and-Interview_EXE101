@@ -34,9 +34,9 @@ export default function InterviewSetup() {
     interviewSetupDraft: { type, language, duration, jd, jdId, feedbackStyle, ...patch },
   });
 
-  const maxDuration = quota?.interviewPlan === 'ENHANCE' ? 15 : quota?.interviewPlan === 'MIDDLE' ? 10 : 5;
+  const maxDuration = quota?.quotaExempt ? 15 : quota?.interviewPlan === 'ENHANCE' ? 15 : quota?.interviewPlan === 'MIDDLE' ? 10 : 5;
   const remainingMinutes = Number(quota?.remainingInterviewMinutes ?? 0);
-  const canChooseDuration = (minutes) => minutes <= maxDuration && minutes <= remainingMinutes;
+  const canChooseDuration = (minutes) => minutes <= maxDuration && (quota?.quotaExempt || minutes <= remainingMinutes);
   const hasAvailableDuration = DURATIONS.some((item) => canChooseDuration(item.value));
 
   const chosenDuration=canChooseDuration(Number(duration))?Number(duration):DURATIONS.find(item=>canChooseDuration(item.value))?.value;

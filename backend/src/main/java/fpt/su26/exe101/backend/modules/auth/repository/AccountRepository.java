@@ -1,6 +1,7 @@
 package fpt.su26.exe101.backend.modules.auth.repository;
 
 import fpt.su26.exe101.backend.modules.auth.entity.Account;
+import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, UUID> {
+    boolean existsByIdAndRole(UUID id, AccountRole role);
     @Query("select a from Account a where lower(a.email) = lower(:email)")
     Optional<Account> findByEmail(@Param("email") String email);
     @Query("select (count(a) > 0) from Account a where lower(a.email) = lower(:email)")

@@ -137,14 +137,14 @@ const PersonalInfoPage = () => {
                             <div className="p-3 bg-[#042F2E] rounded-full"><Shield size={20} className="text-white"/></div>
                             <div>
                                 <h4 className="text-white font-medium">CV · {usageQuota?.cvPlan || '—'}</h4>
-                                <p className="text-[#CCFBF1] text-sm">Còn {usageQuota?.remainingCvCount ?? '—'} lượt tạo • quota không hết hạn</p>
+                                <p className="text-[#CCFBF1] text-sm">{usageQuota?.quotaExempt ? 'Không giới hạn lượt tạo' : `Còn ${usageQuota?.remainingCvCount ?? '—'} lượt tạo • quota không hết hạn`}</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <div className="p-3 bg-[#042F2E] rounded-full"><Shield size={20} className="text-white"/></div>
                             <div>
                                 <h4 className="text-white font-medium">Interview · {usageQuota?.interviewPlan || '—'}</h4>
-                                <p className="text-[#CCFBF1] text-sm">Còn {usageQuota?.remainingInterviewMinutes ?? '—'} phút • quota không hết hạn</p>
+                                <p className="text-[#CCFBF1] text-sm">{usageQuota?.quotaExempt ? 'Không giới hạn thời lượng sử dụng quota' : `Còn ${usageQuota?.remainingInterviewMinutes ?? '—'} phút • quota không hết hạn`}</p>
                             </div>
                         </div>
                     </div>

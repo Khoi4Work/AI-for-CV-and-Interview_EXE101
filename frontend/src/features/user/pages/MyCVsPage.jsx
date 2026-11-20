@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../auth/contexts/AppContext.jsx';
+import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import { Card, Badge, Button } from '../components/Layout.jsx';
 import galleryService from '../services/galleryService';
 import { getApiErrorMessage } from '../../../services/apiClient';
@@ -17,6 +18,8 @@ const filters = [['All', 'Tất cả'], ['COMPLETED', 'Hoàn thành'], ['OPTIMIZ
 export default function MyCVsPage() {
     const navigate = useNavigate();
     const { showToast } = useApp();
+    const { profile } = useAuth();
+    const quotaExempt = profile?.role === 'TESTER';
     const {confirm, confirmation} = useConfirmation();
     const { cvs, loading, errors, reload, removeCV } = useGalleryData();
     const [filter, setFilter] = useState('All');
@@ -84,7 +87,7 @@ export default function MyCVsPage() {
                                 <p className="text-xs">Cập nhật: {cv.updatedLabel}</p>
                                 {cv.score != null && <p className="text-sm">Điểm CV: {cv.score}</p>}
                                 {cv.atsScore != null && <p className="text-sm">Điểm ATS: {cv.atsScore}</p>}
-                                {Number.isInteger(cv.aiAnalysisLimit) && <p className="text-xs">Còn {cv.aiAnalysisRemaining ?? 0}/{cv.aiAnalysisLimit} lượt phân tích AI</p>}
+                                {Number.isInteger(cv.aiAnalysisLimit) && <p className="text-xs">{quotaExempt ? 'Không giới hạn lượt phân tích AI' : `Còn ${cv.aiAnalysisRemaining ?? 0}/${cv.aiAnalysisLimit} lượt phân tích AI`}</p>}
                                 <button disabled title="Chức năng mở lại CV để chỉnh sửa đang được hoàn thiện"
                                     className="w-full pt-3 border-t border-slate-300 text-xs text-slate-500 cursor-not-allowed">Chỉnh sửa nội dung (sắp có)</button>
                             </div>

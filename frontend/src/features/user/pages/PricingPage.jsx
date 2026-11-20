@@ -130,7 +130,7 @@ const PricingPage = () => {
                             <h3 className="text-2xl font-bold text-[#065F46]">{quota?.cvPlan || '—'}</h3>
                             <span className="text-right text-xs text-[#475569]">Gói CV<br/><b>Không hết hạn</b></span>
                         </div>
-                        <p className="text-sm text-[#334155] mb-1">Còn {quota?.remainingCvCount ?? '—'} lượt tạo CV</p>
+                        <p className="text-sm text-[#334155] mb-1">{quota?.quotaExempt ? 'Không giới hạn lượt tạo CV' : `Còn ${quota?.remainingCvCount ?? '—'} lượt tạo CV`}</p>
                         <p className="text-sm text-[#334155] mb-5">Lượt phân tích được cấp riêng cho từng CV</p>
                     </Card>
                     <Card className="p-6 bg-[#B5C2BC] border-none shadow-sm">
@@ -139,7 +139,7 @@ const PricingPage = () => {
                             <h3 className="text-2xl font-bold text-[#7C3AED]">{quota?.interviewPlan || '—'}</h3>
                             <span className="text-right text-xs text-[#475569]">Gói interview<br/><b>Không hết hạn</b></span>
                         </div>
-                        <p className="text-sm text-[#334155] mb-5">Còn {quota?.remainingInterviewMinutes ?? '—'} phút phỏng vấn</p>
+                        <p className="text-sm text-[#334155] mb-5">{quota?.quotaExempt ? 'Không giới hạn phút phỏng vấn' : `Còn ${quota?.remainingInterviewMinutes ?? '—'} phút phỏng vấn`}</p>
                     </Card>
                 </div>
 

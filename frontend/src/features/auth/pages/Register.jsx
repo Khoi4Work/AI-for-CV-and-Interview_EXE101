@@ -112,7 +112,7 @@ export default function Register() {
       if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
       const authenticatedProfile = await handleLogin(null, tokens);
       setLoginSuccess(true);
-      const analyticsExcluded = String(authenticatedProfile?.role || '').toUpperCase() === 'ADMIN' || authenticatedProfile?.analyticsExcluded === true;
+      const analyticsExcluded = ['ADMIN', 'TESTER'].includes(String(authenticatedProfile?.role || '').toUpperCase()) || authenticatedProfile?.analyticsExcluded === true;
       setAnalyticsEligibility(!analyticsExcluded);
       if (!analyticsExcluded) {
         trackEvent('login', { method: 'google' });
@@ -138,7 +138,7 @@ export default function Register() {
       if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
       const profile = await handleLogin(null, tokens);
       setLoginSuccess(true);
-      const excluded = String(profile?.role || '').toUpperCase() === 'ADMIN' || profile?.analyticsExcluded === true;
+      const excluded = ['ADMIN', 'TESTER'].includes(String(profile?.role || '').toUpperCase()) || profile?.analyticsExcluded === true;
       setAnalyticsEligibility(!excluded);
       if (!excluded) trackEvent('login', { method: 'google' });
       setTermsDialogOpen(false);

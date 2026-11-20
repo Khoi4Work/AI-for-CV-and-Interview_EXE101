@@ -27,7 +27,7 @@ export function AnalyticsProvider({ children }) {
   const [status, setStatus] = useState(readConsent);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
   const authKnown = !isLoading && authStatus !== 'error';
-  const excluded = profile?.analyticsExcluded === true || String(profile?.role || '').toUpperCase() === 'ADMIN';
+  const excluded = profile?.analyticsExcluded === true || ['ADMIN', 'TESTER'].includes(String(profile?.role || '').toUpperCase());
   const canTrack = analyticsConfig.enabled && status === 'granted' && authKnown && !excluded;
 
   useEffect(() => { configureAnalytics(analyticsConfig); }, []);

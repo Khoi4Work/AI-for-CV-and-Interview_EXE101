@@ -10,12 +10,15 @@ import fpt.su26.exe101.backend.modules.quota.repository.UserUsageQuotaRepository
 import fpt.su26.exe101.backend.base.enums.UserPlan;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.modules.quota.event.QuotaInitializationRequestedEvent;
+import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
+import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 import java.util.UUID;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,9 +27,17 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     private final UserUsageQuotaRepository repository;
     private final ApplicationEventPublisher eventPublisher;
     private final QuotaBenefitConfig benefitConfig;
+    private final AccountRepository accountRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isQuotaExempt(UUID accountId) {
+        return accountRepository.existsByIdAndRole(accountId, AccountRole.TESTER);
+    }
 
     @Override @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void initializeDefaultQuota(UUID accountId) {
+        if (isQuotaExempt(accountId)) return;
         repository.findByAccountId(accountId).orElseGet(() -> repository.save(defaultQuota(accountId)));
     }
 
@@ -55,6 +66,9 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     @Override
     @Transactional(readOnly = true)
     public java.util.Optional<UserUsageQuota> getQuota(UUID accountId) {
+        if (isQuotaExempt(accountId)) {
+            return repository.findByAccountId(accountId).or(() -> Optional.of(defaultQuota(accountId)));
+        }
         return repository.findByAccountId(accountId);
     }
 
@@ -70,7 +84,15 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
 
     @Override @Transactional
     public UsageQuotaService.CvCreationQuota consumeCvCreation(UUID accountId) {
-        UserUsageQuota quota = lockedQuota(accountId);
+        boolean exempt = isQuotaExempt(accountId);
+        UserUsageQuota quota = exempt
+                ? repository.findByAccountId(accountId).orElseGet(() -> defaultQuota(accountId))
+                : lockedQuota(accountId);
+        if (exempt) {
+            UserPlan plan = quota.getCvPlan() == null ? UserPlan.FREE : quota.getCvPlan();
+            int analysisLimit = benefitConfig.getBenefit(plan).getAiCvCnt();
+            return new UsageQuotaService.CvCreationQuota(plan, analysisLimit, analysisLimit);
+        }
         UserPlan consumedPlan;
         if (quota.getRemainingCvFreeCredits() > 0) {
             quota.setRemainingCvFreeCredits(quota.getRemainingCvFreeCredits() - 1);
@@ -97,6 +119,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     @Override
     @Transactional(readOnly = true)
     public void requireCvCreationCredit(UUID accountId) {
+        if (isQuotaExempt(accountId)) return;
         UserUsageQuota quota = repository.findByAccountId(accountId).orElse(null);
         int available = quota == null ? benefitConfig.getBenefit(UserPlan.FREE).getCvCnt()
                 : quota.getRemainingCvFreeCredits() + quota.getRemainingCvMiddleCredits()
@@ -113,6 +136,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     @Override @Transactional
     public void consumeInterviewMinutes(UUID accountId, int minutes) {
         if (minutes <= 0) throw new IllegalArgumentException("Interview minutes must be positive");
+        if (isQuotaExempt(accountId)) return;
         UserUsageQuota quota = lockedQuota(accountId);
         if (quota.getRemainingIntMin() < minutes) {
             log.warn("[QUOTA] Request denied | accountId={} | type=interview_minutes | requested={} | reason=insufficient",
@@ -125,6 +149,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     @Override @Transactional
     public void refundInterviewMinutes(UUID accountId, int minutes) {
         if (minutes <= 0) throw new IllegalArgumentException("Interview minutes must be positive");
+        if (isQuotaExempt(accountId)) return;
         UserUsageQuota quota = lockedQuota(accountId);
         quota.setRemainingIntMin(quota.getRemainingIntMin() + minutes);
         log.info("[QUOTA] Refunded | accountId={} | type=interview_minutes | minutes={}", accountId, minutes);
@@ -134,6 +159,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     @Transactional
     public void grantCvPackage(UUID accountId, UserPlan plan, int cvCount) {
         if (plan == null || cvCount < 0) throw new ApiException(ErrorCode.INVALID_INPUT, "Valid CV plan and quota are required");
+        if (isQuotaExempt(accountId)) return;
         UserUsageQuota quota = lockedQuota(accountId);
         UserPlan effectivePlan = quota.getCvPlan() == null || quota.getCvPlan().ordinal() < plan.ordinal()
                 ? plan : quota.getCvPlan();
@@ -158,6 +184,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     @Transactional
     public void grantInterviewPackage(UUID accountId, UserPlan plan, int interviewMinutes) {
         if (plan == null || interviewMinutes < 0) throw new ApiException(ErrorCode.INVALID_INPUT, "Valid Interview plan and quota are required");
+        if (isQuotaExempt(accountId)) return;
         UserUsageQuota quota = lockedQuota(accountId);
         UserPlan effectivePlan = quota.getInterviewPlan() == null || quota.getInterviewPlan().ordinal() < plan.ordinal()
                 ? plan : quota.getInterviewPlan();

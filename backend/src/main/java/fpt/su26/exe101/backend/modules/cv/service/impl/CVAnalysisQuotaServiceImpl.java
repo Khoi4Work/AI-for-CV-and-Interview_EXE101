@@ -5,6 +5,8 @@ import fpt.su26.exe101.backend.base.exception.ErrorCode;
 import fpt.su26.exe101.backend.modules.cv.entity.CV;
 import fpt.su26.exe101.backend.modules.cv.repository.CVRepository;
 import fpt.su26.exe101.backend.modules.cv.service.CVAnalysisQuotaService;
+import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
+import fpt.su26.exe101.backend.modules.auth.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,11 +19,13 @@ import java.util.UUID;
 @Slf4j
 public class CVAnalysisQuotaServiceImpl implements CVAnalysisQuotaService {
     private final CVRepository cvRepository;
+    private final AccountRepository accountRepository;
 
     @Transactional
     @Override
     public void consume(UUID accountId, UUID cvId) {
         CV cv = ownedCvForUpdate(accountId, cvId);
+        if (accountRepository.existsByIdAndRole(accountId, AccountRole.TESTER)) return;
         if (cv.getAiAnalysisRemaining() <= 0) {
             log.warn("[QUOTA] Request denied | accountId={} | cvId={} | type=cv_ai_analysis | reason=exhausted",
                     accountId, cvId);
@@ -36,6 +40,7 @@ public class CVAnalysisQuotaServiceImpl implements CVAnalysisQuotaService {
     @Override
     public void refund(UUID accountId, UUID cvId) {
         CV cv = ownedCvForUpdate(accountId, cvId);
+        if (accountRepository.existsByIdAndRole(accountId, AccountRole.TESTER)) return;
         cv.setAiAnalysisRemaining(Math.min(cv.getAiAnalysisLimit(), cv.getAiAnalysisRemaining() + 1));
         log.info("[QUOTA] Refunded | accountId={} | cvId={} | type=cv_ai_analysis | remaining={}/{}",
                 accountId, cvId, cv.getAiAnalysisRemaining(), cv.getAiAnalysisLimit());

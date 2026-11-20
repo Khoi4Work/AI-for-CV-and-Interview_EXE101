@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +47,8 @@ public class AccountServiceImpl implements AccountService {
         if (request == null || !Boolean.TRUE.equals(request.getTermsAccepted())) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Bạn cần đồng ý với Điều khoản dịch vụ để tạo tài khoản.");
         }
-        if (request.getRole() == AccountRole.ADMIN) {
-            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Không thể đăng ký tài khoản quản trị.");
+        if (request.getRole() != null && !Set.of(AccountRole.ATTENDANCE, AccountRole.PARTNER).contains(request.getRole())) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Vai trò này chỉ có thể được cấp bởi quản trị viên.");
         }
         if (request.getPassword() == null || request.getConfirmPassword() == null
                 || !Objects.equals(request.getPassword(), request.getConfirmPassword())) {
@@ -74,7 +75,7 @@ public class AccountServiceImpl implements AccountService {
 
         account = accountRepository.save(account);
 
-        if (account.getRole() == AccountRole.ATTENDANCE) {
+        if (isAttendanceRole(account.getRole())) {
             // Get default name from email if displayName is not provided
             String defaultName = request.getEmail().split("@")[0];
             Attendance attendance = Attendance.builder()
@@ -183,7 +184,7 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Account not found"));
 
-        if (account.getRole() == AccountRole.ATTENDANCE) {
+        if (isAttendanceRole(account.getRole())) {
             Attendance attendance = attendanceRepository.findByAccount(account);
             if (attendance == null) {
                 throw new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Attendance profile not found");
@@ -262,7 +263,7 @@ public class AccountServiceImpl implements AccountService {
         profile.put("role", account.getRole());
         profile.put("status", account.getStatus());
 
-        if (account.getRole() == AccountRole.ATTENDANCE) {
+        if (isAttendanceRole(account.getRole())) {
             Attendance attendance = attendanceRepository.findByAccount(account);
             AttendanceInfo info = (attendance != null) ? attendanceInfoRepository.findByAttendance(attendance) : null;
             profile.put("fullName", attendance != null ? attendance.getDisplayName() : account.getEmail());
@@ -304,4 +305,7 @@ public class AccountServiceImpl implements AccountService {
         return profile;
     }
 
+    private boolean isAttendanceRole(AccountRole role) {
+        return role == AccountRole.ATTENDANCE || role == AccountRole.TESTER;
+    }
 }
