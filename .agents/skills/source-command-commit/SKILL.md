@@ -1,11 +1,11 @@
 ---
-name: "source-command-commit"
-description: "Migrated source command `commit`"
+name: "commit"
+description: "Commit currently staged changes when the user explicitly asks. Invoke with `$commit`."
 ---
 
-# source-command-commit
+# commit
 
-Use this skill when the user asks to run the migrated source command `commit`.
+Use this skill when the user invokes `$commit` or explicitly asks to commit staged changes.
 
 ## Command Template
 

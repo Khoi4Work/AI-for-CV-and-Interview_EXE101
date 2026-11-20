@@ -1,11 +1,11 @@
 ---
-name: "source-command-add"
-description: "Migrated source command `add`"
+name: "add"
+description: "Stage the current repository changes when the user explicitly asks to add them. Invoke with `$add`."
 ---
 
-# source-command-add
+# add
 
-Use this skill when the user asks to run the migrated source command `add`.
+Use this skill when the user invokes `$add` or explicitly asks to stage repository changes.
 
 ## Command Template
 
