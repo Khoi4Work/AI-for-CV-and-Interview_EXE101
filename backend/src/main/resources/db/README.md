@@ -1,5 +1,11 @@
 # Database scripts
 
+## Copy a PostgreSQL/Neon database
+
+From the repository root, run `powershell -ExecutionPolicy Bypass -File .\scripts\migrate-postgres.ps1`. The script prompts for source and target PostgreSQL connection URLs at runtime; it accepts PostgreSQL URLs and JDBC URLs beginning with `jdbc:postgresql://`. Do not save credentials in the script or commit them. Install PostgreSQL client tools (`pg_dump`, `pg_restore`, and `psql`) and ensure they are on `PATH` first.
+
+The destination must be empty. The script checks for existing user tables and requires typing `MIGRATE` before copying the full source database. It uses a temporary custom-format dump and removes that file after the run. A restore error can leave the destination partially populated; use a fresh empty destination for a retry. Keep the connection URLs private.
+
 These scripts are manual. The application does not run them at startup.
 
 - `migrations/` contains schema changes and data backfills tied to application changes. Apply the required migrations in date order to the intended database.
