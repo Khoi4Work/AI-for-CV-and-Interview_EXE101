@@ -1,4 +1,4 @@
-import { ArrowLeft, CreditCard, FileText, ShieldCheck, Sparkles, UserRound, Wrench } from 'lucide-react';
+import { ArrowLeft, CreditCard, FileText, Mail, ShieldCheck, Sparkles, UserRound, Wrench } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import GuestHeader from '../components/layout/GuestHeader.jsx';
 import { Footer } from '../components/layout/Footer.jsx';
@@ -34,7 +34,7 @@ export default function ServiceTermsPage() {
           <p className="mt-4 max-w-3xl text-sm leading-7 text-on-surface-variant sm:text-base">
             Các điều khoản này giải thích quy tắc cơ bản khi bạn tạo tài khoản và sử dụng công cụ hỗ trợ CV, đánh giá CV và luyện phỏng vấn của Smartfolio.
           </p>
-          <p className="mt-5 text-xs text-outline">Cập nhật lần cuối: 11/11/2026</p>
+          <p className="mt-5 text-xs text-outline">Cập nhật lần cuối: 23/11/2026</p>
         </header>
 
         <div className="rounded-2xl border border-outline-variant bg-surface-container px-5 shadow-lg sm:px-9">
@@ -45,32 +45,47 @@ export default function ServiceTermsPage() {
           </TermsSection>
 
           <TermsSection icon={UserRound} title="2. Tài khoản của bạn">
-            <p>Bạn chịu trách nhiệm cung cấp thông tin đăng ký chính xác, giữ an toàn thông tin đăng nhập và các hoạt động diễn ra trong tài khoản của mình.</p>
-            <p>Không chia sẻ thông tin đăng nhập hoặc sử dụng tài khoản của người khác khi chưa được cho phép. Smartfolio có thể yêu cầu xác minh thông tin khi cần bảo vệ tài khoản hoặc dịch vụ.</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li><strong>Đăng ký bằng email:</strong> Smartfolio dùng địa chỉ email bạn cung cấp để tạo tài khoản và gửi liên kết xác thực. Bạn cần xác thực email trước khi đăng nhập bằng mật khẩu.</li>
+              <li><strong>Khôi phục mật khẩu:</strong> khi bạn yêu cầu đặt lại mật khẩu, Smartfolio gửi liên kết đặt lại tới email đăng ký. Theo cấu hình mặc định của ứng dụng, email được gửi qua Gmail API của Google; Smartfolio không gửi mật khẩu hiện tại qua email.</li>
+              <li><strong>Đăng nhập Google:</strong> nếu chọn Google OAuth, Google xác thực danh tính và Smartfolio nhận thông tin tài khoản cần thiết cho phiên đăng nhập.</li>
+              <li>Bạn chịu trách nhiệm cung cấp thông tin chính xác, giữ an toàn thông tin đăng nhập và hoạt động trong tài khoản. Không chia sẻ thông tin đăng nhập hoặc truy cập tài khoản của người khác khi chưa được cho phép.</li>
+            </ul>
           </TermsSection>
 
-          <TermsSection icon={ShieldCheck} title="3. Nội dung bạn cung cấp">
+          <TermsSection icon={Mail} title="3. Email và thông báo tài khoản">
+            <p>Smartfolio gửi email phục vụ các thao tác tài khoản: xác thực địa chỉ email, gửi lại liên kết xác thực, đặt lại mật khẩu theo yêu cầu và thông báo gói dịch vụ hết hạn. Email xác thực và khôi phục mật khẩu chứa liên kết có mã bảo mật để hoàn tất thao tác tương ứng.</p>
+            <p>Hãy kiểm tra địa chỉ email bạn cung cấp và bảo vệ các liên kết trong hộp thư. Ai có quyền truy cập vào liên kết còn hiệu lực có thể hoàn tất thao tác mà liên kết đó cho phép. Smartfolio không dùng email xác thực hoặc khôi phục mật khẩu để gửi mật khẩu của bạn.</p>
+          </TermsSection>
+
+          <TermsSection icon={ShieldCheck} title="4. Nội dung bạn cung cấp">
             <p>Bạn giữ các quyền mà mình có đối với CV, mô tả công việc, câu trả lời, bản ghi và nội dung khác bạn đưa vào Smartfolio. Bạn chịu trách nhiệm bảo đảm mình có quyền sử dụng nội dung đó và việc cung cấp nội dung không xâm phạm quyền của người khác.</p>
             <p>Khi dùng một tính năng, bạn cho phép Smartfolio lưu trữ, truyền và xử lý nội dung cần thiết để cung cấp tính năng đó, bao gồm gửi một phần nội dung tới nhà cung cấp AI hoặc giọng nói khi tính năng yêu cầu. Chi tiết được nêu trong <Link className="font-semibold text-primary underline underline-offset-4 hover:text-on-surface" to="/privacy">trang Dữ liệu & quyền riêng tư</Link>.</p>
           </TermsSection>
 
-          <TermsSection icon={Sparkles} title="4. Nội dung do AI tạo">
+          <TermsSection icon={Sparkles} title="5. Nội dung do AI tạo">
             <p>Gợi ý, phân tích CV, câu hỏi và phản hồi phỏng vấn được tạo tự động để hỗ trợ bạn chuẩn bị. Kết quả có thể thiếu chính xác, không đầy đủ hoặc không phù hợp với hoàn cảnh cụ thể; hãy tự kiểm tra trước khi sử dụng hoặc chia sẻ.</p>
             <p>Smartfolio là công cụ hỗ trợ chuẩn bị hồ sơ và luyện tập. Ứng dụng không bảo đảm CV sẽ vượt qua hệ thống tuyển dụng, bạn sẽ được mời phỏng vấn hoặc nhận việc, hay kết quả tuyển dụng cụ thể.</p>
             <p>Bạn tự quyết định nội dung cuối cùng trong CV và cách sử dụng phản hồi. Đừng dùng kết quả AI làm căn cứ duy nhất cho quyết định quan trọng.</p>
           </TermsSection>
 
-          <TermsSection icon={Wrench} title="5. Sử dụng dịch vụ đúng cách">
+          <TermsSection icon={Wrench} title="6. Sử dụng dịch vụ đúng cách">
             <p>Bạn đồng ý không sử dụng Smartfolio để vi phạm pháp luật hoặc quyền của người khác; mạo danh, lừa đảo, quấy rối hay phát tán nội dung gây hại; tải mã độc; tìm cách truy cập trái phép; can thiệp vào hoạt động của hệ thống; hoặc né tránh hạn mức và biện pháp bảo vệ của dịch vụ.</p>
             <p>Không đưa vào ứng dụng thông tin cá nhân hoặc tài liệu của người khác nếu bạn không có quyền hoặc căn cứ phù hợp để sử dụng chúng.</p>
           </TermsSection>
 
-          <TermsSection icon={CreditCard} title="6. Gói dịch vụ và thanh toán">
+          <TermsSection icon={CreditCard} title="7. Gói dịch vụ và thanh toán">
             <p>Một số tính năng có hạn mức miễn phí hoặc cần mua thêm lượt sử dụng. Trước khi xác nhận đơn hàng, hãy kiểm tra tên gói, giá, phương thức thanh toán và quyền lợi hiển thị tại trang thanh toán. Thông tin của đơn hàng được xác nhận là căn cứ để cấp lượt sử dụng.</p>
             <p>Quyền lợi và hạn mức có thể khác nhau giữa các gói. Hãy dựa vào thông tin hiển thị ở bước xác nhận thanh toán cho từng giao dịch.</p>
           </TermsSection>
 
-          <TermsSection icon={Wrench} title="7. Tính khả dụng và thay đổi dịch vụ">
+          <TermsSection icon={Wrench} title="8. Dịch vụ của bên thứ ba">
+            <p>Smartfolio tích hợp hoặc sử dụng dịch vụ của nhà cung cấp độc lập để hỗ trợ một số chức năng. Tùy tính năng bạn chọn, các nhà cung cấp này gồm Google (đăng nhập và gửi email tài khoản), Groq hoặc Google Gemini (xử lý AI), ElevenLabs (xử lý giọng nói), payOS (thanh toán), cùng Neon và Render (cơ sở dữ liệu và máy chủ).</p>
+            <p>Các dịch vụ trên không do Smartfolio sở hữu hoặc vận hành. Khi một tính năng gửi dữ liệu tới nhà cung cấp, nhà cung cấp đó xử lý dữ liệu theo điều khoản, chính sách quyền riêng tư và cấu hình dịch vụ của họ. Smartfolio không thể thay mặt nhà cung cấp cam kết về thời hạn lưu giữ, việc sử dụng dữ liệu hoặc hoạt động của hệ thống bên ngoài.</p>
+            <p>Phạm vi dữ liệu được gửi, mục đích sử dụng và liên kết tới tài liệu chính thức của từng nhà cung cấp được trình bày tại trang <Link className="font-semibold text-primary underline underline-offset-4 hover:text-on-surface" to="/privacy">Dữ liệu & quyền riêng tư</Link>. Các trang web và nội dung bên ngoài được liên kết từ Smartfolio cũng tuân theo điều khoản của đơn vị vận hành tương ứng.</p>
+          </TermsSection>
+
+          <TermsSection icon={Wrench} title="9. Tính khả dụng và thay đổi dịch vụ">
             <p>Smartfolio có thể cập nhật, tạm ngừng hoặc giới hạn một tính năng để bảo trì, bảo vệ hệ thống, xử lý sự cố hoặc đáp ứng yêu cầu pháp luật. Chúng tôi sẽ cố gắng hạn chế ảnh hưởng khi có thể.</p>
             <p>Nếu có thay đổi quan trọng đối với điều khoản, phiên bản cập nhật sẽ được đăng trên trang này cùng ngày cập nhật. Việc tiếp tục sử dụng sau ngày hiệu lực của thay đổi đồng nghĩa bạn chấp thuận phiên bản mới; nếu không đồng ý, hãy ngừng sử dụng dịch vụ.</p>
           </TermsSection>
