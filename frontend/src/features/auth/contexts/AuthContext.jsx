@@ -1,5 +1,6 @@
-import { createContext, useState, useContext, useEffect, useSyncExternalStore } from 'react';
+import { createContext, useState, useContext, useEffect, useSyncExternalStore, useCallback } from 'react';
 import apiClient from '../../../services/apiClient.js';
+import { getCurrentQuota } from '../../../services/quotaService.js';
 import { createAuthSession } from '../services/authSession.js';
 import LogoutLoading from '../components/LogoutLoading.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -59,6 +60,20 @@ export function AuthProvider({ children }) {
     return { success: true, data: isFullProfile ? result : { ...profile, ...updatedData } };
   };
 
+  const refreshQuota = useCallback(async () => {
+    const quota = await getCurrentQuota();
+    if (!quota || typeof quota !== 'object') throw new Error('Không tải được thông tin quota.');
+
+    const planLabel = (plan) => plan ? `${plan[0]}${plan.slice(1).toLowerCase()}` : undefined;
+    setProfile((current) => current ? {
+      ...current,
+      quota,
+      membershipType: planLabel(quota.cvPlan) || current.membershipType,
+      interviewMembershipType: planLabel(quota.interviewPlan) || current.interviewMembershipType,
+    } : current);
+    return quota;
+  }, [setProfile]);
+
   const changePassword = async (passwordData) => {
     await apiClient.patch('/auth/password', passwordData);
     return { success: true };
@@ -116,6 +131,8 @@ export function AuthProvider({ children }) {
       handleLogin,
       handleLogout,
       updateProfile,
+      quota: profile.quota || null,
+      refreshQuota,
       changePassword,
       toggleFavorite,
       handle2faToggle,
