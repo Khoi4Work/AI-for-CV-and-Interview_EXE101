@@ -5,4 +5,7 @@ import java.math.BigDecimal;
 public record CVAnalysisContributionResponseDTO(
         CVAnalysisEvidenceResponseDTO evidence,
         BigDecimal points) {
+    public CVAnalysisContributionResponseDTO {
+        points = CVAnalysisScorePrecision.toTwoDecimalPlaces(points);
+    }
 }
