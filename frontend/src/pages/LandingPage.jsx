@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import FloatingCVCard from '../features/user/components/FloatingCVCard.jsx';
 import GuestHeader from '../components/layout/GuestHeader.jsx';
+import SupportPopup from '../components/layout/SupportPopup.jsx';
 import galleryService from '../features/cv/services/templateService.js';
 
 const LandingPage = () => {
@@ -198,10 +199,7 @@ const LandingPage = () => {
                 </div>
                 <div className="flex items-center space-x-6 font-medium">
                     <Link to="/docs" className="hover:text-primary">Tài liệu</Link>
-                    <a href="#support" onClick={(e) => {
-                        e.preventDefault();
-                        navigate('/login');
-                    }} className="hover:text-primary">Hỗ trợ</a>
+                    <SupportPopup className="hover:text-primary" />
                 </div>
             </div>
         </footer>

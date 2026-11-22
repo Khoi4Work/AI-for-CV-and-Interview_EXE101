@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAnalyticsConsent } from '../../features/analytics/components/AnalyticsProvider.jsx';
+import SupportPopup from './SupportPopup.jsx';
 
 export function Footer() {
   const { available, openPreferences } = useAnalyticsConsent();
@@ -15,7 +16,7 @@ export function Footer() {
         </div>
         <div className="flex gap-lg">
           <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="/docs">Tài liệu</Link>
-          <Link className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" to="#">Hỗ trợ</Link>
+          <SupportPopup className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100" />
           {available && <button type="button" onClick={openPreferences} className="font-label-sm text-label-sm text-secondary dark:text-outline hover:text-primary transition-colors opacity-80 hover:opacity-100">Tùy chọn đo lường</button>}
         </div>
       </div>
