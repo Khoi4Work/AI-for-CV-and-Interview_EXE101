@@ -17,6 +17,7 @@ import {trackEvent} from '../../analytics/services/analyticsClient.js';
 import {categorizeAnalyticsError} from '../../analytics/utils/sanitizeAnalytics.js';
 import ConfirmationDialog from '../../../components/ui/ConfirmationDialog.jsx';
 import {useConfirmation} from '../../../components/ui/useConfirmation.js';
+import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 
 function updateValueAtPath(source, path, value) {
     const [key, ...remaining] = path.split('.');
@@ -28,6 +29,7 @@ function updateValueAtPath(source, path, value) {
 
 export default function CVEditor() {
     const { cvData, setTemplate, setContentLanguage, setFullCVData, currentCvId, setCurrentCvId, setHasCV } = useCV();
+    const {refreshQuota} = useAuth();
     const navigate = useNavigate();
     const {confirm, confirmation} = useConfirmation();
     const location = useLocation();
@@ -116,6 +118,9 @@ export default function CVEditor() {
                 setLastSaved(JSON.stringify({ name: payload.name, content: payload.content }));
                 setMessage('Đã lưu CV vào tài khoản của bạn.');
                 trackEvent('cv_saved', {save_mode: saveMode});
+                if (saveMode === 'create') {
+                    refreshQuota().catch(error => console.warn('[CVEditor] Could not refresh quota snapshot.', error));
+                }
                 if (returnToEvaluation) {
                     navigate('/cv-evaluation', {
                         replace: true,

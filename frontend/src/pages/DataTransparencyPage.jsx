@@ -26,7 +26,7 @@ const providerDocs = [
     name: 'ElevenLabs — Zero Retention Mode',
     href: 'https://elevenlabs.io/docs/eleven-api/resources/zero-retention-mode',
     scope: 'Tùy chọn lưu giữ API ElevenLabs',
-    detail: 'Mô tả một tùy chọn dành cho một số khách hàng/endpoint; không xác nhận Smartfolio đang bật tùy chọn này.',
+    detail: 'Thông tin về điều kiện áp dụng và phạm vi của tùy chọn Zero Retention Mode.',
   },
   {
     name: 'payOS — Chính sách bảo mật',
@@ -85,13 +85,13 @@ export default function DataTransparencyPage() {
           <p className="mb-3 text-xs font-bold uppercase tracking-[.16em] text-primary">Smartfolio · Minh bạch dữ liệu</p>
           <h1 className="max-w-4xl text-3xl font-extrabold leading-tight tracking-tight text-on-surface sm:text-5xl">Dữ liệu của bạn được xử lý như thế nào?</h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-on-surface-variant sm:text-base">
-            Trang này mô tả luồng dữ liệu trong ứng dụng và các cấu hình dịch vụ hiện được xác nhận. Chính sách riêng của từng nhà cung cấp vẫn áp dụng cho dữ liệu họ xử lý.
+            Trang này mô tả dữ liệu Smartfolio xử lý và cách dữ liệu được chuyển tới các nhà cung cấp dịch vụ. Chính sách của từng nhà cung cấp áp dụng đối với dữ liệu do họ xử lý.
           </p>
           <aside className="mt-6 flex max-w-4xl gap-3 rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm leading-6 text-on-surface-variant" aria-label="Lưu ý về tài liệu bên thứ ba">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-            <p><strong className="text-on-surface">Lưu ý về dịch vụ bên thứ ba.</strong> Các liên kết dẫn tới tài liệu chính thức của nhà cung cấp. Trang này nêu cấu hình đã xác nhận của Smartfolio; tài liệu nhà cung cấp giải thích cách chính sách và tùy chọn của họ áp dụng.</p>
+            <p><strong className="text-on-surface">Dịch vụ bên thứ ba.</strong> Smartfolio sử dụng một số dịch vụ bên ngoài để cung cấp tính năng. Các liên kết bên dưới dẫn tới tài liệu chính thức về cách những nhà cung cấp này xử lý dữ liệu.</p>
           </aside>
-          <p className="mt-5 text-xs text-outline">Cập nhật lần cuối: 11/11/2026</p>
+          <p className="mt-5 text-xs text-outline">Cập nhật lần cuối: 22/11/2026</p>
         </header>
 
         <div className="rounded-2xl border border-outline-variant bg-surface-container px-5 shadow-lg sm:px-9">
@@ -107,36 +107,35 @@ export default function DataTransparencyPage() {
           </Section>
 
           <Section icon={FileText} title="Khi dùng AI cho CV">
-            <p>Khi nhập hoặc phân tích CV, phần nội dung cần xử lý được gửi tới dịch vụ AI qua máy chủ. Tùy cấu hình, yêu cầu được xử lý bởi Groq hoặc Google Gemini; khi xảy ra một số lỗi tạm thời, hệ thống có thể thử gửi yêu cầu đó tới nhà cung cấp còn lại.</p>
+            <p>Khi phân tích CV, nội dung cần thiết được gửi tới dịch vụ AI qua máy chủ Smartfolio. Groq là nhà cung cấp chính; nếu xảy ra một số lỗi tạm thời, cùng nội dung có thể được chuyển tới Google Gemini.</p>
             <p className="text-sm">Tài liệu của nhà cung cấp: <ProviderLink href="https://console.groq.com/docs/your-data">Groq — dữ liệu API</ProviderLink><span aria-hidden="true"> · </span><ProviderLink href="https://ai.google.dev/gemini-api/terms">Google Gemini API — điều khoản</ProviderLink>.</p>
-            <p>Groq đang là nhà cung cấp chính theo cấu hình được xác nhận. Ảnh Data Controls cho thấy Inference API ZDR đang tắt; theo tài liệu Groq, input/output inference có thể được lưu tối đa 30 ngày cho mục đích độ tin cậy và tuân thủ. Batch và Fine-tuning/LoRA đang bật trong tài khoản nhưng ứng dụng hiện không gọi các API này.</p>
-            <p>Nếu Groq gặp một số lỗi tạm thời như quá tải, giới hạn tốc độ hoặc lỗi máy chủ, hệ thống có thể gửi lại cùng nội dung sang Gemini. Gemini hiện dùng gói miễn phí; theo điều khoản Gemini API, Google có thể dùng nội dung gửi lên và phản hồi để cải thiện dịch vụ, và người đánh giá có thể xem xét nội dung đó. Vì vậy, khi fallback xảy ra, CV/JD liên quan có thể được gửi tới Gemini.</p>
-            <p>Các thiết lập trên được xác nhận cho cấu hình hiện tại; cần kiểm tra lại nếu thay đổi nhà cung cấp, gói dịch vụ hoặc Data Controls.</p>
+            <p>Tùy chọn Zero Data Retention (ZDR) cho Inference API hiện đang tắt. Theo <ProviderLink href="https://console.groq.com/docs/your-data">tài liệu Groq về dữ liệu API</ProviderLink>, dữ liệu đầu vào và đầu ra của yêu cầu có thể được lưu tối đa 30 ngày nhằm duy trì độ tin cậy hệ thống và đáp ứng yêu cầu tuân thủ. Ứng dụng không gửi dữ liệu qua API Batch hoặc Fine-tuning/LoRA.</p>
+            <p>Theo <ProviderLink href="https://ai.google.dev/gemini-api/terms">điều khoản Gemini API</ProviderLink>, Google có thể sử dụng nội dung gửi lên và phản hồi để cải thiện dịch vụ; người đánh giá có thể xem xét nội dung đó. Vì vậy, CV liên quan có thể được chuyển tới Google khi cơ chế dự phòng được kích hoạt.</p>
           </Section>
 
           <Section icon={Mic} title="Khi luyện phỏng vấn">
-            <p>Câu trả lời/transcript và thông tin phiên được lưu trong Smartfolio để xem lại và tạo đánh giá. Khi dùng nhận dạng realtime, âm thanh micro được gửi trực tiếp từ trình duyệt tới ElevenLabs; ở luồng gửi file âm thanh, file đi qua backend rồi được chuyển tới ElevenLabs để nhận dạng. Luồng này lưu văn bản transcript vào câu trả lời, không lưu file âm thanh trong phiên. Hệ thống cũng gửi câu hỏi tới ElevenLabs để tạo tiếng đọc. Ảnh Usage Analytics xác nhận tài khoản đã gọi các endpoint TTS, realtime STT và cấp token STT. Nếu bật ghi âm toàn buổi, file ghi âm chỉ lưu cục bộ trong IndexedDB trên thiết bị, không gửi file ghi âm đó lên máy chủ Smartfolio.</p>
-            <p className="text-sm">Tài liệu của nhà cung cấp: <ProviderLink href="https://elevenlabs.io/privacy-policy">ElevenLabs — quyền riêng tư</ProviderLink><span aria-hidden="true"> · </span><ProviderLink href="https://elevenlabs.io/docs/eleven-api/resources/zero-retention-mode">ElevenLabs — tùy chọn lưu giữ API</ProviderLink>. Tài liệu về Zero Retention Mode chỉ mô tả tùy chọn của nhà cung cấp; trang này không khẳng định tùy chọn đó đang được bật cho Smartfolio.</p>
-            <p>Ứng dụng không gửi tùy chọn tắt lưu lịch sử (`enable_logging=false`); API realtime STT mặc định bật logging, còn Zero Retention Mode chỉ dành cho khách hàng Enterprise đủ điều kiện. Vì vậy ElevenLabs có thể lưu nội dung trong lịch sử dịch vụ theo chính sách của họ. Smartfolio hiện không có chức năng xóa lịch sử TTS/STT tại ElevenLabs; xóa dữ liệu trong Smartfolio không xóa dữ liệu đã gửi tới nhà cung cấp.</p>
-            <p>Nếu bật ghi âm toàn buổi, bản ghi được lưu trong IndexedDB của trình duyệt trên thiết bị này để nghe hoặc tải về. Ứng dụng hiện không có nút xóa bản ghi cục bộ; bản ghi có thể bị xóa khi xóa dữ liệu trang web trong trình duyệt.</p>
+            <p>Câu trả lời, bản chép lời và thông tin phiên được lưu trong Smartfolio để xem lại và tạo đánh giá. Khi nhận dạng giọng nói trực tiếp, âm thanh từ micro được gửi từ trình duyệt tới ElevenLabs. Khi nhận dạng từ tệp tải lên, tệp được chuyển qua máy chủ Smartfolio tới ElevenLabs. Smartfolio lưu phần văn bản nhận dạng trong câu trả lời, không lưu tệp âm thanh dùng để nhận dạng. Câu hỏi phỏng vấn cũng được gửi tới ElevenLabs để tạo giọng đọc. Nếu bật ghi âm toàn buổi, bản ghi chỉ được lưu trong trình duyệt trên thiết bị của bạn, không gửi lên máy chủ Smartfolio.</p>
+            <p className="text-sm">Tài liệu của nhà cung cấp: <ProviderLink href="https://elevenlabs.io/privacy-policy">ElevenLabs — quyền riêng tư</ProviderLink><span aria-hidden="true"> · </span><ProviderLink href="https://elevenlabs.io/docs/eleven-api/resources/zero-retention-mode">ElevenLabs — tùy chọn lưu giữ API</ProviderLink>. Zero Retention Mode chỉ áp dụng cho một số khách hàng và loại API theo điều kiện của ElevenLabs.</p>
+            <p>Với tính năng nhận dạng giọng nói trực tiếp, Smartfolio không yêu cầu ElevenLabs tắt lưu lịch sử. Vì vậy, ElevenLabs có thể lưu nội dung theo chính sách của họ. Smartfolio hiện chưa hỗ trợ xóa lịch sử tổng hợp hoặc nhận dạng giọng nói tại ElevenLabs; xóa dữ liệu trong Smartfolio không xóa dữ liệu đã gửi tới nhà cung cấp.</p>
+            <p>Bản ghi buổi phỏng vấn được lưu trong trình duyệt để nghe hoặc tải về. Smartfolio hiện chưa có chức năng xóa bản ghi này; bạn có thể xóa dữ liệu trang web trong trình duyệt để xóa bản ghi khỏi thiết bị.</p>
           </Section>
 
           <Section icon={BarChart3} title="Đo lường và đăng nhập">
-            <p>Google Analytics chỉ được bật khi cấu hình môi trường cho phép, domain nằm trong danh sách cho phép và bạn đồng ý. Ứng dụng gửi các sự kiện đã lọc theo danh sách cho phép; từ chối hoặc rút lại lựa chọn sẽ ngừng gửi sự kiện từ ứng dụng. Xem <ProviderLink href="https://support.google.com/analytics/answer/6004245?hl=en">tài liệu Google Analytics về dữ liệu</ProviderLink>.</p>
+            <p>Google Analytics chỉ hoạt động trên các website được cấu hình cho phép và khi bạn đồng ý. Ứng dụng gửi một số sự kiện sử dụng đã chọn; từ chối hoặc rút lại lựa chọn sẽ ngừng gửi các sự kiện này. Xem <ProviderLink href="https://support.google.com/analytics/answer/6004245?hl=en">tài liệu Google Analytics về dữ liệu</ProviderLink>.</p>
             <p>Nếu chọn đăng nhập bằng Google, thông tin tài khoản cần thiết cho đăng nhập được trao đổi với Google theo luồng OAuth. Tham khảo <ProviderLink href="https://policies.google.com/privacy">Chính sách quyền riêng tư của Google</ProviderLink>.</p>
           </Section>
 
           <Section icon={BarChart3} title="Thanh toán qua payOS">
-            <p>Khi bạn thanh toán, Smartfolio chuyển bạn tới cổng payOS. Backend gửi mã đơn hàng, số tiền, mô tả gói và URL quay lại/hủy để tạo yêu cầu thanh toán. payOS/ngân hàng xử lý thông tin thanh toán bạn cung cấp tại cổng của họ; Smartfolio lưu đơn hàng, số tiền, phương thức và trạng thái giao dịch để cấp quyền lợi và đối soát. Nhật ký webhook chỉ lưu các trường đối soát được lọc như mã giao dịch, số tiền, trạng thái và thời gian.</p>
+            <p>Khi thanh toán, Smartfolio chuyển bạn tới cổng payOS và gửi mã đơn hàng, số tiền, mô tả gói cùng địa chỉ quay lại hoặc hủy giao dịch. payOS và ngân hàng xử lý thông tin thanh toán bạn cung cấp tại cổng của họ. Smartfolio lưu thông tin đơn hàng và giao dịch cần thiết để cấp quyền lợi, gồm số tiền, phương thức, trạng thái và thời gian.</p>
             <p>Tham khảo <ProviderLink href="https://payos.vn/privacy-policy/">Chính sách bảo mật payOS</ProviderLink>.</p>
           </Section>
 
           <Section icon={ShieldCheck} title="Sửa, xóa và lưu giữ">
-            <p>Hiện có thể xóa từng CV và JD trong các mục quản lý tương ứng. Ứng dụng chưa có chức năng xóa tài khoản hoặc phiên/câu trả lời phỏng vấn, và chưa có tác vụ tự động xóa dữ liệu của tài khoản đã xác thực hay lịch sử phỏng vấn. Vì vậy các dữ liệu này tiếp tục được lưu trong Neon DB cho tới khi được xử lý trực tiếp ở cấp dữ liệu/dự án.</p>
-            <p>Với cấu hình gói miễn phí mặc định, Render giữ runtime logs 7 ngày. Neon Free giữ change history phục vụ khôi phục tối đa 6 giờ (giới hạn 1 GB); có thể khôi phục trạng thái database trước thao tác trong khoảng lịch sử này. Gói Free có một snapshot thủ công và không có lịch backup tự động. Đây không phải lịch tự xóa dữ liệu ứng dụng. Frontend trên Vercel là static site, không có serverless function xử lý request ứng dụng; Hobby có runtime log retention 1 giờ nếu có runtime logs.</p>
+            <p>Bạn có thể xóa từng CV và JD trong các mục quản lý tương ứng. Smartfolio hiện chưa hỗ trợ xóa tài khoản hoặc phiên/câu trả lời phỏng vấn và chưa tự động xóa dữ liệu của tài khoản đã xác thực hay lịch sử phỏng vấn. Những dữ liệu này tiếp tục được lưu trong cơ sở dữ liệu của Smartfolio.</p>
+            <p>Render lưu nhật ký hoạt động của máy chủ trong 7 ngày. Gói Neon Free cung cấp lịch sử thay đổi cơ sở dữ liệu tối đa 6 giờ để khôi phục dữ liệu, với giới hạn 1 GB; gói này có một bản sao lưu thủ công và không có lịch sao lưu tự động. Lịch sử khôi phục và bản sao lưu không phải là thời hạn lưu hoặc xóa dữ liệu ứng dụng. Vercel phân phối giao diện web tĩnh của Smartfolio và không xử lý yêu cầu ứng dụng bằng các hàm máy chủ.</p>
             <p>Chính sách payOS nói dữ liệu được lưu trong thời gian cần thiết cho mục đích dịch vụ hoặc theo nghĩa vụ pháp luật; chính sách không nêu một thời hạn cố định áp dụng cho mọi giao dịch. Dữ liệu giao dịch vẫn có thể phải lưu theo yêu cầu kế toán/ngân hàng.</p>
-            <p>Một ngoại lệ có cấu hình rõ trong code là một số tài khoản đăng ký email chưa xác thực: tác vụ dọn dẹp có thể xóa chúng sau thời gian mặc định 2 ngày, nếu xác thực đã hết hạn và không có dấu hiệu tài khoản đã được sử dụng. Thời hạn thực tế có thể được cấu hình khác khi triển khai.</p>
-            <p>Hiện Smartfolio không có chức năng xóa tài khoản, phiên/câu trả lời phỏng vấn hoặc dữ liệu đã gửi tới nhà cung cấp AI. Xóa CV/JD trong Smartfolio không đồng nghĩa với việc dữ liệu đã gửi tới nhà cung cấp được xóa.</p>
+            <p>Tài khoản đăng ký bằng email nhưng chưa xác thực có thể được xóa tự động sau 2 ngày nếu liên kết xác thực đã hết hạn và tài khoản chưa được sử dụng. Thời hạn này có thể thay đổi theo cấu hình dịch vụ.</p>
+            <p>Smartfolio hiện chưa hỗ trợ xóa dữ liệu đã gửi tới nhà cung cấp AI. Xóa CV hoặc JD trong Smartfolio không đồng nghĩa với việc dữ liệu đã gửi tới nhà cung cấp được xóa.</p>
           </Section>
 
           <section className="border-t border-outline-variant py-7 sm:py-9">
@@ -144,7 +143,7 @@ export default function DataTransparencyPage() {
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><ExternalLink className="h-5 w-5" aria-hidden="true" /></span>
               Nguồn tham khảo chính thức
             </h2>
-            <p className="mt-3 max-w-4xl text-sm leading-7 text-on-surface-variant">Các liên kết này cũng được đặt cạnh phần mô tả luồng dữ liệu liên quan để bạn tra cứu ngay tại chỗ. Tài liệu có thể được nhà cung cấp cập nhật; hãy xem nội dung hiện hành tại trang đích.</p>
+            <p className="mt-3 max-w-4xl text-sm leading-7 text-on-surface-variant">Các tài liệu dưới đây giải thích chính sách và cách xử lý dữ liệu của từng nhà cung cấp. Nội dung có thể được cập nhật; phiên bản hiện hành được đăng trên trang của nhà cung cấp.</p>
             <ul className="mt-5 grid gap-3 sm:grid-cols-2">
               {providerDocs.map((doc) => (
                 <li key={doc.href}>
@@ -161,14 +160,6 @@ export default function DataTransparencyPage() {
             </ul>
           </section>
 
-          <section className="border-t border-outline-variant py-7 sm:py-9">
-            <div className="rounded-xl border border-amber-400/30 bg-amber-300/5 p-5 sm:p-6">
-            <h2 className="text-lg font-bold text-amber-200 sm:text-xl">Những điểm Smartfolio chưa xác nhận</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-on-surface-variant">
-              <li>Thông tin ứng dụng Google OAuth thực tế trên project production (màn hình đồng ý, scopes được cấp và cấu hình dự án); code hiện yêu cầu thông tin cơ bản email/profile.</li>
-            </ul>
-            </div>
-          </section>
         </div>
       </main>
       <Footer />

@@ -1,6 +1,7 @@
 // /src/pages/interview/InterviewRoom.jsx
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import { Clock, Mic, MicOff, LoaderCircle } from 'lucide-react';
 import logo from '../../../assets/logo.jpg';
 import { RecruiterAvatar } from '../components/RecruiterAvatar';
@@ -29,6 +30,7 @@ const END_PHRASE_REGEX = new RegExp(
 
 export function InterviewRoom() {
     const navigate = useNavigate();
+    const {refreshQuota} = useAuth();
     const { data, update, generateQuestions, saveAnswer, addTranscript, finishInterview } = useInterviewSession();
     const {
         audioLevels,
@@ -44,13 +46,19 @@ export function InterviewRoom() {
             if (typeof generateQuestions === 'function') {
                 try {
                     const result = generateQuestions();
-                    if (result instanceof Promise) result.catch(console.error);
+                    if (result instanceof Promise) {
+                        result.then(() => {
+                            refreshQuota()
+                                .then((quota) => update({quotaSnapshot: quota, quotaSnapshotAt: Date.now()}))
+                                .catch((error) => console.warn('Không thể làm mới quota phỏng vấn.', error));
+                        }).catch(console.error);
+                    }
                 } catch (err) {
                     console.error("Lỗi khi chạy generateQuestions:", err);
                 }
             }
         }
-    }, [data.questions, generateQuestions, update]);
+    }, [data.questions, generateQuestions, refreshQuota, update]);
 
     const [phase, setPhase] = useState('asking'); // asking | recording | processing | between | done
     const [currentIndex, setCurrentIndex] = useState(() => Math.min(data.answers?.length || 0, data.questions?.length || 0));

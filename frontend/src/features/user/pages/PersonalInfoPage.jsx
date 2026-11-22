@@ -1,10 +1,10 @@
-import {useState, useEffect, useRef} from 'react';
+import {useState, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Package, Camera, Link, Globe, Code, Sparkles, Shield, User, LoaderCircle} from 'lucide-react';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Input, Badge, SectionHeader} from '../components/Layout.jsx';
-import apiClient, { getApiErrorMessage } from '../../../services/apiClient.js';
+import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { validateProfile } from '../../../utils/inputValidation.js';
 
 const PersonalInfoPage = () => {
@@ -20,18 +20,8 @@ const PersonalInfoPage = () => {
     }));
     const [isSaving, setIsSaving] = useState(false);
     const savingRef = useRef(false);
-    const [usageQuota, setUsageQuota] = useState(null);
+    const usageQuota = profile.quota || null;
     const [validationErrors, setValidationErrors] = useState({});
-
-    useEffect(() => {
-        let active = true;
-        apiClient.get('/v1/payments/quota')
-            .then((response) => {
-                if (active) setUsageQuota(response.data?.result || response.data?.data);
-            })
-            .catch(() => { if (active) setUsageQuota(null); });
-        return () => { active = false; };
-    }, []);
 
     const handleChange = (e) => {
         if (savingRef.current) return;

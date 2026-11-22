@@ -9,10 +9,10 @@ import {
 } from 'lucide-react';
 import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Badge} from '../components/Layout.jsx';
-import {paymentService} from '../../payment/services/paymentService.js';
 import PaymentHistory from '../components/PaymentHistory.jsx';
 import {trackNavigationEvent} from '../../analytics/services/analyticsClient.js';
 import {useAnalyticsConsent} from '../../analytics/components/AnalyticsProvider.jsx';
+import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 
 // Keep package quantities aligned with QuotaBenefitConfig and the payment catalog.
 const cvComparisonRows = [
@@ -66,8 +66,8 @@ const PlanComparison = ({title, rows}) => (
 const PricingPage = () => {
     const [activeFaq, setActiveFaq] = useState(null);
     const [comparisonType, setComparisonType] = useState(null); // 'cv' | 'interview' | null
-    const [quota, setQuota] = useState(null);
-    const [quotaError, setQuotaError] = useState('');
+    const {profile, refreshQuota} = useAuth();
+    const quota = profile.quota || null;
     const {showToast} = useApp();
     const navigate = useNavigate();
     const location = useLocation();
@@ -77,21 +77,9 @@ const PricingPage = () => {
         if (canTrack) trackNavigationEvent('pricing_viewed', location.key, {screen_name: 'pricing'});
     }, [canTrack, location.key]);
 
-    useEffect(() => {
-        let active = true;
-        paymentService.getCurrentQuota()
-            .then((current) => { if (active) setQuota(current); })
-            .catch(() => { if (active) setQuotaError('Không tải được trạng thái gói.'); });
-        return () => { active = false; };
-    }, []);
-
-    const getPlanAction = (category, targetPlan) => {
-        if (!quota) {
-            return quotaError
-                ? {label: 'Chọn gói', disabled: false, state: 'upgrade'}
-                : {label: 'Đang tải...', disabled: true, state: 'loading'};
-        }
-        const currentPlan = category === 'CV' ? quota.cvPlan : quota.interviewPlan;
+    const getPlanAction = (category, targetPlan, quotaSnapshot = quota) => {
+        if (!quotaSnapshot) return {label: 'Đang tải...', disabled: true, state: 'loading'};
+        const currentPlan = category === 'CV' ? quotaSnapshot.cvPlan : quotaSnapshot.interviewPlan;
         const planLevels = {FREE: 0, MIDDLE: 1, ENHANCE: 2};
         if (currentPlan === targetPlan) return currentPlan === 'FREE'
             ? {label: 'Đang sử dụng gói này', disabled: true, state: 'current'}
@@ -101,9 +89,14 @@ const PricingPage = () => {
         return {label: 'Nâng cấp', disabled: false, state: 'upgrade'};
     };
 
-    const handlePlanSelection = (category, targetPlan, serviceId) => {
-        if (!['upgrade', 'topup'].includes(getPlanAction(category, targetPlan).state)) return;
-        navigate(`/payment?serviceId=${serviceId}`);
+    const handlePlanSelection = async (category, targetPlan, serviceId) => {
+        try {
+            const latestQuota = await refreshQuota();
+            if (!['upgrade', 'topup'].includes(getPlanAction(category, targetPlan, latestQuota).state)) return;
+            navigate(`/payment?serviceId=${serviceId}`);
+        } catch {
+            showToast('Không thể xác minh gói dịch vụ hiện tại. Vui lòng thử lại.', 'error');
+        }
     };
 
     const planButtonClass = (action, upgradeClass) =>
@@ -123,7 +116,6 @@ const PricingPage = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
                 <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {quotaError && <p className="md:col-span-2 text-sm text-red-700">{quotaError}</p>}
                     <Card className="p-6 bg-[#B5C2BC] border-none shadow-sm">
                         <Badge variant="light" className="text-[10px] !text-[#1E293B] font-bold">Gói CV</Badge>
                         <div className="flex justify-between items-start gap-3 mt-2 mb-5">

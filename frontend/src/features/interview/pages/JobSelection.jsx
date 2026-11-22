@@ -4,21 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Code, Monitor, Server, Cloud, Bug, Database, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Header } from '../../../components/layout/PublicHeader.jsx';
 import { Footer } from '../../../components/layout/Footer.jsx';
+import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import { JOBS } from '../constants/jobs.js';
 import { useInterviewSession } from '../hooks/useInterviewSession.js';
-import { paymentService } from '../../payment/services/paymentService.js';
 import '../interview.css';
 
 const ICONS = { Code, Monitor, Server, Cloud, Bug, Database };
 
 export default function JobSelection() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const { data, update, setStep } = useInterviewSession();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedId, setSelectedId] = useState(data.job?.id || null);
-  const [quotaLoading, setQuotaLoading] = useState(!data.quotaSnapshot);
-  const [quotaError, setQuotaError] = useState('');
-  const [quotaRetry, setQuotaRetry] = useState(0);
 
   useEffect(() => {
     setStep(1);
@@ -31,31 +29,19 @@ export default function JobSelection() {
   }, [setStep, update]);
 
   useEffect(() => {
-    let active = true;
-    setQuotaLoading(true);
-    setQuotaError('');
-    paymentService.getCurrentQuota()
-      .then((quotaSnapshot) => {
-        if (!active) return;
-        update({ quotaSnapshot, quotaSnapshotAt: Date.now() });
-      })
-      .catch(() => {
-        if (active) setQuotaError('Không tải được số phút Interview. Vui lòng thử lại.');
-      })
-      .finally(() => {
-        if (active) setQuotaLoading(false);
-      });
-    return () => { active = false; };
-  }, [quotaRetry, update]);
+    if (profile?.quota) {
+      update({ quotaSnapshot: profile.quota, quotaSnapshotAt: Date.now() });
+    }
+  }, [profile?.quota, update]);
 
   const filtered = JOBS.filter((j) =>
     j.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleNext = () => {
-    if (!selectedId || quotaLoading || quotaError || !data.quotaSnapshot) return;
-    const job = JOBS.find((j) => j.id === selectedId);
-    update({ job });
+    const job = JOBS.find((item) => item.id === selectedId);
+    if (!job) return;
+    update({ job, quotaSnapshot: profile?.quota || data.quotaSnapshot, quotaSnapshotAt: Date.now() });
     navigate('/interview/cv-status');
   };
 
@@ -71,9 +57,7 @@ export default function JobSelection() {
         </div>
 
         <p className="text-center text-sm text-on-surface-variant mb-5" aria-live="polite">
-          {quotaLoading ? 'Đang kiểm tra số phút Interview…' : quotaError ? (
-            <>{quotaError} <button type="button" onClick={() => setQuotaRetry((value) => value + 1)} className="font-semibold text-primary underline">Thử lại</button></>
-          ) : data.quotaSnapshot?.quotaExempt ? 'Tài khoản tester: không giới hạn quota phỏng vấn' : `Đã kiểm tra số phút Interview: ${Number(data.quotaSnapshot?.remainingInterviewMinutes ?? 0)} phút còn lại`}
+          {data.quotaSnapshot?.quotaExempt ? 'Tài khoản tester: không giới hạn quota phỏng vấn' : data.quotaSnapshot ? `Còn ${Number(data.quotaSnapshot.remainingInterviewMinutes ?? 0)} phút Interview` : 'Hạn mức sẽ được kiểm tra khi bắt đầu phỏng vấn.'}
         </p>
 
         <div className="relative mb-8 shadow-sm rounded-xl">
@@ -120,7 +104,7 @@ export default function JobSelection() {
           </button>
           <button
             onClick={handleNext}
-            disabled={!selectedId || quotaLoading || Boolean(quotaError) || !data.quotaSnapshot}
+            disabled={!selectedId}
             className="interview-flow-button-primary interview-flow-button-primary--rounded-lg interview-flow-button-primary--muted-disabled interview-flow-button-primary--container-hover flex items-center px-6 py-2.5"
           >
             Tiếp tục <ArrowRight className="w-4 h-4 ml-2" />

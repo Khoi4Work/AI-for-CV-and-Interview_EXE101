@@ -13,13 +13,13 @@ import {
 } from 'lucide-react';
 import {Header} from "../../../components/layout/PublicHeader.jsx";
 import {useApp} from '../../auth/contexts/AppContext.jsx';
+import {useAuth} from '../../auth/contexts/AuthContext.jsx';
 import {useCV} from '../contexts/CVContext.jsx';
 import {mapImportedCVData} from '../mapper/cv-data-mapper.js';
 import {Footer} from "../../../components/layout/Footer.jsx";
 import {extractCV} from '../services/cvImportService.js';
 import {getApiErrorMessage} from '../../../services/apiClient.js';
 import ProfilePhotoPicker from '../components/ProfilePhotoPicker.jsx';
-import {paymentService} from '../../payment/services/paymentService.js';
 import {checkBuilderQuota} from '../domain/builderQuota.js';
 import {validateCVDataFields} from '../../../utils/inputValidation.js';
 import galleryService from '../../../features/user/services/galleryService.js';
@@ -28,6 +28,7 @@ import {categorizeAnalyticsError, safeFileType} from '../../analytics/utils/sani
 
 export default function CVBuilder() {
     const {showToast} = useApp();
+    const {refreshQuota} = useAuth();
     const navigate = useNavigate();
     const {
         cvData,
@@ -118,7 +119,7 @@ export default function CVBuilder() {
     const handleRetryQuota = async () => {
         setQuotaState({ loading: true, error: '', exhausted: false });
         try {
-            await checkBuilderQuota(() => paymentService.getCurrentQuota());
+            await checkBuilderQuota(refreshQuota);
             setQuotaState({ loading: false, error: '', exhausted: false });
         } catch (error) {
             setQuotaState({ loading: false,
@@ -168,7 +169,7 @@ export default function CVBuilder() {
         setIsSaving(true);
         try {
             // Check only when the user continues to the editor.
-            await checkBuilderQuota(() => paymentService.getCurrentQuota());
+            await checkBuilderQuota(refreshQuota);
             setHasCV(true);
             showToast('Thông tin CV đã sẵn sàng. Bạn có thể chỉnh sửa và tải file ở bước tiếp theo.', 'success');
             navigate('/editor');

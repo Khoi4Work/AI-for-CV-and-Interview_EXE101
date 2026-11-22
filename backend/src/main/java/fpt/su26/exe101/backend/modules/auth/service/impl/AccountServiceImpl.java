@@ -9,6 +9,7 @@ import fpt.su26.exe101.backend.modules.auth.entity.*;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountProvider;
 import fpt.su26.exe101.backend.modules.auth.entity.enums.AccountRole;
 import fpt.su26.exe101.backend.modules.auth.event.AccountCreatedEvent;
+import fpt.su26.exe101.backend.modules.quota.entity.UserUsageQuota;
 import org.springframework.context.ApplicationEventPublisher;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import fpt.su26.exe101.backend.modules.auth.repository.*;
@@ -257,6 +258,10 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Account not found"));
 
+        quotaService.initializeDefaultQuota(account.getId());
+        UserUsageQuota quota = quotaService.getQuota(account.getId())
+                .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "Account quota not found"));
+
         Map<String, Object> profile = new HashMap<>();
         profile.put("email", account.getEmail());
         profile.put("provider", account.getProvider());
@@ -296,11 +301,26 @@ public class AccountServiceImpl implements AccountService {
             profile.put("fullName", account.getEmail());
         }
 
-        String planName = quotaService.getCvPlan(account.getId()).name();
+        String planName = quota.getCvPlan().name();
         profile.put("membershipType", planName.charAt(0) + planName.substring(1).toLowerCase());
-        String interviewPlanName = quotaService.getInterviewPlan(account.getId()).name();
+        String interviewPlanName = quota.getInterviewPlan().name();
         profile.put("interviewMembershipType", interviewPlanName.charAt(0) + interviewPlanName.substring(1).toLowerCase());
         profile.put("memberSince", account.getCreatedAt() == null ? "" : String.valueOf(account.getCreatedAt().getYear()));
+
+        Map<String, Object> quotaDetails = new HashMap<>();
+        quotaDetails.put("remainingCvCount", quota.getRemainingCvCnt());
+        quotaDetails.put("remainingCvFreeCredits", quota.getRemainingCvFreeCredits());
+        quotaDetails.put("remainingCvMiddleCredits", quota.getRemainingCvMiddleCredits());
+        quotaDetails.put("remainingCvEnhanceCredits", quota.getRemainingCvEnhanceCredits());
+        quotaDetails.put("remainingInterviewMinutes", quota.getRemainingIntMin());
+        quotaDetails.put("cvPlan", quota.getCvPlan());
+        quotaDetails.put("interviewPlan", quota.getInterviewPlan());
+        quotaDetails.put("cvNonExpiring", true);
+        quotaDetails.put("interviewNonExpiring", true);
+        quotaDetails.put("quotaExempt", quotaService.isQuotaExempt(account.getId()));
+        quotaDetails.put("cvPeriodEnd", quota.getCvPeriodEnd());
+        quotaDetails.put("interviewPeriodEnd", quota.getInterviewPeriodEnd());
+        profile.put("quota", quotaDetails);
 
         return profile;
     }

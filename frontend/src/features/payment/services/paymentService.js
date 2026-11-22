@@ -1,5 +1,6 @@
 import axios from 'axios';
 import apiClient from '../../../services/apiClient.js';
+import { getCurrentQuota } from '../../../services/quotaService.js';
 
 const API_BASE_URL = import.meta.env.VITE_BE_URL  || 'http://localhost:8080/api';
 
@@ -10,8 +11,7 @@ export const paymentService = {
         return Array.isArray(orders) ? orders : [];
     },
     async getCurrentQuota() {
-        const response = await apiClient.get('/v1/payments/quota');
-        return response.data?.result || response.data?.data;
+        return getCurrentQuota();
     },
 
     async getPaymentServices() {

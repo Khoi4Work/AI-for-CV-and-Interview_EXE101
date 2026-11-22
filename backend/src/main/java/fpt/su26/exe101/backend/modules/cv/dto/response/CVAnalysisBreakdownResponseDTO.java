@@ -8,4 +8,9 @@ public record CVAnalysisBreakdownResponseDTO(
         BigDecimal weight,
         BigDecimal attainment,
         BigDecimal points) {
+    public CVAnalysisBreakdownResponseDTO {
+        weight = CVAnalysisScorePrecision.toTwoDecimalPlaces(weight);
+        attainment = CVAnalysisScorePrecision.toTwoDecimalPlaces(attainment);
+        points = CVAnalysisScorePrecision.toTwoDecimalPlaces(points);
+    }
 }

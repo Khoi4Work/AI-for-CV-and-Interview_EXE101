@@ -17,7 +17,6 @@ import {useCV} from '../contexts/CVContext.jsx';
 import {Header} from "../../../components/layout/PublicHeader.jsx";
 import GuestHeader from "../../../components/layout/GuestHeader.jsx";
 import {Footer} from "../../../components/layout/Footer.jsx";
-import {paymentService} from '../../payment/services/paymentService.js';
 import {getApiErrorMessage} from '../../../services/apiClient.js';
 import {checkBuilderQuota} from '../domain/builderQuota.js';
 import {trackEvent} from '../../analytics/services/analyticsClient.js';
@@ -27,7 +26,7 @@ export default function TemplateDetail() {
     const {id} = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const {profile, isLoggedIn, toggleFavorite} = useAuth();
+    const {profile, isLoggedIn, toggleFavorite, refreshQuota} = useAuth();
     const {showToast} = useApp();
     const {setTemplate} = useCV();
     const [checkingQuota, setCheckingQuota] = useState(false);
@@ -88,7 +87,7 @@ export default function TemplateDetail() {
         setCheckingQuota(true);
         setQuotaError(null);
         try {
-            await checkBuilderQuota(() => paymentService.getCurrentQuota());
+            await checkBuilderQuota(refreshQuota);
             setTemplate(id);
             trackEvent('template_selected', {template_id: id});
             navigate('/builder', {state: location.state});
