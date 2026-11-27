@@ -1,7 +1,17 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { Link, NavLink, Route, Routes, Navigate } from 'react-router-dom';
+import { Link, NavLink, Navigate, Route, Routes } from 'react-router-dom';
+import {
+    ArrowLeft,
+    CalendarDays,
+    ChevronDown,
+    ChevronUp,
+    CreditCard,
+    LayoutDashboard,
+    RefreshCw,
+    SlidersHorizontal,
+    Users,
+} from 'lucide-react';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
-import { LayoutDashboard, Users, CreditCard, ArrowLeft, RefreshCw, CalendarDays, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAdminData } from '../hooks/useAdminData.js';
 import { adminService } from '../services/adminService.js';
 import { money, dateTime, dateOnly, statuses, initialRange, fillDaily } from '../utils/adminFormat.js';
@@ -309,6 +319,8 @@ function Detail({ path, onClose }) {
     );
 }
 function Records({ payments = false }) {
+    const { profile } = useAuth();
+    const isTester = profile?.role === 'TESTER';
     const storageKey = payments ? 'payments' : 'users';
     const [savedState] = useState(() => {
         const draft = { search: '', status: '', role: '', provider: '', plan: '', category: '', includeTest: false, ...(payments ? initialRange() : { from: '', to: '' }) };
@@ -551,7 +563,7 @@ function Records({ payments = false }) {
                                                 >
                                                     Chi tiết
                                                 </button>
-                                                {!payments && (
+                                                {!payments && !isTester && (
                                                     (row.role === 'TESTER'
                                                         || (row.role === 'ATTENDANCE' && row.status === 'ACTIVE'))
                                                     && (
@@ -590,10 +602,22 @@ function Records({ payments = false }) {
     );
 }
 export default function AdminArea() {
-    const { handleLogout, isLoggingOut } = useAuth();
+    const { handleLogout, isLoggingOut, profile } = useAuth();
+    const isTester = profile?.role === 'TESTER';
     return <div className="min-h-screen bg-slate-50 text-slate-900"><header className="border-b border-slate-200 bg-white px-5 py-4"><div className="mx-auto flex max-w-7xl items-center justify-between"><span className="text-lg font-bold text-[#0b3c8f]">Smartfolio · Quản trị</span><div className="flex items-center gap-4"><Link to="/home" className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50"><ArrowLeft size={16}/> Trang người dùng</Link><button className="text-sm underline" disabled={isLoggingOut} onClick={handleLogout}>Đăng xuất</button></div></div></header>
-        <div className="mx-auto grid max-w-7xl gap-6 p-4 md:grid-cols-[210px_1fr] md:p-6"><nav className="flex flex-wrap gap-2 md:flex-col">
+        <div className="mx-auto grid max-w-7xl gap-6 p-4 md:grid-cols-[210px_1fr] md:p-6">
+            <nav className="flex flex-wrap gap-2 md:flex-col">
             {[["/admin", 'Tổng quan', LayoutDashboard], ["/admin/users", 'Người dùng', Users], ["/admin/payments", 'Thanh toán', CreditCard]].map(([to, label, Icon]) => <NavLink key={to} to={to} end className={({ isActive }) => `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold ${isActive ? 'bg-[#0b3c8f] text-white' : 'bg-white text-slate-600 hover:bg-blue-50'}`}><Icon size={19}/>{label}</NavLink>)}
-        </nav><main className="min-w-0"><Routes><Route index element={<Dashboard/>}/><Route path="users" element={<Records/>}/><Route path="payments" element={<Records key="payments" payments/>}/><Route path="*" element={<Navigate to="/admin" replace/>}/></Routes></main></div>
+            </nav>
+            <main className="min-w-0">
+                {isTester && <p className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">Chế độ Tester: chỉ xem, xem chi tiết và lọc. Các thao tác cập nhật đã tắt.</p>}
+                <Routes>
+                    <Route index element={<Dashboard/>}/>
+                    <Route path="users" element={<Records/>}/>
+                    <Route path="payments" element={<Records key="payments" payments/>}/>
+                    <Route path="*" element={<Navigate to="/admin" replace/>}/>
+                </Routes>
+            </main>
+        </div>
     </div>;
 }

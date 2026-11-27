@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
   const [session] = useState(() => createAuthSession(apiClient, localStorage));
   const auth = useSyncExternalStore(session.subscribe, session.getSnapshot, session.getSnapshot);
   // Keep the current view behind the blocked logout overlay; credentials are already removed.
-  const isLoggedIn = auth.status === 'authenticated' || auth.status === 'logging-out';
+  const isLoggedIn = ['profile-loading', 'profile-error', 'authenticated', 'logging-out'].includes(auth.status);
   const isLoading = auth.status === 'checking';
   const sessionExpired = auth.sessionExpired === true;
   const profile = auth.profile || EMPTY_PROFILE;
@@ -32,9 +32,9 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('auth:expired', onExpired);
   }, [session]);
 
-  const handleLogin = async (_userData, tokens) => {
+  const handleLogin = async (_userData, tokens, method = 'email') => {
     setIsSigningIn(true);
-    try { return await session.login(tokens); }
+    try { return await session.login(tokens, method); }
     finally { setIsSigningIn(false); }
   };
   const retryAuth = () => session.verify().catch(() => {});
@@ -124,11 +124,13 @@ export function AuthProvider({ children }) {
       isLoggedIn,
       isLoading,
       authStatus: auth.status,
+      loginEvent: auth.loginEvent || null,
       sessionExpired,
       isLoggingOut,
       is2faEnabled,
       profile,
       handleLogin,
+      retryAuth,
       handleLogout,
       updateProfile,
       quota: profile.quota || null,
@@ -152,7 +154,13 @@ export function AuthProvider({ children }) {
           <p>{auth.error}</p>
           <button onClick={retryAuth} className="rounded-xl bg-primary px-5 py-2 text-on-primary">Thử lại</button>
           <button onClick={handleLogout} className="text-sm underline">Đăng nhập bằng tài khoản khác</button>
-        </div> : children}
+        </div> : <>
+          {auth.status === 'profile-error' && <div role="alert" className="flex items-center justify-center gap-3 bg-surface-container-high px-4 py-2 text-sm text-on-surface">
+            <span>{auth.error}</span>
+            <button onClick={retryAuth} className="font-semibold underline">Thử lại</button>
+          </div>}
+          {children}
+        </>}
       </div>
     </AuthContext.Provider>
   );

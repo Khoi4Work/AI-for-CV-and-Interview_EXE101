@@ -8,7 +8,7 @@ import { useApp } from '../contexts/AppContext.jsx';
 import apiClient, { getApiErrorMessage } from '../../../services/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
-import { setAnalyticsEligibility, trackEvent } from '../../analytics/services/analyticsClient.js';
+import { trackEvent } from '../../analytics/services/analyticsClient.js';
 import { categorizeAnalyticsError } from '../../analytics/utils/sanitizeAnalytics.js';
 import TermsAcceptanceDialog from '../components/TermsAcceptanceDialog.jsx';
 
@@ -19,7 +19,7 @@ export default function Register() {
   const glassRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { handleLogin, isLoggedIn } = useAuth();
+  const { handleLogin, isLoggedIn, authStatus } = useAuth();
   const { showToast } = useApp();
   const [loading, setLoading] = useState(false);
   const [registering, setRegistering] = useState(false);
@@ -110,14 +110,8 @@ export default function Register() {
         return;
       }
       if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-      const authenticatedProfile = await handleLogin(null, tokens);
+      await handleLogin(null, tokens, 'google');
       setLoginSuccess(true);
-      const analyticsExcluded = ['ADMIN', 'TESTER'].includes(String(authenticatedProfile?.role || '').toUpperCase()) || authenticatedProfile?.analyticsExcluded === true;
-      setAnalyticsEligibility(!analyticsExcluded);
-      if (!analyticsExcluded) {
-        trackEvent('login', { method: 'google' });
-      }
-
       navigate('/home');
     } catch (err) {
       trackEvent('feature_error', { feature: 'login', error_category: categorizeAnalyticsError(err) });
@@ -136,11 +130,8 @@ export default function Register() {
       const response = await apiClient.post('/auth/oauth/google', { token: pendingGoogleToken, termsAccepted: true }, { publicRequest: true, anonymousRequest: true });
       const tokens = response.data?.result || response.data?.data || {};
       if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-      const profile = await handleLogin(null, tokens);
+      await handleLogin(null, tokens, 'google');
       setLoginSuccess(true);
-      const excluded = ['ADMIN', 'TESTER'].includes(String(profile?.role || '').toUpperCase()) || profile?.analyticsExcluded === true;
-      setAnalyticsEligibility(!excluded);
-      if (!excluded) trackEvent('login', { method: 'google' });
       setTermsDialogOpen(false);
       navigate('/home');
     } catch (err) {
@@ -154,7 +145,7 @@ export default function Register() {
     setError('Google login failed. Please try again.');
   };
 
-  if (isLoggedIn) return <Navigate to="/home" replace />;
+  if (isLoggedIn && authStatus !== 'profile-loading') return <Navigate to="/home" replace />;
 
   return (
     <>

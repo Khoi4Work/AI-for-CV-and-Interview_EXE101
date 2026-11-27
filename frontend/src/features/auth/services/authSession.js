@@ -3,6 +3,7 @@ const ROLES = new Set(['ADMIN', 'ATTENDANCE', 'PARTNER', 'TESTER']);
 export function createAuthSession(client, storage) {
     let state = { status: 'checking', profile: null, error: '', sessionExpired: false };
     let revision = 0;
+    let loginEventId = 0;
     let pending;
     let logoutRequest;
     const listeners = new Set();
@@ -22,7 +23,9 @@ export function createAuthSession(client, storage) {
             return Promise.resolve(null);
         }
         const attempt = revision;
-        publish({ status: 'checking', profile: null, error: '', sessionExpired: false });
+        const background = state.status === 'profile-loading' || state.status === 'profile-error';
+        const loginEvent = state.loginEvent;
+        publish({ status: background ? 'profile-loading' : 'checking', profile: null, error: '', sessionExpired: false, loginEvent });
         const request = Promise.resolve().then(async () => {
             try {
                 const response = await client.get('/auth/me');
@@ -30,7 +33,7 @@ export function createAuthSession(client, storage) {
                 if (!profile?.email || !ROLES.has(profile.role)) throw new Error('Thông tin tài khoản chưa hợp lệ. Vui lòng thử lại.');
                 if (attempt !== revision) return null;
                 storage.setItem('userProfile', JSON.stringify(profile));
-                publish({ status: 'authenticated', profile, error: '', sessionExpired: false });
+                publish({ status: 'authenticated', profile, error: '', sessionExpired: false, loginEvent });
                 return profile;
             } catch (error) {
                 if (attempt !== revision) return null;
@@ -38,7 +41,13 @@ export function createAuthSession(client, storage) {
                     expire(true);
                     return null;
                 }
-                publish({ status: 'error', profile: null, error: 'Không tải được thông tin tài khoản. Vui lòng thử lại.' });
+                publish({
+                    status: background ? 'profile-error' : 'error',
+                    profile: null,
+                    error: 'Không tải được thông tin tài khoản. Vui lòng thử lại.',
+                    sessionExpired: false,
+                    loginEvent,
+                });
                 throw error;
             } finally {
                 if (attempt === revision) pending = undefined;
@@ -72,16 +81,22 @@ export function createAuthSession(client, storage) {
             }).finally(() => { logoutRequest = undefined; });
             return logoutRequest;
         },
-        async login(tokens) {
+        login(tokens, method = 'email') {
             revision++;
             pending = undefined;
             storage.removeItem('userProfile');
             storage.setItem('accessToken', tokens.accessToken);
             if (tokens.refreshToken) storage.setItem('refreshToken', tokens.refreshToken);
             else storage.removeItem('refreshToken');
-            const profile = await verify();
-            if (!profile) throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-            return profile;
+            publish({
+                status: 'profile-loading',
+                profile: null,
+                error: '',
+                sessionExpired: false,
+                loginEvent: { id: ++loginEventId, method },
+            });
+            verify().catch(() => {});
+            return Promise.resolve(null);
         },
         updateProfile(update) {
             if (state.status !== 'authenticated') return;

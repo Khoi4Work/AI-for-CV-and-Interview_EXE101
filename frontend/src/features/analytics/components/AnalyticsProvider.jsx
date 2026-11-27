@@ -1,8 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../auth/contexts/AuthContext.jsx';
 import AnalyticsConsent from './AnalyticsConsent.jsx';
 import { analyticsConfig } from '../domain/analyticsConfig.js';
-import { configureAnalytics, resetAnalyticsContext, setAnalyticsConsent, setAnalyticsEligibility } from '../services/analyticsClient.js';
+import { configureAnalytics, resetAnalyticsContext, setAnalyticsConsent, setAnalyticsEligibility, trackEvent } from '../services/analyticsClient.js';
 
 const CONSENT_KEY = 'smartfolio.analytics.consent.v1';
 const CONSENT_VERSION = 1;
@@ -23,16 +23,22 @@ function persistConsent(status) {
 }
 
 export function AnalyticsProvider({ children }) {
-  const { authStatus, isLoading, profile } = useAuth();
+  const { authStatus, isLoading, loginEvent, profile } = useAuth();
   const [status, setStatus] = useState(readConsent);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
-  const authKnown = !isLoading && authStatus !== 'error';
+  const handledLoginEvent = useRef(0);
+  const authKnown = !isLoading && ['authenticated', 'guest', 'logging-out'].includes(authStatus);
   const excluded = profile?.analyticsExcluded === true || ['ADMIN', 'TESTER'].includes(String(profile?.role || '').toUpperCase());
   const canTrack = analyticsConfig.enabled && status === 'granted' && authKnown && !excluded;
 
   useEffect(() => { configureAnalytics(analyticsConfig); }, []);
   useEffect(() => { setAnalyticsConsent(status); }, [status]);
   useEffect(() => { setAnalyticsEligibility(authKnown && !excluded); }, [authKnown, excluded]);
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !loginEvent || loginEvent.id <= handledLoginEvent.current) return;
+    handledLoginEvent.current = loginEvent.id;
+    if (!excluded) trackEvent('login', { method: loginEvent.method });
+  }, [authStatus, excluded, loginEvent]);
   useEffect(() => {
     if (authStatus === 'guest' || authStatus === 'logging-out') resetAnalyticsContext();
   }, [authStatus]);

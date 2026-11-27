@@ -7,7 +7,7 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 import apiClient, { getApiErrorMessage } from '../../../services/apiClient.js';
 import { GoogleLogin } from '@react-oauth/google';
 import LoginLoading from '../components/LoginLoading.jsx';
-import { setAnalyticsEligibility, trackEvent } from '../../analytics/services/analyticsClient.js';
+import { trackEvent } from '../../analytics/services/analyticsClient.js';
 import { categorizeAnalyticsError } from '../../analytics/utils/sanitizeAnalytics.js';
 import TermsAcceptanceDialog from '../components/TermsAcceptanceDialog.jsx';
 
@@ -22,7 +22,7 @@ export default function Login() {
     const [termsDialogOpen, setTermsDialogOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const { handleLogin, isLoggedIn, sessionExpired: authSessionExpired } = useAuth();
+    const { handleLogin, isLoggedIn, authStatus, sessionExpired: authSessionExpired } = useAuth();
     const searchParams = new URLSearchParams(location.search);
     const emailVerified = searchParams.get('verified') === 'true';
     const verificationInvalid = searchParams.get('verification') === 'invalid';
@@ -68,14 +68,8 @@ export default function Login() {
             const { accessToken, refreshToken } = tokens;
 
             if (!accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            const authenticatedProfile = await handleLogin(null, { accessToken, refreshToken });
+            await handleLogin(null, { accessToken, refreshToken }, 'email');
             setLoginSuccess(true);
-            const analyticsExcluded = ['ADMIN', 'TESTER'].includes(String(authenticatedProfile?.role || '').toUpperCase()) || authenticatedProfile?.analyticsExcluded === true;
-            setAnalyticsEligibility(!analyticsExcluded);
-            if (!analyticsExcluded) {
-                trackEvent('login', { method: 'email' });
-            }
-
             navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
             trackEvent('feature_error', { feature: 'login', error_category: categorizeAnalyticsError(err) });
@@ -106,14 +100,8 @@ export default function Login() {
                 return;
             }
             if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            const authenticatedProfile = await handleLogin(null, tokens);
+            await handleLogin(null, tokens, 'google');
             setLoginSuccess(true);
-            const analyticsExcluded = ['ADMIN', 'TESTER'].includes(String(authenticatedProfile?.role || '').toUpperCase()) || authenticatedProfile?.analyticsExcluded === true;
-            setAnalyticsEligibility(!analyticsExcluded);
-            if (!analyticsExcluded) {
-                trackEvent('login', { method: 'google' });
-            }
-
             navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
             trackEvent('feature_error', { feature: 'login', error_category: categorizeAnalyticsError(err) });
@@ -132,11 +120,8 @@ export default function Login() {
             const response = await apiClient.post('/auth/oauth/google', { token: pendingGoogleToken, termsAccepted: true }, { publicRequest: true, anonymousRequest: true });
             const tokens = response.data?.result || response.data?.data || {};
             if (!tokens.accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            const profile = await handleLogin(null, tokens);
+            await handleLogin(null, tokens, 'google');
             setLoginSuccess(true);
-            const excluded = ['ADMIN', 'TESTER'].includes(String(profile?.role || '').toUpperCase()) || profile?.analyticsExcluded === true;
-            setAnalyticsEligibility(!excluded);
-            if (!excluded) trackEvent('login', { method: 'google' });
             setTermsDialogOpen(false);
             navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
@@ -150,7 +135,7 @@ export default function Login() {
         setError('Google login failed. Please try again.');
     };
 
-    if (isLoggedIn) return <Navigate to="/home" replace />;
+    if (isLoggedIn && authStatus !== 'profile-loading') return <Navigate to="/home" replace />;
 
     return (
         <>

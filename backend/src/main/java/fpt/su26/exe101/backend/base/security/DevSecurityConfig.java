@@ -5,6 +5,7 @@ import fpt.su26.exe101.backend.modules.auth.security.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -53,9 +54,9 @@ public class DevSecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
                         // 2. Public APIs
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/health", "/api/health/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.HEAD, "/api/health", "/api/health/**").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/templates").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/health", "/api/health/**").permitAll()
+                        .requestMatchers(HttpMethod.HEAD, "/api/health", "/api/health/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/templates").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(
                                 "/api/auth/accounts",
@@ -71,6 +72,13 @@ public class DevSecurityConfig {
                         ).permitAll()
 
                         // 3. Authenticated APIs
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/admin/statistics",
+                                "/api/admin/users",
+                                "/api/admin/users/*",
+                                "/api/admin/payments",
+                                "/api/admin/payments/*"
+                        ).hasAnyRole("ADMIN", "TESTER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/payments/checkout", "/api/v1/payments/history", "/api/v1/payments/quota").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
