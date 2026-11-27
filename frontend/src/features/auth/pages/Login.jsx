@@ -68,7 +68,7 @@ export default function Login() {
             const { accessToken, refreshToken } = tokens;
 
             if (!accessToken) throw new Error('Không nhận được thông tin đăng nhập');
-            await handleLogin(null, { accessToken, refreshToken }, 'email');
+            await handleLogin(null, tokens, 'email');
             setLoginSuccess(true);
             navigate(getPostLoginDestination(), { replace: sessionExpired });
         } catch (err) {
