@@ -64,8 +64,23 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
     }
 
     @Override
+    @Transactional
+    public UserUsageQuota updateTesterPlans(UUID accountId, UserPlan cvPlan, UserPlan interviewPlan) {
+        if (!isQuotaExempt(accountId)) {
+            throw new ApiException(ErrorCode.FORBIDDEN_ACTION, "Only tester accounts can change test package plans.");
+        }
+        if (cvPlan == null || interviewPlan == null) {
+            throw new ApiException(ErrorCode.INVALID_INPUT, "Both test package plans are required.");
+        }
+        UserUsageQuota quota = repository.findByAccountId(accountId).orElseGet(() -> defaultQuota(accountId));
+        quota.setCvPlan(cvPlan);
+        quota.setInterviewPlan(interviewPlan);
+        return repository.save(quota);
+    }
+
+    @Override
     @Transactional(readOnly = true)
-    public java.util.Optional<UserUsageQuota> getQuota(UUID accountId) {
+    public Optional<UserUsageQuota> getQuota(UUID accountId) {
         if (isQuotaExempt(accountId)) {
             return repository.findByAccountId(accountId).or(() -> Optional.of(defaultQuota(accountId)));
         }
@@ -89,7 +104,7 @@ public class UsageQuotaServiceImpl implements UsageQuotaService {
                 ? repository.findByAccountId(accountId).orElseGet(() -> defaultQuota(accountId))
                 : lockedQuota(accountId);
         if (exempt) {
-            UserPlan plan = quota.getCvPlan() == null ? UserPlan.FREE : quota.getCvPlan();
+            UserPlan plan = getCvPlan(accountId);
             int analysisLimit = benefitConfig.getBenefit(plan).getAiCvCnt();
             return new UsageQuotaService.CvCreationQuota(plan, analysisLimit, analysisLimit);
         }

@@ -1,4 +1,4 @@
-import {useState, useRef} from 'react';
+import {useState, useRef, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Package, Camera, Link, Globe, Code, Sparkles, Shield, User, LoaderCircle} from 'lucide-react';
 import {useAuth} from '../../auth/contexts/AuthContext.jsx';
@@ -6,10 +6,11 @@ import {useApp} from '../../auth/contexts/AppContext.jsx';
 import {Card, Button, Input, Badge, SectionHeader} from '../components/Layout.jsx';
 import { getApiErrorMessage } from '../../../services/apiClient.js';
 import { validateProfile } from '../../../utils/inputValidation.js';
+import { updateTesterPlans } from '../../../services/quotaService.js';
 
 const PersonalInfoPage = () => {
     const navigate = useNavigate();
-    const {profile, updateProfile, isLoading} = useAuth();
+    const {profile, updateProfile, isLoading, setProfile} = useAuth();
     const {showToast} = useApp();
 
     const [draft, setDraft] = useState(null);
@@ -22,6 +23,29 @@ const PersonalInfoPage = () => {
     const savingRef = useRef(false);
     const usageQuota = profile.quota || null;
     const [validationErrors, setValidationErrors] = useState({});
+    const [testerPlans, setTesterPlans] = useState({cvPlan: 'FREE', interviewPlan: 'FREE'});
+    const [isSavingTesterPlans, setIsSavingTesterPlans] = useState(false);
+    const tester = profile.role === 'TESTER';
+
+    useEffect(() => {
+        setTesterPlans({
+            cvPlan: usageQuota?.cvPlan || 'FREE',
+            interviewPlan: usageQuota?.interviewPlan || 'FREE',
+        });
+    }, [usageQuota?.cvPlan, usageQuota?.interviewPlan]);
+
+    const handleSaveTesterPlans = async () => {
+        setIsSavingTesterPlans(true);
+        try {
+            const updatedQuota = await updateTesterPlans(testerPlans);
+            setProfile(current => ({...current, quota: {...current.quota, ...updatedQuota}}));
+            showToast('Đã cập nhật gói kiểm thử.', 'success');
+        } catch (err) {
+            showToast(getApiErrorMessage(err), 'error');
+        } finally {
+            setIsSavingTesterPlans(false);
+        }
+    };
 
     const handleChange = (e) => {
         if (savingRef.current) return;
@@ -138,7 +162,34 @@ const PersonalInfoPage = () => {
                             </div>
                         </div>
                     </div>
-                    <Button variant="dark" onClick={() => navigate('/pricing')}>Quản lý gói dịch vụ</Button>
+                    {tester ? (
+                        <div className="mt-5 rounded-xl border border-white/20 bg-white/10 p-4">
+                            <h4 className="font-semibold text-white">Gói kiểm thử</h4>
+                            <p className="mt-1 text-sm text-[#CCFBF1]">Chọn cấp gói để kiểm tra quyền lợi và phản hồi AI. Cấp gói trên tài khoản Tester sẽ được cập nhật; thao tác này không tạo giao dịch hoặc thay đổi số dư quota.</p>
+                            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                {[['cvPlan', 'Gói CV'], ['interviewPlan', 'Gói phỏng vấn']].map(([key, label]) => (
+                                    <label key={key} className="block text-sm font-medium text-white">
+                                        {label}
+                                        <select
+                                            value={testerPlans[key]}
+                                            onChange={event => setTesterPlans(current => ({...current, [key]: event.target.value}))}
+                                            disabled={isSavingTesterPlans}
+                                            className="mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900"
+                                        >
+                                            <option value="FREE">FREE</option>
+                                            <option value="MIDDLE">MIDDLE</option>
+                                            <option value="ENHANCE">ENHANCE</option>
+                                        </select>
+                                    </label>
+                                ))}
+                            </div>
+                            <Button variant="dark" onClick={handleSaveTesterPlans} disabled={isSavingTesterPlans} className="mt-4">
+                                {isSavingTesterPlans ? 'Đang lưu...' : 'Lưu gói kiểm thử'}
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button variant="dark" onClick={() => navigate('/pricing')}>Quản lý gói dịch vụ</Button>
+                    )}
                 </Card>
             </div>
 

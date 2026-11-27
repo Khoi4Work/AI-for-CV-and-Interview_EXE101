@@ -1,7 +1,7 @@
 const ROLES = new Set(['ADMIN', 'ATTENDANCE', 'PARTNER', 'TESTER']);
 
 export function createAuthSession(client, storage) {
-    let state = { status: 'checking', profile: null, error: '', sessionExpired: false };
+    let state = { status: 'checking', profile: null, authorizationRole: null, error: '', sessionExpired: false };
     let revision = 0;
     let loginEventId = 0;
     let pending;
@@ -13,7 +13,7 @@ export function createAuthSession(client, storage) {
         revision++;
         pending = undefined;
         clear();
-        publish({ status: 'guest', profile: null, error: '', sessionExpired });
+        publish({ status: 'guest', profile: null, authorizationRole: null, error: '', sessionExpired });
     };
     const verify = () => {
         if (pending) return pending;
@@ -25,15 +25,26 @@ export function createAuthSession(client, storage) {
         const attempt = revision;
         const background = state.status === 'profile-loading' || state.status === 'profile-error';
         const loginEvent = state.loginEvent;
-        publish({ status: background ? 'profile-loading' : 'checking', profile: null, error: '', sessionExpired: false, loginEvent });
+        let authorizationRole = state.authorizationRole || state.profile?.role || null;
+        let permissionResolved = Boolean(authorizationRole);
+        publish({ status: background ? 'profile-loading' : 'checking', profile: null, authorizationRole, error: '', sessionExpired: false, loginEvent });
         const request = Promise.resolve().then(async () => {
             try {
+                if (!authorizationRole) {
+                    const permissionResponse = await client.get('/auth/permissions');
+                    const permissionData = permissionResponse.data?.result || permissionResponse.data?.data || permissionResponse.data;
+                    authorizationRole = typeof permissionData === 'string' ? permissionData : permissionData?.role;
+                    if (!ROLES.has(authorizationRole)) throw new Error('Không xác minh được quyền tài khoản. Vui lòng thử lại.');
+                    permissionResolved = true;
+                    if (attempt !== revision) return null;
+                    publish({ status: 'profile-loading', profile: null, authorizationRole, error: '', sessionExpired: false, loginEvent });
+                }
                 const response = await client.get('/auth/me');
                 const profile = response.data?.result || response.data?.data || response.data;
                 if (!profile?.email || !ROLES.has(profile.role)) throw new Error('Thông tin tài khoản chưa hợp lệ. Vui lòng thử lại.');
                 if (attempt !== revision) return null;
                 storage.setItem('userProfile', JSON.stringify(profile));
-                publish({ status: 'authenticated', profile, error: '', sessionExpired: false, loginEvent });
+                publish({ status: 'authenticated', profile, authorizationRole: profile.role, error: '', sessionExpired: false, loginEvent });
                 return profile;
             } catch (error) {
                 if (attempt !== revision) return null;
@@ -42,8 +53,9 @@ export function createAuthSession(client, storage) {
                     return null;
                 }
                 publish({
-                    status: background ? 'profile-error' : 'error',
+                    status: background || permissionResolved ? 'profile-error' : 'error',
                     profile: null,
+                    authorizationRole,
                     error: 'Không tải được thông tin tài khoản. Vui lòng thử lại.',
                     sessionExpired: false,
                     loginEvent,
@@ -68,7 +80,7 @@ export function createAuthSession(client, storage) {
             pending = undefined;
             const attempt = revision;
             clear();
-            publish({ status: 'logging-out', profile: state.profile, error: '' });
+            publish({ status: 'logging-out', profile: state.profile, authorizationRole: state.authorizationRole, error: '' });
             const revoke = refreshToken ? Promise.resolve().then(() => client.delete('/auth/tokens', {
                 data: { refreshToken }, publicRequest: true, anonymousRequest: true, timeout: 5000
             })).catch(() => {}) : Promise.resolve();
@@ -76,7 +88,7 @@ export function createAuthSession(client, storage) {
             logoutRequest = Promise.all([revoke, new Promise(resolve => setTimeout(resolve, 2000))]).then(() => {
                 if (revision === attempt) {
                     onComplete();
-                    publish({ status: 'guest', profile: null, error: '' });
+                    publish({ status: 'guest', profile: null, authorizationRole: null, error: '' });
                 }
             }).finally(() => { logoutRequest = undefined; });
             return logoutRequest;
@@ -91,6 +103,7 @@ export function createAuthSession(client, storage) {
             publish({
                 status: 'profile-loading',
                 profile: null,
+                authorizationRole: ROLES.has(tokens.role) ? tokens.role : null,
                 error: '',
                 sessionExpired: false,
                 loginEvent: { id: ++loginEventId, method },

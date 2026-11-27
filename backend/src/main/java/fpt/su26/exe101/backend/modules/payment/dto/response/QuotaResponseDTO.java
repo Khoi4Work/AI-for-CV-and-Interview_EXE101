@@ -1,6 +1,8 @@
 package fpt.su26.exe101.backend.modules.payment.dto.response;
 
+import fpt.su26.exe101.backend.base.enums.UserPlan;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Data
@@ -13,8 +15,8 @@ public class QuotaResponseDTO {
     private Integer remainingCvMiddleCredits;
     private Integer remainingCvEnhanceCredits;
     private Integer remainingInterviewMinutes;
-    private fpt.su26.exe101.backend.base.enums.UserPlan cvPlan;
-    private fpt.su26.exe101.backend.base.enums.UserPlan interviewPlan;
+    private UserPlan cvPlan;
+    private UserPlan interviewPlan;
     private Boolean cvNonExpiring;
     private Boolean interviewNonExpiring;
     private Boolean quotaExempt;

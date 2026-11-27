@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.UUID;
+import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import fpt.su26.exe101.backend.base.exception.ApiException;
 
@@ -114,9 +115,15 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
-        java.util.Map<String, Object> profile = accountService.getFullProfile(userDetails.getUsername());
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
+        Map<String, Object> profile = accountService.getFullProfile(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success(profile, "Profile retrieved successfully"));
+    }
+
+    @GetMapping("/permissions")
+    public ResponseEntity<ApiResponse<String>> getPermissions(@AuthenticationPrincipal UserDetails userDetails) {
+        Account account = accountService.getAccountByEmail(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(account.getRole().name()));
     }
 
     @PostMapping("/invite")

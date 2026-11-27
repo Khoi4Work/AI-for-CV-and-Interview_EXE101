@@ -319,8 +319,8 @@ function Detail({ path, onClose }) {
     );
 }
 function Records({ payments = false }) {
-    const { profile } = useAuth();
-    const isTester = profile?.role === 'TESTER';
+    const { authorizationRole } = useAuth();
+    const isTester = authorizationRole === 'TESTER';
     const storageKey = payments ? 'payments' : 'users';
     const [savedState] = useState(() => {
         const draft = { search: '', status: '', role: '', provider: '', plan: '', category: '', includeTest: false, ...(payments ? initialRange() : { from: '', to: '' }) };
@@ -602,8 +602,8 @@ function Records({ payments = false }) {
     );
 }
 export default function AdminArea() {
-    const { handleLogout, isLoggingOut, profile } = useAuth();
-    const isTester = profile?.role === 'TESTER';
+    const { handleLogout, isLoggingOut, authorizationRole } = useAuth();
+    const isTester = authorizationRole === 'TESTER';
     return <div className="min-h-screen bg-slate-50 text-slate-900"><header className="border-b border-slate-200 bg-white px-5 py-4"><div className="mx-auto flex max-w-7xl items-center justify-between"><span className="text-lg font-bold text-[#0b3c8f]">Smartfolio · Quản trị</span><div className="flex items-center gap-4"><Link to="/home" className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50"><ArrowLeft size={16}/> Trang người dùng</Link><button className="text-sm underline" disabled={isLoggingOut} onClick={handleLogout}>Đăng xuất</button></div></div></header>
         <div className="mx-auto grid max-w-7xl gap-6 p-4 md:grid-cols-[210px_1fr] md:p-6">
             <nav className="flex flex-wrap gap-2 md:flex-col">
