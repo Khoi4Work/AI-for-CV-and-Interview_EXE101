@@ -4,11 +4,19 @@ import fpt.su26.exe101.backend.base.response.ApiResponse;
 import fpt.su26.exe101.backend.modules.admin.repository.AdminRepository;
 import fpt.su26.exe101.backend.modules.admin.service.AdminService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -17,18 +25,21 @@ import java.util.*;
 public class AdminController {
     private final AdminService service;
     @GetMapping("/users")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TESTER')")
     public ApiResponse<AdminRepository.Page> users(@RequestParam(defaultValue="") String search,@RequestParam(defaultValue="") String status,
             @RequestParam(defaultValue="") String role,@RequestParam(defaultValue="") String provider,@RequestParam(defaultValue="") String plan,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) { return ApiResponse.success(service.users(search,status,role,provider,plan,from,to,page,size)); }
     @GetMapping("/users/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TESTER')")
     public ApiResponse<Map<String,Object>> user(@PathVariable UUID id) { return ApiResponse.success(service.user(id)); }
     @PutMapping("/users/{id}/tester")
     public ApiResponse<Map<String,Object>> assignTester(@PathVariable UUID id) { return ApiResponse.success(service.setTesterRole(id,true)); }
     @DeleteMapping("/users/{id}/tester")
     public ApiResponse<Map<String,Object>> removeTester(@PathVariable UUID id) { return ApiResponse.success(service.setTesterRole(id,false)); }
     @GetMapping("/payments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TESTER')")
     public ApiResponse<AdminRepository.Page> payments(@RequestParam(defaultValue="") String search,@RequestParam(defaultValue="") String status,
             @RequestParam(defaultValue="") String category,@RequestParam(defaultValue="false") boolean includeTest,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate from,
@@ -37,8 +48,10 @@ public class AdminController {
         return ApiResponse.success(service.payments(search,status,category,includeTest,from,to,page,size));
     }
     @GetMapping("/payments/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TESTER')")
     public ApiResponse<Map<String,Object>> payment(@PathVariable UUID id) { return ApiResponse.success(service.payment(id)); }
     @GetMapping("/statistics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TESTER')")
     public ApiResponse<Map<String,Object>> statistics(@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate to) { return ApiResponse.success(service.statistics(from,to)); }
 }

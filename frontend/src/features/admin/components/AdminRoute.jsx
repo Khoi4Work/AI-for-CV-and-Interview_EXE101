@@ -7,9 +7,10 @@ export default function AdminRoute({ children }) {
     const { isLoggedIn, isLoading, authStatus, profile, retryAuth, sessionExpired } = useAuth();
     const { showToast } = useApp();
     const location = useLocation();
+    const isTester = profile?.role === 'TESTER';
     const notified = useRef(false);
     useEffect(() => {
-        if (authStatus === 'authenticated' && isLoggedIn && profile?.role !== 'ADMIN' && !notified.current) {
+        if (authStatus === 'authenticated' && isLoggedIn && !['ADMIN', 'TESTER'].includes(profile?.role) && !notified.current) {
             notified.current = true;
             showToast('Tài khoản không có quyền quản trị.', 'info');
         }
@@ -21,6 +22,6 @@ export default function AdminRoute({ children }) {
         <button onClick={retryAuth} className="rounded-xl bg-primary px-5 py-2 text-on-primary">Thử lại</button>
     </div>;
     if (!isLoggedIn) return <Navigate to="/login" replace state={{ from: location, sessionExpired }} />;
-    if (profile?.role !== 'ADMIN') return <Navigate to="/home" replace />;
+    if (profile?.role !== 'ADMIN' && !isTester) return <Navigate to="/home" replace />;
     return children;
 }
