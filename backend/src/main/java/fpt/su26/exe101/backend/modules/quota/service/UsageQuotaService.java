@@ -11,6 +11,7 @@ public interface UsageQuotaService {
     void initializeDefaultQuota(UUID accountId);
     UserPlan getCvPlan(UUID accountId);
     UserPlan getInterviewPlan(UUID accountId);
+    UserUsageQuota updateTesterPlans(UUID accountId, UserPlan cvPlan, UserPlan interviewPlan);
     Optional<UserUsageQuota> getQuota(UUID accountId);
     void requireCvCreationCredit(UUID accountId);
     CvCreationQuota consumeCvCreation(UUID accountId);

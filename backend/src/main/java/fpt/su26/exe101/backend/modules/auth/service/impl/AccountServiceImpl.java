@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Locale;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -60,18 +62,18 @@ public class AccountServiceImpl implements AccountService {
                 || !request.getEmail().trim().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Email không hợp lệ.");
         }
-        if (accountRepository.existsByEmail(request.getEmail().trim().toLowerCase(java.util.Locale.ROOT))) {
+        if (accountRepository.existsByEmail(request.getEmail().trim().toLowerCase(Locale.ROOT))) {
             throw new ApiException(ErrorCode.DUPLICATE_RESOURCE, "Email already exists");
         }
 
         Account account = Account.builder()
-                .email(request.getEmail().trim().toLowerCase(java.util.Locale.ROOT))
+                .email(request.getEmail().trim().toLowerCase(Locale.ROOT))
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .provider(AccountProvider.LOCAL)
                 .role(request.getRole() != null ? request.getRole() : AccountRole.ATTENDANCE)
                 .status("PENDING_VERIFICATION")
                 .termsVersion(CURRENT_TERMS_VERSION)
-                .termsAcceptedAt(java.time.LocalDateTime.now())
+                .termsAcceptedAt(LocalDateTime.now())
                 .build();
 
         account = accountRepository.save(account);
@@ -122,7 +124,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public Account createOAuthAccount(String email, String name) {
-        String normalizedEmail = email.trim().toLowerCase(java.util.Locale.ROOT);
+        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
         Optional<Account> existingAccount = accountRepository.findByEmail(normalizedEmail);
         if (existingAccount.isPresent()) {
             if (!"ACTIVE".equals(existingAccount.get().getStatus())) {
@@ -139,7 +141,7 @@ public class AccountServiceImpl implements AccountService {
         if (!termsAccepted) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "Bạn cần đồng ý với Điều khoản dịch vụ để tạo tài khoản.");
         }
-        email = email.trim().toLowerCase(java.util.Locale.ROOT);
+        email = email.trim().toLowerCase(Locale.ROOT);
         Optional<Account> existingAccount = accountRepository.findByEmail(email);
         if (existingAccount.isPresent()) {
             if (!"ACTIVE".equals(existingAccount.get().getStatus())) {
@@ -154,7 +156,7 @@ public class AccountServiceImpl implements AccountService {
                 .role(AccountRole.ATTENDANCE)
                 .status("ACTIVE")
                 .termsVersion(CURRENT_TERMS_VERSION)
-                .termsAcceptedAt(java.time.LocalDateTime.now())
+                .termsAcceptedAt(LocalDateTime.now())
                 .build();
 
         account = accountRepository.save(account);
@@ -301,9 +303,9 @@ public class AccountServiceImpl implements AccountService {
             profile.put("fullName", account.getEmail());
         }
 
-        String planName = quota.getCvPlan().name();
+        String planName = quotaService.getCvPlan(account.getId()).name();
         profile.put("membershipType", planName.charAt(0) + planName.substring(1).toLowerCase());
-        String interviewPlanName = quota.getInterviewPlan().name();
+        String interviewPlanName = quotaService.getInterviewPlan(account.getId()).name();
         profile.put("interviewMembershipType", interviewPlanName.charAt(0) + interviewPlanName.substring(1).toLowerCase());
         profile.put("memberSince", account.getCreatedAt() == null ? "" : String.valueOf(account.getCreatedAt().getYear()));
 
@@ -313,8 +315,8 @@ public class AccountServiceImpl implements AccountService {
         quotaDetails.put("remainingCvMiddleCredits", quota.getRemainingCvMiddleCredits());
         quotaDetails.put("remainingCvEnhanceCredits", quota.getRemainingCvEnhanceCredits());
         quotaDetails.put("remainingInterviewMinutes", quota.getRemainingIntMin());
-        quotaDetails.put("cvPlan", quota.getCvPlan());
-        quotaDetails.put("interviewPlan", quota.getInterviewPlan());
+        quotaDetails.put("cvPlan", quotaService.getCvPlan(account.getId()));
+        quotaDetails.put("interviewPlan", quotaService.getInterviewPlan(account.getId()));
         quotaDetails.put("cvNonExpiring", true);
         quotaDetails.put("interviewNonExpiring", true);
         quotaDetails.put("quotaExempt", quotaService.isQuotaExempt(account.getId()));

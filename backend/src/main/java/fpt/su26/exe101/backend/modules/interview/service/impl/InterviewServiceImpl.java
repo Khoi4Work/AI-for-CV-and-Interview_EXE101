@@ -43,6 +43,7 @@ import fpt.su26.exe101.backend.modules.interview.service.InterviewService;
 import fpt.su26.exe101.backend.modules.interview.service.InterviewVoiceService;
 import fpt.su26.exe101.backend.modules.quota.service.UsageQuotaService;
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -87,7 +88,7 @@ public class InterviewServiceImpl implements InterviewService {
         String language = request.getLanguage().trim().toLowerCase(Locale.ROOT);
 
         UserPlan plan = usageQuotaService.getInterviewPlan(gallery.getAccountId());
-        int maxDuration = usageQuotaService.isQuotaExempt(gallery.getAccountId()) ? 15 : switch (plan) {
+        int maxDuration = switch (plan) {
             case FREE -> 5;
             case MIDDLE -> 10;
             case ENHANCE -> 15;
@@ -419,7 +420,7 @@ public class InterviewServiceImpl implements InterviewService {
         if (session.isInterviewQuotaSettled() || session.getReservedInterviewMinutes() <= 0) return;
         int actualMinutes = 0;
         if (session.getInterviewStartedAt() != null) {
-            long elapsedSeconds = java.time.Duration.between(session.getInterviewStartedAt(), endedAt).getSeconds();
+            long elapsedSeconds = Duration.between(session.getInterviewStartedAt(), endedAt).getSeconds();
             actualMinutes = (int) Math.ceil(Math.max(0, elapsedSeconds) / 60.0);
             actualMinutes = Math.min(Math.max(1, actualMinutes), session.getReservedInterviewMinutes());
         }
@@ -602,7 +603,7 @@ public class InterviewServiceImpl implements InterviewService {
         }
     }
     private boolean invitesSpecificExample(String text) {
-        return java.util.Objects.toString(text,"").toLowerCase(Locale.ROOT)
+        return Objects.toString(text,"").toLowerCase(Locale.ROOT)
             .matches("(?s).*(tình huống|ví dụ|kể về|lần bạn|đã từng|dự án|a time|an example|specific|situation|star).*" );
     }
 
